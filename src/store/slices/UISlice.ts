@@ -25,11 +25,6 @@ export type ModalPropsMap = {
   projectOverview: {
     onNavigateToRoom?: (roomId: string) => void;
   };
-  inventoryManager: {
-    initialSearch?: string;
-    initialTab?: string;
-    prefillCode?: string;
-  };
 
   // Modals ที่ไม่รับ props ผ่าน store
   costDashboard: undefined;

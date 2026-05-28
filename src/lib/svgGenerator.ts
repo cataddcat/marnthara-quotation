@@ -80,7 +80,7 @@ export const generateItemVisualSvg = (item: ItemData): string => {
   }
 
   const f = _getSvgFrame({ width: w, height: h });
-  let content = '';
+  let content: string;
 
   if (item.type === ITEM_TYPES.CURTAIN) content = _drawCurtain(item as CurtainItemInput, f);
   else if (item.type === ITEM_TYPES.WALLPAPER)

@@ -35,7 +35,7 @@ export const ItemCard = ({ row, expanded, onToggle, onJumpToInventory }: ItemCar
   const sheerCode = isCurtain ? (item as { sheer_code?: string }).sheer_code : undefined;
   const showSheer = isCurtain && !!sheerCode;
 
-  // Map item type → tab ใน InventoryManagerModal
+  // Map item type → tab ใน MaterialSummary modal
   const mainTab = isCurtain
     ? FAVORITE_CATEGORIES.CURTAIN_MAIN
     : isWallpaper

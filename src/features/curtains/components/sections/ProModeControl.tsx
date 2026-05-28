@@ -23,10 +23,16 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
   const { fabricCosts, accessoryCosts, laborCosts, formulas } = useAppStore();
 
   // 🔮 คำนวณ Real-time
-  const analysis = useMemo(() => {
-    if (!formData._is_pro_mode) return null;
-    return CostEngine.analyze({ ...formData, type: ITEM_TYPES.CURTAIN, id: 'temp' } as ItemData);
-  }, [formData, fabricCosts, accessoryCosts, laborCosts, formulas]);
+  // CostEngine.analyze() อ่าน store data ผ่าน useAppStore.getState() — ESLint ไม่เห็น
+  // deps ของ store พวกนี้จึงเป็น cache-invalidation hint ที่จงใจใส่ไว้
+  const analysis = useMemo(
+    () => {
+      if (!formData._is_pro_mode) return null;
+      return CostEngine.analyze({ ...formData, type: ITEM_TYPES.CURTAIN, id: 'temp' } as ItemData);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [formData, fabricCosts, accessoryCosts, laborCosts, formulas]
+  );
 
   // กรณี Parent สั่งเปิด (simpleView) หรือ user เปิดเอง -> แสดงผล
   // กรณีปิดอยู่และไม่ใช่ simpleView -> แสดงปุ่มเปิด (Legacy support)
