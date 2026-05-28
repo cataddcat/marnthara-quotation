@@ -1,0 +1,58 @@
+{
+  "laborCosts": {
+    "ลอน":      { "style": "ลอน",      "rate": 125, "unit": "meter", "min_price": 480 },
+    "จีบ":      { "style": "จีบ",      "rate": 120, "unit": "meter", "min_price": 450 },
+    "ตาไก่":    { "style": "ตาไก่",    "rate": 100, "unit": "meter", "min_price": 350 },
+    "พับ":      { "style": "พับ",      "rate": 240, "unit": "sqm",   "min_price": 700 },
+    "หลุยส์":   { "style": "หลุยส์",   "rate": 180, "unit": "meter", "min_price": 550 },
+    "แป๊บ":     { "style": "แป๊บ",     "rate": 70,  "unit": "meter", "min_price": 230 },
+    "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 80,  "unit": "meter", "min_price": 230 }
+  },
+  "accessoryCosts": {
+    "rail_wave":            170,
+    "rail_pleated":         110,
+    "rail_eyelet":          200,
+    "rail_roman":           480,
+    "rail_rod":              80,
+    "rail_louis":           680,
+    "eyelet_ring":            6,
+    "tape_wave":             12,
+    "install_point":        400,
+    "install_min":          700,
+    "transport_base":       450,
+    "transport_upcountry": 1400,
+    "fuel_diesel_liter":     34
+  },
+  "fabricCosts": {
+    "MTR-101":    185,
+    "MTR-205":    270,
+    "SILK-VIP":   490,
+    "LINEN-NAT":  330,
+    "SHEER-WHITE": 88,
+    "SHEER-CREAM": 98,
+    "VELVET-DK":  385,
+    "LINEN-BG":   215,
+    "VOILE-WH":    92,
+    "VOILE-GREY": 108
+  },
+  "wallpaperCosts": {
+    "WP-FLORAL-01":  390,
+    "WP-MARBLE-02":  530,
+    "WP-STRIPE-BL":  440,
+    "WP-PLAIN-GY":   315
+  },
+  "areaCosts": {
+    "RB-BLACKOUT":    150,
+    "RB-DIMOUT-WH":   115,
+    "RB-SCREEN-5":    122,
+    "RB-SOLAR":       158,
+    "VB-100":          98,
+    "VB-200-GY":      110,
+    "VB-300-WH":      118,
+    "WB-OAK-25":      168,
+    "WB-TEAK-50":     245,
+    "AL-25MM-WH":      68,
+    "PT-FABRIC-01":   325,
+    "PS-INSECT-STD":  152
+  }
+}

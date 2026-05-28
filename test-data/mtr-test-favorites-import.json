@@ -1,0 +1,36 @@
+{
+  "curtain_main": [
+    { "id": "imp-001", "code": "IMPORT-A100", "default_price_per_m": 490, "cost_per_yard": 185 },
+    { "id": "imp-002", "code": "IMPORT-B200", "default_price_per_m": 720, "cost_per_yard": 275 },
+    { "id": "imp-003", "code": "VELVET-DK",   "default_price_per_m": 980, "cost_per_yard": 380 },
+    { "id": "imp-004", "code": "LINEN-BG",    "default_price_per_m": 560, "cost_per_yard": 210 }
+  ],
+  "curtain_sheer": [
+    { "id": "imp-010", "code": "VOILE-WH",   "default_price_per_m": 260, "cost_per_yard": 90 },
+    { "id": "imp-011", "code": "VOILE-GREY", "default_price_per_m": 290, "cost_per_yard": 105 }
+  ],
+  "wallpaper": [
+    { "id": "imp-020", "code": "WP-STRIPE-BL", "default_price_per_m": 1100, "cost_per_yard": 430 },
+    { "id": "imp-021", "code": "WP-PLAIN-GY",  "default_price_per_m": 780,  "cost_per_yard": 310 }
+  ],
+  "roller_blind": [
+    { "id": "imp-030", "code": "RB-SCREEN-5", "default_price_per_m": 340, "cost_per_yard": 120 },
+    { "id": "imp-031", "code": "RB-SOLAR",    "default_price_per_m": 420, "cost_per_yard": 155 }
+  ],
+  "vertical_blind": [
+    { "id": "imp-040", "code": "VB-200-GY",  "default_price_per_m": 310, "cost_per_yard": 108 },
+    { "id": "imp-041", "code": "VB-300-WH",  "default_price_per_m": 330, "cost_per_yard": 115 }
+  ],
+  "wooden_blind": [
+    { "id": "imp-050", "code": "WB-TEAK-50", "default_price_per_m": 650, "cost_per_yard": 240 }
+  ],
+  "aluminum_blind": [
+    { "id": "imp-060", "code": "AL-25MM-WH", "default_price_per_m": 185, "cost_per_yard": 65 }
+  ],
+  "partition": [
+    { "id": "imp-070", "code": "PT-FABRIC-01", "default_price_per_m": 880, "cost_per_yard": 320 }
+  ],
+  "pleated_screen": [
+    { "id": "imp-080", "code": "PS-INSECT-STD", "default_price_per_m": 420, "cost_per_yard": 150 }
+  ]
+}

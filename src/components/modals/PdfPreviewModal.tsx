@@ -1,0 +1,125 @@
+import React, { useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import { Button } from '@/components/ui/Button';
+import { PrintDocument, DocumentType } from '@/components/print/PrintDocument';
+import { Printer, FileText, Truck, Receipt } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface PdfPreviewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClose }) => {
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  // [UPDATED] Default to Quotation
+  const [docType, setDocType] = useState<DocumentType>('quotation');
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Marnthara_${docType}_${new Date().toISOString().split('T')[0]}`,
+    onBeforeGetContent: () => {
+      return new Promise<void>((resolve) => {
+        setIsPrinting(true);
+        // Wait for scale animation to reset or layout to settle
+        setTimeout(resolve, 300);
+      });
+    },
+    onAfterPrint: () => {
+      setIsPrinting(false);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
+
+  // [UPDATED] Standard Business Document Flow
+  const tabs = [
+    { id: 'quotation', label: '1. ใบเสนอราคา', icon: FileText },
+    { id: 'delivery', label: '2. ใบส่งมอบงาน', icon: Truck },
+    { id: 'receipt', label: '3. ใบเสร็จรับเงิน', icon: Receipt },
+  ];
+
+  return (
+    <Transition show={isOpen} as={React.Fragment}>
+      <Dialog onClose={onClose} className="relative z-50">
+        <TransitionChild
+          as={React.Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+        </TransitionChild>
+
+        <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
+          <TransitionChild
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95 translate-y-4"
+            enterTo="opacity-100 scale-100 translate-y-0"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100 translate-y-0"
+            leaveTo="opacity-0 scale-95 translate-y-4"
+          >
+            <DialogPanel className="w-full max-w-6xl h-[90vh] bg-slate-100 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+              {/* Toolbar */}
+              <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
+                <div className="flex p-1 bg-slate-100 rounded-xl w-full sm:w-auto overflow-x-auto">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = docType === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setDocType(tab.id as DocumentType)}
+                        className={cn(
+                          'flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all whitespace-nowrap',
+                          isActive
+                            ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                            : 'text-slate-500 hover:text-slate-700'
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="text-sm">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <Button variant="ghost" onClick={onClose} className="flex-1 sm:flex-none">
+                    ปิด
+                  </Button>
+                  <Button
+                    onClick={() => handlePrint()}
+                    className="flex-1 sm:flex-none bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
+                  >
+                    <Printer className="w-4 h-4 mr-2" /> พิมพ์เอกสาร
+                  </Button>
+                </div>
+              </div>
+
+              {/* Preview Area */}
+              <div className="flex-1 overflow-y-auto bg-slate-500/10 p-4 sm:p-8 flex justify-center items-start">
+                {/* Scale container for better preview visibility on small screens */}
+                <div
+                  className={cn(
+                    'shadow-2xl origin-top transition-all duration-300 bg-white',
+                    isPrinting ? 'scale-100' : 'scale-[0.6] sm:scale-[0.75] lg:scale-[0.85]'
+                  )}
+                >
+                  <PrintDocument ref={componentRef} docType={docType} />
+                </div>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </Dialog>
+    </Transition>
+  );
+};

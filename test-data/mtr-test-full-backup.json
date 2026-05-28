@@ -1,0 +1,260 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2026-04-26T10:00:00.000Z",
+  "customer": {
+    "name": "คุณสมชาย ใจดี",
+    "phone": "085-999-1234",
+    "address": "456/7 หมู่บ้านกรีนวิลล์ ซ.12 ถ.แจ้งวัฒนะ เขตหลักสี่ กรุงเทพฯ 10210",
+    "taxId": "",
+    "installationAddress": "456/7 หมู่บ้านกรีนวิลล์ ซ.12 ถ.แจ้งวัฒนะ เขตหลักสี่ กรุงเทพฯ 10210",
+    "useSameAddress": true,
+    "showInstallationAddress": false
+  },
+  "shopConfig": {
+    "name": "ร้านผ้าม่าน TEST SHOP",
+    "address": "99/1 ถ.สุขุมวิท 71 แขวงพระโขนงเหนือ เขตวัฒนา กรุงเทพฯ 10110",
+    "phone": "02-111-2233",
+    "taxId": "0105567890123",
+    "logoUrl": "",
+    "baseVatRate": 7,
+    "bankAccount": {
+      "bankName": "กสิกรไทย",
+      "accountName": "บริษัท เทสต์ ชอป จำกัด",
+      "accountNumber": "123-4-56789-0",
+      "branch": "สุขุมวิท",
+      "isEnabled": true
+    },
+    "pdf": {
+      "paymentTerms": "ชำระภายใน 7 วันหลังได้รับใบแจ้งหนี้",
+      "priceValidity": "ราคานี้มีผลภายใน 30 วัน",
+      "notes": [
+        "ราคาข้างต้นยังไม่รวม VAT 7%",
+        "บริษัทขอสงวนสิทธิ์เปลี่ยนแปลงราคาตามต้นทุนวัสดุ",
+        "กรุณาตรวจสอบขนาดและสีก่อนยืนยันการสั่งซื้อ"
+      ]
+    }
+  },
+  "discount": {
+    "type": "percent",
+    "value": 5,
+    "is_enabled": true
+  },
+  "rooms": [
+    {
+      "id": "room-test-001",
+      "name": "ห้องนั่งเล่น",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": [
+        {
+          "id": "item-test-001",
+          "type": "curtain",
+          "width_m": "3.50",
+          "height_m": "2.80",
+          "style": "ลอน",
+          "layer_mode": "double",
+          "code": "MTR-101",
+          "price_per_m_raw": "520",
+          "sheer_code": "SHEER-WHITE",
+          "sheer_price_per_m": "280",
+          "rail_price_per_m": "0",
+          "rail_color": "ขาว",
+          "bracket_color": "ขาว",
+          "opening_style": "center",
+          "hook_type": "short",
+          "use_rail": true,
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ม่านคู่ทึบ+โปร่ง หน้าต่างห้องนั่งเล่น"
+        },
+        {
+          "id": "item-test-002",
+          "type": "wallpaper",
+          "widths": ["3.50", "3.50"],
+          "height_m": "2.80",
+          "price_per_roll": "950",
+          "install_cost_per_roll": "350",
+          "wallpaper_code": "WP-FLORAL-01",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "วอลเปเปอร์ลายดอกไม้ สีชมพูพาสเทล ผนังด้านโซฟา"
+        }
+      ]
+    },
+    {
+      "id": "room-test-002",
+      "name": "ห้องนอนใหญ่",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": [
+        {
+          "id": "item-test-003",
+          "type": "roller_blind",
+          "width_m": "2.20",
+          "height_m": "2.40",
+          "price_sqyd": "380",
+          "code": "RB-BLACKOUT",
+          "adjustment_side": "ขวา",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "มู่ลี่ม้วน Blackout สีขาว กันแสง 100%"
+        },
+        {
+          "id": "item-test-004",
+          "type": "vertical_blind",
+          "width_m": "3.00",
+          "height_m": "2.60",
+          "price_sqyd": "290",
+          "code": "VB-100",
+          "fabric_variant": "Dimout",
+          "opening_style": "side",
+          "adjustment_side": "ซ้าย",
+          "is_suspended": true,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "รายการนี้ถูกพักไว้ (suspended) — ทดสอบ suspension"
+        },
+        {
+          "id": "item-test-005",
+          "type": "curtain",
+          "width_m": "1.80",
+          "height_m": "2.40",
+          "style": "จีบ",
+          "layer_mode": "main",
+          "code": "MTR-205",
+          "price_per_m_raw": "680",
+          "rail_color": "ทอง",
+          "opening_style": "side",
+          "hook_type": "long",
+          "use_rail": true,
+          "is_suspended": false,
+          "enable_set_price": true,
+          "set_price_override": 9800,
+          "notes": "กำหนดราคาเองที่ 9,800 — ทดสอบ override price"
+        }
+      ]
+    },
+    {
+      "id": "room-test-003",
+      "name": "ห้องรอรื้อถอน",
+      "is_suspended": true,
+      "room_defaults": {},
+      "items": [
+        {
+          "id": "item-test-006",
+          "type": "removal",
+          "quantity": "4",
+          "price_per_item": "350",
+          "description": "รื้อม่านและรางเดิมออก 4 ชุด",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ห้องนี้ถูกพักไว้ทั้งห้อง (room suspended) — ทดสอบ room suspension"
+        }
+      ]
+    },
+    {
+      "id": "room-test-004",
+      "name": "ห้องว่าง (ไม่มีรายการ)",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": []
+    }
+  ],
+  "favorites": {
+    "curtain_main": [
+      { "id": "fav-001", "code": "MTR-101", "default_price_per_m": 520 },
+      { "id": "fav-002", "code": "MTR-205", "default_price_per_m": 680 },
+      { "id": "fav-003", "code": "SILK-VIP", "default_price_per_m": 1200 },
+      { "id": "fav-004", "code": "LINEN-NAT", "default_price_per_m": 850 }
+    ],
+    "curtain_sheer": [
+      { "id": "fav-010", "code": "SHEER-WHITE", "default_price_per_m": 280 },
+      { "id": "fav-011", "code": "SHEER-CREAM", "default_price_per_m": 310 }
+    ],
+    "wallpaper": [
+      { "id": "fav-020", "code": "WP-FLORAL-01", "default_price_per_m": 950 },
+      { "id": "fav-021", "code": "WP-MARBLE-02", "default_price_per_m": 1200 }
+    ],
+    "roller_blind": [
+      { "id": "fav-030", "code": "RB-DIMOUT-WH", "default_price_per_m": 320 },
+      { "id": "fav-031", "code": "RB-BLACKOUT", "default_price_per_m": 380 }
+    ],
+    "vertical_blind": [
+      { "id": "fav-040", "code": "VB-100", "default_price_per_m": 290 }
+    ],
+    "wooden_blind": [
+      { "id": "fav-050", "code": "WB-OAK-25", "default_price_per_m": 420 }
+    ],
+    "aluminum_blind": [],
+    "partition": [],
+    "pleated_screen": []
+  },
+  "formulas": {
+    "curtain": {
+      "multiplier_wave": 2.70,
+      "multiplier_pleated": 2.70,
+      "multiplier_eyelet": 2.70,
+      "multiplier_roman": 1.50,
+      "roman_blind_offset": 0.45,
+      "hem_offset": 0.30,
+      "yard_conversion": 1.11
+    },
+    "wallpaper": {
+      "roll_width": 0.53,
+      "roll_length": 10.0,
+      "waste_margin": 0.10
+    },
+    "area": {
+      "sqm_to_sqyd": 1.20,
+      "min_yield": 1.00
+    }
+  },
+  "production": {
+    "laborCosts": {
+      "ลอน":     { "style": "ลอน",     "rate": 120, "unit": "meter", "min_price": 450 },
+      "จีบ":     { "style": "จีบ",     "rate": 115, "unit": "meter", "min_price": 420 },
+      "ตาไก่":   { "style": "ตาไก่",   "rate": 95,  "unit": "meter", "min_price": 320 },
+      "พับ":     { "style": "พับ",     "rate": 230, "unit": "sqm",   "min_price": 650 },
+      "หลุยส์":  { "style": "หลุยส์",  "rate": 170, "unit": "meter", "min_price": 520 },
+      "แป๊บ":    { "style": "แป๊บ",    "rate": 65,  "unit": "meter", "min_price": 220 },
+      "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 75, "unit": "meter", "min_price": 220 }
+    },
+    "accessoryCosts": {
+      "rail_wave":            165,
+      "rail_pleated":         105,
+      "rail_eyelet":          195,
+      "rail_roman":           460,
+      "rail_rod":              75,
+      "rail_louis":           660,
+      "eyelet_ring":            5,
+      "tape_wave":             10,
+      "install_point":        380,
+      "install_min":          650,
+      "transport_base":       420,
+      "transport_upcountry": 1300,
+      "fuel_diesel_liter":     33
+    },
+    "fabricCosts": {
+      "MTR-101":    180,
+      "MTR-205":    260,
+      "SILK-VIP":   480,
+      "LINEN-NAT":  320,
+      "SHEER-WHITE": 85,
+      "SHEER-CREAM": 95
+    },
+    "wallpaperCosts": {
+      "WP-FLORAL-01": 380,
+      "WP-MARBLE-02": 520
+    },
+    "areaCosts": {
+      "RB-BLACKOUT":  145,
+      "RB-DIMOUT-WH": 110,
+      "VB-100":        95,
+      "WB-OAK-25":   165
+    }
+  }
+}

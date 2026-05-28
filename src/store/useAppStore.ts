@@ -1,0 +1,91 @@
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { temporal } from 'zundo';
+import { STORAGE_KEY } from '@/config/constants';
+
+// Import Slices
+import { createCustomerSlice, CustomerSlice } from './slices/CustomerSlice';
+import { createProjectSlice, ProjectSlice } from './slices/ProjectSlice';
+import { createShopProfileSlice, ShopProfileSlice } from './slices/ShopProfileSlice';
+import { createInventorySlice, InventorySlice } from './slices/InventorySlice';
+import { createUISlice, UISlice } from './slices/UISlice';
+import { createCostDataSlice, CostDataSlice } from './slices/CostDataSlice';
+import { createFormulaSlice, FormulaSlice } from './slices/FormulaSlice'; // ✅ Import
+
+// --- [QOL] EXPORT TYPES HERE ---
+// เพื่อให้ไฟล์อื่น import { ProjectSlice } from '@/store/useAppStore' ได้เลย
+// ไม่ต้องไปจำว่าไฟล์ Slice ชื่ออะไร
+export type { CustomerSlice } from './slices/CustomerSlice';
+export type { ProjectSlice } from './slices/ProjectSlice';
+export type { ShopProfileSlice } from './slices/ShopProfileSlice';
+export type { InventorySlice } from './slices/InventorySlice';
+export type { UISlice, ModalType } from './slices/UISlice';
+export type { CostDataSlice, LaborCost } from './slices/CostDataSlice';
+export type { FormulaSlice, FormulaConfig } from './slices/FormulaSlice'; // ✅ Export
+
+// Combine Types
+export type AppState = CustomerSlice &
+  ProjectSlice &
+  ShopProfileSlice &
+  InventorySlice &
+  UISlice &
+  CostDataSlice &
+  FormulaSlice; // ✅ Combine
+
+const omitTransientState = (state: AppState): Partial<AppState> => {
+  const newState = { ...state };
+  delete (newState as Partial<AppState>).activeModal;
+  delete (newState as Partial<AppState>).modalProps;
+  delete (newState as Partial<AppState>).modalStack;
+  return newState;
+};
+
+export const useAppStore = create<AppState>()(
+  temporal(
+    persist(
+      (...a) => ({
+        ...createCustomerSlice(...a),
+        ...createProjectSlice(...a),
+        ...createShopProfileSlice(...a),
+        ...createInventorySlice(...a),
+        ...createUISlice(...a),
+        ...createCostDataSlice(...a),
+        ...createFormulaSlice(...a), // ✅ Initialize
+      }),
+      {
+        name: STORAGE_KEY,
+        storage: createJSONStorage(() => localStorage),
+        version: 1,
+        partialize: (state) => omitTransientState(state),
+      }
+    ),
+    {
+      limit: 20,
+      partialize: (state) => {
+        // Explicitly selecting what to undo/redo
+        const {
+          rooms,
+          customer,
+          shopConfig,
+          discount,
+          laborCosts,
+          accessoryCosts,
+          fabricCosts,
+          favorites,
+          formulas, // ✅ Add to Persistence (Undo/Redo)
+        } = state;
+        return {
+          rooms,
+          customer,
+          shopConfig,
+          discount,
+          laborCosts,
+          accessoryCosts,
+          fabricCosts,
+          favorites,
+          formulas,
+        };
+      },
+    }
+  )
+);

@@ -1,0 +1,495 @@
+@import 'tailwindcss';
+
+@theme {
+  /* --- 1. Base Semantic Colors (Eye-Care Palette 2025) --- */
+
+  /* Core Surfaces: Soft & Eye-Friendly */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  /* Brand Colors: Deep & Professional */
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  /* Functional Colors */
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* --- 2. State & Status Colors (Softer Tones) --- */
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+
+  /* --- 3. Item Branding (Product Categories) - Eye-Friendly Versions --- */
+  --color-brand-curtain: hsl(var(--brand-curtain));
+  --color-brand-wallpaper: hsl(var(--brand-wallpaper));
+  --color-brand-wood: hsl(var(--brand-wood));
+  --color-brand-roller: hsl(var(--brand-roller));
+  --color-brand-vertical: hsl(var(--brand-vertical));
+  --color-brand-alum: hsl(var(--brand-alum));
+  --color-brand-partition: hsl(var(--brand-partition));
+  --color-brand-screen: hsl(var(--brand-screen));
+  --color-brand-removal: hsl(var(--brand-removal));
+
+  /* --- 4. Extended Color Palette (Eye-Friendly Subtle Tones) --- */
+  --color-subtle: hsl(var(--subtle));
+  --color-subtle-foreground: hsl(var(--subtle-foreground));
+  --color-highlight: hsl(var(--highlight));
+  --color-highlight-foreground: hsl(var(--highlight-foreground));
+
+  /* --- 5. Animation & Transitions (Optimized for Comfort) --- */
+  --animate-fade-in: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-out: fade-out 0.2s ease-in forwards;
+  --animate-zoom-in: zoom-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-pulse-subtle: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes zoom-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-subtle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes fade-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* --- 6. Custom Gradients (Subtle & Eye-Friendly) --- */
+  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(222 47% 20%) 100%);
+  --gradient-subtle: linear-gradient(135deg, hsl(var(--subtle)) 0%, hsl(var(--muted)) 100%);
+  --gradient-card: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)/0.98) 100%);
+
+  /* --- 7. Typography Scale (Optimized for Readability) --- */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px - [CRITICAL] Standard Base Size */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+
+  /* Line heights optimized for reading */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+}
+
+/* --- 8. Theming Layer (Eye-Care Optimized) --- */
+@layer base {
+  :root {
+    /* === LIGHT MODE: Soft & Eye-Friendly === */
+
+    /* 1. Core Surfaces - Reduced Contrast for Eye Strain */
+    --background: 210 40% 98%; /* Soft Slate 50 */
+    --foreground: 222 47% 11%; /* Slate 900 */
+
+    /* 2. Elevation Layers */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* 3. Brand & Interactive Colors */
+    --primary: 222 47% 11%; /* Slate 900 as Primary */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
+
+    /* 4. Functional UI Elements */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* Softer than original */
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 47.4% 11.2%;
+
+    /* 5. Status Colors (Softer Tones) */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+
+    /* 6. Product Brand Colors (Eye-Friendly Variants) */
+    --brand-curtain: 222 47% 40%; /* Muted Slate */
+    --brand-wallpaper: 24 95% 53%; /* Soft Orange */
+    --brand-wood: 28 87% 52%; /* Warm Brown */
+    --brand-roller: 187 85% 43%; /* Soft Teal */
+    --brand-vertical: 199 89% 48%; /* Sky Blue */
+    --brand-alum: 215 25% 65%; /* Light Slate */
+    --brand-partition: 142 71% 45%; /* Leaf Green */
+    --brand-screen: 330 81% 60%; /* Rose */
+    --brand-removal: 0 84.2% 60.2%; /* Soft Red */
+
+    /* 7. Extended Palette (Eye-Care Optimized) */
+    --subtle: 210 40% 96%; /* Slightly darker than background */
+    --subtle-foreground: 215.4 16.3% 46.9%;
+    --highlight: 48 96% 88%; /* Very soft amber */
+    --highlight-foreground: 32 95% 44%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* === DARK MODE: Deep & OLED Friendly === */
+
+    /* 1. Surfaces (Not Pure Black) */
+    --background: 222 47% 11%; /* Slate 900 */
+    --foreground: 210 40% 98%; /* Slate 50 */
+
+    /* 2. Elevation Layers */
+    --card: 217 33% 17%; /* Slate 800 */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    /* 3. Brand & Interactive Colors */
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 19% 27%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* 4. Functional UI Elements */
+    --muted: 217 19% 27%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217 19% 27%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* 5. Status Colors (Softer for Dark Mode) */
+    --success: 142 70% 50%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+
+    /* 6. Product Brand Colors (Dark Mode Adjusted) */
+    --brand-curtain: 210 40% 85%;
+    --brand-wallpaper: 24 100% 68%;
+    --brand-wood: 28 100% 65%;
+    --brand-roller: 187 100% 60%;
+    --brand-vertical: 199 100% 65%;
+    --brand-alum: 215 25% 75%;
+    --brand-partition: 142 70% 60%;
+    --brand-screen: 330 100% 75%;
+    --brand-removal: 0 84.2% 60.2%;
+
+    /* 7. Extended Palette (Dark Mode) */
+    --subtle: 222 47% 13%;
+    --subtle-foreground: 215 20.2% 65.1%;
+    --highlight: 38 92% 50% / 0.15;
+    --highlight-foreground: 48 96% 88%;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+
+  html {
+    /* Prevent page overscroll bounce */
+    overscroll-behavior-y: none;
+    /* Prevent accidental text selection (except inputs) */
+    -webkit-tap-highlight-color: transparent;
+    /* [CRITICAL] Standard Base Size for Readability */
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    @apply selection:bg-primary/20 selection:text-foreground;
+    /* Use dynamic viewport height to prevent address bar overlap */
+    min-height: 100dvh;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1,
+      'ss01' 1,
+      'cv02',
+      'cv03',
+      'cv04';
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Smooth transitions for theme switching */
+  *,
+  *::before,
+  *::after {
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
+  }
+}
+
+/* --- 9. Component Extensions --- */
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-sm bg-card/80 border border-border/50 shadow-lg;
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+}
+
+/* --- 10. Utility Overrides & Enhancements --- */
+@layer utilities {
+  /* Safe Area Utilities (iOS devices) */
+  .pb-safe-area {
+    padding-bottom: env(safe-area-inset-bottom, 24px);
+  }
+
+  .pt-safe-area {
+    padding-top: env(safe-area-inset-top, 24px);
+  }
+
+  /* Top safe area (Notch/Dynamic Island) */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top, 20px);
+  }
+  .mt-safe-top {
+    margin-top: env(safe-area-inset-top);
+  }
+  .top-safe-top {
+    top: env(safe-area-inset-top);
+  }
+  .h-safe-top {
+    height: env(safe-area-inset-top);
+  }
+
+  /* Bottom safe area (Home Indicator) */
+  .pb-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  .mb-safe-bottom {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Animation Utilities */
+  .animate-pulse-subtle {
+    animation: var(--animate-pulse-subtle);
+  }
+
+  .animate-fade-in {
+    animation: var(--animate-fade-in);
+  }
+
+  .animate-fade-out {
+    animation: var(--animate-fade-out);
+  }
+
+  .animate-fade-slide-up {
+    animation: fade-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Text Utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Enhanced focus styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/10;
+  }
+
+  /* Scrollbar Utilities */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+/* --- 11. Scrollbar Modernization --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+::-webkit-scrollbar-corner {
+  @apply bg-transparent;
+}
+
+/* --- 12. Selection Styling --- */
+::selection {
+  @apply bg-primary/20 text-foreground;
+}
+
+/* --- 13. Print Styles --- */
+@media print {
+  * {
+    @apply !bg-white !text-black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* --- 14. Reduced Motion Support --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- 15. High Contrast Support --- */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 214.3 31.8% 70%;
+    --muted-foreground: 215.4 16.3% 30%;
+  }
+
+  .dark {
+    --border: 217 19% 40%;
+    --muted-foreground: 215 20.2% 90%;
+  }
+}
+
+/* --- 16. Accessibility: Focus Visible Enhancement --- */
+@media (prefers-reduced-motion: no-preference) {
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+/* --- 17. Typography Enhancements for Readability --- */
+@layer utilities {
+  .text-readable {
+    line-height: var(--line-height-relaxed);
+    letter-spacing: 0.01em;
+  }
+
+  .text-heading {
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+}
