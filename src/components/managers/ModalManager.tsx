@@ -4,6 +4,7 @@ import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { ItemData } from '@/types';
+import { modalPropsAs } from '@/store/slices/UISlice';
 
 // Import Modals
 import { ItemModal } from '@/components/modals/ItemModal';
@@ -18,7 +19,7 @@ import { ProjectOverviewModal } from '@/components/modals/ProjectOverviewModal';
 import { MainMenuModal } from '@/components/modals/MainMenuModal';
 import { ProductionSettingsModal } from '@/components/modals/ProductionSettingsModal';
 import { FinancialDashboardModal } from '@/components/modals/FinancialDashboardModal';
-import { FormulaStudioModal } from '@/components/modals/FormulaStudioModal'; // ✅ Import
+import { FormulaStudioModal } from '@/components/modals/FormulaStudioModal';
 import { MaterialSummaryModal } from '@/components/modals/MaterialSummaryModal';
 
 export const ModalManager: React.FC = () => {
@@ -27,11 +28,16 @@ export const ModalManager: React.FC = () => {
 
   const isVisible = (type: string) => activeModal === type;
 
+  // narrow modalProps ตาม activeModal — helper จาก UISlice
+  const itemProps = modalPropsAs(activeModal, modalProps, 'item');
+  const roomDefaultsProps = modalPropsAs(activeModal, modalProps, 'roomDefaults');
+  const materialSummaryProps = modalPropsAs(activeModal, modalProps, 'materialSummary');
+  const projectOverviewProps = modalPropsAs(activeModal, modalProps, 'projectOverview');
+
   // Handler for Item Form Submit (Add/Edit)
   const handleItemSubmit = (data: ItemData) => {
-    const { roomId, mode, itemId } = modalProps;
-
-    if (!roomId) return;
+    if (!itemProps?.roomId) return;
+    const { roomId, mode, itemId } = itemProps;
 
     if (mode === 'edit' && itemId) {
       updateItem(roomId, itemId, data);
@@ -50,11 +56,11 @@ export const ModalManager: React.FC = () => {
       <ItemModal
         isOpen={isVisible('item')}
         onClose={closeModal}
-        roomId={modalProps.roomId}
-        itemId={modalProps.itemId}
-        itemType={modalProps.itemType}
-        initialData={modalProps.initialData}
-        mode={modalProps.mode}
+        roomId={itemProps?.roomId}
+        itemId={itemProps?.itemId}
+        itemType={itemProps?.itemType}
+        initialData={itemProps?.initialData}
+        mode={itemProps?.mode}
         onSubmit={handleItemSubmit}
       />
 
@@ -77,38 +83,36 @@ export const ModalManager: React.FC = () => {
       <ProjectOverviewModal
         isOpen={isVisible('projectOverview')}
         onClose={closeModal}
-        onNavigateToRoom={modalProps.onNavigateToRoom}
+        onNavigateToRoom={projectOverviewProps?.onNavigateToRoom}
       />
 
       <RoomDefaultsModal
-        key={modalProps.roomId || 'defaults'}
+        key={roomDefaultsProps?.roomId || 'defaults'}
         isOpen={isVisible('roomDefaults')}
         onClose={closeModal}
-        roomId={modalProps.roomId}
+        roomId={roomDefaultsProps?.roomId ?? null}
       />
 
       <ProductionSettingsModal isOpen={isVisible('productionSettings')} onClose={closeModal} />
 
-      {/* ✅ FIX 2: เปลี่ยน key จาก 'open'/'closed' เป็น 'cost-open'/'cost-closed' */}
       <FinancialDashboardModal
         key={isVisible('costDashboard') ? 'cost-open' : 'cost-closed'}
-        isOpen={isVisible('costDashboard')} 
-        onClose={closeModal} 
+        isOpen={isVisible('costDashboard')}
+        onClose={closeModal}
       />
-      
-      {/* ✅ Formula Studio */}
-      <FormulaStudioModal 
-  key={isVisible('formulaStudio') ? 'fs-open' : 'fs-closed'} // ✅ เพิ่มบรรทัดนี้: เพื่อ Force Reset State ทุกครั้งที่เปิด
-  isOpen={isVisible('formulaStudio')} 
-  onClose={closeModal} 
-/>
+
+      <FormulaStudioModal
+        key={isVisible('formulaStudio') ? 'fs-open' : 'fs-closed'}
+        isOpen={isVisible('formulaStudio')}
+        onClose={closeModal}
+      />
 
       <MaterialSummaryModal
         key={isVisible('materialSummary') ? 'ms-open' : 'ms-closed'}
         isOpen={isVisible('materialSummary')}
         onClose={closeModal}
-        initialTab={modalProps.initialTab}
-        initialCategory={modalProps.initialCategory}
+        initialTab={materialSummaryProps?.initialTab}
+        initialCategory={materialSummaryProps?.initialCategory}
       />
 
       <MainMenuModal
@@ -123,7 +127,7 @@ export const ModalManager: React.FC = () => {
         onOpenProductionSettings={() => openModal('productionSettings')}
         onOpenCostDashboard={() => openModal('costDashboard')}
         onOpenFormulaStudio={() => openModal('formulaStudio')}
-        onOpenMaterialSummary={() => openModal('materialSummary')}
+        onOpenMaterialSummary={() => openModal('materialSummary', {})}
       />
     </>
   );
