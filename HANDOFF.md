@@ -231,15 +231,23 @@ ItemModal owns store writes:
 
 ## 6. Known Tech Debt (NOT addressed this session)
 
-These pre-existed and remain. Flagged for future cleanup:
+> Updated 2026-05-28 after Path A (PRs #1–#3) — entries below are what **remains** after that round of hardening.
 
+### Still open
 - **Aluminum Blind feature stub** — appears in `ITEM_TYPES` + menu but no form directory exists
-- **Features with missing Zod schemas** — WoodenBlinds, RollerBlinds, VerticalBlinds, Partition, PleatedScreen, Removal (use `useItemForm` instead)
-- **PricingEngine.test.ts** — only 7 test cases, no tests for: removal, blinds variants, CostEngine, undo/redo, import/export
-- **`modalProps: Record<string, any>`** — not type-safe (UISlice.ts line 24)
-- **`breakdown?: Record<string, number>`** — untyped in PriceResult
-- **`'favoriteManager'` string literal** — not in ModalType union (compile errors in PartitionForm, RollerBlindsForm, VerticalBlindsForm)
-- **TypeScript errors** — 13 pre-existing errors, all in `src/features/*` or test files, none in files touched this session
+- **`breakdown?: Record<string, number>`** — untyped in `PriceResult` (`src/lib/pricing/types.ts`); a typed shape per item-type would let `CostEngine` consume `fabricYards` / `sheerYards` / `rolls` / `areaSqyd` with editor assist instead of optional-chaining everywhere
+- **PricingEngine.test.ts coverage** — `CostEngine.test.ts` now covers 18 cases (Priority Chain × SINGLE/DOUBLE × dispatch — PR #1), but `PricingEngine.test.ts` itself still has only 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
+- **20 pre-existing lint errors** flagged during Path A — `reportGenerator.ts`, `svgGenerator.ts`, `ProductionSettingsModal.tsx`, `CostEngine.ts` (`prefer-const`), test files (`any` in inline item literals), `useSmartPrice` / `ProModeControl` (`react-hooks/exhaustive-deps`), `InventoryManagerModal` (set-state-in-effect + access-before-declared). None block build, but `npm run lint --max-warnings 0` currently fails.
+
+### Closed in Path A (2026-05)
+- ~~Features with missing Zod schemas (6 types)~~ → **PR #3**: 6 schemas + factory in `src/features/shared/schemas.ts`; `useItemForm` deleted
+- ~~`modalProps: Record<string, any>`~~ → **PR #2**: `ModalPropsMap` discriminated union + `OpenModalFn` generic in `UISlice.ts`
+- ~~`'favoriteManager'` string literal~~ → resolved before this session (review pass 2 confirmed no occurrences)
+- ~~13 pre-existing TypeScript errors~~ → resolved before this session (`npx tsc --noEmit` returns 0)
+- ~~2 broken assertions in `PricingEngine.test.ts`~~ → **PR #1**: rewrote to assert `fabricYards` (the value the multiplier actually drives) instead of `fabricMeters` (which is just `width`)
+
+### Orphan code (discovered Path A)
+- **`InventoryManagerModal`** is not registered in `ModalManager.tsx` and has no `openModal('inventoryManager')` call site. The component reads `modalProps` (now typed via `ModalPropsMap['inventoryManager']` from PR #2) but is not reachable in runtime. Either wire it up via the Code Jump flow described in §1.3, or delete the file.
 
 ---
 
