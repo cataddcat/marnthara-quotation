@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { PricingEngine } from './PricingEngine';
 import { useAppStore } from '@/store/useAppStore';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
+import { makeItem } from './__test-helpers';
 
 // 🛠️ Helper: Reset Store before each test
 const resetStore = () => {
@@ -49,7 +50,7 @@ describe('💰 Pricing Engine Core Tests', () => {
       // totalMeters = 2.0 × 2.7 + hem_offset(0.10) = 5.50
       // fabricYards = ceil(5.50/0.90 × 100)/100 = 6.12
       // ราคาขาย (semantic): width × pricePerUnit = 2.0 × 100 = 200
-      const input: any = {
+      const input = makeItem({
         type: ITEM_TYPES.CURTAIN,
         width_m: 2.0,
         height_m: 2.5,
@@ -58,7 +59,7 @@ describe('💰 Pricing Engine Core Tests', () => {
         price_per_m_raw: 100,
         fabric_variant: 'ทึบ',
         id: 'test-curtain-1',
-      };
+      });
 
       const result = PricingEngine.calculateDetailedPrice(input);
 
@@ -74,7 +75,7 @@ describe('💰 Pricing Engine Core Tests', () => {
       // meters = 1.0 × 2.50 + 0.20 = 2.70
       // fabricYards = ceil(2.70/0.90 × 100)/100 = 3.00
       // ราคาขาย (semantic): width × pricePerUnit = 1.0 × 500 = 500
-      const input: any = {
+      const input = makeItem({
         type: ITEM_TYPES.CURTAIN,
         width_m: 1.0,
         height_m: 2.0,
@@ -82,7 +83,7 @@ describe('💰 Pricing Engine Core Tests', () => {
         layer_mode: LAYER_MODES.MAIN,
         price_per_m_raw: 500,
         id: 'test-curtain-roman',
-      };
+      });
 
       const result = PricingEngine.calculateDetailedPrice(input);
 
@@ -91,7 +92,7 @@ describe('💰 Pricing Engine Core Tests', () => {
     });
 
     it('Scenario: ราคาเหมา (Set Price) - ต้อง Override ราคาทุกอย่าง', () => {
-      const input: any = {
+      const input = makeItem({
         type: ITEM_TYPES.CURTAIN,
         width_m: 2.0,
         height_m: 2.5,
@@ -100,7 +101,7 @@ describe('💰 Pricing Engine Core Tests', () => {
         enable_set_price: true,
         set_price_override: 999, // บังคับราคา
         id: 'test-override',
-      };
+      });
 
       const total = PricingEngine.calculatePrice(input);
       expect(total).toBe(999);
@@ -118,14 +119,14 @@ describe('💰 Pricing Engine Core Tests', () => {
       // ม้วนยาว 10 ม. -> 1 ม้วนตัดได้ 4 แผ่น (10 / 2.5)
       // ผนังกว้าง 2.0 ม. (หน้ากว้างวอลล์ 0.5) -> ต้องใช้ 4 แผ่น
       // สรุป: ใช้ 4 แผ่น / (4 แผ่นต่อม้วน) = 1 ม้วนพอดี
-      const input: any = {
+      const input = makeItem({
         type: ITEM_TYPES.WALLPAPER,
         widths: ['2.0'], // กว้างรวม 2.0
         height_m: 2.5,
         price_per_roll: 1000,
         wallpaper_code: 'W001',
         id: 'test-wall-1',
-      };
+      });
 
       const result = PricingEngine.calculateDetailedPrice(input);
       // เช็คใน breakdown (คุณอาจต้องแก้ WallpaperStrategy ให้ return 'rolls' ใน breakdown ด้วยถ้ายังไม่ได้ทำ)
@@ -138,14 +139,14 @@ describe('💰 Pricing Engine Core Tests', () => {
       // หน้ากว้าง 0.5 -> ต้องใช้ 4.2 แผ่น -> ปัดเป็น 5 แผ่น
       // 1 ม้วนตัดได้ 4 แผ่น -> ต้องใช้ 2 ม้วน
       // ราคา = 2 * 1000 = 2000
-      const input: any = {
+      const input = makeItem({
         type: ITEM_TYPES.WALLPAPER,
         widths: ['2.1'],
         height_m: 2.5,
         price_per_roll: 1000,
         wallpaper_code: 'W002',
         id: 'test-wall-2',
-      };
+      });
 
       const result = PricingEngine.calculateDetailedPrice(input);
       expect(result.total).toBe(2000);
@@ -163,13 +164,13 @@ describe('💰 Pricing Engine Core Tests', () => {
        // แปลงเป็น ตร.ล. (Mock * 1.2) = 0.3 ตร.ล.
        // ต่ำกว่าขั้นต่ำ -> ต้องคิด 1.00 ตร.ล.
        // ราคา 500 บาท/ตร.ล. -> Total 500
-       const input: any = {
+       const input = makeItem({
          type: ITEM_TYPES.WOODEN_BLIND,
          width_m: 0.5,
          height_m: 0.5,
          price_sqyd: 500,
          id: 'test-blind-min',
-       };
+       });
 
        const total = PricingEngine.calculatePrice(input);
        expect(total).toBe(500);
@@ -179,13 +180,13 @@ describe('💰 Pricing Engine Core Tests', () => {
         // กว้าง 2.0 x สูง 2.0 = 4.0 ตร.ม.
         // * 1.2 = 4.8 ตร.ล.
         // ราคา 1000 -> 4800
-        const input: any = {
+        const input = makeItem({
             type: ITEM_TYPES.WOODEN_BLIND,
             width_m: 2.0,
             height_m: 2.0,
             price_sqyd: 1000,
             id: 'test-blind-real',
-          };
+          });
    
           const total = PricingEngine.calculatePrice(input);
           expect(total).toBe(4800);

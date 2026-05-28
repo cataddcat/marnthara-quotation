@@ -14,7 +14,10 @@ interface AreaStrategyConfig {
  * Factory Function: สร้าง Strategy สำหรับสินค้าที่คิดเงินตามพื้นที่
  * รองรับ: มู่ลี่ไม้, ม่านม้วน, ม่านปรับแสง, ฉากกั้นห้อง, มุ้งจีบ
  */
-export const createAreaStrategy = (_config: AreaStrategyConfig): PricingStrategy<AreaItemInput> => {
+export const createAreaStrategy = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _config: AreaStrategyConfig
+): PricingStrategy<AreaItemInput> => {
   
   return {
     /**

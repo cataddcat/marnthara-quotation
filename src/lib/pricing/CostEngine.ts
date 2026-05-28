@@ -45,7 +45,7 @@ export const CostEngine = {
     let sheerCost = 0;
     let railCost = 0;
     let laborCost = 0;
-    let accCost = 0;
+    const accCost = 0; // reserved for future accessory cost (eyelet rings, brackets, etc.)
     let isLaborMinApplied = false; // ✅ NEW: เก็บสถานะว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
     
     let usedQuantity = 0;

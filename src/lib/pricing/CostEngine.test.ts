@@ -5,6 +5,7 @@ import { CostEngine } from './CostEngine';
 import { useAppStore } from '@/store/useAppStore';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import type { LaborCost } from '@/store/slices/CostDataSlice';
+import { makeItem } from './__test-helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test fixtures — สูตร mock ที่ทำให้ fabricYards predictable
@@ -49,7 +50,7 @@ const setupStore = (overrides?: {
 };
 
 // แต่ละ item factory — สร้าง item ที่ใช้ค่าตัวคูณ predictable
-const makeCurtainItem = (extra: Record<string, unknown> = {}): any => ({
+const makeCurtainItem = (extra: Record<string, unknown> = {}) => makeItem({
   type: ITEM_TYPES.CURTAIN,
   id: 'test-item',
   width_m: 1.0,
@@ -256,14 +257,14 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       // strips needed: ceil(2.0 / 0.5) = 4 strips
       // strips per roll: floor(10 / 2.5) = 4 strips/roll
       // rolls: ceil(4 / 4) = 1
-      const item: any = {
+      const item = makeItem({
         type: ITEM_TYPES.WALLPAPER,
         id: 'wp-1',
         widths: ['2.0'],
         height_m: 2.5,
         wallpaper_code: 'W001',
         price_per_roll: 1500,
-      };
+      });
 
       const result = CostEngine.analyze(item);
 
@@ -276,14 +277,14 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
     it('D13: Area-type (Wooden Blind) → areaSqyd × fabricCosts[code]', () => {
       setupStore({ fabricCosts: { B001: 300 } });
       // width=2.0, height=2.0 → 4 sqm × 1.2 = 4.8 sqyd
-      const item: any = {
+      const item = makeItem({
         type: ITEM_TYPES.WOODEN_BLIND,
         id: 'wb-1',
         width_m: 2.0,
         height_m: 2.0,
         code: 'B001',
         price_sqyd: 500,
-      };
+      });
 
       const result = CostEngine.analyze(item);
 
@@ -293,13 +294,13 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
     });
 
     it('D14: Removal → totalCost = 0 regardless of selling price', () => {
-      const item: any = {
+      const item = makeItem({
         type: ITEM_TYPES.REMOVAL,
         id: 'rm-1',
         quantity: 5,
         price_per_item: 200,
         description: 'รื้อม่านเก่า',
-      };
+      });
 
       const result = CostEngine.analyze(item);
 

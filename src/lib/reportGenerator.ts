@@ -47,7 +47,7 @@ export const printLookBook = (state: AppState) => {
 
       let title: string = ITEM_CONFIG[pItem.type]?.name || 'สินค้า';
       let sku = '';
-      let dims = '';
+      let dims: string;
 
       const specs: string[] = [];
 

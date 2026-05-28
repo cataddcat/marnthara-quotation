@@ -134,7 +134,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
   // ── Data ─────────────────────────────────────────────────────────────────
 
   const currentItems = useMemo<CurrentItem[]>(() => {
-    let items: CurrentItem[] = [];
+    let items: CurrentItem[];
 
     if (activeTab === 'labor') {
       items = Object.entries(laborCosts).map(([k, v]) => ({

@@ -29,7 +29,7 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
     // ex: 10 / 2.6 = 3.84 -> 3 แผ่น
     const stripsPerRoll = Math.floor(config.roll_length / cutLength);
 
-    let rolls = 0;
+    let rolls: number;
     if (stripsPerRoll > 0) {
       // 3. คำนวณ Demand: ต้องใช้กี่แผ่น (ปัดขึ้น)
       // ex: กว้าง 2.0 / 0.53 = 3.77 -> 4 แผ่น
@@ -40,7 +40,7 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
     } else {
       // กรณีผนังสูงเกินความยาวม้วน (Error Case)
       // ในทางปฏิบัติควรแจ้งเตือน แต่ใน engine คืนค่า 0 หรือ safe value ไปก่อน
-      rolls = 0; 
+      rolls = 0;
     }
 
     const pricePerRoll = toNum(item.price_per_roll);
