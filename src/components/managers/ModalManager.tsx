@@ -18,7 +18,7 @@ import { LookbookModal } from '@/components/modals/LookbookModal';
 import { ProjectOverviewModal } from '@/components/modals/ProjectOverviewModal';
 import { MainMenuModal } from '@/components/modals/MainMenuModal';
 import { ProductionSettingsModal } from '@/components/modals/ProductionSettingsModal';
-import { FinancialDashboardModal } from '@/components/modals/FinancialDashboardModal';
+import { FinancialDashboardModal } from '@/components/modals/FinancialDashboard';
 import { FormulaStudioModal } from '@/components/modals/FormulaStudioModal';
 import { MaterialSummaryModal } from '@/components/modals/MaterialSummaryModal';
 
