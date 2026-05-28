@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/Input';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { useUIStore } from '@/store/useUIStore';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { modalPropsAs } from '@/store/slices/UISlice';
 
 interface InventoryManagerModalProps {
   isOpen: boolean;
@@ -172,7 +173,8 @@ export const InventoryManagerModal: React.FC<InventoryManagerModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addFavorite, updateFavorite, importFavorites, updateUnifiedCost, favorites, modalProps } = useAppStore();
+  const { addFavorite, updateFavorite, importFavorites, updateUnifiedCost, favorites, activeModal, modalProps } = useAppStore();
+  const invProps = modalPropsAs(activeModal, modalProps, 'inventoryManager');
   const addToast = useUIStore((state) => state.addToast);
   const isMobile = useIsMobile();
 
@@ -186,18 +188,18 @@ export const InventoryManagerModal: React.FC<InventoryManagerModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      const search = modalProps?.initialSearch || '';
+      const search = invProps?.initialSearch || '';
       setSearchQuery(search);
-      if (modalProps?.initialTab) setActiveCategory(modalProps.initialTab);
+      if (invProps?.initialTab) setActiveCategory(invProps.initialTab);
 
       // ถ้า jump มาพร้อม prefillCode → เก็บไว้รอ check ว่ารหัสมีอยู่แล้วหรือเปล่า
-      pendingPrefillRef.current = modalProps?.prefillCode || null;
+      pendingPrefillRef.current = invProps?.prefillCode || null;
 
       // Reset form state เมื่อเปิดใหม่
       setIsCreating(false);
       setEditingId(null);
     }
-  }, [isOpen, modalProps]);
+  }, [isOpen, invProps]);
 
   // Edit State
   const [editingId, setEditingId] = useState<string | null>(null);
