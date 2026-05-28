@@ -4,11 +4,19 @@ import { RemovalItemInput } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_TYPES } from '@/config/enums';
 import { fmtTH, toNum } from '@/utils/formatters';
-import { useItemForm, ValidationSchema } from '@/hooks/useItemForm';
+import { useZodForm } from '@/hooks/useZodForm';
+import { RemovalSchema, RemovalFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { Scissors, DollarSign } from 'lucide-react';
+
+// Helper: format string|number → comma-separated display
+const fmtDisplay = (val: string | number | undefined): string => {
+  if (val === '' || val === undefined || val === 0) return '';
+  const num = Number(val);
+  return isNaN(num) ? '' : num.toLocaleString('en-US');
+};
 
 interface RemovalFormProps {
   initialData?: Partial<RemovalItemInput>;
@@ -17,7 +25,8 @@ interface RemovalFormProps {
   onAutoSave?: (data: Partial<RemovalItemInput>) => void;
 }
 
-const DEFAULT_DATA: RemovalItemInput = {
+const DEFAULT_DATA: RemovalFormValues = {
+  type: ITEM_TYPES.REMOVAL,
   quantity: 1,
   price_per_item: 0,
   description: '',
@@ -27,44 +36,39 @@ const DEFAULT_DATA: RemovalItemInput = {
   set_price_override: 0,
 };
 
-const validationSchema: ValidationSchema<RemovalItemInput> = {
-  description: (val) => (!val ? { level: 'error', message: 'ระบุรายการ' } : null),
-  price_per_item: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุราคา' } : null),
-};
-
 export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit, onCancel, onAutoSave }) => {
   const {
     formData,
     errors,
     isDirty,
-    validate,
     handleChange,
     handleNumberChange,
-    getFormattedNumber,
-  } = useItemForm<RemovalItemInput>({ ...DEFAULT_DATA, ...initialData }, validationSchema);
+    handleSubmit,
+  } = useZodForm<RemovalFormValues>({
+    schema: RemovalSchema,
+    initialData: { ...DEFAULT_DATA, ...initialData } as RemovalFormValues,
+    onSubmit: (data) => {
+      // Normalize string → number ก่อนส่งให้ caller (เดิมทำใน handleSubmit)
+      const submission: RemovalItemInput = {
+        ...data,
+        quantity: toNum(data.quantity),
+        price_per_item: toNum(data.price_per_item),
+        set_price_override: toNum(data.set_price_override),
+      };
+      onSubmit(submission);
+    },
+  });
 
   const pricePreview = useMemo(() => {
     const previewItem = {
       ...formData,
       type: ITEM_TYPES.REMOVAL,
-      id: 'preview', // This makes it valid ItemData when cast
+      id: 'preview',
     };
     return PricingEngine.calculateDetailedPrice(
       previewItem as unknown as import('@/types').ItemData
     );
   }, [formData]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    validate();
-    const submission: RemovalItemInput = {
-      ...formData,
-      quantity: toNum(formData.quantity),
-      price_per_item: toNum(formData.price_per_item),
-      set_price_override: toNum(formData.set_price_override),
-    };
-    onSubmit(submission);
-  };
 
   return (
     <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
@@ -163,7 +167,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
               <input
                 type="text"
                 inputMode="decimal"
-                value={getFormattedNumber('set_price_override')}
+                value={fmtDisplay(formData.set_price_override)}
                 onChange={(e) => handleNumberChange('set_price_override', e.target.value)}
                 placeholder="ราคาเหมา"
                 className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"

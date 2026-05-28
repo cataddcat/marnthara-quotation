@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { AreaItemInput, ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { toNum, fmtTH } from '@/utils/formatters';
-import { useItemForm, ValidationSchema } from '@/hooks/useItemForm';
+import { fmtTH } from '@/utils/formatters';
+import { useZodForm } from '@/hooks/useZodForm';
+import { WoodenBlindsSchema, WoodenBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
@@ -12,20 +13,17 @@ import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { FAVORITE_CATEGORIES, ITEM_TYPES } from '@/config/enums';
 
-// Extended type for specific form fields (if any)
-interface ExtendedBlindsInput extends AreaItemInput {
-  fabric_variant?: string; // ใช้เก็บ "สี/รุ่น"
-}
-
 interface WoodenBlindsFormProps {
-  initialData?: Partial<ExtendedBlindsInput>;
+  // รับ Partial<AreaItemInput> ที่กว้างกว่า — รองรับ caller (ItemModal) ที่ส่ง Partial<ItemData>
+  initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
   onCancel: () => void;
   itemType?: string;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 
-const DEFAULT_DATA: ExtendedBlindsInput = {
+const DEFAULT_DATA: WoodenBlindsFormValues = {
+  type: ITEM_TYPES.WOODEN_BLIND,
   width_m: '',
   height_m: '',
   price_sqyd: '',
@@ -38,13 +36,6 @@ const DEFAULT_DATA: ExtendedBlindsInput = {
   set_price_override: 0,
 };
 
-const validationSchema: ValidationSchema<ExtendedBlindsInput> = {
-  width_m: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุกว้าง' } : null),
-  height_m: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุสูง' } : null),
-  price_sqyd: (val, data) =>
-    !data.enable_set_price && toNum(val) <= 0 ? { level: 'warning', message: 'ระบุราคา' } : null,
-};
-
 export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   initialData,
   onSubmit,
@@ -52,8 +43,11 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   itemType = ITEM_TYPES.WOODEN_BLIND,
   onAutoSave,
 }) => {
-  const { formData, errors, handleChange, handleNumberChange, validate } =
-    useItemForm<ExtendedBlindsInput>({ ...DEFAULT_DATA, ...initialData }, validationSchema);
+  const { formData, errors, handleChange, handleNumberChange, handleSubmit } = useZodForm<WoodenBlindsFormValues>({
+    schema: WoodenBlindsSchema,
+    initialData: { ...DEFAULT_DATA, ...initialData } as WoodenBlindsFormValues,
+    onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
+  });
 
   const { favorites } = useAppStore();
 
@@ -96,14 +90,8 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    validate();
-    onSubmit(formData);
-  };
-
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
+    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData as unknown as AreaItemInput)} className="space-y-6 pb-20 sm:pb-0">
       {/* 1. Dimensions */}
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">

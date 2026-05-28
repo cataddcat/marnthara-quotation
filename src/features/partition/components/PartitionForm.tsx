@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { AreaItemInput, ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { toNum, fmtTH } from '@/utils/formatters';
-import { useItemForm, ValidationSchema } from '@/hooks/useItemForm';
+import { useZodForm } from '@/hooks/useZodForm';
+import { PartitionSchema, PartitionFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
@@ -14,19 +15,15 @@ import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
-interface ExtendedPartitionInput extends AreaItemInput {
-  fabric_variant?: string;
-  opening_style?: string;
-}
-
 interface PartitionFormProps {
-  initialData?: Partial<ExtendedPartitionInput>;
+  initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
   onCancel: () => void;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 
-const DEFAULT_DATA: ExtendedPartitionInput = {
+const DEFAULT_DATA: PartitionFormValues = {
+  type: ITEM_TYPES.PARTITION,
   width_m: '',
   height_m: '',
   price_sqyd: '',
@@ -39,21 +36,17 @@ const DEFAULT_DATA: ExtendedPartitionInput = {
   set_price_override: 0,
 };
 
-const validationSchema: ValidationSchema<ExtendedPartitionInput> = {
-  width_m: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุกว้าง' } : null),
-  height_m: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุสูง' } : null),
-  price_sqyd: (val, data) =>
-    !data.enable_set_price && toNum(val) <= 0 ? { level: 'warning', message: 'ระบุราคา' } : null,
-};
-
 export const PartitionForm: React.FC<PartitionFormProps> = ({
   initialData,
   onSubmit,
   onCancel,
   onAutoSave,
 }) => {
-  const { formData, errors, warnings, handleChange, handleNumberChange, validate } =
-    useItemForm<ExtendedPartitionInput>({ ...DEFAULT_DATA, ...initialData }, validationSchema);
+  const { formData, errors, warnings, handleChange, handleNumberChange, handleSubmit } = useZodForm<PartitionFormValues>({
+    schema: PartitionSchema,
+    initialData: { ...DEFAULT_DATA, ...initialData } as PartitionFormValues,
+    onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
+  });
 
   const { addFavorite, favorites, updateFavorite, openModal } = useAppStore();
   const { addToast } = useUIStore();
@@ -108,11 +101,6 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
   const isFav = (code?: string) =>
     !!code && (favorites[FAVORITE_CATEGORIES.PARTITION] || []).some((f) => f.code === code);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    validate();
-    onSubmit(formData);
-  };
 
   return (
     <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
