@@ -1,6 +1,7 @@
 import React from 'react';
 import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLE_FEATURES } from '@/config/constants';
+import { FORMULAS } from '@/config/formulas';
 import { Input } from '@/components/ui/Input';
 import {
   Wrench,
@@ -160,22 +161,17 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
             <GripVertical className="w-3.5 h-3.5" /> ระยะกระดุม (ความลึกลอน)
           </label>
           <div className="grid grid-cols-2 gap-3">
-            <PillButton
-              value="14.5"
-              label="14.5 ซม."
-              description="ลอนมาตรฐาน · ผ้า ×2.7"
-              icon={GripVertical}
-              currentValue={data.button_spacing}
-              onChange={(v) => onChange('button_spacing', v)}
-            />
-            <PillButton
-              value="16"
-              label="16 ซม."
-              description="ลอนลึก · ผ้า ×2.8"
-              icon={GripVertical}
-              currentValue={data.button_spacing}
-              onChange={(v) => onChange('button_spacing', v)}
-            />
+            {FORMULAS.curtain.wave_spacings.map((wave) => (
+              <PillButton
+                key={wave.spacing}
+                value={wave.spacing}
+                label={`${wave.spacing} ซม.`}
+                description={`${wave.label} · ผ้า ×${wave.multiplier}`}
+                icon={GripVertical}
+                currentValue={data.button_spacing}
+                onChange={(v) => onChange('button_spacing', v)}
+              />
+            ))}
           </div>
           <p className="text-[11px] text-muted-foreground/80 ml-1 mt-1">
             ลอนลึกใช้ผ้าเพิ่มขึ้นเล็กน้อย — เห็นใน <span className="font-semibold">Pro Mode</span>

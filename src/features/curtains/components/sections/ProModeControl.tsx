@@ -18,9 +18,10 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
   onChange,
   simpleView = false,
 }) => {
-  // 📡 Subscribe to Store: ดักฟังการเปลี่ยนแปลงของต้นทุนและสูตร
+  // 📡 Subscribe to Store: ดักฟังการเปลี่ยนแปลงของต้นทุน
   // เพื่อให้ Pro Mode คำนวณใหม่ทันทีที่การตั้งค่าหลังบ้านเปลี่ยน (แม้ไม่ได้พิมพ์อะไรในฟอร์ม)
-  const { fabricCosts, accessoryCosts, laborCosts, formulas } = useAppStore();
+  // (formulas เป็น compile-time constant แล้ว ไม่ต้อง subscribe)
+  const { fabricCosts, accessoryCosts, laborCosts } = useAppStore();
 
   // 🔮 คำนวณ Real-time
   // CostEngine.analyze() อ่าน store data ผ่าน useAppStore.getState() — ESLint ไม่เห็น
@@ -31,7 +32,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
       return CostEngine.analyze({ ...formData, type: ITEM_TYPES.CURTAIN, id: 'temp' } as ItemData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [formData, fabricCosts, accessoryCosts, laborCosts, formulas]
+    [formData, fabricCosts, accessoryCosts, laborCosts]
   );
 
   // กรณี Parent สั่งเปิด (simpleView) หรือ user เปิดเอง -> แสดงผล

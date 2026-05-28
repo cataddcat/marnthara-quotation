@@ -19,7 +19,7 @@ import { ProjectOverviewModal } from '@/components/modals/ProjectOverviewModal';
 import { MainMenuModal } from '@/components/modals/MainMenuModal';
 import { ProductionSettingsModal } from '@/components/modals/ProductionSettingsModal';
 import { FinancialDashboardModal } from '@/components/modals/FinancialDashboard';
-import { FormulaStudioModal } from '@/components/modals/FormulaStudioModal';
+import { FormulaDocsModal } from '@/components/modals/FormulaDocsModal';
 import { MaterialSummaryModal } from '@/components/modals/MaterialSummaryModal';
 
 export const ModalManager: React.FC = () => {
@@ -101,9 +101,9 @@ export const ModalManager: React.FC = () => {
         onClose={closeModal}
       />
 
-      <FormulaStudioModal
-        key={isVisible('formulaStudio') ? 'fs-open' : 'fs-closed'}
-        isOpen={isVisible('formulaStudio')}
+      <FormulaDocsModal
+        key={isVisible('formulaDocs') ? 'fd-open' : 'fd-closed'}
+        isOpen={isVisible('formulaDocs')}
         onClose={closeModal}
       />
 
@@ -126,7 +126,7 @@ export const ModalManager: React.FC = () => {
         onOpenData={() => openModal('data')}
         onOpenProductionSettings={() => openModal('productionSettings')}
         onOpenCostDashboard={() => openModal('costDashboard')}
-        onOpenFormulaStudio={() => openModal('formulaStudio')}
+        onOpenFormulaDocs={() => openModal('formulaDocs')}
         onOpenMaterialSummary={() => openModal('materialSummary', {})}
       />
     </>

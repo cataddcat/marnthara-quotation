@@ -1,7 +1,7 @@
 import { WallpaperItemInput } from '@/types';
 import { toNum } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
-import { useAppStore } from '@/store/useAppStore'; // ✅ Import Store
+import { FORMULAS } from '@/config/formulas';
 
 export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
   /**
@@ -17,9 +17,8 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
       return { total: 0, breakdown: {} };
     }
 
-    // 🟢 NEW LOGIC: Strip Method (Formula Studio)
-    // Use injected formulas or fallback
-    const formulas = context?.formulas || useAppStore.getState().formulas;
+    // Use injected formulas (test/worker) or compile-time FORMULAS
+    const formulas = context?.formulas ?? FORMULAS;
     const config = formulas.wallpaper;
 
     // 1. คำนวณความยาวต่อแผ่นที่ต้องตัด (สูง + เผื่อ)
@@ -30,6 +29,7 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
     const stripsPerRoll = Math.floor(config.roll_length / cutLength);
 
     let rolls: number;
+    let warning: string | undefined;
     if (stripsPerRoll > 0) {
       // 3. คำนวณ Demand: ต้องใช้กี่แผ่น (ปัดขึ้น)
       // ex: กว้าง 2.0 / 0.53 = 3.77 -> 4 แผ่น
@@ -38,9 +38,9 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
       // 4. สรุปจำนวนม้วน
       rolls = Math.ceil(totalStripsNeeded / stripsPerRoll);
     } else {
-      // กรณีผนังสูงเกินความยาวม้วน (Error Case)
-      // ในทางปฏิบัติควรแจ้งเตือน แต่ใน engine คืนค่า 0 หรือ safe value ไปก่อน
+      // กรณีผนังสูงเกินความยาวม้วน — แจ้ง warning ขึ้นไปให้ UI แสดง
       rolls = 0;
+      warning = 'height_exceeds_roll';
     }
 
     const pricePerRoll = toNum(item.price_per_roll);
@@ -63,11 +63,12 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
     return {
       total,
       breakdown: {
-        rolls, // ส่งจำนวนม้วนกลับไปให้ UI แสดงได้
+        rolls,
         materialPrice,
         laborPrice,
         totalWidth: widthTotal,
       },
+      ...(warning ? { warning } : {}),
     };
   },
 
@@ -105,9 +106,8 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
       specs.push(`รหัส: ${item.wallpaper_code}`);
     }
 
-    // 🟢 UPDATE: ใช้ logic ใหม่ในการคำนวณจำนวนม้วน
-    const { formulas } = useAppStore.getState();
-    const config = formulas.wallpaper;
+    // ใช้ค่าจาก compile-time FORMULAS (specs preview ไม่รับ context)
+    const config = FORMULAS.wallpaper;
     const height = toNum(item.height_m);
     
     let rolls = 0;

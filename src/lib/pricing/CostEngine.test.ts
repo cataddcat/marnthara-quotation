@@ -8,14 +8,13 @@ import type { LaborCost } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Test fixtures — สูตร mock ที่ทำให้ fabricYards predictable
+// Test fixtures — ใช้ค่าจริงจาก src/config/formulas.ts (FORMULAS เป็น compile-time const)
 //
-// ใช้ style 'จีบ' (ผ่าน formulas.curtain.multiplier_pleated ไม่ใช่ hardcoded map)
-// width = 1.0, multiplier = 2.5, hem_offset = 0.10
-// totalMeters = 1.0 × 2.5 + 0.10 = 2.60
-// fabricYards = ceil(2.60 / 0.90 × 100) / 100 = 2.89
+// width = 1.0, style = 'จีบ' → multiplier_pleated = 2.7, hem_offset = 0.30
+// totalMeters = 1.0 × 2.7 + 0.30 = 3.00
+// fabricYards = ceil(3.00 / 0.90 × 100) / 100 = 3.34
 // ─────────────────────────────────────────────────────────────────────────────
-const EXPECTED_FABRIC_YARDS = 2.89;
+const EXPECTED_FABRIC_YARDS = 3.34;
 
 const setupStore = (overrides?: {
   fabricCosts?: Record<string, number>;
@@ -23,26 +22,6 @@ const setupStore = (overrides?: {
   laborCosts?: Record<string, LaborCost>;
 }) => {
   useAppStore.setState({
-    formulas: {
-      curtain: {
-        multiplier_wave: 2.5,
-        multiplier_pleated: 2.5,
-        multiplier_eyelet: 2.5,
-        multiplier_roman: 1.5,
-        roman_blind_offset: 0.20,
-        hem_offset: 0.10,
-        yard_conversion: 1.10,
-      },
-      wallpaper: {
-        roll_width: 0.50,
-        roll_length: 10.0,
-        waste_margin: 0.0,
-      },
-      area: {
-        sqm_to_sqyd: 1.2,
-        min_yield: 1.0,
-      },
-    },
     fabricCosts: overrides?.fabricCosts ?? {},
     accessoryCosts: overrides?.accessoryCosts ?? {},
     laborCosts: overrides?.laborCosts ?? {},
@@ -252,11 +231,12 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
   describe('Item type dispatch', () => {
     it('D12: Wallpaper → rolls × fabricCosts[wallpaper_code]', () => {
       setupStore({ fabricCosts: { W001: 800 } });
-      // Mock formulas: roll_width=0.5, roll_length=10, waste_margin=0
+      // FORMULAS.wallpaper: roll_width=0.53, roll_length=10, waste_margin=0.10
       // input: widths=['2.0'], height_m=2.5
-      // strips needed: ceil(2.0 / 0.5) = 4 strips
-      // strips per roll: floor(10 / 2.5) = 4 strips/roll
-      // rolls: ceil(4 / 4) = 1
+      //   cutLength = 2.5 + 0.10 = 2.60
+      //   stripsPerRoll = floor(10/2.60) = 3
+      //   totalStripsNeeded = ceil(2.0/0.53) = 4
+      //   rolls = ceil(4/3) = 2
       const item = makeItem({
         type: ITEM_TYPES.WALLPAPER,
         id: 'wp-1',
@@ -268,10 +248,10 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
       const result = CostEngine.analyze(item);
 
-      expect(result.usedQuantity).toBe(1); // 1 ม้วน
+      expect(result.usedQuantity).toBe(2); // 2 ม้วน
       expect(result.unit).toBe('ม้วน');
-      expect(result.fabricCost).toBe(800); // 1 × 800
-      expect(result.totalCost).toBe(800);
+      expect(result.fabricCost).toBe(1600); // 2 × 800
+      expect(result.totalCost).toBe(1600);
     });
 
     it('D13: Area-type (Wooden Blind) → areaSqyd × fabricCosts[code]', () => {
@@ -337,7 +317,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
     it('E16: 0 ≤ marginPercent < 30% → "warning"', () => {
       setupStore({
-        fabricCosts: { F001: 250 }, // แพง → กำไรน้อย
+        fabricCosts: { F001: 200 }, // แพงพอที่จะ margin ต่ำแต่ไม่ขาดทุน
         accessoryCosts: { rail_pleated: 100 },
         laborCosts: { จีบ: { style: 'จีบ', rate: 100, unit: 'meter', min_price: 50 } },
       });
@@ -348,11 +328,11 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
       const result = CostEngine.analyze(item);
 
-      // fabricCost = 2.89 × 250 = 722.5
+      // fabricCost = 3.34 × 200 = 668
       // railCost = 1.0 × 100 = 100
       // laborCost = 1.0 × 100 = 100
-      // totalCost ≈ 922.5
-      // margin = (1000 - 922.5) / 1000 × 100 = 7.75% → warning
+      // totalCost = 868
+      // margin = (1000 - 868) / 1000 × 100 = 13.2% → warning
       expect(result.status).toBe('warning');
       expect(result.marginPercent).toBeGreaterThanOrEqual(0);
       expect(result.marginPercent).toBeLessThan(30);

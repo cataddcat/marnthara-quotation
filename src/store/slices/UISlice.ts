@@ -36,7 +36,7 @@ export type ModalPropsMap = {
   lookbook: undefined;
   mainMenu: undefined;
   productionSettings: undefined;
-  formulaStudio: undefined;
+  formulaDocs: undefined;
 };
 
 export type ModalType = keyof ModalPropsMap;

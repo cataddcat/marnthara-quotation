@@ -43,7 +43,6 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         shopConfig: state.shopConfig,
         discount: state.discount,
         favorites: state.favorites,
-        formulas: state.formulas,
         production: {
           laborCosts: state.laborCosts,
           accessoryCosts: state.accessoryCosts,
@@ -105,14 +104,8 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           areaCosts:      json.production?.areaCosts       ?? s.areaCosts,
         });
 
-        if (json.formulas && typeof json.formulas === 'object') {
-          const { updateFormula } = useAppStore.getState();
-          for (const category of ['curtain', 'wallpaper', 'area'] as const) {
-            if (json.formulas[category] && typeof json.formulas[category] === 'object') {
-              updateFormula(category, json.formulas[category]);
-            }
-          }
-        }
+        // formulas เป็น compile-time constant (src/config/formulas.ts) — ไม่ import จาก backup
+        // ถ้า backup เก่ามี formulas → ignore (silent)
 
         addToast('success', 'นำเข้าข้อมูลสำเร็จ');
         onClose();

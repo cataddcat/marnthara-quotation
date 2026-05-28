@@ -30,7 +30,7 @@ interface MainMenuModalProps {
   onOpenData: () => void;
   onOpenProductionSettings: () => void;
   onOpenCostDashboard: () => void;
-  onOpenFormulaStudio: () => void;
+  onOpenFormulaDocs: () => void;
   onOpenMaterialSummary: () => void;
 }
 
@@ -99,7 +99,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   onOpenData,
   onOpenProductionSettings,
   onOpenCostDashboard,
-  onOpenFormulaStudio,
+  onOpenFormulaDocs,
   onOpenMaterialSummary,
 }) => {
   const { theme, toggleTheme } = useThemeStore();
@@ -230,9 +230,9 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             />
             <MenuGridItem
               icon={Calculator}
-              label="สูตรคำนวณ"
-              desc="Formula Studio"
-              onClick={onOpenFormulaStudio}
+              label="อธิบายสูตร"
+              desc="วิธีคำนวณราคา/วัสดุ"
+              onClick={onOpenFormulaDocs}
               accentColor="indigo"
             />
           </div>
