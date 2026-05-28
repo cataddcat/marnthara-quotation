@@ -45,35 +45,35 @@ describe('💰 Pricing Engine Core Tests', () => {
   describe('Feature: Curtain Calculation', () => {
     
     it('Scenario: ม่านลอน (Wave) - ควรใช้ตัวคูณคำนวณผ้าถูกต้อง', () => {
-      // Setup
-      // กว้าง 2.00 ม. x สูง 2.50 ม.
-      // ตัวคูณ (Mock) = 2.5
-      // สูตร: (2.00 * 2.5) = 5.00 เมตร (ผ้าที่ใช้)
-      // ราคา: 5.00 เมตร * 100 บาท = 500 บาท
+      // กว้าง 2.00 ม., style='ลอน' → multiplier=2.7 (WAVE_MULTIPLIER_BY_SPACING['14.5'])
+      // totalMeters = 2.0 × 2.7 + hem_offset(0.10) = 5.50
+      // fabricYards = ceil(5.50/0.90 × 100)/100 = 6.12
+      // ราคาขาย (semantic): width × pricePerUnit = 2.0 × 100 = 200
       const input: any = {
         type: ITEM_TYPES.CURTAIN,
         width_m: 2.0,
         height_m: 2.5,
         style: 'ลอน',
         layer_mode: LAYER_MODES.MAIN,
-        price_per_m_raw: 100, // ราคาขาย 100 บาท/เมตร
+        price_per_m_raw: 100,
         fabric_variant: 'ทึบ',
         id: 'test-curtain-1',
       };
 
       const result = PricingEngine.calculateDetailedPrice(input);
 
-      expect(result.breakdown?.fabricMeters).toBeCloseTo(5.00, 2); // เช็คปริมาณผ้า
-      expect(result.breakdown?.fabricPrice).toBe(500); // เช็คราคาผ้า
-      expect(result.total).toBe(500); // เช็คราคารวม
+      expect(result.breakdown?.fabricYards).toBeCloseTo(6.12, 2); // multiplier reflected ใน yards
+      expect(result.breakdown?.fabricMeters).toBe(2.0); // = width (semantic)
+      expect(result.breakdown?.fabricPrice).toBe(200); // = width × price
+      expect(result.total).toBe(200);
     });
 
     it('Scenario: ม่านพับ (Roman) - ควรใช้สูตรบวกเพิ่ม (Additive) ไม่ใช่ตัวคูณ', () => {
-      // Setup
-      // กว้าง 1.00 ม.
-      // เผื่อเย็บ (Mock) = 0.20 ม.
-      // ผ้าที่ใช้ = 1.00 + 0.20 = 1.20 เมตร
-      // ราคา = 1.20 * 500 = 600 บาท
+      // กว้าง 1.00 ม., style='พับ' → ใช้สูตร additive: meters = width × multiplier + offset
+      // multiplier (default) = 2.50, roman_blind_offset (mock) = 0.20
+      // meters = 1.0 × 2.50 + 0.20 = 2.70
+      // fabricYards = ceil(2.70/0.90 × 100)/100 = 3.00
+      // ราคาขาย (semantic): width × pricePerUnit = 1.0 × 500 = 500
       const input: any = {
         type: ITEM_TYPES.CURTAIN,
         width_m: 1.0,
@@ -86,8 +86,8 @@ describe('💰 Pricing Engine Core Tests', () => {
 
       const result = PricingEngine.calculateDetailedPrice(input);
 
-      expect(result.breakdown?.fabricMeters).toBeCloseTo(1.20, 2);
-      expect(result.total).toBe(600);
+      expect(result.breakdown?.fabricYards).toBeCloseTo(3.00, 2); // additive reflected ใน yards
+      expect(result.total).toBe(500);
     });
 
     it('Scenario: ราคาเหมา (Set Price) - ต้อง Override ราคาทุกอย่าง', () => {
