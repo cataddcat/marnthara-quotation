@@ -231,23 +231,25 @@ ItemModal owns store writes:
 
 ## 6. Known Tech Debt (NOT addressed this session)
 
-> Updated 2026-05-28 after Path A (PRs #1–#3) — entries below are what **remains** after that round of hardening.
+> Updated 2026-05-29 after Path A (PRs #1–#4) + P1-A (PR #5) + P2 lint cleanup (PR #6).
+> `npm run lint --max-warnings 0` ปัจจุบัน **pass** เป็นครั้งแรกตั้งแต่ project init.
 
 ### Still open
 - **Aluminum Blind feature stub** — appears in `ITEM_TYPES` + menu but no form directory exists
 - **`breakdown?: Record<string, number>`** — untyped in `PriceResult` (`src/lib/pricing/types.ts`); a typed shape per item-type would let `CostEngine` consume `fabricYards` / `sheerYards` / `rolls` / `areaSqyd` with editor assist instead of optional-chaining everywhere
-- **PricingEngine.test.ts coverage** — `CostEngine.test.ts` now covers 18 cases (Priority Chain × SINGLE/DOUBLE × dispatch — PR #1), but `PricingEngine.test.ts` itself still has only 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
-- **20 pre-existing lint errors** flagged during Path A — `reportGenerator.ts`, `svgGenerator.ts`, `ProductionSettingsModal.tsx`, `CostEngine.ts` (`prefer-const`), test files (`any` in inline item literals), `useSmartPrice` / `ProModeControl` (`react-hooks/exhaustive-deps`), `InventoryManagerModal` (set-state-in-effect + access-before-declared). None block build, but `npm run lint --max-warnings 0` currently fails.
+- **PricingEngine.test.ts coverage** — `CostEngine.test.ts` covers 18 cases (Priority Chain × SINGLE/DOUBLE × dispatch — PR #1), but `PricingEngine.test.ts` itself still has only 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
+- **Hardcoded curtain catalog** — `CURTAIN_STYLES` (constants.ts) lists 6 styles; `WAVE_MULTIPLIER_BY_SPACING` (CurtainStrategy.ts) hardcodes only `'14.5'` and `'16'`. Owner can't add new wave depths via UI — silent fallback to `'14.5'` for unknown spacings (P1-C in Design Review backlog).
+- **Tool-centric IA** — `MainMenuModal` opens 11 modals; primary task "create quotation" lacks a sticky FAB or top-level CTA (P1-B in Design Review backlog).
 
-### Closed in Path A (2026-05)
-- ~~Features with missing Zod schemas (6 types)~~ → **PR #3**: 6 schemas + factory in `src/features/shared/schemas.ts`; `useItemForm` deleted
-- ~~`modalProps: Record<string, any>`~~ → **PR #2**: `ModalPropsMap` discriminated union + `OpenModalFn` generic in `UISlice.ts`
-- ~~`'favoriteManager'` string literal~~ → resolved before this session (review pass 2 confirmed no occurrences)
-- ~~13 pre-existing TypeScript errors~~ → resolved before this session (`npx tsc --noEmit` returns 0)
-- ~~2 broken assertions in `PricingEngine.test.ts`~~ → **PR #1**: rewrote to assert `fabricYards` (the value the multiplier actually drives) instead of `fabricMeters` (which is just `width`)
-
-### Orphan code (discovered Path A)
-- **`InventoryManagerModal`** is not registered in `ModalManager.tsx` and has no `openModal('inventoryManager')` call site. The component reads `modalProps` (now typed via `ModalPropsMap['inventoryManager']` from PR #2) but is not reachable in runtime. Either wire it up via the Code Jump flow described in §1.3, or delete the file.
+### Closed (PRs #1–#6, 2026-05-28 → 2026-05-29)
+- ~~Features with missing Zod schemas (6 types)~~ → **PR #3** (Zod + factory + deleted `useItemForm`)
+- ~~`modalProps: Record<string, any>`~~ → **PR #2** (`ModalPropsMap` discriminated union)
+- ~~`'favoriteManager'` string literal~~ → resolved before this batch
+- ~~13 pre-existing TypeScript errors~~ → resolved before this batch
+- ~~2 broken assertions in `PricingEngine.test.ts`~~ → **PR #1**
+- ~~`FinancialDashboardModal.tsx` (675 LOC god component)~~ → **PR #5**: split into 8 files in `FinancialDashboard/` folder, bundle size unchanged
+- ~~20 pre-existing lint errors~~ → **PR #6**: `__test-helpers.ts` factory + targeted `prefer-const` + 2 intentional false-deps marked
+- ~~`InventoryManagerModal` orphan~~ → **PR #6**: deleted (no `openModal` call site existed)
 
 ---
 
