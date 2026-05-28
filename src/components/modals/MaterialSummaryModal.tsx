@@ -25,6 +25,7 @@ import {
 import type { CurtainItemInput, WallpaperItemInput, AreaItemInput } from '@/types';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { InventoryItem } from '@/store/slices/InventorySlice';
+import { FORMULAS } from '@/config/formulas';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -107,21 +108,25 @@ interface AreaGroup {
 
 // ─── Calculation helpers ──────────────────────────────────────────────────────
 
+// Material formulas — อ่านค่าจาก src/config/formulas.ts (single source of truth)
+
 function calcBrackets(widthM: number, isDouble: boolean): number {
-  const base = Math.ceil(widthM / 1.2) + 1;
-  return isDouble ? Math.ceil(base * 1.3) : base;
+  const { bracket_spacing, bracket_double_multiplier } = FORMULAS.materials;
+  const base = Math.ceil(widthM / bracket_spacing) + 1;
+  return isDouble ? Math.ceil(base * bracket_double_multiplier) : base;
 }
 
 function calcEyelets(widthM: number): number {
-  return Math.ceil((widthM * 2.7) / 0.1);
+  return Math.ceil((widthM * FORMULAS.curtain.multiplier_wave) / FORMULAS.materials.eyelet_spacing);
 }
 
 function calcPinHooks(widthM: number): number {
-  return Math.ceil((widthM * 2.7) / 0.14) + 4;
+  const { pin_spacing, pin_extra } = FORMULAS.materials;
+  return Math.ceil((widthM * FORMULAS.curtain.multiplier_pleated) / pin_spacing) + pin_extra;
 }
 
 function calcWaveTape(widthM: number): number {
-  return Math.round(widthM * 2.7 * 10) / 10;
+  return Math.round(widthM * FORMULAS.curtain.multiplier_wave * 10) / 10;
 }
 
 // ─── Main calculation ─────────────────────────────────────────────────────────

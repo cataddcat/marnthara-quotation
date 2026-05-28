@@ -3,18 +3,8 @@
 import { CurtainItemInput } from '@/types';
 import { toNum } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
-import { useAppStore } from '@/store/useAppStore'; 
 import { LAYER_MODES } from '@/config/enums';
-import { FormulaConfig } from '@/store/slices/FormulaSlice';
-
-// ----------------------------------------------------------------------
-// 🌊 ม่านลอน — Wave depth (ระยะกระดุมบนเทปลอน) → multiplier
-// 14.5 ซม. = ลอนมาตรฐาน (ตื้นกว่า), 16 ซม. = ลอนลึก (ใช้ผ้ามากขึ้น)
-// ----------------------------------------------------------------------
-const WAVE_MULTIPLIER_BY_SPACING: Record<string, number> = {
-  '14.5': 2.7, // ลอนมาตรฐาน
-  '16': 2.8,   // ลอนลึก — ลอนใหญ่ขึ้น ใช้ผ้าเพิ่ม
-};
+import { FORMULAS, type FormulaConfig } from '@/config/formulas';
 
 // ----------------------------------------------------------------------
 // 🧠 HELPER: คำนวณปริมาณผ้าที่ต้องสั่ง (Production Usage)
@@ -30,37 +20,32 @@ export const calculateFabricYardage = (
 ): number => {
   if (width_m <= 0) return 0;
 
-  // Use injected formulas or fallback to store
-  const formulas = formulasOverride || useAppStore.getState().formulas;
+  // Use injected formulas (for testing/worker) or fall back to compile-time FORMULAS
+  const formulas = formulasOverride ?? FORMULAS;
   const config = formulas.curtain;
 
-  // 1. เลือกตัวคูณ (Multiplier)
-  let multiplier = 2.50;
+  // 1. เลือกตัวคูณ (Multiplier) ตาม style
+  let multiplier = config.multiplier_pleated;
   if (style === 'ลอน') {
-    // ลอน: ใช้ multiplier ตาม "ระยะกระดุม" (ความลึกลอน)
-    // หากไม่ระบุ ใช้ 14.5 ซม. (ลอนมาตรฐาน) เป็นค่ากลาง
-    const waveKey = button_spacing && WAVE_MULTIPLIER_BY_SPACING[button_spacing] ? button_spacing : '14.5';
-    multiplier = WAVE_MULTIPLIER_BY_SPACING[waveKey] ?? config.multiplier_wave ?? 2.7;
+    // ลอน: lookup catalog ใน wave_spacings (configurable via src/config/formulas.ts)
+    const waveEntry = config.wave_spacings.find((w) => w.spacing === button_spacing);
+    multiplier = waveEntry?.multiplier ?? config.multiplier_wave;
   } else if (style === 'จีบ') {
-    multiplier = config.multiplier_pleated ?? 2.7;
+    multiplier = config.multiplier_pleated;
   } else if (style === 'ตาไก่') {
-    multiplier = config.multiplier_eyelet ?? 2.7;
+    multiplier = config.multiplier_eyelet;
   } else if (style === 'พับ') {
-      // ม่านพับ: ใช้สูตรบวกเพิ่ม (Additive)
-      const offset = config.roman_blind_offset ?? 0.45;
-      const meters = (width_m * multiplier) + offset;
-      // แปลงหลาและปัดเศษเลย
-      return Math.ceil((meters / 0.90) * 100) / 100;
+    // ม่านพับ Roman: สูตรบวกเพิ่ม (Additive)
+    multiplier = config.multiplier_roman;
+    const meters = width_m * multiplier + config.roman_blind_offset;
+    return Math.ceil((meters / config.yard_conversion) * 100) / 100;
   }
 
-  // 2. สูตรมาตรฐาน (Smart Hybrid):
-  // (กว้าง x ตัวคูณ) + Safe Standard (0.30)
-  // ✅ UPDATE: เปลี่ยน fallback จาก 0.10 เป็น 0.30 เผื่อกรณี config โหลดไม่ทัน
-  // 0.30 ม. มาจาก (ริมซ้ายขวา 4 ด้าน x 0.05) + (ซ้อนกลาง 0.10)
-  const totalMeters = (width_m * multiplier) + (config.hem_offset ?? 0.30);
+  // 2. สูตรมาตรฐาน: (กว้าง × ตัวคูณ) + เผื่อชาย
+  const totalMeters = width_m * multiplier + config.hem_offset;
 
-  // 3. แปลงเป็นหลา (หาร 0.9)
-  const fabricYardsRaw = totalMeters / 0.90;
+  // 3. แปลงเป็นหลา (÷ yard_conversion เพื่อ buffer shrinkage)
+  const fabricYardsRaw = totalMeters / config.yard_conversion;
 
   // 4. ปัดเศษขึ้น 2 ตำแหน่ง (Round Up for Order)
   return Math.ceil(fabricYardsRaw * 100) / 100;

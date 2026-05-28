@@ -1,11 +1,16 @@
-// D:\_Projects\mtr-qol-all-green\src\lib\pricing\types.ts
+// src/lib/pricing/types.ts
 
-import { FormulaConfig } from '@/store/slices/FormulaSlice';
+import type { FormulaConfig } from '@/config/formulas';
+
+// Re-export so existing imports `from '@/lib/pricing/types'` continue to work
+export type { FormulaConfig };
 
 // Result Structure
 export interface PriceResult {
   total: number;
   breakdown?: Record<string, number>;
+  /** Optional warning flag (e.g. 'height_exceeds_roll' for wallpaper) — UI surfaces this in dashboards */
+  warning?: string;
 }
 
 // Context for calculation (avoiding direct store access in workers)

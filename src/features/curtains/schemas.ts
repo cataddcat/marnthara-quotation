@@ -52,7 +52,8 @@ export const CurtainSchema = z.object({
     chain_position: z.enum(['left', 'right']).optional(),
     eyelet_color: z.string().optional(),
     pleat_distance: z.string().optional(),
-    button_spacing: z.enum(['14.5', '16']).optional(), // ระยะกระดุม (ลอน เท่านั้น)
+    // ระยะกระดุม (ลอน เท่านั้น) — ค่าจาก FORMULAS.curtain.wave_spacings (free-form string)
+    button_spacing: z.string().optional(),
 
     // --- Additional Options ---
     is_suspended: z.boolean().default(false),

@@ -7,30 +7,11 @@ import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { makeItem } from './__test-helpers';
 
 // 🛠️ Helper: Reset Store before each test
+// formulas เป็น compile-time const ใน src/config/formulas.ts → expected values
+// คำนวณจากค่าจริง (ไม่ mock อีก)
 const resetStore = () => {
   useAppStore.setState({
-    formulas: {
-      curtain: {
-        multiplier_wave: 2.50, // 🧪 Mock: ตั้งค่าตัวคูณเป็น 2.5 เพื่อคำนวณง่ายๆ (ปกติ 2.7)
-        multiplier_pleated: 2.50,
-        multiplier_eyelet: 2.50,
-        multiplier_roman: 1.50, // Not used in addictive logic but kept for struct
-        roman_blind_offset: 0.20, // 🧪 Mock: เผื่อเย็บม่านพับ 20 cm
-        hem_offset: 0.10,
-        yard_conversion: 1.10, // 🧪 Mock: แปลงหลา 1.10 (ไม่ใช่ 0.90 เพื่อ Test logic)
-      },
-      wallpaper: {
-        roll_width: 0.50, // 🧪 Mock: หน้ากว้าง 0.5 ม.
-        roll_length: 10.0, // ยาว 10 ม.
-        waste_margin: 0.0, // ไม่เผื่อเสีย (เพื่อเทสการหารลงตัว)
-      },
-      area: {
-        sqm_to_sqyd: 1.2,
-        min_yield: 1.0,
-      },
-    },
-    // Mock Costs (Vault)
-    fabricCosts: {}, 
+    fabricCosts: {},
   });
 };
 
@@ -46,9 +27,11 @@ describe('💰 Pricing Engine Core Tests', () => {
   describe('Feature: Curtain Calculation', () => {
     
     it('Scenario: ม่านลอน (Wave) - ควรใช้ตัวคูณคำนวณผ้าถูกต้อง', () => {
-      // กว้าง 2.00 ม., style='ลอน' → multiplier=2.7 (WAVE_MULTIPLIER_BY_SPACING['14.5'])
-      // totalMeters = 2.0 × 2.7 + hem_offset(0.10) = 5.50
-      // fabricYards = ceil(5.50/0.90 × 100)/100 = 6.12
+      // FORMULAS.curtain: hem_offset=0.30, yard_conversion=0.90
+      // wave_spacings[0] = { spacing: '14.5', multiplier: 2.7 } (default)
+      // กว้าง 2.00 ม., style='ลอน' → multiplier 2.7
+      // totalMeters = 2.0 × 2.7 + 0.30 = 5.70
+      // fabricYards = ceil(5.70/0.90 × 100)/100 = 6.34
       // ราคาขาย (semantic): width × pricePerUnit = 2.0 × 100 = 200
       const input = makeItem({
         type: ITEM_TYPES.CURTAIN,
@@ -63,18 +46,17 @@ describe('💰 Pricing Engine Core Tests', () => {
 
       const result = PricingEngine.calculateDetailedPrice(input);
 
-      expect(result.breakdown?.fabricYards).toBeCloseTo(6.12, 2); // multiplier reflected ใน yards
+      expect(result.breakdown?.fabricYards).toBeCloseTo(6.34, 2);
       expect(result.breakdown?.fabricMeters).toBe(2.0); // = width (semantic)
       expect(result.breakdown?.fabricPrice).toBe(200); // = width × price
       expect(result.total).toBe(200);
     });
 
     it('Scenario: ม่านพับ (Roman) - ควรใช้สูตรบวกเพิ่ม (Additive) ไม่ใช่ตัวคูณ', () => {
-      // กว้าง 1.00 ม., style='พับ' → ใช้สูตร additive: meters = width × multiplier + offset
-      // multiplier (default) = 2.50, roman_blind_offset (mock) = 0.20
-      // meters = 1.0 × 2.50 + 0.20 = 2.70
-      // fabricYards = ceil(2.70/0.90 × 100)/100 = 3.00
-      // ราคาขาย (semantic): width × pricePerUnit = 1.0 × 500 = 500
+      // FORMULAS.curtain: multiplier_roman=1.5, roman_blind_offset=0.45, yard_conversion=0.90
+      // กว้าง 1.00 ม., style='พับ' → ใช้สูตร additive
+      // meters = 1.0 × 1.5 + 0.45 = 1.95
+      // fabricYards = ceil(1.95/0.90 × 100)/100 = 2.17
       const input = makeItem({
         type: ITEM_TYPES.CURTAIN,
         width_m: 1.0,
@@ -87,8 +69,8 @@ describe('💰 Pricing Engine Core Tests', () => {
 
       const result = PricingEngine.calculateDetailedPrice(input);
 
-      expect(result.breakdown?.fabricYards).toBeCloseTo(3.00, 2); // additive reflected ใน yards
-      expect(result.total).toBe(500);
+      expect(result.breakdown?.fabricYards).toBeCloseTo(2.17, 2);
+      expect(result.total).toBe(500); // = width × price (semantic)
     });
 
     it('Scenario: ราคาเหมา (Set Price) - ต้อง Override ราคาทุกอย่าง', () => {
@@ -113,15 +95,17 @@ describe('💰 Pricing Engine Core Tests', () => {
   // ----------------------------------------------------------------
   describe('Feature: Wallpaper Calculation', () => {
     
-    it('Scenario: คำนวณจำนวนม้วนถูกต้อง (กรณีลงตัว)', () => {
-      // Setup
-      // ผนังสูง 2.5 ม. (Mock ไม่เผื่อเสีย)
-      // ม้วนยาว 10 ม. -> 1 ม้วนตัดได้ 4 แผ่น (10 / 2.5)
-      // ผนังกว้าง 2.0 ม. (หน้ากว้างวอลล์ 0.5) -> ต้องใช้ 4 แผ่น
-      // สรุป: ใช้ 4 แผ่น / (4 แผ่นต่อม้วน) = 1 ม้วนพอดี
+    it('Scenario: คำนวณจำนวนม้วน (ใช้ FORMULAS จริง)', () => {
+      // FORMULAS.wallpaper: roll_width=0.53, roll_length=10, waste_margin=0.10
+      // input: widths=['2.0'], height=2.5
+      //   cutLength = 2.5 + 0.10 = 2.60
+      //   stripsPerRoll = floor(10/2.60) = 3
+      //   totalStripsNeeded = ceil(2.0/0.53) = 4
+      //   rolls = ceil(4/3) = 2
+      //   total = 2 × 1000 = 2000
       const input = makeItem({
         type: ITEM_TYPES.WALLPAPER,
-        widths: ['2.0'], // กว้างรวม 2.0
+        widths: ['2.0'],
         height_m: 2.5,
         price_per_roll: 1000,
         wallpaper_code: 'W001',
@@ -129,9 +113,7 @@ describe('💰 Pricing Engine Core Tests', () => {
       });
 
       const result = PricingEngine.calculateDetailedPrice(input);
-      // เช็คใน breakdown (คุณอาจต้องแก้ WallpaperStrategy ให้ return 'rolls' ใน breakdown ด้วยถ้ายังไม่ได้ทำ)
-      // แต่เราเช็ค Total ได้: 1 ม้วน * 1000 = 1000
-      expect(result.total).toBe(1000); 
+      expect(result.total).toBe(2000);
     });
 
     it('Scenario: คำนวณจำนวนม้วนถูกต้อง (กรณีมีเศษต้องขึ้นม้วนใหม่)', () => {

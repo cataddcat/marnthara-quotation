@@ -3,7 +3,7 @@
 import { AreaItemInput } from '@/types';
 import { toNum } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
-import { useAppStore } from '@/store/useAppStore'; // ✅ Import Store
+import { FORMULAS } from '@/config/formulas';
 
 interface AreaStrategyConfig {
   name: string; // ชื่อประเภทสินค้า (สำหรับ Debug)
@@ -38,25 +38,19 @@ export const createAreaStrategy = (
         return { total: 0, breakdown: {} };
       }
 
-      // 🟢 NEW LOGIC: Dynamic Formula Integration
-      const formulas = context?.formulas || useAppStore.getState().formulas;
+      // Use injected formulas (test/worker) or compile-time FORMULAS
+      const formulas = context?.formulas ?? FORMULAS;
       const formulaConfig = formulas.area;
 
       // 1. คำนวณพื้นที่จริง (ตร.ม.)
       const areaSqm = width * height;
 
-      // 2. แปลงเป็น ตร.ล. (ใช้ตัวคูณจาก Formula Studio)
-      // Default: 1.20 (ถ้า User ไม่ได้ตั้งค่ามา)
-      const conversionRate = formulaConfig?.sqm_to_sqyd ?? 1.20; 
-      let areaSqyd = areaSqm * conversionRate;
+      // 2. แปลงเป็น ตร.ล.
+      let areaSqyd = areaSqm * formulaConfig.sqm_to_sqyd;
 
-      // 3. ปัดขั้นต่ำ (Minimum Yield)
-      // Default: 1.00 ตร.ล.
-      const minYield = formulaConfig?.min_yield ?? 1.00;
-      
-      // ถ้าคำนวณได้น้อยกว่าขั้นต่ำ ให้คิดเท่ากับขั้นต่ำ
-      if (areaSqyd < minYield) {
-        areaSqyd = minYield;
+      // 3. ปัดขั้นต่ำ (Minimum Yield) — ป้องกัน micro-orders
+      if (areaSqyd < formulaConfig.min_yield) {
+        areaSqyd = formulaConfig.min_yield;
       }
 
       // 4. คำนวณราคารวม

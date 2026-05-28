@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { ItemData } from '@/types';
-import { useAppStore } from '@/store/useAppStore';
+import { FORMULAS } from '@/config/formulas';
 
 // Vite Worker Import Syntax
 import PricingWorker from '@/lib/pricing/pricing.worker?worker';
@@ -32,8 +32,9 @@ export const useAsyncCalculator = () => {
         return;
       }
 
-      // ✅ Capture current formulas state
-      const { formulas } = useAppStore.getState();
+      // FORMULAS เป็น compile-time constant (src/config/formulas.ts)
+      // ส่งเข้า worker เพื่อรักษา API เดิม + รองรับ test override pattern ในอนาคต
+      const formulas = FORMULAS;
 
       const requestId = Math.random().toString(36).substring(7);
 
