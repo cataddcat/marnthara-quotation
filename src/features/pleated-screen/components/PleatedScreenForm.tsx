@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { AreaItemInput, ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { toNum, fmtTH } from '@/utils/formatters';
-import { useItemForm, ValidationSchema } from '@/hooks/useItemForm';
+import { fmtTH } from '@/utils/formatters';
+import { useZodForm } from '@/hooks/useZodForm';
+import { PleatedScreenSchema, PleatedScreenFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
@@ -10,19 +11,15 @@ import { Tag, Grid3X3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ITEM_TYPES, OPENING_STYLES } from '@/config/enums';
 
-interface ExtendedScreenInput extends AreaItemInput {
-  fabric_variant?: string;
-  opening_style?: string;
-}
-
 interface PleatedScreenFormProps {
-  initialData?: Partial<ExtendedScreenInput>;
+  initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
   onCancel: () => void;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 
-const DEFAULT_DATA: ExtendedScreenInput = {
+const DEFAULT_DATA: PleatedScreenFormValues = {
+  type: ITEM_TYPES.PLEATED_SCREEN,
   width_m: '',
   height_m: '',
   price_sqyd: '',
@@ -35,21 +32,17 @@ const DEFAULT_DATA: ExtendedScreenInput = {
   set_price_override: 0,
 };
 
-const validationSchema: ValidationSchema<ExtendedScreenInput> = {
-  width_m: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุกว้าง' } : null),
-  height_m: (val) => (toNum(val) <= 0 ? { level: 'error', message: 'ระบุสูง' } : null),
-  price_sqyd: (val, data) =>
-    !data.enable_set_price && toNum(val) <= 0 ? { level: 'warning', message: 'ระบุราคา' } : null,
-};
-
 export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   initialData,
   onSubmit,
   onCancel,
   onAutoSave,
 }) => {
-  const { formData, errors, handleChange, handleNumberChange, validate } =
-    useItemForm<ExtendedScreenInput>({ ...DEFAULT_DATA, ...initialData }, validationSchema);
+  const { formData, errors, handleChange, handleNumberChange, handleSubmit } = useZodForm<PleatedScreenFormValues>({
+    schema: PleatedScreenSchema,
+    initialData: { ...DEFAULT_DATA, ...initialData } as PleatedScreenFormValues,
+    onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
+  });
 
 
   const pricePreview = useMemo(() => {
@@ -83,11 +76,6 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   // };
   // const isFav = (code?: string) => !!code && (favorites[FAVORITE_CATEGORIES.PLEATED_SCREEN] || []).some(f => f.code === code);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    validate();
-    onSubmit(formData);
-  };
 
   return (
     <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
