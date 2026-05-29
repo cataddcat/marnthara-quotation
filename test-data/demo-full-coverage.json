@@ -1,0 +1,474 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2026-05-29T12:00:00.000Z",
+  "_demo_note": "Demo data ครอบทุก feature ของระบบ — import เพื่อทดสอบ Financial Dashboard, Material Summary, PDF, edge cases",
+
+  "customer": {
+    "name": "คุณสมชาย ใจดี (Demo Customer)",
+    "phone": "085-999-1234",
+    "address": "123/45 ถ.สุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110",
+    "taxId": "0123456789012",
+    "installationAddress": "888 หมู่บ้านเดอะแกรนด์ ซอย 5 บางนา กทม. 10260",
+    "useSameAddress": false,
+    "showInstallationAddress": true
+  },
+
+  "shopConfig": {
+    "name": "ร้านม่านมาลตรา (Demo Shop)",
+    "address": "ตึกสยาม ชั้น 3 ห้อง 305 ถ.พระราม 1 แขวงปทุมวัน กรุงเทพฯ 10330",
+    "phone": "02-345-6789",
+    "taxId": "0987654321098",
+    "logoUrl": "",
+    "baseVatRate": 7,
+    "bankAccount": {
+      "bankName": "ธนาคารกสิกรไทย",
+      "accountName": "ร้านม่านมาลตรา",
+      "accountNumber": "123-4-56789-0",
+      "branch": "สีลม",
+      "isEnabled": true
+    },
+    "pdf": {
+      "paymentTerms": "ชำระมัดจำ 50% ก่อนผลิต ส่วนที่เหลือชำระวันติดตั้ง",
+      "priceValidity": "ใบเสนอราคามีอายุ 30 วัน นับจากวันที่ออกใบ",
+      "notes": [
+        "ราคารวมค่าติดตั้งในเขตกรุงเทพฯ และปริมณฑล",
+        "รับประกันงานเย็บ 1 ปี",
+        "ลูกค้าตรวจรับสินค้าก่อนชำระเงินส่วนที่เหลือ"
+      ]
+    }
+  },
+
+  "discount": {
+    "type": "percent",
+    "value": 5,
+    "is_enabled": true
+  },
+
+  "rooms": [
+    {
+      "id": "room-1",
+      "name": "ห้องนั่งเล่น",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": [
+        {
+          "type": "curtain",
+          "id": "item-1-1",
+          "width_m": "3.0",
+          "height_m": "2.8",
+          "style": "ลอน",
+          "layer_mode": "double",
+          "code": "F-001",
+          "price_per_m_raw": 850,
+          "price_sqyd": "",
+          "sheer_code": "S-001",
+          "sheer_price_per_m": 480,
+          "sheer_price_sqyd": "",
+          "rail_color": "ขาว",
+          "bracket_color": "ขาว",
+          "hook_type": "long",
+          "opening_style": "center",
+          "chain_position": "right",
+          "button_spacing": "14.5",
+          "fabric_variant": "ทึบ",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "DOUBLE layer ทึบ+โปร่ง ลอน 14.5 — ห้องนั่งเล่นหลัก"
+        },
+        {
+          "type": "curtain",
+          "id": "item-1-2",
+          "width_m": "2.0",
+          "height_m": "2.5",
+          "style": "จีบ",
+          "layer_mode": "main",
+          "code": "F-002",
+          "price_per_m_raw": 950,
+          "price_sqyd": "",
+          "rail_color": "ดำ",
+          "bracket_color": "ดำ",
+          "hook_type": "short",
+          "opening_style": "side",
+          "_is_pro_mode": true,
+          "_cost_fabric": 1200,
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "SINGLE จีบ + Pro Mode override ต้นทุนผ้า 1200"
+        },
+        {
+          "type": "curtain",
+          "id": "item-1-3",
+          "width_m": "2.5",
+          "height_m": "2.6",
+          "style": "ตาไก่",
+          "layer_mode": "main",
+          "code": "F-003",
+          "price_per_m_raw": 600,
+          "rail_color": "บรอนซ์",
+          "bracket_color": "บรอนซ์",
+          "eyelet_color": "เงิน",
+          "opening_style": "center",
+          "is_suspended": false,
+          "enable_set_price": true,
+          "set_price_override": 8500,
+          "notes": "ราคาเหมา 8,500 บาท — Override ตามที่ตกลง"
+        },
+        {
+          "type": "curtain",
+          "id": "item-1-4",
+          "width_m": "1.8",
+          "height_m": "2.4",
+          "style": "ลอน",
+          "layer_mode": "main",
+          "code": "UNKNOWN-CODE",
+          "price_per_m_raw": 700,
+          "rail_color": "ขาว",
+          "bracket_color": "ขาว",
+          "button_spacing": "16",
+          "opening_style": "center",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ตั้งใจให้ code ไม่มีใน Vault → ทดสอบ 'ไม่ทราบทุน'"
+        }
+      ]
+    },
+    {
+      "id": "room-2",
+      "name": "ห้องนอนใหญ่",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": [
+        {
+          "type": "curtain",
+          "id": "item-2-1",
+          "width_m": "2.8",
+          "height_m": "2.7",
+          "style": "ตาไก่",
+          "layer_mode": "main",
+          "code": "F-003",
+          "price_per_m_raw": 600,
+          "rail_color": "ทอง",
+          "bracket_color": "ทอง",
+          "eyelet_color": "ทอง",
+          "opening_style": "center",
+          "chain_position": "left",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ตาไก่สีทอง — ห้องนอนใหญ่"
+        },
+        {
+          "type": "curtain",
+          "id": "item-2-2",
+          "width_m": "1.2",
+          "height_m": "1.8",
+          "style": "พับ",
+          "layer_mode": "main",
+          "code": "F-002",
+          "price_per_m_raw": 950,
+          "rail_color": "ขาว",
+          "bracket_color": "ขาว",
+          "opening_style": "center",
+          "pleat_distance": "30",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ม่านพับ Roman — สูตร additive"
+        },
+        {
+          "type": "wallpaper",
+          "id": "item-2-3",
+          "widths": ["3.50", "2.80", "2.80"],
+          "height_m": "2.9",
+          "wallpaper_code": "WP-101",
+          "price_per_roll": "1200",
+          "install_cost_per_roll": "250",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "วอลเปเปอร์ 3 ผนัง รวมหัวเตียง"
+        },
+        {
+          "type": "wallpaper",
+          "id": "item-2-4",
+          "widths": ["4.0"],
+          "height_m": "10.5",
+          "wallpaper_code": "WP-102",
+          "price_per_roll": "950",
+          "install_cost_per_roll": "200",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "สูง 10.5m → ทดสอบ warning 'height_exceeds_roll'"
+        }
+      ]
+    },
+    {
+      "id": "room-3",
+      "name": "ห้องประชุม",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": [
+        {
+          "type": "wooden_blind",
+          "id": "item-3-1",
+          "width_m": 2.0,
+          "height_m": 1.8,
+          "code": "WB-001",
+          "price_sqyd": 380,
+          "fabric_variant": "ไม้",
+          "adjustment_side": "ขวา",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "มู่ลี่ไม้ — กันแสงเพื่อ presentation"
+        },
+        {
+          "type": "roller_blind",
+          "id": "item-3-2",
+          "width_m": 1.5,
+          "height_m": 1.8,
+          "code": "RB-001",
+          "price_sqyd": 280,
+          "fabric_variant": "Blackout",
+          "adjustment_side": "ขวา",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ม่านม้วน Blackout"
+        },
+        {
+          "type": "vertical_blind",
+          "id": "item-3-3",
+          "width_m": 3.0,
+          "height_m": 2.0,
+          "code": "VB-001",
+          "price_sqyd": 220,
+          "fabric_variant": "Dimout",
+          "adjustment_side": "ขวา",
+          "opening_style": "side",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ม่านปรับแสง สำหรับฉากกั้น"
+        },
+        {
+          "type": "aluminum_blind",
+          "id": "item-3-4",
+          "width_m": 1.0,
+          "height_m": 1.5,
+          "code": "AB-001",
+          "price_sqyd": 180,
+          "fabric_variant": "Silver 25mm",
+          "adjustment_side": "ซ้าย",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "มู่ลี่อลูมิเนียม — ห้องเก็บอุปกรณ์"
+        },
+        {
+          "type": "partition",
+          "id": "item-3-5",
+          "width_m": 4.0,
+          "height_m": 2.5,
+          "code": "PT-001",
+          "price_sqyd": 450,
+          "fabric_variant": "PVC ทึบ",
+          "opening_style": "side",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ฉากกั้นห้องประชุมย่อย"
+        },
+        {
+          "type": "pleated_screen",
+          "id": "item-3-6",
+          "width_m": 1.2,
+          "height_m": 1.5,
+          "code": "PS-001",
+          "price_sqyd": 320,
+          "fabric_variant": "มุ้งจีบ",
+          "opening_style": "side",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "มุ้งจีบ — ระเบียงห้องประชุม"
+        },
+        {
+          "type": "removal",
+          "id": "item-3-7",
+          "quantity": 3,
+          "price_per_item": 500,
+          "description": "รื้อม่านเก่า 3 จุด พร้อมขนย้ายขยะ",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "งานบริการก่อนติดตั้งใหม่"
+        }
+      ]
+    },
+    {
+      "id": "room-suspended",
+      "name": "ห้องเก็บของ (ทั้งห้องถูก suspend)",
+      "is_suspended": true,
+      "room_defaults": {},
+      "items": [
+        {
+          "type": "curtain",
+          "id": "item-sus-1",
+          "width_m": "2.0",
+          "height_m": "2.3",
+          "style": "หลุยส์",
+          "layer_mode": "main",
+          "code": "F-001",
+          "price_per_m_raw": 1500,
+          "rail_color": "ขาว",
+          "bracket_color": "ขาว",
+          "opening_style": "center",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ห้องนี้ suspended → item นี้ไม่ขึ้นใน Financial Dashboard"
+        }
+      ]
+    },
+    {
+      "id": "room-with-suspended-item",
+      "name": "ห้องน้ำ (มี item suspended)",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": [
+        {
+          "type": "curtain",
+          "id": "item-bath-1",
+          "width_m": "1.2",
+          "height_m": "1.8",
+          "style": "แป๊บ",
+          "layer_mode": "main",
+          "code": "F-003",
+          "price_per_m_raw": 350,
+          "rail_color": "สแตนเลส",
+          "bracket_color": "สแตนเลส",
+          "opening_style": "side",
+          "is_suspended": false,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "ม่านแป๊บกันน้ำ active"
+        },
+        {
+          "type": "curtain",
+          "id": "item-bath-2",
+          "width_m": "1.5",
+          "height_m": "1.8",
+          "style": "ลอน",
+          "layer_mode": "main",
+          "code": "F-001",
+          "price_per_m_raw": 850,
+          "rail_color": "ขาว",
+          "bracket_color": "ขาว",
+          "button_spacing": "14.5",
+          "opening_style": "center",
+          "is_suspended": true,
+          "enable_set_price": false,
+          "set_price_override": 0,
+          "notes": "Item นี้ suspended → ไม่ขึ้นใน Financial Dashboard"
+        }
+      ]
+    }
+  ],
+
+  "favorites": {
+    "curtain_main": [
+      { "id": "fav-cm-1", "code": "F-001", "default_price_per_m": 850, "cost_per_yard": 480, "note": "ผ้าทึบเกรด A — ลายผีเสื้อ" },
+      { "id": "fav-cm-2", "code": "F-002", "default_price_per_m": 950, "cost_per_yard": 550, "note": "ผ้าทึบกันยูวี" },
+      { "id": "fav-cm-3", "code": "F-003", "default_price_per_m": 600, "cost_per_yard": 320, "note": "ผ้าทึบโพลีเอสเตอร์" },
+      { "id": "fav-cm-4", "code": "F-VIP", "default_price_per_m": 1500, "cost_per_yard": 850, "note": "ผ้านำเข้า — VIP" }
+    ],
+    "curtain_sheer": [
+      { "id": "fav-cs-1", "code": "S-001", "default_price_per_m": 480, "cost_per_yard": 280, "note": "ผ้าโปร่งสีขาวมุข" },
+      { "id": "fav-cs-2", "code": "S-002", "default_price_per_m": 520, "cost_per_yard": 310, "note": "ผ้าโปร่งลายดอก" }
+    ],
+    "wallpaper": [
+      { "id": "fav-wp-1", "code": "WP-101", "default_price_per_m": 1200, "cost_per_yard": 720, "note": "ลายไม้ธรรมชาติ" },
+      { "id": "fav-wp-2", "code": "WP-102", "default_price_per_m": 950, "cost_per_yard": 580, "note": "ลายลายปูน loft" }
+    ],
+    "wooden_blind": [
+      { "id": "fav-wb-1", "code": "WB-001", "default_price_per_m": 380, "cost_per_yard": 230, "note": "มู่ลี่ไม้สัก 50mm" },
+      { "id": "fav-wb-2", "code": "WB-002", "default_price_per_m": 420, "cost_per_yard": 260, "note": "มู่ลี่ไม้โอ๊ค 50mm" }
+    ],
+    "roller_blind": [
+      { "id": "fav-rb-1", "code": "RB-001", "default_price_per_m": 280, "cost_per_yard": 165, "note": "Blackout สีเทา" },
+      { "id": "fav-rb-2", "code": "RB-002", "default_price_per_m": 320, "cost_per_yard": 190, "note": "Sunscreen 5% openness" }
+    ],
+    "vertical_blind": [
+      { "id": "fav-vb-1", "code": "VB-001", "default_price_per_m": 220, "cost_per_yard": 130, "note": "Dimout สีครีม" }
+    ],
+    "aluminum_blind": [
+      { "id": "fav-ab-1", "code": "AB-001", "default_price_per_m": 180, "cost_per_yard": 105, "note": "Silver 25mm" }
+    ],
+    "partition": [
+      { "id": "fav-pt-1", "code": "PT-001", "default_price_per_m": 450, "cost_per_yard": 270, "note": "PVC ทึบ — เสริมโครงอลูมิเนียม" }
+    ],
+    "pleated_screen": [
+      { "id": "fav-ps-1", "code": "PS-001", "default_price_per_m": 320, "cost_per_yard": 190, "note": "มุ้งจีบกันยุง" }
+    ]
+  },
+
+  "production": {
+    "laborCosts": {
+      "ลอน": { "style": "ลอน", "rate": 110, "unit": "meter", "min_price": 400 },
+      "จีบ": { "style": "จีบ", "rate": 110, "unit": "meter", "min_price": 400 },
+      "ตาไก่": { "style": "ตาไก่", "rate": 90, "unit": "meter", "min_price": 300 },
+      "พับ": { "style": "พับ", "rate": 220, "unit": "sqm", "min_price": 600 },
+      "หลุยส์": { "style": "หลุยส์", "rate": 160, "unit": "meter", "min_price": 500 },
+      "แป๊บ": { "style": "แป๊บ", "rate": 60, "unit": "meter", "min_price": 200 },
+      "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 70, "unit": "meter", "min_price": 200 }
+    },
+    "accessoryCosts": {
+      "rail_wave": 160,
+      "rail_pleated": 100,
+      "rail_eyelet": 190,
+      "rail_roman": 450,
+      "rail_rod": 70,
+      "rail_louis": 650,
+      "eyelet_ring": 5,
+      "tape_wave": 10,
+      "install_point": 350,
+      "install_min": 600,
+      "transport_base": 400,
+      "transport_upcountry": 1200,
+      "fuel_diesel_liter": 32
+    },
+    "fabricCosts": {
+      "F-001": 480,
+      "F-002": 550,
+      "F-003": 320,
+      "F-VIP": 850,
+      "S-001": 280,
+      "S-002": 310,
+      "WB-001": 230,
+      "WB-002": 260,
+      "RB-001": 165,
+      "RB-002": 190,
+      "VB-001": 130,
+      "AB-001": 105,
+      "PT-001": 270,
+      "PS-001": 190
+    },
+    "wallpaperCosts": {
+      "WP-101": 720,
+      "WP-102": 580
+    },
+    "areaCosts": {
+      "WB-001": 230,
+      "RB-001": 165,
+      "VB-001": 130,
+      "AB-001": 105,
+      "PT-001": 270,
+      "PS-001": 190
+    }
+  }
+}

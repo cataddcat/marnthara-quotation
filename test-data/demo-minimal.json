@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2026-05-29T12:00:00.000Z",
+  "_demo_note": "Minimal: ลูกค้าว่าง + shop config พื้นฐาน + ห้องเดียวว่าง — ใช้เริ่มงานใหม่จาก scratch",
+
+  "customer": {
+    "name": "",
+    "phone": "",
+    "address": "",
+    "taxId": "",
+    "installationAddress": "",
+    "useSameAddress": true,
+    "showInstallationAddress": true
+  },
+
+  "shopConfig": {
+    "name": "ร้านของคุณ",
+    "address": "",
+    "phone": "",
+    "taxId": "",
+    "logoUrl": "",
+    "baseVatRate": 7,
+    "bankAccount": {
+      "bankName": "",
+      "accountName": "",
+      "accountNumber": "",
+      "branch": "",
+      "isEnabled": false
+    },
+    "pdf": {
+      "paymentTerms": "ชำระมัดจำ 50% ก่อนผลิต",
+      "priceValidity": "ใบเสนอราคามีอายุ 30 วัน",
+      "notes": []
+    }
+  },
+
+  "discount": {
+    "type": "amount",
+    "value": 0,
+    "is_enabled": false
+  },
+
+  "rooms": [
+    {
+      "id": "room-new",
+      "name": "ห้องใหม่",
+      "is_suspended": false,
+      "room_defaults": {},
+      "items": []
+    }
+  ],
+
+  "favorites": {
+    "curtain_main": [],
+    "curtain_sheer": [],
+    "wallpaper": [],
+    "wooden_blind": [],
+    "roller_blind": [],
+    "vertical_blind": [],
+    "aluminum_blind": [],
+    "partition": [],
+    "pleated_screen": []
+  }
+}
