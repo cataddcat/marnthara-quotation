@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2026-05-29T12:00:00.000Z",
+  "_demo_note": "Subset: เฉพาะคลังผ้า (favorites) + production costs — ทดสอบ import แค่ Vault data ไม่กระทบ rooms/customer",
+
+  "favorites": {
+    "curtain_main": [
+      { "id": "fav-cm-1", "code": "F-001", "default_price_per_m": 850, "cost_per_yard": 480, "note": "ผ้าทึบเกรด A — ลายผีเสื้อ" },
+      { "id": "fav-cm-2", "code": "F-002", "default_price_per_m": 950, "cost_per_yard": 550, "note": "ผ้าทึบกันยูวี" },
+      { "id": "fav-cm-3", "code": "F-003", "default_price_per_m": 600, "cost_per_yard": 320, "note": "ผ้าทึบโพลีเอสเตอร์" },
+      { "id": "fav-cm-4", "code": "F-VIP", "default_price_per_m": 1500, "cost_per_yard": 850, "note": "ผ้านำเข้า — VIP" }
+    ],
+    "curtain_sheer": [
+      { "id": "fav-cs-1", "code": "S-001", "default_price_per_m": 480, "cost_per_yard": 280, "note": "ผ้าโปร่งสีขาวมุข" },
+      { "id": "fav-cs-2", "code": "S-002", "default_price_per_m": 520, "cost_per_yard": 310, "note": "ผ้าโปร่งลายดอก" }
+    ],
+    "wallpaper": [
+      { "id": "fav-wp-1", "code": "WP-101", "default_price_per_m": 1200, "cost_per_yard": 720, "note": "ลายไม้ธรรมชาติ" },
+      { "id": "fav-wp-2", "code": "WP-102", "default_price_per_m": 950, "cost_per_yard": 580, "note": "ลายลายปูน loft" }
+    ],
+    "wooden_blind": [
+      { "id": "fav-wb-1", "code": "WB-001", "default_price_per_m": 380, "cost_per_yard": 230, "note": "มู่ลี่ไม้สัก 50mm" },
+      { "id": "fav-wb-2", "code": "WB-002", "default_price_per_m": 420, "cost_per_yard": 260, "note": "มู่ลี่ไม้โอ๊ค 50mm" }
+    ],
+    "roller_blind": [
+      { "id": "fav-rb-1", "code": "RB-001", "default_price_per_m": 280, "cost_per_yard": 165, "note": "Blackout สีเทา" },
+      { "id": "fav-rb-2", "code": "RB-002", "default_price_per_m": 320, "cost_per_yard": 190, "note": "Sunscreen 5% openness" }
+    ],
+    "vertical_blind": [
+      { "id": "fav-vb-1", "code": "VB-001", "default_price_per_m": 220, "cost_per_yard": 130, "note": "Dimout สีครีม" }
+    ],
+    "aluminum_blind": [
+      { "id": "fav-ab-1", "code": "AB-001", "default_price_per_m": 180, "cost_per_yard": 105, "note": "Silver 25mm" }
+    ],
+    "partition": [
+      { "id": "fav-pt-1", "code": "PT-001", "default_price_per_m": 450, "cost_per_yard": 270, "note": "PVC ทึบ" }
+    ],
+    "pleated_screen": [
+      { "id": "fav-ps-1", "code": "PS-001", "default_price_per_m": 320, "cost_per_yard": 190, "note": "มุ้งจีบกันยุง" }
+    ]
+  }
+}
