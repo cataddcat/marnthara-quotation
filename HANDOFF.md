@@ -231,25 +231,28 @@ ItemModal owns store writes:
 
 ## 6. Known Tech Debt (NOT addressed this session)
 
-> Updated 2026-05-29 after Path A (PRs #1–#4) + P1-A (PR #5) + P2 lint cleanup (PR #6).
-> `npm run lint --max-warnings 0` ปัจจุบัน **pass** เป็นครั้งแรกตั้งแต่ project init.
+> Updated 2026-05-29 after PRs #1–#8.
+> `npm run lint --max-warnings 0` ผ่าน. Bundle 998 KiB (เล็กลง 40+ KiB จาก initial baseline).
+> สูตรคำนวณทั้งระบบ centralized ที่ `src/config/formulas.ts` (single source of truth).
 
 ### Still open
 - **Aluminum Blind feature stub** — appears in `ITEM_TYPES` + menu but no form directory exists
 - **`breakdown?: Record<string, number>`** — untyped in `PriceResult` (`src/lib/pricing/types.ts`); a typed shape per item-type would let `CostEngine` consume `fabricYards` / `sheerYards` / `rolls` / `areaSqyd` with editor assist instead of optional-chaining everywhere
-- **PricingEngine.test.ts coverage** — `CostEngine.test.ts` covers 18 cases (Priority Chain × SINGLE/DOUBLE × dispatch — PR #1), but `PricingEngine.test.ts` itself still has only 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
-- **Hardcoded curtain catalog** — `CURTAIN_STYLES` (constants.ts) lists 6 styles; `WAVE_MULTIPLIER_BY_SPACING` (CurtainStrategy.ts) hardcodes only `'14.5'` and `'16'`. Owner can't add new wave depths via UI — silent fallback to `'14.5'` for unknown spacings (P1-C in Design Review backlog).
+- **PricingEngine.test.ts coverage** — `CostEngine.test.ts` covers 18 cases, `PricingEngine.test.ts` 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
 - **Tool-centric IA** — `MainMenuModal` opens 11 modals; primary task "create quotation" lacks a sticky FAB or top-level CTA (P1-B in Design Review backlog).
 
-### Closed (PRs #1–#6, 2026-05-28 → 2026-05-29)
+### Closed (PRs #1–#8, 2026-05-28 → 2026-05-29)
 - ~~Features with missing Zod schemas (6 types)~~ → **PR #3** (Zod + factory + deleted `useItemForm`)
 - ~~`modalProps: Record<string, any>`~~ → **PR #2** (`ModalPropsMap` discriminated union)
 - ~~`'favoriteManager'` string literal~~ → resolved before this batch
 - ~~13 pre-existing TypeScript errors~~ → resolved before this batch
 - ~~2 broken assertions in `PricingEngine.test.ts`~~ → **PR #1**
-- ~~`FinancialDashboardModal.tsx` (675 LOC god component)~~ → **PR #5**: split into 8 files in `FinancialDashboard/` folder, bundle size unchanged
-- ~~20 pre-existing lint errors~~ → **PR #6**: `__test-helpers.ts` factory + targeted `prefer-const` + 2 intentional false-deps marked
-- ~~`InventoryManagerModal` orphan~~ → **PR #6**: deleted (no `openModal` call site existed)
+- ~~`FinancialDashboardModal.tsx` (675 LOC god component)~~ → **PR #5**: split into 8 files
+- ~~20 pre-existing lint errors~~ → **PR #6**
+- ~~`InventoryManagerModal` orphan~~ → **PR #6** (deleted)
+- ~~Hardcoded curtain catalog + scattered formulas~~ → **PR #8**: centralized to `src/config/formulas.ts`. WAVE catalog extensible via single-file edit. `FormulaSlice` + `FormulaStudioModal` deleted (deterministic, no persist drift). Added `FormulaDocsModal` for read-only inspection.
+- ~~Wallpaper height > roll_length silent fail~~ → **PR #8**: now emits `warning: 'height_exceeds_roll'`
+- ~~MaterialSummary BOM hardcoded constants~~ → **PR #8**: moved to `FORMULAS.materials`
 
 ---
 
