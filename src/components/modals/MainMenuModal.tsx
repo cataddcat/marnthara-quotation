@@ -14,10 +14,14 @@ import {
   ChevronRight,
   Calculator,
   Layers,
+  Smartphone,
+  Monitor,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 
 interface MainMenuModalProps {
   isOpen: boolean;
@@ -104,6 +108,13 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 }) => {
   const { theme, toggleTheme } = useThemeStore();
   const { trigger } = useHaptic();
+  const { mode, isAuto, setMode } = useExperienceMode();
+
+  const displayModes = [
+    { id: 'auto' as const, label: 'อัตโนมัติ', icon: Sparkles, active: isAuto },
+    { id: 'lite' as const, label: 'เร็ว (มือถือ)', icon: Smartphone, active: !isAuto && mode === 'lite' },
+    { id: 'full' as const, label: 'เต็ม (เดสก์ท็อป)', icon: Monitor, active: !isAuto && mode === 'full' },
+  ];
 
   return (
     <Modal
@@ -137,6 +148,37 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             </div>
           </button>
         </div>
+
+        {/* ── โหมดการแสดงผล (Two-Tier Experience) ── */}
+        <section className="space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+            โหมดการแสดงผล
+          </h3>
+          <div className="grid grid-cols-3 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50">
+            {displayModes.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => {
+                  trigger('selection');
+                  setMode(opt.id);
+                }}
+                aria-pressed={opt.active}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-1 py-2.5 rounded-lg min-h-[56px] transition-all',
+                  opt.active
+                    ? 'bg-card shadow-sm text-primary border border-border/50'
+                    : 'text-muted-foreground hover:bg-card/50'
+                )}
+              >
+                <opt.icon className="w-4 h-4" />
+                <span className="text-[11px] font-semibold leading-none text-center">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground/80 px-1">
+            โหมดเร็วเหมาะกับงานหน้างาน (ลดรายละเอียด กดง่าย) · โหมดเต็มมีความสามารถครบ
+          </p>
+        </section>
 
         {/* ── 1. เอกสาร & นำเสนอ ── */}
         <section className="space-y-3">

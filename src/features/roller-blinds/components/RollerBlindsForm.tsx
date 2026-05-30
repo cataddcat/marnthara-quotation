@@ -15,6 +15,8 @@ import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
+export const ROLLER_BLINDS_FORM_ID = 'roller-blinds-edit-form';
+
 interface RollerBlindsFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
@@ -39,7 +41,6 @@ const DEFAULT_DATA: RollerBlindsFormValues = {
 export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
   initialData,
   onSubmit,
-  onCancel,
   onAutoSave,
 }) => {
   const { formData, errors, warnings, handleChange, handleNumberChange, handleSubmit } = useZodForm<RollerBlindsFormValues>({
@@ -117,7 +118,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
 
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
+    <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
       {/* 1. Dimensions */}
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
@@ -301,22 +302,6 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background"
         />
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-border mt-4">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={onCancel}
-            className="h-12 px-6 text-muted-foreground"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="h-12 px-8 text-base shadow-lg shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 text-white"
-          >
-            บันทึก
-          </Button>
-        </div>
       </div>
     </form>
   );

@@ -5,11 +5,12 @@ import { fmtTH } from '@/utils/formatters';
 import { useZodForm } from '@/hooks/useZodForm';
 import { PleatedScreenSchema, PleatedScreenFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { Tag, Grid3X3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ITEM_TYPES, OPENING_STYLES } from '@/config/enums';
+
+export const PLEATED_SCREEN_FORM_ID = 'pleated-screen-edit-form';
 
 interface PleatedScreenFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
@@ -35,7 +36,6 @@ const DEFAULT_DATA: PleatedScreenFormValues = {
 export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   initialData,
   onSubmit,
-  onCancel,
   onAutoSave,
 }) => {
   const { formData, errors, handleChange, handleNumberChange, handleSubmit } = useZodForm<PleatedScreenFormValues>({
@@ -78,7 +78,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
 
 
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
+    <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
           <Grid3X3 className="w-5 h-5 text-sky-500" />
@@ -191,22 +191,6 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background"
         />
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-border mt-4">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={onCancel}
-            className="h-12 px-6 text-muted-foreground"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="h-12 px-8 text-base shadow-lg shadow-pink-500/20 bg-pink-600 hover:bg-pink-700 text-white"
-          >
-            บันทึก
-          </Button>
-        </div>
       </div>
     </form>
   );

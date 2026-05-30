@@ -7,6 +7,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { ITEM_CONFIG } from '@/config/constants';
+import { isItemIncomplete } from '@/lib/item-status';
 import {
   ChevronRight,
   Plus,
@@ -137,6 +138,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
   const itemCount = room.items.length;
   const suspendedCount = room.items.filter((i) => i.is_suspended).length;
+  const incompleteCount = room.items.filter(
+    (i) => !i.is_suspended && isItemIncomplete(i)
+  ).length;
 
   const startEditingName = () => {
     setEditName(room.name);
@@ -311,6 +315,11 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
             {/* Price + Chevron */}
             <div className="flex items-center gap-1.5 shrink-0">
+              {incompleteCount > 0 && !room.is_suspended && (
+                <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+                  ค้าง {incompleteCount}
+                </span>
+              )}
               <span
                 className={cn(
                   'text-sm font-bold tabular-nums',
@@ -443,6 +452,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{itemCount} รายการ</span>
+            {incompleteCount > 0 && (
+              <>
+                <span className="text-muted-foreground/30">·</span>
+                <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                  ค้าง {incompleteCount} จุด
+                </span>
+              </>
+            )}
             {suspendedCount > 0 && (
               <>
                 <span className="text-muted-foreground/30">·</span>

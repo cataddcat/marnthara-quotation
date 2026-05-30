@@ -6,12 +6,13 @@ import { useZodForm } from '@/hooks/useZodForm';
 import { WoodenBlindsSchema, WoodenBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
-import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { Tag, ArrowLeftToLine, ArrowRightToLine, Blinds } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { FAVORITE_CATEGORIES, ITEM_TYPES } from '@/config/enums';
+
+export const WOODEN_BLINDS_FORM_ID = 'wooden-blinds-edit-form';
 
 interface WoodenBlindsFormProps {
   // รับ Partial<AreaItemInput> ที่กว้างกว่า — รองรับ caller (ItemModal) ที่ส่ง Partial<ItemData>
@@ -39,7 +40,6 @@ const DEFAULT_DATA: WoodenBlindsFormValues = {
 export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   initialData,
   onSubmit,
-  onCancel,
   itemType = ITEM_TYPES.WOODEN_BLIND,
   onAutoSave,
 }) => {
@@ -91,7 +91,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData as unknown as AreaItemInput)} className="space-y-6 pb-20 sm:pb-0">
+    <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData as unknown as AreaItemInput)} className="space-y-6 pb-20 sm:pb-0">
       {/* 1. Dimensions */}
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
@@ -240,22 +240,6 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background"
         />
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-border mt-4">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={onCancel}
-            className="h-12 px-6 text-muted-foreground"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="h-12 px-8 text-base shadow-lg shadow-amber-500/20 bg-amber-600 hover:bg-amber-700 text-white"
-          >
-            บันทึก
-          </Button>
-        </div>
       </div>
     </form>
   );

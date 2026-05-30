@@ -53,6 +53,8 @@ interface FabricSectionProps {
   onSheerFabricSelect: (item: InventoryItem) => void;
   errors: Partial<Record<keyof CurtainItemInput, string>>;
   warnings: Partial<Record<keyof CurtainItemInput, string>>;
+  /** แสดงเครื่องมือคลัง (ปุ่มจัดการรายการ / ปุ่มดาวบันทึก / ตัวบอก sync) — ซ่อนในโหมด Lite */
+  showCatalogTools?: boolean;
 }
 
 export const FabricSection: React.FC<FabricSectionProps> = ({
@@ -63,6 +65,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   onSheerFabricSelect,
   errors,
   warnings,
+  showCatalogTools = true,
 }) => {
   const { updateFavorite, addFavorite, openModal } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
@@ -203,6 +206,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 <Moon className="w-4 h-4" />
                 <span>ผ้าทึบ (Main)</span>
               </div>
+              {showCatalogTools && (
               <Button
                 type="button"
                 variant="ghost"
@@ -218,6 +222,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 <Book className="w-3.5 h-3.5" />
                 <span className="text-xs">จัดการรายการ</span>
               </Button>
+              )}
             </div>
             
             {/* Responsive grid: 7/5 split — give price column more room for xx,xxx */}
@@ -279,7 +284,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                   </div>
 
                   {/* Save Button */}
-                  {data.code && toNum(data.price_per_m_raw) > 0 && (
+                  {showCatalogTools && data.code && toNum(data.price_per_m_raw) > 0 && (
                     <Button
                       type="button"
                       variant="outline"
@@ -313,11 +318,13 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 </div>
 
                 {/* Sync Indicator — placed below input row, full width */}
-                <PriceStatusIndicator
-                  status={mainSyncStatus}
-                  masterPrice={mainMaster.masterPrice}
-                  onSync={() => handleSyncPrice(false)}
-                />
+                {showCatalogTools && (
+                  <PriceStatusIndicator
+                    status={mainSyncStatus}
+                    masterPrice={mainMaster.masterPrice}
+                    onSync={() => handleSyncPrice(false)}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -334,6 +341,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 <Sun className="w-4 h-4" />
                 <span>ผ้าโปร่ง (Sheer)</span>
               </div>
+              {showCatalogTools && (
               <Button
                 type="button"
                 variant="ghost"
@@ -349,6 +357,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 <Book className="w-3.5 h-3.5" />
                 <span className="text-xs">จัดการรายการ</span>
               </Button>
+              )}
             </div>
 
             {/* Responsive grid: 7/5 split */}
@@ -410,7 +419,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                   </div>
 
                   {/* Save Button */}
-                  {data.sheer_code && toNum(data.sheer_price_per_m) > 0 && (
+                  {showCatalogTools && data.sheer_code && toNum(data.sheer_price_per_m) > 0 && (
                     <Button
                       type="button"
                       variant="outline"
@@ -444,11 +453,13 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 </div>
 
                 {/* Sync Indicator — placed below input row */}
-                <PriceStatusIndicator
-                  status={sheerSyncStatus}
-                  masterPrice={sheerMaster.masterPrice}
-                  onSync={() => handleSyncPrice(true)}
-                />
+                {showCatalogTools && (
+                  <PriceStatusIndicator
+                    status={sheerSyncStatus}
+                    masterPrice={sheerMaster.masterPrice}
+                    onSync={() => handleSyncPrice(true)}
+                  />
+                )}
               </div>
             </div>
           </div>

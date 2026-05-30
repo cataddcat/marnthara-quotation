@@ -16,6 +16,8 @@ interface StyleSectionProps {
   data: CurtainItemInput;
   onChange: (field: keyof CurtainItemInput, val: string | number | boolean) => void;
   errors?: Partial<Record<keyof CurtainItemInput, string>>;
+  /** แสดงตัวเลือก "ทิศทางการเปิด" (ซ่อนในโหมด Lite) */
+  showOpening?: boolean;
 }
 
 const OpeningButton = ({
@@ -61,7 +63,12 @@ const OpeningButton = ({
   );
 };
 
-export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, errors }) => {
+export const StyleSection: React.FC<StyleSectionProps> = ({
+  data,
+  onChange,
+  errors,
+  showOpening = true,
+}) => {
   const [activeSheet, setActiveSheet] = useState<'style' | null>(null);
 
   const getStyleLabel = () =>
@@ -102,6 +109,7 @@ export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, erro
         </div>
 
         {/* Opening Style Grid */}
+        {showOpening && (
         <div className="space-y-2 pt-2">
           <label className="text-sm font-medium text-muted-foreground ml-1">ทิศทางการเปิด</label>
           <div className="grid grid-cols-3 gap-3">
@@ -128,6 +136,7 @@ export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, erro
             />
           </div>
         </div>
+        )}
       </div>
 
       {/* Option Sheet for Style Selection */}

@@ -1,7 +1,14 @@
 // src/features/curtains/components/CurtainForm.tsx
-import React from 'react';
-import { CurtainItemInput } from '@/types';
+import React, { useMemo, useState } from 'react';
+import { CurtainItemInput, ItemData } from '@/types';
 import { Input } from '@/components/ui/Input';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { PricingEngine } from '@/lib/pricing/PricingEngine';
+import { fmtTH } from '@/utils/formatters';
+import { ITEM_TYPES } from '@/config/enums';
+import { cn } from '@/lib/utils';
+import { SlidersHorizontal } from 'lucide-react';
 
 // Sections
 import { DimensionSection } from './sections/DimensionSection';
@@ -18,12 +25,14 @@ interface CurtainFormProps {
   onSubmit: (data: CurtainItemInput) => void;
   onCancel: () => void;
   onAutoSave?: (data: Partial<CurtainItemInput>) => void;
+  mode?: 'add' | 'edit';
 }
 
 export const CurtainForm: React.FC<CurtainFormProps> = ({
   initialData,
   onSubmit,
   onAutoSave,
+  mode = 'add',
 }) => {
   const {
     formData,
@@ -36,24 +45,59 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     handleSheerFabricSelect,
   } = useCurtainFormLogic(initialData, onSubmit);
 
+  const { isLite } = useExperienceMode();
+  const [showAdvancedLite, setShowAdvancedLite] = useState(false);
+  // Full = แสดงทุกอย่าง; Lite = เฉพาะที่จำเป็น เว้นแต่กด "ตัวเลือกทั้งหมด"
+  const showAdvanced = !isLite || showAdvancedLite;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeHandleChange = handleChange as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeHandleNumberChange = handleNumberChange as any;
 
-  return (
-    <form
-      id={CURTAIN_FORM_ID}
-      onSubmit={handleSubmit}
-      onBlur={() => onAutoSave?.(formData)}
-      className="space-y-4"
-    >
-      <DimensionSection
-        data={formData}
-        onChange={safeHandleNumberChange}
-        errors={errors}
-      />
+  const livePrice = useMemo(
+    () =>
+      PricingEngine.calculatePrice({
+        ...formData,
+        type: ITEM_TYPES.CURTAIN,
+        id: 'temp',
+      } as ItemData),
+    [formData]
+  );
 
+  const notesInput = (
+    <Input
+      label="หมายเหตุ"
+      value={formData.notes || ''}
+      onChange={(e) => handleChange('notes', e.target.value)}
+      className="bg-muted/30"
+      error={errors.notes}
+    />
+  );
+
+  const advancedToggle = isLite && (
+    <button
+      type="button"
+      onClick={() => setShowAdvancedLite((v) => !v)}
+      aria-expanded={showAdvancedLite}
+      className={cn(
+        'w-full flex items-center justify-between gap-2 min-h-[44px] px-3.5 rounded-xl border border-dashed transition-colors',
+        showAdvancedLite
+          ? 'border-primary/40 bg-primary/5 text-primary'
+          : 'border-border text-muted-foreground hover:bg-muted/30'
+      )}
+    >
+      <span className="flex items-center gap-2 text-sm font-medium text-left">
+        <SlidersHorizontal className="w-4 h-4 shrink-0" />
+        ตัวเลือกขั้นสูง (อุปกรณ์ผลิต · ทิศเปิด · ต้นทุน)
+      </span>
+      <span className="text-xs font-semibold shrink-0">{showAdvancedLite ? 'ซ่อน' : 'แสดง'}</span>
+    </button>
+  );
+
+  // ส่วนรายละเอียด — ใช้ร่วมทั้ง Lite (ใน collapsible) และ Full (กางไว้)
+  const detailSections = (
+    <>
       <FabricSection
         data={formData}
         onChange={safeHandleChange}
@@ -62,30 +106,64 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         onSheerFabricSelect={handleSheerFabricSelect}
         errors={errors}
         warnings={warnings}
+        showCatalogTools={showAdvanced}
       />
 
-      <StyleSection data={formData} onChange={safeHandleChange} errors={errors} />
-
-      <HardwareSection
+      <StyleSection
         data={formData}
         onChange={safeHandleChange}
         errors={errors}
-        warnings={warnings}
+        showOpening={showAdvanced}
       />
+
+      {showAdvanced && (
+        <HardwareSection
+          data={formData}
+          onChange={safeHandleChange}
+          errors={errors}
+          warnings={warnings}
+        />
+      )}
 
       <PriceSummary
         data={formData}
         onChange={safeHandleChange}
         onNumberChange={safeHandleNumberChange}
+        showProMode={showAdvanced}
       />
+    </>
+  );
 
-      <Input
-        label="หมายเหตุ"
-        value={formData.notes || ''}
-        onChange={(e) => handleChange('notes', e.target.value)}
-        className="bg-muted/30"
-        error={errors.notes}
-      />
+  return (
+    <form
+      id={CURTAIN_FORM_ID}
+      onSubmit={handleSubmit}
+      onBlur={() => onAutoSave?.(formData)}
+      className="space-y-3"
+    >
+      <DimensionSection data={formData} onChange={safeHandleNumberChange} errors={errors} />
+
+      {isLite ? (
+        <CollapsibleSection
+          title="รายละเอียดสินค้า"
+          defaultOpen={mode === 'edit'}
+          badge={
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums mr-1">
+              ฿{fmtTH(livePrice)}
+            </span>
+          }
+          hint="ผ้า • สไตล์ • ราคา — ใส่ทีหลังได้"
+        >
+          {advancedToggle}
+          {detailSections}
+          {notesInput}
+        </CollapsibleSection>
+      ) : (
+        <div className="space-y-4">
+          {detailSections}
+          {notesInput}
+        </div>
+      )}
     </form>
   );
 };
