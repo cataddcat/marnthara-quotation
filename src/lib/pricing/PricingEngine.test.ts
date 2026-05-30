@@ -232,6 +232,25 @@ describe('💰 Pricing Engine Core Tests', () => {
       expect(specs.length).toBeGreaterThan(0);
       expect(PricingEngine.getItemSpecs(null as never)).toEqual([]);
     });
+
+    it('getItemSpecs คืน array สำหรับทั้ง 9 item types', () => {
+      const samples: Array<Record<string, unknown>> = [
+        { type: ITEM_TYPES.CURTAIN, width_m: 2, height_m: 2, style: 'จีบ' },
+        { type: ITEM_TYPES.WALLPAPER, widths: ['2.0'], height_m: 2.5, wallpaper_code: 'W1' },
+        { type: ITEM_TYPES.WOODEN_BLIND, width_m: 2, height_m: 2, code: 'WB1' },
+        { type: ITEM_TYPES.ROLLER_BLIND, width_m: 2, height_m: 2 },
+        { type: ITEM_TYPES.VERTICAL_BLIND, width_m: 2, height_m: 2 },
+        { type: ITEM_TYPES.ALUMINUM_BLIND, width_m: 2, height_m: 2 },
+        { type: ITEM_TYPES.PARTITION, width_m: 2, height_m: 2 },
+        { type: ITEM_TYPES.PLEATED_SCREEN, width_m: 2, height_m: 2 },
+        { type: ITEM_TYPES.REMOVAL, description: 'รื้อม่าน', quantity: 2 },
+      ];
+      for (const s of samples) {
+        const specs = PricingEngine.getItemSpecs(makeItem(s));
+        expect(Array.isArray(specs)).toBe(true);
+        expect(specs.length).toBeGreaterThan(0);
+      }
+    });
   });
 
 });

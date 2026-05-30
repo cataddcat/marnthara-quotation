@@ -30,6 +30,9 @@ dist-ssr
 /playwright/.cache/
 /playwright/.auth/
 
+# Vitest coverage
+/coverage/
+
 # Vercel
 .vercel
 
