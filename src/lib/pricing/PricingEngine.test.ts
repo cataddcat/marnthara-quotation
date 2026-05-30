@@ -175,4 +175,63 @@ describe('💰 Pricing Engine Core Tests', () => {
     });
   });
 
+  // ----------------------------------------------------------------
+  // 🧵 TEST SUITE 4: CURTAIN sheer-only mode
+  // ----------------------------------------------------------------
+  describe('Feature: Curtain sheer-only (SHEER)', () => {
+    it('Scenario: โหมดผ้าโปร่งล้วน → คิดเฉพาะ sheerPrice, fabricPrice = 0', () => {
+      const input = makeItem({
+        type: ITEM_TYPES.CURTAIN,
+        width_m: 2.0,
+        height_m: 2.5,
+        style: 'จีบ',
+        layer_mode: LAYER_MODES.SHEER,
+        sheer_price_per_m: 150,
+        id: 'test-sheer-only',
+      });
+      const result = PricingEngine.calculateDetailedPrice(input);
+      expect(result.total).toBe(300); // width × sheer_price
+      expect(result.breakdown?.fabricPrice).toBe(0);
+      expect(result.breakdown?.sheerPrice).toBe(300);
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // 🔀 TEST SUITE 5: Dispatch — ทั้ง 9 item types + guards
+  // ----------------------------------------------------------------
+  describe('Dispatch & guards', () => {
+    it('รองรับทั้ง 9 item types โดยไม่ throw + คืนตัวเลข finite', () => {
+      const samples: Array<Record<string, unknown>> = [
+        { type: ITEM_TYPES.CURTAIN, width_m: 2, height_m: 2, style: 'จีบ', layer_mode: LAYER_MODES.MAIN, price_per_m_raw: 100 },
+        { type: ITEM_TYPES.WALLPAPER, widths: ['2.0'], height_m: 2.5, price_per_roll: 1000, wallpaper_code: 'W1' },
+        { type: ITEM_TYPES.WOODEN_BLIND, width_m: 2, height_m: 2, price_sqyd: 500 },
+        { type: ITEM_TYPES.ROLLER_BLIND, width_m: 2, height_m: 2, price_sqyd: 500 },
+        { type: ITEM_TYPES.VERTICAL_BLIND, width_m: 2, height_m: 2, price_sqyd: 500 },
+        { type: ITEM_TYPES.ALUMINUM_BLIND, width_m: 2, height_m: 2, price_sqyd: 500 },
+        { type: ITEM_TYPES.PARTITION, width_m: 2, height_m: 2, price_sqyd: 500 },
+        { type: ITEM_TYPES.PLEATED_SCREEN, width_m: 2, height_m: 2, price_sqyd: 500 },
+        { type: ITEM_TYPES.REMOVAL, description: 'x', quantity: 2, price_per_item: 300 },
+      ];
+      for (const s of samples) {
+        const total = PricingEngine.calculatePrice(makeItem(s));
+        expect(Number.isFinite(total)).toBe(true);
+        expect(total).toBeGreaterThan(0);
+      }
+    });
+
+    it('item เป็น null/ไม่มี type → total 0 (defensive)', () => {
+      expect(PricingEngine.calculatePrice(null as never)).toBe(0);
+      expect(PricingEngine.calculateDetailedPrice({ id: 'x' } as never).total).toBe(0);
+    });
+
+    it('getItemSpecs คืน array สำหรับ type ที่รู้จัก + [] สำหรับ null', () => {
+      const specs = PricingEngine.getItemSpecs(
+        makeItem({ type: ITEM_TYPES.CURTAIN, width_m: 2, height_m: 2, style: 'จีบ' })
+      );
+      expect(Array.isArray(specs)).toBe(true);
+      expect(specs.length).toBeGreaterThan(0);
+      expect(PricingEngine.getItemSpecs(null as never)).toEqual([]);
+    });
+  });
+
 });
