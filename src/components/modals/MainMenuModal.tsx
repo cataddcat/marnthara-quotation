@@ -124,6 +124,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           </div>
           <button
             onClick={() => { trigger('medium'); toggleTheme(); }}
+            aria-label={theme === 'dark' ? 'สลับเป็นธีมสว่าง' : 'สลับเป็นธีมมืด'}
             className={cn(
               'relative p-2 rounded-full transition-all duration-500 border overflow-hidden w-12 h-12 flex items-center justify-center',
               theme === 'dark'

@@ -127,7 +127,7 @@ export const Modal: React.FC<ModalProps> = ({
                   <div className="flex items-center gap-2 flex-1">
                     {/* ปุ่ม Back สำหรับ Fullscreen Mobile */}
                     {isFullscreen && isMobile && (
-                      <button onClick={onClose} className="-ml-2 p-2 mr-1">
+                      <button onClick={onClose} aria-label="ย้อนกลับ" className="-ml-2 p-2 mr-1">
                         <ChevronLeft className="w-6 h-6 text-primary" />
                       </button>
                     )}
@@ -151,6 +151,7 @@ export const Modal: React.FC<ModalProps> = ({
                   {(!isFullscreen || !isMobile) && (
                     <button
                       onClick={onClose}
+                      aria-label="ปิด"
                       className="p-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95 outline-none focus:ring-2 focus:ring-primary/50"
                     >
                       <X className="w-5 h-5" />

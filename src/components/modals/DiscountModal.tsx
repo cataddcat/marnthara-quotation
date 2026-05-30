@@ -116,6 +116,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
                 </div>
               </div>
               <Switch
+                aria-label="เปิด/ปิดส่วนลด"
                 checked={isEnabled}
                 onCheckedChange={(c) => {
                   trigger('light');
@@ -137,6 +138,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
                 <Input
                   type="number"
                   inputMode="decimal"
+                  aria-label="จำนวนส่วนลด"
                   placeholder="0.00"
                   value={valueStr}
                   onChange={(e) => setValueStr(e.target.value)}
@@ -150,6 +152,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
               {/* Smart Toggle Button */}
               <button
                 onClick={handleToggleType}
+                aria-label="สลับหน่วยส่วนลด (บาท / เปอร์เซ็นต์)"
                 className="flex items-center gap-2 px-4 rounded-xl bg-card border border-success/30 shadow-sm text-success hover:bg-success/10 active:scale-95 transition-all"
               >
                 {type === 'percent' ? (
@@ -178,6 +181,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
               </div>
             </div>
             <Switch
+              aria-label="เปิด/ปิด VAT 7%"
               checked={shopConfig.baseVatRate > 0}
               onCheckedChange={(c) => {
                 trigger('light');
