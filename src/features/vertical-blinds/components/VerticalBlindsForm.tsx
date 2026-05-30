@@ -24,6 +24,8 @@ import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
+export const VERTICAL_BLINDS_FORM_ID = 'vertical-blinds-edit-form';
+
 interface VerticalBlindsFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
@@ -49,7 +51,6 @@ const DEFAULT_DATA: VerticalBlindsFormValues = {
 export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   initialData,
   onSubmit,
-  onCancel,
   onAutoSave,
 }) => {
   const { formData, errors, warnings, handleChange, handleNumberChange, handleSubmit } = useZodForm<VerticalBlindsFormValues>({
@@ -119,7 +120,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
 
 
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
+    <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
           <Columns className="w-5 h-5 text-sky-500" />
@@ -278,7 +279,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             </span>
           </div>
           <div className="flex justify-between items-end pt-2 border-t border-border mt-2">
-            <span className="text-muted-foreground pb-1">ราคารวมโดยประมาณ</span>
+            <span className="text-muted-foreground pb-1">ราคาสุทธิ</span>
             <span className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
               {fmtTH(pricePreview.total)}
             </span>
@@ -314,22 +315,6 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background"
         />
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-border mt-4">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={onCancel}
-            className="h-12 px-6 text-muted-foreground"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="h-12 px-8 text-base shadow-lg shadow-cyan-500/20 bg-cyan-600 hover:bg-cyan-700 text-white"
-          >
-            บันทึก
-          </Button>
-        </div>
       </div>
     </form>
   );

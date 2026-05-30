@@ -1,30 +1,34 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
+import { OptionSheet } from '@/components/ui/OptionSheet';
+import { Button } from '@/components/ui/Button';
 import {
-  AlignLeft, ScrollText, Scissors, Grid3X3, Blinds, Columns, Minimize2, ChevronLeft, Save, CheckCircle2,
+  AlignLeft, ScrollText, Scissors, Grid3X3, Blinds, Columns, Minimize2,
+  Save, CheckCircle2, ChevronDown, Plus, Smartphone, Monitor,
 } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 
 // --- [ARCHITECT] IMPORT FORMS FROM FEATURE DIRECTORIES ---
 import { CurtainForm, CURTAIN_FORM_ID } from '@/features/curtains/components/CurtainForm';
-import { WallpaperForm } from '@/features/wallpapers/components/WallpaperForm';
-import { RollerBlindsForm } from '@/features/roller-blinds/components/RollerBlindsForm';
-import { WoodenBlindsForm } from '@/features/wooden-blinds/components/WoodenBlindsForm';
-import { VerticalBlindsForm } from '@/features/vertical-blinds/components/VerticalBlindsForm';
-import { PartitionForm } from '@/features/partition/components/PartitionForm';
-import { PleatedScreenForm } from '@/features/pleated-screen/components/PleatedScreenForm';
-import { RemovalForm } from '@/features/removal/components/RemovalForm';
+import { WallpaperForm, WALLPAPER_FORM_ID } from '@/features/wallpapers/components/WallpaperForm';
+import { RollerBlindsForm, ROLLER_BLINDS_FORM_ID } from '@/features/roller-blinds/components/RollerBlindsForm';
+import { WoodenBlindsForm, WOODEN_BLINDS_FORM_ID } from '@/features/wooden-blinds/components/WoodenBlindsForm';
+import { VerticalBlindsForm, VERTICAL_BLINDS_FORM_ID } from '@/features/vertical-blinds/components/VerticalBlindsForm';
+import { PartitionForm, PARTITION_FORM_ID } from '@/features/partition/components/PartitionForm';
+import { PleatedScreenForm, PLEATED_SCREEN_FORM_ID } from '@/features/pleated-screen/components/PleatedScreenForm';
+import { RemovalForm, REMOVAL_FORM_ID } from '@/features/removal/components/RemovalForm';
 
 import { ItemTypeKey, ItemData } from '@/types';
 import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES } from '@/config/enums';
+import { hasMinimumItemData } from '@/lib/item-status';
 import { cn } from '@/lib/utils';
 // [ARCHITECT] Import Unified Theme System
 import { getItemTheme } from '@/lib/theme-utils';
 
-// ✅ FIXED: Updated Props interface to match ModalManager
 interface ItemModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -59,6 +63,19 @@ const TYPE_ICON_MAP: Record<string, React.ElementType> = {
   [ITEM_TYPES.REMOVAL]: Scissors,
 };
 
+// แต่ละประเภท → id ของ <form> เพื่อให้ปุ่มใน sticky footer สั่ง submit ได้
+const FORM_ID_BY_TYPE: Partial<Record<ItemTypeKey, string>> = {
+  [ITEM_TYPES.CURTAIN]: CURTAIN_FORM_ID,
+  [ITEM_TYPES.WALLPAPER]: WALLPAPER_FORM_ID,
+  [ITEM_TYPES.ROLLER_BLIND]: ROLLER_BLINDS_FORM_ID,
+  [ITEM_TYPES.WOODEN_BLIND]: WOODEN_BLINDS_FORM_ID,
+  [ITEM_TYPES.ALUMINUM_BLIND]: WOODEN_BLINDS_FORM_ID,
+  [ITEM_TYPES.VERTICAL_BLIND]: VERTICAL_BLINDS_FORM_ID,
+  [ITEM_TYPES.PARTITION]: PARTITION_FORM_ID,
+  [ITEM_TYPES.PLEATED_SCREEN]: PLEATED_SCREEN_FORM_ID,
+  [ITEM_TYPES.REMOVAL]: REMOVAL_FORM_ID,
+};
+
 export const ItemModal: React.FC<ItemModalProps> = ({
   isOpen,
   onClose,
@@ -72,9 +89,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const { trigger } = useHaptic();
   const { addItem, updateItem } = useAppStore();
   const addToast = useUIStore((s) => s.addToast);
+  const { isLite, setMode } = useExperienceMode();
 
   // Tracks the ID of an item created via auto-save in add mode
   const autoCreatedIdRef = useRef<string | null>(null);
+  // Intent of the next explicit submit ('next' = save & add another, 'close' = save & close)
+  const submitIntentRef = useRef<'close' | 'next'>('close');
 
   const normalizeType = (t: string | ItemTypeKey): ItemTypeKey => {
     if (t === 'set') return ITEM_TYPES.CURTAIN;
@@ -82,8 +102,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   };
 
   const [activeType, setActiveType] = useState<ItemTypeKey>(normalizeType(initialItemType));
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const [autoSavedTick, setAutoSavedTick] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
+  // Remount key — bumping it resets the form (blank + autofocus) for "save & add next"
+  const [formKey, setFormKey] = useState(0);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset state when modal opens — setState in effect is intentional for modal reset
@@ -91,13 +114,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       autoCreatedIdRef.current = null;
+      submitIntentRef.current = 'close';
+      setSavedCount(0);
+      setFormKey(0);
+      setTypeSheetOpen(false);
       if (mode === 'add') {
-        setMenuOpen(true);
         setActiveType(normalizeType(initialItemType));
       } else if (mode === 'edit' && initialData) {
-        setMenuOpen(false);
-        const typeToUse = initialData.type || initialItemType;
-        setActiveType(normalizeType(typeToUse));
+        setActiveType(normalizeType(initialData.type || initialItemType));
       }
     }
   }, [isOpen, mode, initialItemType, initialData]);
@@ -117,10 +141,18 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     return () => clearTimeout(t);
   }, [autoSavedTick]);
 
-  const handleSelectType = (typeId: string) => {
+  const handleSelectType = (typeId: ItemTypeKey) => {
     trigger('selection');
-    setActiveType(typeId as ItemTypeKey);
-    setMenuOpen(false);
+    // เปลี่ยนประเภทระหว่างเพิ่ม → เริ่ม draft ใหม่ของประเภทนั้น
+    autoCreatedIdRef.current = null;
+    setActiveType(typeId);
+    setTypeSheetOpen(false);
+    setFormKey((k) => k + 1);
+  };
+
+  const toggleMode = () => {
+    trigger('selection');
+    setMode(isLite ? 'full' : 'lite');
   };
 
   // ── Auto-save on blur (debounced 400ms; ADD + EDIT modes) ─────────────────
@@ -138,11 +170,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           return;
         }
 
-        // ADD mode — create draft only after minimum data is present
+        // ADD mode — create draft only after minimum data is present (per type)
         if (mode === 'add') {
-          const d = data as Partial<ItemData> & { width_m?: string | number };
-          const widthOk = !!d.width_m && parseFloat(String(d.width_m).replace(/,/g, '')) > 0;
-          if (!widthOk) return;
+          if (!hasMinimumItemData(activeType, data as Record<string, unknown>)) return;
 
           if (autoCreatedIdRef.current) {
             updateItem(
@@ -162,7 +192,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     [roomId, mode, itemId, activeType, addItem, updateItem]
   );
 
-  // ── Explicit save (Save button) — always saves, no validation gate ─────────
+  // ── Explicit save — always saves, no validation gate (Save-First) ──────────
   const handleSubmit = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
@@ -173,6 +203,10 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         autoSaveTimerRef.current = null;
       }
 
+      const intent = submitIntentRef.current;
+      submitIntentRef.current = 'close'; // reset for next time
+
+      // EDIT mode — update existing item then close
       if (mode === 'edit' && itemId) {
         updateItem(roomId, itemId, { ...data, type: activeType, id: itemId } as ItemData);
         addToast('success', 'บันทึกการแก้ไขเรียบร้อย');
@@ -180,9 +214,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         return;
       }
 
-      // ADD mode
+      // ADD + "เพิ่มถัดไป" — ต้องมีข้อมูลขั้นต่ำก่อน (กันสร้างรายการเปล่า)
+      if (intent === 'next' && !hasMinimumItemData(activeType, data as Record<string, unknown>)) {
+        addToast('warning', 'กรอกข้อมูลก่อนเพิ่มจุดถัดไป');
+        return;
+      }
+
+      // ADD mode — create or update the draft item
       if (autoCreatedIdRef.current) {
-        // Item was already created via auto-save → update it
         updateItem(roomId, autoCreatedIdRef.current, {
           ...data,
           type: activeType,
@@ -193,28 +232,35 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         autoCreatedIdRef.current = newId;
         addItem(roomId, { ...data, type: activeType, id: newId } as ItemData);
       }
-      addToast('success', 'เพิ่มรายการใหม่เรียบร้อย');
+
+      if (intent === 'next') {
+        const n = savedCount + 1;
+        setSavedCount(n);
+        addToast('success', `บันทึกจุดที่ ${n} — กรอกจุดถัดไป`);
+        autoCreatedIdRef.current = null; // ครั้งถัดไปสร้างรายการใหม่
+        setFormKey((k) => k + 1); // remount → เคลียร์ฟอร์ม + โฟกัสช่องกว้าง
+        return; // คงเปิด modal ไว้
+      }
+
+      addToast('success', 'บันทึกรายการเรียบร้อย');
       onClose();
     },
-    [roomId, mode, itemId, activeType, addItem, updateItem, addToast, onClose]
+    [roomId, mode, itemId, activeType, addItem, updateItem, addToast, onClose, savedCount]
   );
 
-  // Get title based on current state
-  const getModalTitle = () => {
-    if (menuOpen) return 'เลือกประเภทสินค้า';
+  const itemName = ITEM_CONFIG[activeType]?.name || activeType;
+  const title = mode === 'add' ? `เพิ่ม${itemName}` : `แก้ไข${itemName}`;
+  const activeFormId = FORM_ID_BY_TYPE[activeType];
 
-    const itemName = ITEM_CONFIG[activeType]?.name || activeType;
-    if (mode === 'add') return `เพิ่ม${itemName}`;
-    return `แก้ไข${itemName}`;
-  };
+  const typeOptions = MENU_ITEMS.map((item) => ({
+    label: ITEM_CONFIG[item.id]?.name || item.id,
+    value: item.id as ItemTypeKey,
+    icon: TYPE_ICON_MAP[item.id],
+  }));
 
-  // Map active type → form id (only forms that opted-in to header save button)
-  const activeFormId =
-    activeType === ITEM_TYPES.CURTAIN ? CURTAIN_FORM_ID : null;
-
-  const headerActions = !menuOpen ? (
+  // ── Header: auto-saved badge + mode toggle ─────────────────────────────────
+  const headerActions = (
     <div className="flex items-center gap-1.5">
-      {/* Auto-save indicator */}
       {autoSavedTick > 0 && (
         <span
           key={autoSavedTick}
@@ -229,161 +275,181 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           บันทึกแล้ว
         </span>
       )}
+      <button
+        type="button"
+        onClick={toggleMode}
+        title={isLite ? 'โหมดเร็ว (แตะเพื่อโหมดเต็ม)' : 'โหมดเต็ม (แตะเพื่อโหมดเร็ว)'}
+        aria-label="สลับโหมดการแสดงผล"
+        className="flex items-center gap-1 px-2.5 h-9 rounded-full text-[11px] font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95 transition-all"
+      >
+        {isLite ? <Smartphone className="w-3.5 h-3.5" /> : <Monitor className="w-3.5 h-3.5" />}
+        {isLite ? 'เร็ว' : 'เต็ม'}
+      </button>
+    </div>
+  );
 
-      {mode === 'add' && (
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          className={cn(
-            'flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all',
-            'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95'
-          )}
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-          เปลี่ยน
-        </button>
-      )}
-      {activeFormId && (
-        <button
+  // ── Footer: sticky actions (ทุกประเภทสินค้า) ───────────────────────────────
+  const footer = activeFormId ? (
+    mode === 'edit' ? (
+      <Button
+        type="submit"
+        form={activeFormId}
+        size="lg"
+        className="w-full"
+        onClick={() => (submitIntentRef.current = 'close')}
+      >
+        <Save className="w-5 h-5 mr-2" />
+        บันทึกการแก้ไข
+      </Button>
+    ) : (
+      <div className="flex flex-col gap-2">
+        <Button
           type="submit"
           form={activeFormId}
-          className={cn(
-            'flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all',
-            'bg-brand-curtain text-white hover:bg-brand-curtain/90 active:scale-95',
-            'shadow-sm shadow-brand-curtain/30'
-          )}
+          size="lg"
+          className="w-full"
+          onClick={() => (submitIntentRef.current = 'next')}
         >
-          <Save className="w-3.5 h-3.5" />
-          บันทึก
-        </button>
-      )}
-    </div>
+          <Plus className="w-5 h-5 mr-2" />
+          บันทึก &amp; เพิ่มจุดถัดไป
+        </Button>
+        <Button
+          type="submit"
+          form={activeFormId}
+          variant="ghost"
+          className="w-full"
+          onClick={() => (submitIntentRef.current = 'close')}
+        >
+          บันทึก &amp; ปิด
+        </Button>
+      </div>
+    )
   ) : undefined;
+
+  const theme = getItemTheme(activeType);
+  const TypeIcon = TYPE_ICON_MAP[activeType];
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={getModalTitle()}
+      title={title}
       variant="fullscreen"
+      maxWidth="2xl"
       headerAction={headerActions}
+      footer={footer}
     >
-      {menuOpen ? (
-        /* ── Type Picker: bottom-anchored for thumb reach ── */
-        <div className="min-h-full flex flex-col pb-safe-bottom">
-          {/* Spacer pushes grid into the lower thumb zone */}
-          <div className="flex-1" />
+      <div className="animate-fade-in">
+        {/* Type switcher (add mode) — แทน type picker เต็มจอเดิม */}
+        {mode === 'add' && (
+          <button
+            type="button"
+            onClick={() => setTypeSheetOpen(true)}
+            className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-2xl border border-border bg-card shadow-sm active:scale-[0.99] transition-transform"
+          >
+            <span className="flex items-center gap-2.5 min-w-0">
+              <span className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', theme.iconWrapper)}>
+                {TypeIcon && <TypeIcon className={cn('w-5 h-5', theme.icon)} />}
+              </span>
+              <span className="flex flex-col items-start min-w-0">
+                <span className="text-[11px] text-muted-foreground leading-none">ประเภทสินค้า</span>
+                <span className="font-bold text-foreground leading-tight truncate">{itemName}</span>
+              </span>
+            </span>
+            <span className="flex items-center gap-1 text-xs font-semibold text-primary shrink-0">
+              เปลี่ยน
+              <ChevronDown className="w-4 h-4" />
+            </span>
+          </button>
+        )}
 
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground text-center font-medium tracking-wide uppercase">
-              เลือกประเภทสินค้า
-            </p>
+        {/* ── Product Form ── */}
+        {activeType === ITEM_TYPES.CURTAIN && (
+          <CurtainForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+            mode={mode}
+          />
+        )}
+        {activeType === ITEM_TYPES.WALLPAPER && (
+          <WallpaperForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+        {activeType === ITEM_TYPES.ROLLER_BLIND && (
+          <RollerBlindsForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+        {(activeType === ITEM_TYPES.WOODEN_BLIND ||
+          activeType === ITEM_TYPES.ALUMINUM_BLIND) && (
+          <WoodenBlindsForm
+            key={formKey}
+            itemType={activeType}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+        {activeType === ITEM_TYPES.VERTICAL_BLIND && (
+          <VerticalBlindsForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+        {activeType === ITEM_TYPES.PARTITION && (
+          <PartitionForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+        {activeType === ITEM_TYPES.PLEATED_SCREEN && (
+          <PleatedScreenForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+        {activeType === ITEM_TYPES.REMOVAL && (
+          <RemovalForm
+            key={formKey}
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+            onAutoSave={handleAutoSave}
+          />
+        )}
+      </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              {MENU_ITEMS.map((item) => {
-                const name = ITEM_CONFIG[item.id]?.name || item.id;
-                const theme = getItemTheme(item.id);
-                const Icon = TYPE_ICON_MAP[item.id];
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleSelectType(item.id)}
-                    className={cn(
-                      'group flex flex-col items-center justify-center gap-2 rounded-2xl border',
-                      'h-20 px-3 transition-all duration-150 active:scale-[0.96]',
-                      theme.container,
-                      theme.hover
-                    )}
-                  >
-                    {Icon && (
-                      <div className={cn(
-                        'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
-                        theme.iconWrapper
-                      )}>
-                        <Icon className={cn('w-5 h-5', theme.icon)} />
-                      </div>
-                    )}
-                    <span className="text-[13px] font-semibold leading-tight text-center text-foreground">
-                      {name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ── Product Form ── */
-        <div className="animate-fade-in">
-          {activeType === ITEM_TYPES.CURTAIN && (
-            <CurtainForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {activeType === ITEM_TYPES.WALLPAPER && (
-            <WallpaperForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {activeType === ITEM_TYPES.ROLLER_BLIND && (
-            <RollerBlindsForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {(activeType === ITEM_TYPES.WOODEN_BLIND ||
-            activeType === ITEM_TYPES.ALUMINUM_BLIND) && (
-            <WoodenBlindsForm
-              itemType={activeType}
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {activeType === ITEM_TYPES.VERTICAL_BLIND && (
-            <VerticalBlindsForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {activeType === ITEM_TYPES.PARTITION && (
-            <PartitionForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {activeType === ITEM_TYPES.PLEATED_SCREEN && (
-            <PleatedScreenForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-          {activeType === ITEM_TYPES.REMOVAL && (
-            <RemovalForm
-              initialData={initialData}
-              onSubmit={handleSubmit}
-              onCancel={onClose}
-              onAutoSave={handleAutoSave}
-            />
-          )}
-        </div>
-      )}
+      {/* Type switcher sheet */}
+      <OptionSheet<ItemTypeKey>
+        isOpen={typeSheetOpen}
+        onClose={() => setTypeSheetOpen(false)}
+        title="เลือกประเภทสินค้า"
+        options={typeOptions}
+        value={activeType}
+        onSelect={(v) => handleSelectType(v)}
+      />
     </Modal>
   );
 };

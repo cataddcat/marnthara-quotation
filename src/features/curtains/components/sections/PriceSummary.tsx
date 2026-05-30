@@ -14,6 +14,8 @@ interface PriceSummaryProps {
   data: CurtainItemInput;
   onChange: (field: keyof CurtainItemInput, val: string | number | boolean) => void;
   onNumberChange: (field: keyof CurtainItemInput, val: string) => void;
+  /** แสดงโหมดวิเคราะห์ต้นทุน (Pro Mode) — เฉพาะโหมด Full */
+  showProMode?: boolean;
 }
 
 interface SettingsRowProps {
@@ -78,7 +80,12 @@ const SettingsRow: React.FC<SettingsRowProps> = ({
   </div>
 );
 
-export const PriceSummary: React.FC<PriceSummaryProps> = ({ data, onChange, onNumberChange }) => {
+export const PriceSummary: React.FC<PriceSummaryProps> = ({
+  data,
+  onChange,
+  onNumberChange,
+  showProMode = true,
+}) => {
   const price = useMemo(() => {
     return PricingEngine.calculatePrice({
       ...data,
@@ -170,19 +177,21 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({ data, onChange, onNu
           )}
         </SettingsRow>
 
-        {/* Row 2: Pro Mode */}
-        <SettingsRow
-          icon={BarChart3}
-          label="วิเคราะห์ต้นทุน"
-          description="ดูต้นทุน กำไร และราคาแนะนำ"
-          checked={isProMode}
-          onToggle={() => onChange('_is_pro_mode', !isProMode)}
-          iconClass="text-primary"
-        />
+        {/* Row 2: Pro Mode (full mode only) */}
+        {showProMode && (
+          <SettingsRow
+            icon={BarChart3}
+            label="วิเคราะห์ต้นทุน"
+            description="ดูต้นทุน กำไร และราคาแนะนำ"
+            checked={isProMode}
+            onToggle={() => onChange('_is_pro_mode', !isProMode)}
+            iconClass="text-primary"
+          />
+        )}
       </div>
 
       {/* === Card 2: Pro Mode Dashboard (separate card for clarity) === */}
-      {isProMode && (
+      {showProMode && isProMode && (
         <div className="rounded-2xl border border-border overflow-hidden shadow-sm bg-slate-900 text-slate-100 animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="px-4 py-2.5 flex items-center justify-between border-b border-slate-800 bg-slate-950/50">
             <div className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import React from 'react';
 import { CurtainItemInput } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { Ruler } from 'lucide-react';
+import { useTierSize } from '@/hooks/useExperienceMode';
 
 interface DimensionSectionProps {
   data: CurtainItemInput;
@@ -10,6 +11,8 @@ interface DimensionSectionProps {
 }
 
 export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChange, errors }) => {
+  // Lite = ช่องขนาดใหญ่ขึ้น (hero, กดด้วยนิ้วโป้งง่าย); Full = ปกติ
+  const { control } = useTierSize();
   return (
     <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
       <div className="flex items-center gap-2 text-foreground font-bold">
@@ -24,6 +27,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
           onChange={(e) => onChange('width_m', e.target.value)}
           isDimension
           autoFocus
+          size={control}
           className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
           error={errors.width_m}
         />
@@ -33,6 +37,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
           value={data.height_m}
           onChange={(e) => onChange('height_m', e.target.value)}
           isDimension
+          size={control}
           className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
           error={errors.height_m}
         />

@@ -8,7 +8,8 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES } from '@/config/enums';
-import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2 } from 'lucide-react';
+import { isItemIncomplete } from '@/lib/item-status';
+import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ItemCardProps {
@@ -33,6 +34,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     const result = CostEngine.analyze(item);
     return result.status !== 'unknown' ? result : null;
   }, [item]);
+
+  // "ยังไม่เสร็จ" — มีขนาดแล้วแต่ยังไม่ได้ใส่ผ้า/รายละเอียดที่จำเป็น
+  const incomplete = useMemo(
+    () => !item.is_suspended && isItemIncomplete(item),
+    [item]
+  );
 
   const { title, dimSpec, typeSpecs } = useMemo(() => {
     const config = ITEM_CONFIG[item.type];
@@ -117,6 +124,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               #{index + 1}
             </span>
             <span className="font-semibold text-foreground truncate text-[15px]">{title}</span>
+            {incomplete && (
+              <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+                <AlertTriangle className="w-3 h-3" />
+                ยังไม่ใส่ผ้า
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <span

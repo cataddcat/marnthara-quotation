@@ -15,6 +15,8 @@ import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
+export const PARTITION_FORM_ID = 'partition-edit-form';
+
 interface PartitionFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
@@ -39,7 +41,6 @@ const DEFAULT_DATA: PartitionFormValues = {
 export const PartitionForm: React.FC<PartitionFormProps> = ({
   initialData,
   onSubmit,
-  onCancel,
   onAutoSave,
 }) => {
   const { formData, errors, warnings, handleChange, handleNumberChange, handleSubmit } = useZodForm<PartitionFormValues>({
@@ -103,7 +104,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
 
 
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
+    <form id={PARTITION_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
       {/* 1. Dimension Section */}
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
@@ -229,7 +230,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             </span>
           </div>
           <div className="flex justify-between items-end pt-2 border-t border-border mt-2">
-            <span className="text-muted-foreground pb-1">ราคารวมโดยประมาณ</span>
+            <span className="text-muted-foreground pb-1">ราคาสุทธิ</span>
             <span className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
               {fmtTH(pricePreview.total)}
             </span>
@@ -268,22 +269,6 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background"
         />
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-border mt-4">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={onCancel}
-            className="h-12 px-6 text-muted-foreground"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="h-12 px-8 text-base shadow-lg shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            บันทึก
-          </Button>
-        </div>
       </div>
     </form>
   );

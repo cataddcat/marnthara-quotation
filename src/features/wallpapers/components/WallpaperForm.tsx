@@ -15,6 +15,8 @@ import { useWallpaperFormLogic } from '../hooks/useWallpaperFormLogic';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { SuggestionItem } from '@/components/ui/ComboboxInput';
 
+export const WALLPAPER_FORM_ID = 'wallpaper-edit-form';
+
 interface WallpaperFormProps {
   initialData?: Partial<WallpaperItemInput>;
   onSubmit: (data: WallpaperItemInput) => void;
@@ -25,7 +27,6 @@ interface WallpaperFormProps {
 export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   initialData,
   onSubmit,
-  onCancel,
   onAutoSave,
 }) => {
   const {
@@ -97,7 +98,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} onBlur={handleFormBlur} className="space-y-6">
+    <form id={WALLPAPER_FORM_ID} onSubmit={handleSubmit} onBlur={handleFormBlur} className="space-y-6">
       {/* 1. Dimensions */}
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
@@ -228,7 +229,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
           </div>
 
           <div className="flex justify-between items-end pt-2 border-t border-border mt-2">
-            <span className="text-muted-foreground pb-1">ราคารวมโดยประมาณ</span>
+            <span className="text-muted-foreground pb-1">ราคาสุทธิ</span>
             <span className="text-2xl font-bold tabular-nums text-emerald-500 dark:text-emerald-400">
               {fmtTH(pricePreview.total)}
             </span>
@@ -266,17 +267,6 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background"
         />
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Button variant="ghost" type="button" onClick={onCancel} className="h-12 px-6 text-muted-foreground">
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="h-12 px-8 text-base shadow-lg shadow-orange-500/20 bg-primary text-primary-foreground"
-          >
-            บันทึก
-          </Button>
-        </div>
       </div>
     </form>
   );

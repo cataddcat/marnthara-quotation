@@ -7,9 +7,10 @@ import { fmtTH, toNum } from '@/utils/formatters';
 import { useZodForm } from '@/hooks/useZodForm';
 import { RemovalSchema, RemovalFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { Scissors, DollarSign } from 'lucide-react';
+
+export const REMOVAL_FORM_ID = 'removal-edit-form';
 
 // Helper: format string|number → comma-separated display
 const fmtDisplay = (val: string | number | undefined): string => {
@@ -36,11 +37,10 @@ const DEFAULT_DATA: RemovalFormValues = {
   set_price_override: 0,
 };
 
-export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit, onCancel, onAutoSave }) => {
+export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit, onAutoSave }) => {
   const {
     formData,
     errors,
-    isDirty,
     handleChange,
     handleNumberChange,
     handleSubmit,
@@ -71,7 +71,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
   }, [formData]);
 
   return (
-    <form onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
+    <form id={REMOVAL_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
       <section className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
         <div className="flex items-center gap-2 text-foreground font-bold mb-2">
           <Scissors className="w-5 h-5 text-destructive" />
@@ -159,7 +159,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
               onCheckedChange={(c) => handleChange('enable_set_price', c)}
               className="data-[state=checked]:bg-primary"
             />
-            <span className="text-sm text-muted-foreground">เหมาจ่าย (Override)</span>
+            <span className="text-sm text-muted-foreground">กำหนดราคาเอง</span>
           </div>
 
           {formData.enable_set_price && (
@@ -184,24 +184,6 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
           onChange={(e) => handleChange('notes', e.target.value)}
           className="bg-muted/50 border-transparent focus:bg-background transition-colors"
         />
-
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-4">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={onCancel}
-            className="text-muted-foreground"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            className="min-w-[120px] bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            disabled={!isDirty && !initialData?.description}
-          >
-            บันทึกรายการ
-          </Button>
-        </div>
       </div>
     </form>
   );
