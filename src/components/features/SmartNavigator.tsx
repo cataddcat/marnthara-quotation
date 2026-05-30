@@ -89,6 +89,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="ปิด"
             className="p-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-90"
           >
             <X className="w-4 h-4" />

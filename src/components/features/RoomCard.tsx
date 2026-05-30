@@ -176,7 +176,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
   const roomMenu = (
     <Menu as="div" className="relative z-10 shrink-0">
-      <MenuButton className="p-3 rounded-xl text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 active:scale-90">
+      <MenuButton aria-label="ตัวเลือกห้อง" className="p-3 rounded-xl text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 active:scale-90">
         <MoreHorizontal className="w-4 h-4" />
       </MenuButton>
       <Transition
