@@ -33,6 +33,11 @@ dist-ssr
 # Vitest coverage
 /coverage/
 
+# Stryker mutation testing
+/stryker-report/
+/.stryker-tmp/
+stryker.log
+
 # Vercel
 .vercel
 
