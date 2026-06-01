@@ -3,14 +3,14 @@ import React, { useMemo } from 'react';
 import { RemovalItemInput } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_TYPES } from '@/config/enums';
-import { fmtTH, toNum } from '@/utils/formatters';
+import { toNum } from '@/utils/formatters';
 import { useZodForm } from '@/hooks/useZodForm';
 import { RemovalSchema, RemovalFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { Switch } from '@/components/ui/Switch';
 import { Scissors, DollarSign } from 'lucide-react';
-import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 
 export const REMOVAL_FORM_ID = 'removal-edit-form';
 
@@ -73,48 +73,22 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
   }, [formData]);
 
   const { isFull } = useExperienceMode();
+  const { control } = useTierSize();
 
   const summaryPanel = (
-    <section className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-      <div className="flex items-center gap-2 text-destructive font-bold border-b border-border pb-3">
-        <DollarSign className="w-5 h-5" />
-        <h3>สรุปค่าใช้จ่าย</h3>
-      </div>
-
-      <div className="flex justify-between items-baseline">
-        <div className="text-sm text-muted-foreground">รวมเป็นเงิน</div>
-        <span className="text-3xl font-bold tabular-nums text-destructive">
-          {fmtTH(pricePreview.total)}
-        </span>
-      </div>
-
-      {/* Override */}
-      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={formData.enable_set_price || false}
-            onCheckedChange={(c) => handleChange('enable_set_price', c)}
-            className="data-[state=checked]:bg-primary"
-          />
-          <span className="text-sm text-muted-foreground">กำหนดราคาเอง</span>
-        </div>
-
-        {formData.enable_set_price && (
-          <div className="w-32">
-            <input
-              type="text"
-              inputMode="decimal"
-              value={fmtDisplay(formData.set_price_override)}
-              onChange={(e) => handleNumberChange('set_price_override', e.target.value)}
-              placeholder="ราคาเหมา"
-              className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-            />
-          </div>
-        )}
-      </div>
-    </section>
+    <ItemSummaryCard
+      accentClass="bg-destructive/5"
+      title="สรุปค่าใช้จ่าย"
+      titleIcon={DollarSign}
+      titleClass="text-destructive"
+      totalLabel="รวมเป็นเงิน"
+      totalClass="text-3xl font-bold tabular-nums text-destructive"
+      total={pricePreview.total}
+      enableSetPrice={formData.enable_set_price || false}
+      onToggleSetPrice={(c) => handleChange('enable_set_price', c)}
+      setPriceValue={fmtDisplay(formData.set_price_override)}
+      onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
+    />
   );
 
   return (
@@ -133,6 +107,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
             autoFocus
+            size={control}
             className="bg-muted/50"
             error={errors.description}
           />

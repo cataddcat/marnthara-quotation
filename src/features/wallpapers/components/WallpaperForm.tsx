@@ -2,16 +2,18 @@ import React, { useMemo } from 'react';
 import { WallpaperItemInput } from '@/types';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { toNum, fmtTH } from '@/utils/formatters';
+import { toNum } from '@/utils/formatters';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Switch } from '@/components/ui/Switch';
 import { Tag, ScrollText, Ruler, PaintRoller, Star, Book, Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
-import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
+import { useCostStatus } from '@/hooks/useCostStatus';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
+import { CostReadout } from '@/components/ui/CostReadout';
 import { cn } from '@/lib/utils';
 import { useWallpaperFormLogic } from '../hooks/useWallpaperFormLogic';
 import { InventoryItem } from '@/store/slices/InventorySlice';
@@ -48,6 +50,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isFull } = useExperienceMode();
+  const { control } = useTierSize();
 
   // ── Inventory suggestions from favorites ──────────────────────────────────
   const rawSuggestions = useMemo(
@@ -68,12 +71,16 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   );
 
   // ── Price preview ─────────────────────────────────────────────────────────
-  const pricePreview = useMemo(() => {
-    const previewItem = { ...formData, type: ITEM_TYPES.WALLPAPER, id: 'preview' };
-    return PricingEngine.calculateDetailedPrice(
-      previewItem as unknown as import('@/types').ItemData
-    );
-  }, [formData]);
+  const previewItem = useMemo(
+    () =>
+      ({ ...formData, type: ITEM_TYPES.WALLPAPER, id: 'preview' } as unknown as import('@/types').ItemData),
+    [formData]
+  );
+  const pricePreview = useMemo(
+    () => PricingEngine.calculateDetailedPrice(previewItem),
+    [previewItem]
+  );
+  const analysis = useCostStatus(previewItem);
 
   // ── Blur → auto-save ──────────────────────────────────────────────────────
   const handleFormBlur = () => {
@@ -81,47 +88,28 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   };
 
   const summaryPanel = (
-    <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-      <div className="space-y-3 text-sm">
-        <div className="flex justify-between border-b border-border pb-2">
-          <span className="text-muted-foreground">ใช้จริง (ม้วน):</span>
-          <span className="tabular-nums text-orange-500 text-lg font-bold">
-            {pricePreview.breakdown?.rolls ?? 0} ม้วน
-          </span>
-        </div>
-
-        <div className="flex justify-between items-end pt-2 border-t border-border mt-2">
-          <span className="text-muted-foreground pb-1">ราคาสุทธิ</span>
-          <span className="text-2xl font-bold tabular-nums text-emerald-500 dark:text-emerald-400">
-            {fmtTH(pricePreview.total)}
-          </span>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={formData.enable_set_price || false}
-              onCheckedChange={(c) => handleChange('enable_set_price', c)}
-              className="data-[state=checked]:bg-emerald-500"
-            />
-            <span className="text-sm text-muted-foreground">กำหนดราคาเอง</span>
-          </div>
-          {formData.enable_set_price && (
-            <div className="w-32">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={formData.set_price_override || ''}
-                onChange={(e) => handleNumberChange('set_price_override', e.target.value)}
-                className="w-full bg-background text-foreground border border-border rounded-lg px-3 py-1.5 text-right font-mono text-sm focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <ItemSummaryCard
+      accentClass="bg-orange-500/10"
+      rows={[
+        {
+          label: 'ใช้จริง (ม้วน):',
+          value: `${pricePreview.breakdown?.rolls ?? 0} ม้วน`,
+          valueClass: 'text-orange-500 text-lg font-bold',
+        },
+      ]}
+      total={pricePreview.total}
+      enableSetPrice={formData.enable_set_price || false}
+      onToggleSetPrice={(c) => handleChange('enable_set_price', c)}
+      setPriceValue={formData.set_price_override}
+      onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
+      status={analysis?.status}
+      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      proSlot={
+        isFull && analysis && analysis.totalCost > 0 ? (
+          <CostReadout analysis={analysis} />
+        ) : null
+      }
+    />
   );
 
   return (
@@ -145,6 +133,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
                   value={w}
                   onChange={(e) => handleWidthChange(i, e.target.value)}
                   isDimension
+                  size={control}
                   className={cn('text-sky-600 dark:text-sky-400 bg-sky-500/10', errors.widths && 'border-red-300 bg-red-50')}
                 />
                 {formData.widths.length > 1 && (
@@ -173,6 +162,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension
+            size={control}
             className="text-sky-600 dark:text-sky-400 bg-sky-500/10"
             error={errors.height_m}
           />

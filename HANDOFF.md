@@ -326,9 +326,22 @@ src/hooks/
 src/hooks/
   useZodForm.ts                       — Zod form (always-save)
   useItemForm.ts                      — Simpler form (always-save)
-src/components/modals/ItemModal.tsx   — Save coordinator
+src/components/modals/ItemModal.tsx   — Save coordinator + single-row sticky footer
 src/features/*/components/*Form.tsx   — 8 feature forms (all with onAutoSave)
 src/features/*/hooks/use*FormLogic.ts — Feature-specific form logic
+```
+
+### Two-Tier UI (Lite/Full)
+```
+src/hooks/useExperienceMode.ts        — single source of tier (device + override) + useTierSize
+src/store/useExperienceStore.ts       — persisted override (key marnthara-experience)
+src/components/ui/ModeGate.tsx         — declarative show-by-tier primitive
+src/components/ui/FormTwoColumn.tsx    — Full+lg → input/summary 2-col; else stack
+src/components/ui/AdvancedSection.tsx  — disclosure: Full inline / Lite collapsible (escape hatch)
+src/components/ui/ItemSummaryCard.tsx  — unified summary (breakdown+ราคาสุทธิ+override+dot+proSlot)
+src/components/ui/CostReadout.tsx      — read-only cost/profit panel (proSlot for area/wallpaper)
+src/hooks/useCostStatus.ts             — generic CostEngine.analyze for any ItemData
+src/lib/item-status.ts                 — isItemIncomplete() / "ค้าง N จุด" (all types)
 ```
 
 ### Modals
@@ -375,6 +388,27 @@ src/types.ts                          — ItemData discriminated union + all inp
 
 ---
 
-**Last refactor:** 2026-04  
-**Persistence key:** `marnthara.input.v6.4`  
+## 10. Two-Tier Experience & 2026-06 Unification
+
+The app forks into **Lite** (mobile / on-site measuring) and **Full** (desktop / office quoting) — see `useExperienceMode()` (resolves tier from device + persisted override) and `useTierSize()`. PR19–24 brought all 8 forms to a consistent Lite/Full baseline; the 2026-06 pass unified the shared chrome.
+
+### Shared primitives (one source each)
+- **`AdvancedSection`** — the single disclosure model. `expanded={isFull}` → Full renders children inline; Lite wraps them in a collapsible that is *always expandable* (the escape hatch). Replaces the old per-form `showAdvancedLite` toggle.
+- **`ItemSummaryCard`** — summary for the 7 non-curtain forms: breakdown rows + ราคาสุทธิ + override switch + (Full) traffic-light dot + `proSlot`.
+- **`CostReadout`** — read-only cost/profit panel used in `proSlot` for area/wallpaper (these types have no per-item `_cost_*` fields, so no editable Pro Mode).
+- **`useCostStatus`** — generic `CostEngine.analyze` for any `ItemData`. Replaced the curtain-only `useSmartPrice` (deleted).
+
+### Rules / invariants (do not break)
+1. **Disclosure split by intent, not by "advanced".** Installation-spec fields (ฝั่งดึง / เก็บใบ / รูปแบบการเปิด / ตำแหน่งดึง) → wrap in `AdvancedSection`. Catalog/cost tooling (จัดการรายการ, save-to-catalog ⭐, Pro Mode) → stay `{isFull && ...}` (office-only, no escape hatch).
+2. **Honest profit signal.** Traffic-light dot + `CostReadout` render only when `isFull && analysis.totalCost > 0`. Removal (cost always 0) never shows a dot; area/wallpaper need a vault-cost code. Don't show a green dot when cost is unknown.
+3. **Curtains keep their richer `PriceSummary`** (editable Pro Mode via `_cost_*`) as the Tier-1 reference. Only the cost hook was converged to `useCostStatus`. Do **not** downgrade it into `ItemSummaryCard`.
+4. **ItemModal footer is a single row of `size="md"` (48px) buttons.** Add mode: "บันทึก & เพิ่มจุดถัดไป" (primary, `flex-[1.4]`) + "บันทึก & ปิด" (outline). Don't revert to stacked `lg` buttons.
+5. **Touch ergonomics via `useTierSize().control`** → passed to `<Input size>` (Lite = lg/56px). Don't hardcode input heights per tier.
+
+Verified live (Playwright, Lite 390px + Full 1280px): single-row footer, Lite collapsible disclosure + Full inline, and green traffic-light + CostReadout with a seeded vault cost (60% margin). `npm run lint` 0-warn, `npm run test:run` 295 passing.
+
+---
+
+**Last refactor:** 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
+**Persistence key:** `marnthara.input.v6.4` · tier override: `marnthara-experience`  
 **App version:** `vite-refactor/6.7.0-strict-mode`
