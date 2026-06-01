@@ -251,8 +251,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const itemName = ITEM_CONFIG[activeType]?.name || activeType;
   const title = mode === 'add' ? `เพิ่ม${itemName}` : `แก้ไข${itemName}`;
   const activeFormId = FORM_ID_BY_TYPE[activeType];
-  // ผ้าม่านในโหมด Full ใช้ layout 2 คอลัมน์ → ต้องการ modal กว้างบนเดสก์ท็อป
-  const wideTwoCol = !isLite && activeType === ITEM_TYPES.CURTAIN;
+  // โหมด Full ทุกประเภทใช้ layout 2 คอลัมน์ → ต้องการ modal กว้างบนเดสก์ท็อป
+  const wideTwoCol = !isLite;
 
   const typeOptions = MENU_ITEMS.map((item) => ({
     label: ITEM_CONFIG[item.id]?.name || item.id,

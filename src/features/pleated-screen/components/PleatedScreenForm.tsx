@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { Tag, Grid3X3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { ITEM_TYPES, OPENING_STYLES } from '@/config/enums';
 
 export const PLEATED_SCREEN_FORM_ID = 'pleated-screen-edit-form';
@@ -44,6 +46,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
 
+  const { isFull } = useExperienceMode();
 
   const pricePreview = useMemo(() => {
     const previewItem: ItemData = {
@@ -77,8 +80,48 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   // const isFav = (code?: string) => !!code && (favorites[FAVORITE_CATEGORIES.PLEATED_SCREEN] || []).some(f => f.code === code);
 
 
+  const summaryPanel = (
+    <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold border-b border-border pb-3">
+        <Tag className="w-5 h-5" />
+        <h3>สรุปรายการคำนวณ</h3>
+      </div>
+
+      <div className="flex justify-between items-baseline">
+        <div className="text-sm text-muted-foreground">ราคาสุทธิ</div>
+        <span className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+          {fmtTH(pricePreview.total)}
+        </span>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={formData.enable_set_price || false}
+            onCheckedChange={(c) => handleChange('enable_set_price', c)}
+            className="data-[state=checked]:bg-emerald-500"
+          />
+          <span className="text-sm text-muted-foreground">กำหนดราคาเอง</span>
+        </div>
+        {formData.enable_set_price && (
+          <div className="w-32">
+            <input
+              type="text"
+              inputMode="decimal"
+              value={formData.set_price_override || ''}
+              onChange={(e) => handleNumberChange('set_price_override', e.target.value)}
+              className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
+    <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
+      <FormTwoColumn full={isFull} right={summaryPanel}>
       <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
           <Grid3X3 className="w-5 h-5 text-sky-500" />
@@ -146,44 +189,6 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold border-b border-border pb-3">
-          <Tag className="w-5 h-5" />
-          <h3>สรุปรายการคำนวณ</h3>
-        </div>
-
-        <div className="flex justify-between items-baseline">
-          <div className="text-sm text-muted-foreground">ราคาสุทธิ</div>
-          <span className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-            {fmtTH(pricePreview.total)}
-          </span>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={formData.enable_set_price || false}
-              onCheckedChange={(c) => handleChange('enable_set_price', c)}
-              className="data-[state=checked]:bg-emerald-500"
-            />
-            <span className="text-sm text-muted-foreground">กำหนดราคาเอง</span>
-          </div>
-          {formData.enable_set_price && (
-            <div className="w-32">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={formData.set_price_override || ''}
-                onChange={(e) => handleNumberChange('set_price_override', e.target.value)}
-                className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="pt-2 space-y-4">
         <Input
           label="หมายเหตุ"
@@ -192,6 +197,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
           className="bg-muted/50 border-transparent focus:bg-background"
         />
       </div>
+      </FormTwoColumn>
     </form>
   );
 };
