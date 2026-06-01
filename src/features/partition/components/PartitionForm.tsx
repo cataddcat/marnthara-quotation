@@ -171,6 +171,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
               <Tag className="w-4 h-4 text-muted-foreground" />
               รุ่น/สเปค
             </label>
+            {isFull && (
             <Button
               type="button"
               variant="ghost"
@@ -183,6 +184,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
+            )}
           </div>
           <ComboboxInput
             placeholder="เลือกสเปค (เช่น PVC ทึบ)..."
@@ -199,7 +201,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
               warning={warnings.price_sqyd}
               className="bg-muted/50"
             />
-            {formData.code && toNum(formData.price_sqyd) > 0 && (
+            {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
               <button
                 type="button"
                 onClick={() =>
@@ -224,6 +226,8 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
           </div>
         </div>
 
+        {/* รูปแบบการเปิด (advanced — full mode) */}
+        {isFull && (
         <div className="space-y-2 pt-2 border-t border-border">
           <label className="text-[13px] font-medium text-muted-foreground">รูปแบบการเปิด</label>
           <div className="flex gap-2">
@@ -248,6 +252,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {/* 4. Notes & Actions */}
