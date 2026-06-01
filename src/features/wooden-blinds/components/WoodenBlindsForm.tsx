@@ -209,7 +209,8 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
           />
         </div>
 
-        {/* Control Side */}
+        {/* Control Side (advanced — full mode) */}
+        {isFull && (
         <div className="pt-2">
           <label className="text-sm font-bold text-foreground mb-2 block">ตำแหน่งดึง (Side)</label>
           <div className="grid grid-cols-2 gap-3">
@@ -235,6 +236,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {/* 4. Actions */}

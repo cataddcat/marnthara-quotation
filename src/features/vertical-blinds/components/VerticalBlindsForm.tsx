@@ -175,6 +175,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
               <Tag className="w-4 h-4 text-muted-foreground" />
               รหัส/รุ่น
             </label>
+            {isFull && (
             <Button
               type="button"
               variant="ghost"
@@ -187,6 +188,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
+            )}
           </div>
           <ComboboxInput
             placeholder="ระบุรุ่น/รหัส..."
@@ -202,7 +204,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
               onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
               warning={warnings.price_sqyd}
             />
-            {formData.code && toNum(formData.price_sqyd) > 0 && (
+            {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
               <button
                 type="button"
                 onClick={() =>
@@ -227,6 +229,8 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
           </div>
         </div>
 
+        {/* ทิศเก็บใบ/ฝั่งดึง (advanced — full mode) */}
+        {isFull && (
         <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-muted-foreground">เก็บใบ</label>
@@ -291,6 +295,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             </div>
           </div>
         </div>
+        )}
       </div>
 
       <div className="pt-2 space-y-4">

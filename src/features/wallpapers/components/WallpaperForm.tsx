@@ -186,6 +186,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             <label className="text-sm font-bold text-foreground flex items-center gap-2">
               <ScrollText className="w-4 h-4 text-muted-foreground" /> รหัสวอลเปเปอร์
             </label>
+            {isFull && (
             <Button
               type="button"
               variant="ghost"
@@ -196,6 +197,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
+            )}
           </div>
 
           <ComboboxInput<InventoryItem>
@@ -215,7 +217,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
               onChange={(e) => handleNumberChange('price_per_roll', e.target.value)}
               prefix={<Tag className="w-4 h-4 text-muted-foreground" />}
             />
-            {formData.wallpaper_code && toNum(formData.price_per_roll) > 0 && (
+            {isFull && formData.wallpaper_code && toNum(formData.price_per_roll) > 0 && (
               <button
                 type="button"
                 onClick={() =>

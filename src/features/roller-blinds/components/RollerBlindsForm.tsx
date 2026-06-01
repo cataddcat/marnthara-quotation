@@ -166,6 +166,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             <label className="text-sm font-bold text-foreground flex items-center gap-2">
               <Tag className="w-4 h-4 text-muted-foreground" /> รหัส/รุ่น
             </label>
+            {isFull && (
             <Button
               type="button"
               variant="ghost"
@@ -178,6 +179,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
+            )}
           </div>
 
           <ComboboxInput
@@ -195,7 +197,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
               onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
               warning={warnings.price_sqyd}
             />
-            {formData.code && toNum(formData.price_sqyd) > 0 && (
+            {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
               <button
                 type="button"
                 onClick={() =>
@@ -242,7 +244,8 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
           </div>
         </div>
 
-        {/* Controls: Pull Side */}
+        {/* Controls: Pull Side (advanced — full mode) */}
+        {isFull && (
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
           <div className="grid grid-cols-2 gap-3">
@@ -268,6 +271,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {/* Actions */}

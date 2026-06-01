@@ -166,7 +166,8 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
           />
         </div>
 
-        {/* Opening Style */}
+        {/* Opening Style (advanced — full mode) */}
+        {isFull && (
         <div className="pt-2">
           <label className="text-sm font-bold text-foreground mb-2 block">รูปแบบการเปิด</label>
           <div className="grid grid-cols-2 gap-2">
@@ -187,6 +188,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
             ))}
           </div>
         </div>
+        )}
       </div>
 
       <div className="pt-2 space-y-4">
