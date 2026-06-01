@@ -5,7 +5,7 @@ import { fmtTH } from '@/utils/formatters';
 import { Switch } from '@/components/ui/Switch';
 import { Input } from '@/components/ui/Input';
 import { ITEM_TYPES } from '@/config/enums';
-import { useSmartPrice } from '../../hooks/useSmartPrice';
+import { useCostStatus } from '@/hooks/useCostStatus';
 import { Wallet, Lock, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProModeControl } from './ProModeControl';
@@ -86,28 +86,27 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   onNumberChange,
   showProMode = true,
 }) => {
-  const price = useMemo(() => {
-    return PricingEngine.calculatePrice({
-      ...data,
-      type: ITEM_TYPES.CURTAIN,
-      id: 'temp',
-    } as ItemData);
-  }, [data]);
+  const curtainItem = useMemo<ItemData>(
+    () => ({ ...data, type: ITEM_TYPES.CURTAIN, id: 'temp' }) as ItemData,
+    [data]
+  );
+  const price = useMemo(() => PricingEngine.calculatePrice(curtainItem), [curtainItem]);
 
-  const analysis = useSmartPrice(data);
+  const analysis = useCostStatus(curtainItem);
+  const status = analysis?.status ?? 'unknown';
   const isProMode = data._is_pro_mode || false;
   const isOverride = data.enable_set_price || false;
 
   const trafficLightColor =
-    analysis.status === 'profit'
+    status === 'profit'
       ? 'bg-emerald-500'
-      : analysis.status === 'warning'
+      : status === 'warning'
         ? 'bg-amber-400'
-        : analysis.status === 'loss'
+        : status === 'loss'
           ? 'bg-destructive'
           : 'bg-muted-foreground/30';
 
-  const showTrafficLight = !isOverride && analysis.status !== 'unknown';
+  const showTrafficLight = !isOverride && status !== 'unknown';
 
   return (
     <div className="space-y-3">
@@ -136,7 +135,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
                 isOverride
                   ? 'text-amber-500'
                   : 'text-emerald-600 dark:text-emerald-400',
-                isProMode && analysis.status === 'loss' && !isOverride && 'text-destructive'
+                isProMode && status === 'loss' && !isOverride && 'text-destructive'
               )}
             >
               {fmtTH(price)}
