@@ -11,8 +11,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Tag, Grid3X3, SplitSquareHorizontal, ArrowRight, Star, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
-import { useConfirm } from '@/hooks/useConfirm';
+import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
 export const PARTITION_FORM_ID = 'partition-edit-form';
@@ -49,9 +48,8 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
 
-  const { addFavorite, favorites, updateFavorite, openModal } = useAppStore();
-  const { addToast } = useUIStore();
-  const { confirm } = useConfirm();
+  const { favorites, openModal } = useAppStore();
+  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
 
   const pricePreview = useMemo(() => {
     const previewItem: ItemData = {
@@ -80,28 +78,6 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
     if (match && match.data?.default_price_per_m)
       handleNumberChange('price_sqyd', String(match.data.default_price_per_m));
   };
-
-  const handleSaveFav = async () => {
-    const code = formData.code;
-    const price = toNum(formData.price_sqyd);
-    if (!code || price <= 0) return addToast('warning', 'ระบุรหัสและราคา');
-    const existing = (favorites[FAVORITE_CATEGORIES.PARTITION] || []).find((f) => f.code === code);
-    if (existing && existing.default_price_per_m !== price) {
-      if (
-        await confirm({
-          title: 'อัพเดทราคา?',
-          description: `เปลี่ยนราคา ${existing.default_price_per_m} -> ${price}?`,
-        })
-      )
-        updateFavorite(FAVORITE_CATEGORIES.PARTITION, existing.id, { default_price_per_m: price });
-    } else if (!existing) {
-      addFavorite(FAVORITE_CATEGORIES.PARTITION, { code, default_price_per_m: price });
-      addToast('success', 'บันทึกแล้ว');
-    }
-  };
-  const isFav = (code?: string) =>
-    !!code && (favorites[FAVORITE_CATEGORIES.PARTITION] || []).some((f) => f.code === code);
-
 
   return (
     <form id={PARTITION_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
@@ -173,13 +149,21 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             {formData.code && toNum(formData.price_sqyd) > 0 && (
               <button
                 type="button"
-                onClick={handleSaveFav}
+                onClick={() =>
+                  saveToCatalog(
+                    FAVORITE_CATEGORIES.PARTITION,
+                    formData.code,
+                    formData.price_sqyd
+                  )
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
               >
                 <Star
                   className={cn(
                     'w-5 h-5',
-                    isFav(formData.code) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'
+                    isInCatalog(FAVORITE_CATEGORIES.PARTITION, formData.code)
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'text-muted-foreground'
                   )}
                 />
               </button>

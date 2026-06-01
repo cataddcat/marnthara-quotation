@@ -11,8 +11,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Tag, ArrowLeftToLine, ArrowRightToLine, Minimize2, Star, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
-import { useConfirm } from '@/hooks/useConfirm';
+import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const ROLLER_BLINDS_FORM_ID = 'roller-blinds-edit-form';
@@ -49,9 +48,8 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
 
-  const { addFavorite, favorites, updateFavorite, openModal } = useAppStore();
-  const { addToast } = useUIStore();
-  const { confirm } = useConfirm();
+  const { favorites, openModal } = useAppStore();
+  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
 
   // Pricing Logic
   const pricePreview = useMemo(() => {
@@ -83,39 +81,6 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
       handleNumberChange('price_sqyd', String(match.data.default_price_per_m));
     }
   };
-
-  const handleSaveFav = async () => {
-    const code = formData.code;
-    const price = toNum(formData.price_sqyd);
-
-    if (!code || price <= 0) return addToast('warning', 'ระบุรหัสและราคาก่อนบันทึก');
-
-    const existing = (favorites[FAVORITE_CATEGORIES.ROLLER_BLIND] || []).find(
-      (f) => f.code === code
-    );
-
-    if (existing) {
-      if (existing.default_price_per_m !== price) {
-        const shouldUpdate = await confirm({
-          title: 'รหัสนี้มีอยู่แล้ว',
-          description: `ราคาเดิม ${existing.default_price_per_m} -> ราคาใหม่ ${price}. ต้องการอัพเดทหรือไม่?`,
-          confirmLabel: 'อัพเดท',
-          cancelLabel: 'ยกเลิก',
-        });
-        if (shouldUpdate)
-          updateFavorite(FAVORITE_CATEGORIES.ROLLER_BLIND, existing.id, {
-            default_price_per_m: price,
-          });
-      }
-    } else {
-      addFavorite(FAVORITE_CATEGORIES.ROLLER_BLIND, { code, default_price_per_m: price });
-      addToast('success', `บันทึกดาว ${code} แล้ว`);
-    }
-  };
-
-  const isFav = (code: string | undefined) =>
-    !!code && (favorites[FAVORITE_CATEGORIES.ROLLER_BLIND] || []).some((f) => f.code === code);
-
 
   return (
     <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6">
@@ -187,13 +152,19 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             {formData.code && toNum(formData.price_sqyd) > 0 && (
               <button
                 type="button"
-                onClick={handleSaveFav}
+                onClick={() =>
+                  saveToCatalog(
+                    FAVORITE_CATEGORIES.ROLLER_BLIND,
+                    formData.code,
+                    formData.price_sqyd
+                  )
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
               >
                 <Star
                   className={cn(
                     'w-5 h-5 transition-colors',
-                    isFav(formData.code)
+                    isInCatalog(FAVORITE_CATEGORIES.ROLLER_BLIND, formData.code)
                       ? 'fill-amber-400 text-amber-400'
                       : 'text-muted-foreground hover:text-amber-400'
                   )}
