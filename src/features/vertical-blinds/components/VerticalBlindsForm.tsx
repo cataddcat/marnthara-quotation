@@ -20,8 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
-import { useConfirm } from '@/hooks/useConfirm';
+import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
 export const VERTICAL_BLINDS_FORM_ID = 'vertical-blinds-edit-form';
@@ -59,9 +58,8 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
 
-  const { addFavorite, favorites, updateFavorite, openModal } = useAppStore();
-  const { addToast } = useUIStore();
-  const { confirm } = useConfirm();
+  const { favorites, openModal } = useAppStore();
+  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
 
   const pricePreview = useMemo(() => {
     const previewItem: ItemData = {
@@ -91,33 +89,6 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
     if (match && match.data?.default_price_per_m)
       handleNumberChange('price_sqyd', String(match.data.default_price_per_m));
   };
-
-  const handleSaveFav = async () => {
-    const code = formData.code;
-    const price = toNum(formData.price_sqyd);
-    if (!code || price <= 0) return addToast('warning', 'ระบุรหัสและราคา');
-
-    const existing = (favorites[FAVORITE_CATEGORIES.VERTICAL_BLIND] || []).find(
-      (f) => f.code === code
-    );
-    if (existing && existing.default_price_per_m !== price) {
-      const ok = await confirm({
-        title: 'อัพเดทราคา?',
-        description: `เปลี่ยนจาก ${existing.default_price_per_m} เป็น ${price}?`,
-      });
-      if (ok)
-        updateFavorite(FAVORITE_CATEGORIES.VERTICAL_BLIND, existing.id, {
-          default_price_per_m: price,
-        });
-    } else if (!existing) {
-      addFavorite(FAVORITE_CATEGORIES.VERTICAL_BLIND, { code, default_price_per_m: price });
-      addToast('success', 'บันทึกแล้ว');
-    }
-  };
-
-  const isFav = (code: string | undefined) =>
-    !!code && (favorites[FAVORITE_CATEGORIES.VERTICAL_BLIND] || []).some((f) => f.code === code);
-
 
   return (
     <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)} className="space-y-6 pb-20 sm:pb-0">
@@ -184,13 +155,21 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             {formData.code && toNum(formData.price_sqyd) > 0 && (
               <button
                 type="button"
-                onClick={handleSaveFav}
+                onClick={() =>
+                  saveToCatalog(
+                    FAVORITE_CATEGORIES.VERTICAL_BLIND,
+                    formData.code,
+                    formData.price_sqyd
+                  )
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
               >
                 <Star
                   className={cn(
                     'w-5 h-5',
-                    isFav(formData.code) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'
+                    isInCatalog(FAVORITE_CATEGORIES.VERTICAL_BLIND, formData.code)
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'text-muted-foreground'
                   )}
                 />
               </button>

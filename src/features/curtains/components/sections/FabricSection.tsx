@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { CurtainItemInput } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
+import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { ComboboxInput, SuggestionItem } from '@/components/ui/ComboboxInput';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -67,8 +68,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   warnings,
   showCatalogTools = true,
 }) => {
-  const { updateFavorite, addFavorite, openModal } = useAppStore();
+  const { openModal } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
+  const { saveToCatalog } = useSaveToCatalog();
 
   const mainFabrics = useInventory(FAVORITE_CATEGORIES.CURTAIN_MAIN);
   const sheerFabrics = useInventory(FAVORITE_CATEGORIES.CURTAIN_SHEER);
@@ -139,46 +141,17 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   };
 
   // 💾 Action: บันทึกราคาลงคลัง
-  const handleSaveToCatalog = (
+  // 💾 Action: บันทึกราคาลงคลัง (ใช้ hook กลาง — ยืนยันก่อนทับเสมอ)
+  const handleSaveToCatalog = async (
     code: string | undefined,
     price: string | number | undefined,
     category: string
   ) => {
-    // Validation
-    if (!code) {
-      addToast('error', 'ไม่พบรหัสสินค้า');
-      return;
-    }
-    const priceNum = toNum(price);
-    if (priceNum <= 0) {
-      addToast('error', 'ราคาต้องมากกว่า 0');
-      return;
-    }
-
-    const list = category === FAVORITE_CATEGORIES.CURTAIN_SHEER ? sheerFabrics : mainFabrics;
-    const existing = list.find((f) => f.code === code);
-
-    try {
-      if (existing) {
-        updateFavorite(category, existing.id, {
-          default_price_per_m: priceNum,
-        });
-        addToast('success', `อัปเดตราคา ${code} เป็น ${fmtTH(priceNum)} แล้ว`);
-      } else {
-        addFavorite(category, {
-          code: code,
-          default_price_per_m: priceNum,
-          note: 'บันทึกจากหน้างาน',
-        });
-        addToast('success', `เพิ่มสินค้าใหม่ ${code} ลงคลังแล้ว`);
-      }
-
+    const ok = await saveToCatalog(category, code, price);
+    if (ok) {
       // แสดง animation เครื่องหมายถูกชั่วคราว
       setJustSaved(category);
       setTimeout(() => setJustSaved(null), 2000);
-    } catch (error) {
-      console.error(error);
-      addToast('error', 'บันทึกผิดพลาด');
     }
   };
 

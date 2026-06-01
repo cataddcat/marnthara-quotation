@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { Tag, ScrollText, Ruler, PaintRoller, Star, Book, Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { cn } from '@/lib/utils';
 import { useWallpaperFormLogic } from '../hooks/useWallpaperFormLogic';
 import { InventoryItem } from '@/store/slices/InventorySlice';
@@ -43,8 +43,8 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
     handleWallpaperSelect,
   } = useWallpaperFormLogic(initialData, onSubmit);
 
-  const { favorites, addFavorite, updateFavorite, openModal } = useAppStore();
-  const addToast = useUIStore((state) => state.addToast);
+  const { favorites, openModal } = useAppStore();
+  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
 
   // ── Inventory suggestions from favorites ──────────────────────────────────
   const rawSuggestions = useMemo(
@@ -63,26 +63,6 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
       })),
     [rawSuggestions]
   );
-
-  const isFav = (code: string) => rawSuggestions.some((s) => s.code === code);
-
-  const handleSaveFav = () => {
-    const { wallpaper_code, price_per_roll } = formData;
-    if (!wallpaper_code) return;
-    const price = toNum(price_per_roll);
-    const existing = rawSuggestions.find((s) => s.code === wallpaper_code);
-    if (existing) {
-      updateFavorite(FAVORITE_CATEGORIES.WALLPAPER, existing.id, { default_price_per_m: price });
-      addToast('success', 'อัปเดตคลังผ้าแล้ว');
-    } else {
-      addFavorite(FAVORITE_CATEGORIES.WALLPAPER, {
-        code: wallpaper_code,
-        default_price_per_m: price,
-        note: '',
-      });
-      addToast('success', 'เพิ่มในคลังผ้าแล้ว');
-    }
-  };
 
   // ── Price preview ─────────────────────────────────────────────────────────
   const pricePreview = useMemo(() => {
@@ -190,13 +170,19 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             {formData.wallpaper_code && toNum(formData.price_per_roll) > 0 && (
               <button
                 type="button"
-                onClick={handleSaveFav}
+                onClick={() =>
+                  saveToCatalog(
+                    FAVORITE_CATEGORIES.WALLPAPER,
+                    formData.wallpaper_code,
+                    formData.price_per_roll
+                  )
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
               >
                 <Star
                   className={cn(
                     'w-5 h-5 transition-colors',
-                    isFav(formData.wallpaper_code)
+                    isInCatalog(FAVORITE_CATEGORIES.WALLPAPER, formData.wallpaper_code)
                       ? 'fill-amber-400 text-amber-400'
                       : 'text-muted-foreground hover:text-amber-400'
                   )}
