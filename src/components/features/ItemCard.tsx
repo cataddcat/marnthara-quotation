@@ -7,7 +7,7 @@ import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG } from '@/config/constants';
-import { ITEM_TYPES } from '@/config/enums';
+import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
 import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle, Ruler } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -41,17 +41,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     [item]
   );
 
-  const { title, dimSpec, typeSpecs } = useMemo(() => {
+  const { title, dimSpec } = useMemo(() => {
     const config = ITEM_CONFIG[item.type];
     const rawSpecs = PricingEngine.getItemSpecs(item);
     const cleanSpecs = rawSpecs.filter((s) => s && s.trim() !== '');
-    // Split: first spec = dimensions, rest = type/options
-    const dimSpec = cleanSpecs[0] || '';
-    const typeSpecs = cleanSpecs.slice(1).join(' • ');
+    // First spec = dimensions (ใช้เป็น fallback ของ hero), ส่วนอื่นสร้างเป็นชิปด้านล่าง
     return {
       title: config?.name || 'สินค้า',
-      dimSpec,
-      typeSpecs,
+      dimSpec: cleanSpecs[0] || '',
     };
   }, [item]);
 
@@ -94,6 +91,52 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const width = toNum(itemRec.width_m as string | number | null | undefined);
   const height = toNum(itemRec.height_m as string | number | null | undefined);
   const hasSize = width > 0 && height > 0;
+
+  // ขนาดแบบตัวเลขล้วน "กว้าง × สูง" — ผู้ใช้รู้อยู่แล้วว่าเป็นเมตร (hero)
+  const dimNumbers = useMemo(() => {
+    if (item.type === ITEM_TYPES.REMOVAL) return '';
+    if (item.type === ITEM_TYPES.WALLPAPER) {
+      const widthTotal = (item.widths || []).reduce((sum, w) => sum + toNum(w), 0);
+      const h = toNum(item.height_m);
+      return widthTotal > 0 && h > 0 ? `${widthTotal.toFixed(2)} × ${h.toFixed(2)}` : '';
+    }
+    return hasSize ? `${width.toFixed(2)} × ${height.toFixed(2)}` : '';
+  }, [item, hasSize, width, height]);
+
+  // ชิป Row 3 — ชนิด + รูปแบบเก็บ + รายละเอียดรอง (สร้างจาก field ตรงๆ ไม่มี prefix)
+  const typeChips = useMemo<string[]>(() => {
+    const chips: string[] = [];
+    switch (item.type) {
+      case ITEM_TYPES.CURTAIN:
+        if (item.style) chips.push(item.style);
+        if (item.opening_style) chips.push(item.opening_style);
+        if (item.layer_mode === LAYER_MODES.DOUBLE) chips.push('ทึบ+โปร่ง');
+        else if (item.layer_mode === LAYER_MODES.SHEER) chips.push('โปร่ง');
+        break;
+      case ITEM_TYPES.WALLPAPER:
+        if (item.wallpaper_code) chips.push(item.wallpaper_code);
+        break;
+      case ITEM_TYPES.REMOVAL: {
+        const qty = toNum(item.quantity);
+        if (qty > 0) chips.push(`${qty} จุด/ชุด`);
+        break;
+      }
+      default: {
+        const rec = item as unknown as Record<string, unknown>;
+        const s = (k: string) => (typeof rec[k] === 'string' ? (rec[k] as string).trim() : '');
+        const variant = s('fabric_variant');
+        const opening = s('opening_style');
+        const side = s('adjustment_side');
+        const code = s('code');
+        if (variant) chips.push(variant);
+        if (opening) chips.push(opening);
+        if (side) chips.push(`ปรับ ${side}`);
+        if (code) chips.push(code);
+        break;
+      }
+    }
+    return chips;
+  }, [item]);
 
   const isAreaType =
     item.type === ITEM_TYPES.WOODEN_BLIND ||
@@ -151,23 +194,30 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           />
         </div>
 
-        {/* Row 2: Dimensions — hero (priority #1 หน้างาน) */}
-        {dimSpec && (
+        {/* Row 2: Dimensions — hero ตัวเลขล้วน (priority #1 หน้างาน) */}
+        {(dimNumbers || dimSpec) && (
           <div className="flex items-center gap-1.5 text-[15px] font-bold text-sky-600 dark:text-sky-400 leading-snug">
-            <Ruler className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{dimSpec}</span>
+            {dimNumbers && <Ruler className="w-3.5 h-3.5 shrink-0" />}
+            <span className="truncate">{dimNumbers || dimSpec}</span>
           </div>
         )}
 
-        {/* Row 3: Type/Options (muted color) */}
-        {typeSpecs && (
-          <div className="text-xs text-muted-foreground/80 truncate leading-relaxed">
-            {typeSpecs}
+        {/* Row 3: ชนิด + รูปแบบเก็บ — ชิป */}
+        {typeChips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {typeChips.map((chip, i) => (
+              <span
+                key={i}
+                className="text-[11px] leading-none px-1.5 py-1 rounded-md bg-muted text-muted-foreground font-medium"
+              >
+                {chip}
+              </span>
+            ))}
           </div>
         )}
 
         {/* Fallback: no specs at all */}
-        {!dimSpec && !typeSpecs && (
+        {!dimNumbers && !dimSpec && typeChips.length === 0 && (
           <div className="text-xs text-muted-foreground/50 italic leading-relaxed">
             ยังไม่ระบุรายละเอียด
           </div>
@@ -215,7 +265,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {/* ผ้าม่าน: ผ้าหลัก */}
             {item.type === ITEM_TYPES.CURTAIN && fabricYards > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">ผ้าที่ใช้</span>
+                <span className="text-muted-foreground">ผ้าทึบ</span>
                 <span className="font-semibold text-orange-500">{fabricYards.toFixed(2)} หลา</span>
               </div>
             )}
