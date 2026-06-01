@@ -8,7 +8,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES } from '@/config/enums';
-import { isItemIncomplete } from '@/lib/item-status';
+import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
 import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -127,7 +127,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {incomplete && (
               <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
                 <AlertTriangle className="w-3 h-3" />
-                ยังไม่ใส่ผ้า
+                {incompleteLabel(item)}
               </span>
             )}
           </div>
