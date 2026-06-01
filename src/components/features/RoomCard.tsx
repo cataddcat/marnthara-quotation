@@ -322,10 +322,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               )}
               <span
                 className={cn(
-                  'text-sm font-bold tabular-nums',
-                  room.is_suspended
-                    ? 'text-muted-foreground line-through'
-                    : 'text-emerald-600 dark:text-emerald-400'
+                  'text-sm font-semibold tabular-nums',
+                  room.is_suspended ? 'text-muted-foreground line-through' : 'text-muted-foreground'
                 )}
               >
                 {fmtTH(roomTotal)}
@@ -448,17 +446,27 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           </div>
         </div>
 
-        {/* Stats footer */}
-        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{itemCount} รายการ</span>
-            {incompleteCount > 0 && (
+        {/* Stats footer — เน้นรายละเอียด/ความครบ, ยอดรวมเป็นกลาง */}
+        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs min-w-0">
+            <span className="font-semibold text-foreground">{itemCount} รายการ</span>
+            {incompleteCount > 0 ? (
               <>
                 <span className="text-muted-foreground/30">·</span>
                 <span className="text-amber-600 dark:text-amber-400 font-semibold">
                   ค้าง {incompleteCount} จุด
                 </span>
               </>
+            ) : (
+              itemCount > 0 &&
+              !room.is_suspended && (
+                <>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="inline-flex items-center gap-1 font-medium text-emerald-600/80 dark:text-emerald-400/80">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> ครบ
+                  </span>
+                </>
+              )
             )}
             {suspendedCount > 0 && (
               <>
@@ -469,10 +477,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           </div>
           <span
             className={cn(
-              'text-base font-bold tabular-nums',
-              room.is_suspended
-                ? 'text-muted-foreground line-through'
-                : 'text-emerald-600 dark:text-emerald-400'
+              'text-sm font-semibold tabular-nums shrink-0',
+              room.is_suspended ? 'text-muted-foreground line-through' : 'text-foreground'
             )}
           >
             {fmtTH(roomTotal)}

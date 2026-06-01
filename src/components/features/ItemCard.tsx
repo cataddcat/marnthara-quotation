@@ -9,7 +9,7 @@ import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
-import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle, Ruler } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ItemCardProps {
@@ -131,7 +131,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center shrink-0">
             <span
               className={cn(
                 'text-base font-bold tabular-nums tracking-tight',
@@ -142,21 +142,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             >
               {fmtTH(priceResult.total)}
             </span>
-            {costAnalysis && (
-              <span
-                className={cn(
-                  'text-[10px] font-medium px-1.5 py-0.5 rounded-full tabular-nums',
-                  costAnalysis.status === 'profit' &&
-                    'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
-                  costAnalysis.status === 'warning' &&
-                    'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
-                  costAnalysis.status === 'loss' &&
-                    'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'
-                )}
-              >
-                {costAnalysis.marginPercent.toFixed(0)}%
-              </span>
-            )}
           </div>
           <ChevronDown
             className={cn(
@@ -166,10 +151,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           />
         </div>
 
-        {/* Row 2: Dimensions (with color) */}
+        {/* Row 2: Dimensions — hero (priority #1 หน้างาน) */}
         {dimSpec && (
-          <div className="text-xs font-medium text-sky-600 dark:text-sky-400 truncate leading-relaxed">
-            {dimSpec}
+          <div className="flex items-center gap-1.5 text-[15px] font-bold text-sky-600 dark:text-sky-400 leading-snug">
+            <Ruler className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{dimSpec}</span>
           </div>
         )}
 
