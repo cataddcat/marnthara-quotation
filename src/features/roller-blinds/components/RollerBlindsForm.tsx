@@ -13,10 +13,12 @@ import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const ROLLER_BLINDS_FORM_ID = 'roller-blinds-edit-form';
@@ -57,6 +59,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
+  const theme = getItemTheme(ITEM_TYPES.ROLLER_BLIND);
 
   // Pricing Logic
   const previewItem = useMemo<ItemData>(
@@ -91,12 +94,14 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass="bg-teal-500/5"
+      accentClass={theme.bgSoft}
+      title="สรุปรายการคำนวณ"
+      titleIcon={Tag}
       rows={[
         {
           label: 'พื้นที่ (ตร.ล.):',
           value: pricePreview.breakdown?.areaSqyd?.toFixed(2) || '0.00',
-          valueClass: 'text-teal-600 dark:text-teal-400',
+          valueClass: theme.text,
         },
       ]}
       total={pricePreview.total}
@@ -118,11 +123,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
     <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-foreground font-bold">
-          <Minimize2 className="w-5 h-5 text-sky-500" />
-          <h2>ขนาดพื้นที่ (ม.)</h2>
-        </div>
+      <FormSection icon={Minimize2} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -146,21 +147,20 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             error={errors.height_m}
           />
         </div>
-      </div>
+      </FormSection>
 
       {/* 2. Details */}
-      <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-4">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Tag className="w-4 h-4 text-muted-foreground" /> รหัส/รุ่น
-            </label>
-            {isFull && (
+      <FormSection
+        icon={Tag}
+        iconClass={theme.icon}
+        title="รหัส/รุ่น"
+        headerRight={
+          isFull && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 px-2 gap-1 text-muted-foreground hover:text-teal-600"
+              className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
               onClick={() =>
                 openModal('materialSummary', { initialTab: 'catalog', initialCategory: FAVORITE_CATEGORIES.ROLLER_BLIND })
               }
@@ -168,89 +168,77 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
-            )}
-          </div>
+          )
+        }
+      >
+        <ComboboxInput
+          placeholder="ระบุรุ่น/รหัส..."
+          value={formData.code || ''}
+          onChange={handleCodeChange}
+          options={suggestions}
+        />
 
-          <ComboboxInput
-            placeholder="ระบุรุ่น/รหัส..."
-            value={formData.code || ''}
-            onChange={handleCodeChange}
-            options={suggestions}
+        <div className="relative">
+          <Input
+            placeholder="ราคา (บาท/ตร.ล.)"
+            inputMode="decimal"
+            value={formData.price_sqyd || ''}
+            onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
+            warning={warnings.price_sqyd}
           />
-
-          <div className="relative">
-            <Input
-              placeholder="ราคา (บาท/ตร.ล.)"
-              inputMode="decimal"
-              value={formData.price_sqyd || ''}
-              onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
-              warning={warnings.price_sqyd}
-            />
-            {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
-              <button
-                type="button"
-                onClick={() =>
-                  saveToCatalog(
-                    FAVORITE_CATEGORIES.ROLLER_BLIND,
-                    formData.code,
-                    formData.price_sqyd
-                  )
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
-              >
-                <Star
-                  className={cn(
-                    'w-5 h-5 transition-colors',
-                    isInCatalog(FAVORITE_CATEGORIES.ROLLER_BLIND, formData.code)
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-muted-foreground hover:text-amber-400'
-                  )}
-                />
-              </button>
-            )}
-          </div>
+          {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                saveToCatalog(
+                  FAVORITE_CATEGORIES.ROLLER_BLIND,
+                  formData.code,
+                  formData.price_sqyd
+                )
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
+            >
+              <Star
+                className={cn(
+                  'w-5 h-5 transition-colors',
+                  isInCatalog(FAVORITE_CATEGORIES.ROLLER_BLIND, formData.code)
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-muted-foreground hover:text-amber-400'
+                )}
+              />
+            </button>
+          )}
         </div>
 
         {/* Option: Fabric Variant */}
         <div className="space-y-2 pt-2 border-t border-border">
           <label className="text-[13px] font-medium text-muted-foreground">ประเภทใบ</label>
-          <div className="grid grid-cols-3 gap-2 bg-muted/50 p-1 rounded-xl">
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-3 gap-1')}>
             {['Blackout', 'Sunscreen', 'Dimout'].map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => handleChange('fabric_variant', v)}
-                className={cn(
-                  'flex items-center justify-center py-2 rounded-lg text-xs font-medium transition-all',
-                  formData.fabric_variant === v
-                    ? 'bg-teal-600 text-white shadow-md'
-                    : 'text-muted-foreground hover:bg-background/50'
-                )}
+                className={segmentedItemClass(formData.fabric_variant === v, theme)}
               >
                 {v}
               </button>
             ))}
           </div>
         </div>
-
-      </div>
+      </FormSection>
 
       {/* Controls: Pull Side (installation spec — collapsible escape hatch in Lite) */}
       <AdvancedSection expanded={isFull} hint="ฝั่งดึง — ใส่ทีหลังได้">
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
             {['ซ้าย', 'ขวา'].map((side) => (
               <button
                 key={side}
                 type="button"
                 onClick={() => handleChange('adjustment_side', side)}
-                className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-xl border transition-all',
-                  formData.adjustment_side === side
-                    ? 'border-teal-500 bg-teal-500/10 text-teal-600 dark:text-teal-400'
-                    : 'border-border text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.adjustment_side === side, theme)}
               >
                 {side === 'ซ้าย' ? (
                   <ArrowLeftToLine className="w-4 h-4" />
@@ -265,14 +253,12 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
       </AdvancedSection>
 
       {/* Actions */}
-      <div className="pt-2 space-y-4">
-        <Input
-          label="หมายเหตุ"
-          value={formData.notes || ''}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="bg-muted/50 border-transparent focus:bg-background"
-        />
-      </div>
+      <Input
+        label="หมายเหตุ"
+        value={formData.notes || ''}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        className="bg-muted/50 border-transparent focus:bg-background"
+      />
       </FormTwoColumn>
     </form>
   );

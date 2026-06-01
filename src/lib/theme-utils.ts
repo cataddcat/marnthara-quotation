@@ -1,6 +1,7 @@
 import { ITEM_TYPES } from '@/config/enums';
+import { cn } from '@/lib/utils';
 
-type ThemeStyle = {
+export type ThemeStyle = {
   container: string;
   iconWrapper: string;
   title: string;
@@ -55,3 +56,20 @@ const SEMANTIC_THEMES: Record<string, ThemeStyle> = {
 export const getItemTheme = (type: string): ThemeStyle => {
   return SEMANTIC_THEMES[type] || createSemanticTheme('--foreground');
 };
+
+/* ── Segmented / option toggle — recipe เดียวทุกฟอร์ม ───────────────────────── */
+
+/** ราง (track) ของ segmented control */
+export const SEGMENTED_TRACK = 'bg-muted/50 p-1 rounded-xl';
+
+/**
+ * คลาสของแต่ละปุ่มใน segmented control — active = ยกขึ้นเป็นการ์ด + ข้อความสี brand
+ * ใช้ร่วมทุกฟอร์มแทนการ reimplement สี active/radius/padding ที่ drift กันเอง
+ */
+export const segmentedItemClass = (active: boolean, theme: ThemeStyle): string =>
+  cn(
+    'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-sm font-medium transition-all',
+    active
+      ? cn('bg-card shadow-sm', theme.text)
+      : 'text-muted-foreground hover:text-foreground'
+  );

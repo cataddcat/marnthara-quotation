@@ -10,10 +10,12 @@ import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { FAVORITE_CATEGORIES, ITEM_TYPES } from '@/config/enums';
 
 export const WOODEN_BLINDS_FORM_ID = 'wooden-blinds-edit-form';
@@ -56,6 +58,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   const { favorites } = useAppStore();
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
+  const theme = getItemTheme(itemType);
 
   // Determine Favorite Category based on itemType
   const favCategory =
@@ -99,7 +102,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass="bg-amber-500/5"
+      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       total={pricePreview.total}
@@ -121,11 +124,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
     <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData as unknown as AreaItemInput)}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-foreground font-bold">
-          <Blinds className="w-5 h-5 text-sky-500" />
-          <h2>ขนาดพื้นที่ (ม.)</h2>
-        </div>
+      <FormSection icon={Blinds} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           {/* [FIX] Use Standard Input instead of Combobox to prevent random suggestions */}
           <Input
@@ -150,23 +149,18 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             error={errors.height_m}
           />
         </div>
-      </div>
+      </FormSection>
 
       {/* 2. Options */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
+      <FormSection icon={Tag} iconClass={theme.icon} title="รุ่น / ราคา">
         {/* Tape Type Selector */}
-        <div className="grid grid-cols-2 gap-2 bg-muted/50 p-1 rounded-xl">
+        <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
           {['รุ่นเชือก', 'รุ่นโซ่'].map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => handleChange('fabric_variant', type)} // Using fabric_variant to store tape type/model
-              className={cn(
-                'flex items-center justify-center py-2 rounded-lg text-xs font-medium transition-all',
-                formData.fabric_variant === type
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'text-muted-foreground hover:bg-background/50'
-              )}
+              className={segmentedItemClass(formData.fabric_variant === type, theme)}
             >
               {type}
             </button>
@@ -195,25 +189,19 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             placeholder="0.00"
           />
         </div>
-
-      </div>
+      </FormSection>
 
       {/* Control Side (installation spec — collapsible escape hatch in Lite) */}
       <AdvancedSection expanded={isFull} hint="ตำแหน่งดึง — ใส่ทีหลังได้">
-        <div>
-          <label className="text-sm font-bold text-foreground mb-2 block">ตำแหน่งดึง (Side)</label>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <label className="text-[13px] font-medium text-muted-foreground">ตำแหน่งดึง (Side)</label>
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
             {['ซ้าย', 'ขวา'].map((side) => (
               <button
                 key={side}
                 type="button"
                 onClick={() => handleChange('adjustment_side', side)}
-                className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-xl border transition-all',
-                  formData.adjustment_side === side
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                    : 'border-border text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.adjustment_side === side, theme)}
               >
                 {side === 'ซ้าย' ? (
                   <ArrowLeftToLine className="w-4 h-4" />
@@ -228,14 +216,12 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
       </AdvancedSection>
 
       {/* 4. Actions */}
-      <div className="pt-2 space-y-4">
-        <Input
-          label="หมายเหตุ"
-          value={formData.notes || ''}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="bg-muted/50 border-transparent focus:bg-background"
-        />
-      </div>
+      <Input
+        label="หมายเหตุ"
+        value={formData.notes || ''}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        className="bg-muted/50 border-transparent focus:bg-background"
+      />
       </FormTwoColumn>
     </form>
   );

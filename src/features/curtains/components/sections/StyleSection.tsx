@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLES } from '@/config/constants';
 import { OptionSheet } from '@/components/ui/OptionSheet';
+import { FormSection } from '@/components/ui/FormSection';
 import {
   Settings2,
   ArrowLeftToLine,
@@ -77,19 +78,18 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
   return (
     <div className="space-y-4">
       {/* 1. Style Selection Card */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-6">
-        <div className="flex items-center justify-between text-foreground pb-2 border-b border-border/50">
-          <div className="flex items-center gap-2 font-bold">
-            <Settings2 className="w-5 h-5 text-primary" />
-            <h2>รูปแบบม่าน & การเก็บ</h2>
-          </div>
-          {errors?.style && (
+      <FormSection
+        icon={Settings2}
+        iconClass="text-primary"
+        title="รูปแบบม่าน & การเก็บ"
+        headerRight={
+          errors?.style && (
             <span className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> {errors.style}
             </span>
-          )}
-        </div>
-
+          )
+        }
+      >
         {/* Style Selection Button */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground ml-1">รูปแบบม่าน</label>
@@ -137,7 +137,7 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
           </div>
         </div>
         )}
-      </div>
+      </FormSection>
 
       {/* Option Sheet for Style Selection */}
       <OptionSheet

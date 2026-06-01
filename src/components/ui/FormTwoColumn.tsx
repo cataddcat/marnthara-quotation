@@ -1,4 +1,6 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
+import { useTierSize } from '@/hooks/useExperienceMode';
 
 interface FormTwoColumnProps {
   /** true = โหมด Full (เดสก์ท็อป) → 2 คอลัมน์บนจอกว้าง; false = stack คอลัมน์เดียว */
@@ -14,9 +16,11 @@ interface FormTwoColumnProps {
  * input อยู่ซ้าย, สรุปราคาเกาะขวา (sticky); จอแคบ/มือถือ/Lite → stack คอลัมน์เดียว
  */
 export const FormTwoColumn: React.FC<FormTwoColumnProps> = ({ full, right, children }) => {
+  const { sectionGap } = useTierSize();
+
   if (!full) {
     return (
-      <div className="space-y-6">
+      <div className={sectionGap}>
         {children}
         {right}
       </div>
@@ -24,9 +28,14 @@ export const FormTwoColumn: React.FC<FormTwoColumnProps> = ({ full, right, child
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-6 lg:space-y-0">
-      <div className="space-y-6">{children}</div>
-      <div className="lg:sticky lg:top-0 space-y-6">{right}</div>
+    <div
+      className={cn(
+        'lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start lg:space-y-0',
+        sectionGap
+      )}
+    >
+      <div className={sectionGap}>{children}</div>
+      <div className={cn('lg:sticky lg:top-0', sectionGap)}>{right}</div>
     </div>
   );
 };

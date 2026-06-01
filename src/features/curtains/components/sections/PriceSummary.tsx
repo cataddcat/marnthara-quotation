@@ -4,6 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { Switch } from '@/components/ui/Switch';
 import { Input } from '@/components/ui/Input';
+import { STATUS_DOT } from '@/lib/status-style';
 import { ITEM_TYPES } from '@/config/enums';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { Wallet, Lock, BarChart3 } from 'lucide-react';
@@ -97,15 +98,6 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   const isProMode = data._is_pro_mode || false;
   const isOverride = data.enable_set_price || false;
 
-  const trafficLightColor =
-    status === 'profit'
-      ? 'bg-emerald-500'
-      : status === 'warning'
-        ? 'bg-amber-400'
-        : status === 'loss'
-          ? 'bg-destructive'
-          : 'bg-muted-foreground/30';
-
   const showTrafficLight = !isOverride && status !== 'unknown';
 
   return (
@@ -144,7 +136,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
               <span
                 className={cn(
                   'inline-flex h-2.5 w-2.5 rounded-full ring-2 ring-background shrink-0 transition-colors',
-                  trafficLightColor,
+                  STATUS_DOT[status],
                   (status === 'warning' || status === 'loss') && 'animate-pulse'
                 )}
                 title={status}

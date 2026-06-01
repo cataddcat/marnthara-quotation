@@ -1,6 +1,7 @@
 import React from 'react';
 import { CurtainItemInput } from '@/types';
 import { Input } from '@/components/ui/Input';
+import { FormSection } from '@/components/ui/FormSection';
 import { Ruler } from 'lucide-react';
 import { useTierSize } from '@/hooks/useExperienceMode';
 
@@ -14,11 +15,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
   // Lite = ช่องขนาดใหญ่ขึ้น (hero, กดด้วยนิ้วโป้งง่าย); Full = ปกติ
   const { control } = useTierSize();
   return (
-    <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-      <div className="flex items-center gap-2 text-foreground font-bold">
-        <Ruler className="w-5 h-5 text-sky-500" />
-        <h2>ขนาดพื้นที่ (ม.)</h2>
-      </div>
+    <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="กว้าง (W)"
@@ -42,6 +39,6 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
           error={errors.height_m}
         />
       </div>
-    </div>
+    </FormSection>
   );
 };

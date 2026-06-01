@@ -2,6 +2,7 @@ import React from 'react';
 import { Switch } from './Switch';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
+import { STATUS_DOT } from '@/lib/status-style';
 import type { CostBreakdown } from '@/lib/pricing/CostEngine';
 
 export interface SummaryRow {
@@ -34,13 +35,6 @@ interface ItemSummaryCardProps {
   /** Tier-1 (Full) — ส่วนวิเคราะห์ต้นทุนเชิงลึก (ผ้าม่าน=แก้ได้ / area-wallpaper=อ่านอย่างเดียว) */
   proSlot?: React.ReactNode;
 }
-
-const STATUS_DOT: Record<CostBreakdown['status'], string> = {
-  profit: 'bg-emerald-500',
-  warning: 'bg-amber-400',
-  loss: 'bg-destructive',
-  unknown: 'bg-muted-foreground/30',
-};
 
 /**
  * Summary card แบบ layered ที่ทั้ง 8 ประเภทใช้ร่วมกัน:

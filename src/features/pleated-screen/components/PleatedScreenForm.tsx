@@ -8,10 +8,12 @@ import { Tag, Grid3X3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, OPENING_STYLES } from '@/config/enums';
 
 export const PLEATED_SCREEN_FORM_ID = 'pleated-screen-edit-form';
@@ -50,6 +52,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
 
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
+  const theme = getItemTheme(ITEM_TYPES.PLEATED_SCREEN);
 
   const previewItem = useMemo<ItemData>(
     () => ({ ...DEFAULT_DATA, ...formData, type: ITEM_TYPES.PLEATED_SCREEN, id: 'preview' }),
@@ -85,7 +88,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass="bg-pink-500/5"
+      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       total={pricePreview.total}
@@ -106,11 +109,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   return (
     <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-foreground font-bold">
-          <Grid3X3 className="w-5 h-5 text-sky-500" />
-          <h2>ขนาดพื้นที่ (ม.)</h2>
-        </div>
+      <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -132,9 +131,9 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
             error={errors.height_m}
           />
         </div>
-      </div>
+      </FormSection>
 
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
+      <FormSection icon={Tag} iconClass={theme.icon} title="สเปค / ราคา">
         <div className="grid grid-cols-2 gap-3">
           <Input
             label="สีเฟรม"
@@ -151,25 +150,19 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
             inputMode="decimal"
           />
         </div>
-
-      </div>
+      </FormSection>
 
       {/* Opening Style (installation spec — collapsible escape hatch in Lite) */}
       <AdvancedSection expanded={isFull} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
-        <div>
-          <label className="text-sm font-bold text-foreground mb-2 block">รูปแบบการเปิด</label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2">
+          <label className="text-[13px] font-medium text-muted-foreground">รูปแบบการเปิด</label>
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
             {Object.values(OPENING_STYLES).map((style) => (
               <button
                 key={style}
                 type="button"
                 onClick={() => handleChange('opening_style', style)}
-                className={cn(
-                  'py-2 px-3 rounded-lg text-xs font-medium border transition-all',
-                  formData.opening_style === style
-                    ? 'bg-pink-500/10 border-pink-500/50 text-pink-600 dark:text-pink-400'
-                    : 'bg-background border-border text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.opening_style === style, theme)}
               >
                 {style}
               </button>
@@ -178,14 +171,12 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         </div>
       </AdvancedSection>
 
-      <div className="pt-2 space-y-4">
-        <Input
-          label="หมายเหตุ"
-          value={formData.notes || ''}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="bg-muted/50 border-transparent focus:bg-background"
-        />
-      </div>
+      <Input
+        label="หมายเหตุ"
+        value={formData.notes || ''}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        className="bg-muted/50 border-transparent focus:bg-background"
+      />
       </FormTwoColumn>
     </form>
   );

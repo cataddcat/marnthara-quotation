@@ -70,7 +70,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
       label="หมายเหตุ"
       value={formData.notes || ''}
       onChange={(e) => handleChange('notes', e.target.value)}
-      className="bg-muted/30"
+      className="bg-muted/50 border-transparent focus:bg-background"
       error={errors.notes}
     />
   );

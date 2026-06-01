@@ -6,8 +6,9 @@ import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { ComboboxInput, SuggestionItem } from '@/components/ui/ComboboxInput';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { FormSection } from '@/components/ui/FormSection';
 import { FAVORITE_CATEGORIES, LAYER_MODES } from '@/config/enums';
-import { Moon, Sun, AlertTriangle, RefreshCw, Check, Star, Book } from 'lucide-react';
+import { Moon, Sun, AlertTriangle, RefreshCw, Check, Star, Book, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toNum, fmtTH } from '@/utils/formatters';
 import { LayerSelector } from './LayerSelector';
@@ -158,19 +159,16 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   return (
     <div className="space-y-4">
       {/* 1. ✅ Layer Mode Selector */}
-      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm space-y-4">
-        <h3 className="font-bold text-foreground flex items-center gap-2">
-          เลือกประเภทม่าน
-        </h3>
+      <FormSection icon={Layers} iconClass="text-primary" title="เลือกประเภทม่าน">
         {/* ✅ ใส่ Default Value กันตาย (Fallback) */}
-        <LayerSelector 
-          value={layerMode} 
-          onChange={(val) => onChange('layer_mode', val)} 
+        <LayerSelector
+          value={layerMode}
+          onChange={(val) => onChange('layer_mode', val)}
         />
-      </div>
+      </FormSection>
 
       {/* 2. ส่วนเลือกผ้า (แสดงตาม Mode) */}
-      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm space-y-6">
+      <FormSection>
         {/* --- MAIN FABRIC INPUT --- */}
         {showMain && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -437,7 +435,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             </div>
           </div>
         )}
-      </div>
+      </FormSection>
     </div>
   );
 };

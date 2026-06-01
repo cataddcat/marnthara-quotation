@@ -13,10 +13,12 @@ import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
 export const PARTITION_FORM_ID = 'partition-edit-form';
@@ -57,6 +59,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
+  const theme = getItemTheme(ITEM_TYPES.PARTITION);
 
   const previewItem = useMemo<ItemData>(
     () => ({ ...DEFAULT_DATA, ...formData, type: ITEM_TYPES.PARTITION, id: 'preview' }),
@@ -88,14 +91,14 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass="bg-emerald-500/5"
+      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       rows={[
         {
           label: 'พื้นที่ (ตร.ล.):',
           value: pricePreview.breakdown?.areaSqyd?.toFixed(2) || '0.00',
-          valueClass: 'text-teal-600 dark:text-teal-400',
+          valueClass: theme.text,
         },
       ]}
       total={pricePreview.total}
@@ -117,11 +120,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
     <form id={PARTITION_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimension Section */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-foreground font-bold">
-          <Grid3X3 className="w-5 h-5 text-sky-500" />
-          <h2>ขนาดพื้นที่ (ม.)</h2>
-        </div>
+      <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -145,22 +144,20 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             error={errors.height_m}
           />
         </div>
-      </div>
+      </FormSection>
 
       {/* 2. Options Section */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Tag className="w-4 h-4 text-muted-foreground" />
-              รุ่น/สเปค
-            </label>
-            {isFull && (
+      <FormSection
+        icon={Tag}
+        iconClass={theme.icon}
+        title="รุ่น/สเปค"
+        headerRight={
+          isFull && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 px-2 gap-1 text-muted-foreground hover:text-emerald-600"
+              className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
               onClick={() =>
                 openModal('materialSummary', { initialTab: 'catalog', initialCategory: FAVORITE_CATEGORIES.PARTITION })
               }
@@ -168,55 +165,54 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
-            )}
-          </div>
-          <ComboboxInput
-            placeholder="เลือกสเปค (เช่น PVC ทึบ)..."
-            value={formData.code || ''}
-            onChange={handleCodeChange}
-            options={suggestions}
+          )
+        }
+      >
+        <ComboboxInput
+          placeholder="เลือกสเปค (เช่น PVC ทึบ)..."
+          value={formData.code || ''}
+          onChange={handleCodeChange}
+          options={suggestions}
+        />
+        <div className="relative">
+          <Input
+            placeholder="ราคา (บาท/ตร.ล.)"
+            inputMode="decimal"
+            value={formData.price_sqyd || ''}
+            onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
+            warning={warnings.price_sqyd}
+            className="bg-muted/50"
           />
-          <div className="relative">
-            <Input
-              placeholder="ราคา (บาท/ตร.ล.)"
-              inputMode="decimal"
-              value={formData.price_sqyd || ''}
-              onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
-              warning={warnings.price_sqyd}
-              className="bg-muted/50"
-            />
-            {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
-              <button
-                type="button"
-                onClick={() =>
-                  saveToCatalog(
-                    FAVORITE_CATEGORIES.PARTITION,
-                    formData.code,
-                    formData.price_sqyd
-                  )
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
-              >
-                <Star
-                  className={cn(
-                    'w-5 h-5',
-                    isInCatalog(FAVORITE_CATEGORIES.PARTITION, formData.code)
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-muted-foreground'
-                  )}
-                />
-              </button>
-            )}
-          </div>
+          {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                saveToCatalog(
+                  FAVORITE_CATEGORIES.PARTITION,
+                  formData.code,
+                  formData.price_sqyd
+                )
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
+            >
+              <Star
+                className={cn(
+                  'w-5 h-5',
+                  isInCatalog(FAVORITE_CATEGORIES.PARTITION, formData.code)
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-muted-foreground'
+                )}
+              />
+            </button>
+          )}
         </div>
-
-      </div>
+      </FormSection>
 
       {/* รูปแบบการเปิด (installation spec — collapsible escape hatch in Lite) */}
       <AdvancedSection expanded={isFull} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">รูปแบบการเปิด</label>
-          <div className="flex gap-2">
+          <div className={cn(SEGMENTED_TRACK, 'flex gap-1')}>
             {[
               { l: 'เก็บข้างเดียว', v: OPENING_STYLES.SIDE, i: ArrowRight },
               { l: 'แยกกลาง', v: OPENING_STYLES.CENTER, i: SplitSquareHorizontal },
@@ -225,12 +221,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
                 key={opt.v}
                 type="button"
                 onClick={() => handleChange('opening_style', opt.v)}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm border transition-all',
-                  formData.opening_style === opt.v
-                    ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 font-medium'
-                    : 'bg-background border-border text-muted-foreground hover:bg-muted'
-                )}
+                className={cn('flex-1', segmentedItemClass(formData.opening_style === opt.v, theme))}
               >
                 <opt.i className="w-4 h-4" />
                 {opt.l}
@@ -241,14 +232,12 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
       </AdvancedSection>
 
       {/* 4. Notes & Actions */}
-      <div className="pt-2 space-y-4">
-        <Input
-          label="หมายเหตุ"
-          value={formData.notes || ''}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="bg-muted/50 border-transparent focus:bg-background"
-        />
-      </div>
+      <Input
+        label="หมายเหตุ"
+        value={formData.notes || ''}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        className="bg-muted/50 border-transparent focus:bg-background"
+      />
       </FormTwoColumn>
     </form>
   );

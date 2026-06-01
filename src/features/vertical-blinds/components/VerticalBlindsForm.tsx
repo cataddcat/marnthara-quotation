@@ -22,10 +22,12 @@ import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
 export const VERTICAL_BLINDS_FORM_ID = 'vertical-blinds-edit-form';
@@ -67,6 +69,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
+  const theme = getItemTheme(ITEM_TYPES.VERTICAL_BLIND);
 
   const previewItem = useMemo<ItemData>(
     () => ({ ...DEFAULT_DATA, ...formData, type: ITEM_TYPES.VERTICAL_BLIND, id: 'preview' }),
@@ -99,14 +102,14 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass="bg-cyan-500/5"
+      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       rows={[
         {
           label: 'พื้นที่ (ตร.ล.):',
           value: pricePreview.breakdown?.areaSqyd?.toFixed(2) || '0.00',
-          valueClass: 'text-teal-600 dark:text-teal-400',
+          valueClass: theme.text,
         },
       ]}
       total={pricePreview.total}
@@ -127,11 +130,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   return (
     <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-foreground font-bold">
-          <Columns className="w-5 h-5 text-sky-500" />
-          <h2>ขนาดพื้นที่ (ม.)</h2>
-        </div>
+      <FormSection icon={Columns} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -153,21 +152,19 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             error={errors.height_m}
           />
         </div>
-      </div>
+      </FormSection>
 
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-4">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Tag className="w-4 h-4 text-muted-foreground" />
-              รหัส/รุ่น
-            </label>
-            {isFull && (
+      <FormSection
+        icon={Tag}
+        iconClass={theme.icon}
+        title="รหัส/รุ่น"
+        headerRight={
+          isFull && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 px-2 gap-1 text-muted-foreground hover:text-cyan-600"
+              className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
               onClick={() =>
                 openModal('materialSummary', { initialTab: 'catalog', initialCategory: FAVORITE_CATEGORIES.VERTICAL_BLIND })
               }
@@ -175,110 +172,89 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
-            )}
-          </div>
-          <ComboboxInput
-            placeholder="ระบุรุ่น/รหัส..."
-            value={formData.code || ''}
-            onChange={handleCodeChange}
-            options={suggestions}
+          )
+        }
+      >
+        <ComboboxInput
+          placeholder="ระบุรุ่น/รหัส..."
+          value={formData.code || ''}
+          onChange={handleCodeChange}
+          options={suggestions}
+        />
+        <div className="relative">
+          <Input
+            placeholder="ราคา (บาท/ตร.ล.)"
+            inputMode="decimal"
+            value={formData.price_sqyd || ''}
+            onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
+            warning={warnings.price_sqyd}
           />
-          <div className="relative">
-            <Input
-              placeholder="ราคา (บาท/ตร.ล.)"
-              inputMode="decimal"
-              value={formData.price_sqyd || ''}
-              onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
-              warning={warnings.price_sqyd}
-            />
-            {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
-              <button
-                type="button"
-                onClick={() =>
-                  saveToCatalog(
-                    FAVORITE_CATEGORIES.VERTICAL_BLIND,
-                    formData.code,
-                    formData.price_sqyd
-                  )
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
-              >
-                <Star
-                  className={cn(
-                    'w-5 h-5',
-                    isInCatalog(FAVORITE_CATEGORIES.VERTICAL_BLIND, formData.code)
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-muted-foreground'
-                  )}
-                />
-              </button>
-            )}
-          </div>
+          {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                saveToCatalog(
+                  FAVORITE_CATEGORIES.VERTICAL_BLIND,
+                  formData.code,
+                  formData.price_sqyd
+                )
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
+            >
+              <Star
+                className={cn(
+                  'w-5 h-5',
+                  isInCatalog(FAVORITE_CATEGORIES.VERTICAL_BLIND, formData.code)
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-muted-foreground'
+                )}
+              />
+            </button>
+          )}
         </div>
-
-      </div>
+      </FormSection>
 
       {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch in Lite) */}
       <AdvancedSection expanded={isFull} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-muted-foreground">เก็บใบ</label>
-            <div className="flex flex-col gap-1">
+            <div className={cn(SEGMENTED_TRACK, 'flex flex-col gap-1')}>
               <button
                 type="button"
                 onClick={() => handleChange('opening_style', OPENING_STYLES.SIDE)}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-xs border transition-all',
-                  formData.opening_style === OPENING_STYLES.SIDE
-                    ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-600 dark:text-cyan-400'
-                    : 'border-transparent text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.opening_style === OPENING_STYLES.SIDE, theme)}
               >
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-3.5 h-3.5" />
                 เก็บข้างเดียว
               </button>
               <button
                 type="button"
                 onClick={() => handleChange('opening_style', OPENING_STYLES.CENTER)}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-xs border transition-all',
-                  formData.opening_style === OPENING_STYLES.CENTER
-                    ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-600 dark:text-cyan-400'
-                    : 'border-transparent text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.opening_style === OPENING_STYLES.CENTER, theme)}
               >
-                <SplitSquareHorizontal className="w-3 h-3" />
+                <SplitSquareHorizontal className="w-3.5 h-3.5" />
                 แยกกลาง
               </button>
             </div>
           </div>
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
-            <div className="flex flex-col gap-1">
+            <div className={cn(SEGMENTED_TRACK, 'flex flex-col gap-1')}>
               <button
                 type="button"
                 onClick={() => handleChange('adjustment_side', 'ขวา')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-xs border transition-all',
-                  formData.adjustment_side === 'ขวา'
-                    ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-600 dark:text-cyan-400'
-                    : 'border-transparent text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.adjustment_side === 'ขวา', theme)}
               >
-                <ArrowRightToLine className="w-3 h-3" />
+                <ArrowRightToLine className="w-3.5 h-3.5" />
                 ขวา
               </button>
               <button
                 type="button"
                 onClick={() => handleChange('adjustment_side', 'ซ้าย')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-xs border transition-all',
-                  formData.adjustment_side === 'ซ้าย'
-                    ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-600 dark:text-cyan-400'
-                    : 'border-transparent text-muted-foreground hover:bg-muted'
-                )}
+                className={segmentedItemClass(formData.adjustment_side === 'ซ้าย', theme)}
               >
-                <ArrowLeftToLine className="w-3 h-3" />
+                <ArrowLeftToLine className="w-3.5 h-3.5" />
                 ซ้าย
               </button>
             </div>
@@ -286,14 +262,12 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
         </div>
       </AdvancedSection>
 
-      <div className="pt-2 space-y-4">
-        <Input
-          label="หมายเหตุ"
-          value={formData.notes || ''}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="bg-muted/50 border-transparent focus:bg-background"
-        />
-      </div>
+      <Input
+        label="หมายเหตุ"
+        value={formData.notes || ''}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        className="bg-muted/50 border-transparent focus:bg-background"
+      />
       </FormTwoColumn>
     </form>
   );

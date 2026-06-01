@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input';
 import { Scissors, DollarSign } from 'lucide-react';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
+import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 
 export const REMOVAL_FORM_ID = 'removal-edit-form';
@@ -94,12 +95,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
   return (
     <form id={REMOVAL_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
-      <section className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
-        <div className="flex items-center gap-2 text-foreground font-bold mb-2">
-          <Scissors className="w-5 h-5 text-destructive" />
-          <h2>รายละเอียดงานรื้อถอน</h2>
-        </div>
-
+      <FormSection icon={Scissors} iconClass="text-destructive" title="รายละเอียดงานรื้อถอน">
         <div className="space-y-3">
           <Input
             label="รายการ / รายละเอียด"
@@ -156,16 +152,14 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
             />
           </div>
         </div>
-      </section>
+      </FormSection>
 
-      <div className="pt-2">
-        <Input
-          label="หมายเหตุ"
-          value={formData.notes}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="bg-muted/50 border-transparent focus:bg-background transition-colors"
-        />
-      </div>
+      <Input
+        label="หมายเหตุ"
+        value={formData.notes}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        className="bg-muted/50 border-transparent focus:bg-background transition-colors"
+      />
       </FormTwoColumn>
     </form>
   );

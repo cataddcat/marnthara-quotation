@@ -3,6 +3,7 @@ import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLE_FEATURES } from '@/config/constants';
 import { FORMULAS } from '@/config/formulas';
 import { Input } from '@/components/ui/Input';
+import { FormSection } from '@/components/ui/FormSection';
 import {
   Wrench,
   Palette,
@@ -97,15 +98,14 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
     isWave;
 
   return (
-    <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-5">
-      <div className="flex items-center gap-2 text-foreground font-bold pb-2 border-b border-border/50">
-        <Wrench className="w-5 h-5 text-primary" />
-        <h2>อุปกรณ์ม่าน</h2>
-        <span className="text-xs font-normal text-muted-foreground ml-auto">
-          ข้อมูลสำหรับฝ่ายผลิต
-        </span>
-      </div>
-
+    <FormSection
+      icon={Wrench}
+      iconClass="text-primary"
+      title="อุปกรณ์ม่าน"
+      headerRight={
+        <span className="text-xs text-muted-foreground">ข้อมูลสำหรับฝ่ายผลิต</span>
+      }
+    >
       {!hasAnyHardware && (
         <div className="flex flex-col items-center justify-center py-6 text-muted-foreground gap-2">
           <CheckCircle2 className="w-10 h-10 text-emerald-500/40" />
@@ -234,6 +234,6 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
           />
         </div>
       )}
-    </div>
+    </FormSection>
   );
 };
