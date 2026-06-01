@@ -18,25 +18,47 @@ export const fmtDimension = (v: number | string): string => {
   return num > 0 ? num.toFixed(2) : '';
 };
 
-// Smart Input Logic: 200 -> 2.00
-export const normalizeDimension = (value: string): string => {
-  // 1. ล้างคอมม่าและช่องว่าง
-  const trimmed = value.replace(/,/g, '').trim();
-  if (trimmed === '' || trimmed === '.') return '';
+export interface DimensionResult {
+  /** ค่าเมตร (string, 2 ทศนิยม) พร้อมใช้ — '' เมื่อว่าง */
+  value: string;
+  /** true เฉพาะตอนแปลง ซม.→ม. (จำนวนเต็ม ≥10 ÷100) — ใช้ตัดสินใจโชว์ป้ายย้อนกลับ */
+  convertedFromCm: boolean;
+  /** ค่าที่พิมพ์ตีความเป็น "เมตรตามตัวอักษร" (สำหรับปุ่มย้อนกลับ) */
+  rawMeters: string;
+}
 
-  let num = parseFloat(trimmed);
-
-  // 2. ถ้าไม่ใช่ตัวเลข ให้คืนค่าเดิมไปเลย (ป้องกัน Error)
-  if (isNaN(num)) return value;
-
-  // 3. Logic: ถ้าค่า >= 10 ให้สันนิษฐานว่าเป็น cm -> หาร 100 เป็นเมตร
-  if (Math.abs(num) >= 10) {
-    num = num / 100;
+/**
+ * Smart dimension parsing → เมตร
+ * กฎ (predictable): จุดทศนิยม = เมตร · จำนวนเต็ม <10 = เมตร · จำนวนเต็ม ≥10 = เซนติเมตร (÷100)
+ * — การมี "." คือสัญญาณว่าผู้ใช้ตั้งใจป้อนเมตรอยู่แล้ว จึงไม่หาร (กันเคส 12.5 → 0.13)
+ */
+export const parseDimension = (input: string): DimensionResult => {
+  // ล้างคอมม่า (หลักพัน) และช่องว่าง
+  const trimmed = input.replace(/,/g, '').trim();
+  if (trimmed === '' || trimmed === '.') {
+    return { value: '', convertedFromCm: false, rawMeters: '' };
   }
 
-  // 4. คืนค่าเป็นทศนิยม 2 ตำแหน่งเสมอ
-  return num.toFixed(2);
+  const num = parseFloat(trimmed);
+
+  // ไม่ใช่ตัวเลข → คืนค่าเดิม (กัน error)
+  if (isNaN(num)) {
+    return { value: input, convertedFromCm: false, rawMeters: input };
+  }
+
+  // จำนวนเต็ม ≥10 (ไม่มีจุดทศนิยม) = ป้อนเป็นเซนติเมตร → หาร 100
+  const convertedFromCm = !trimmed.includes('.') && Math.abs(num) >= 10;
+  const meters = convertedFromCm ? num / 100 : num;
+
+  return {
+    value: meters.toFixed(2),
+    convertedFromCm,
+    rawMeters: Math.abs(num).toFixed(2),
+  };
 };
+
+// Smart Input Logic: 200 -> 2.00 (wrapper บางๆ — decimal-guard ติดไปทุก caller)
+export const normalizeDimension = (value: string): string => parseDimension(value).value;
 
 export const fmt = (n: number, fixed = 2, asCurrency = false): string => {
   if (!Number.isFinite(n)) return '0';

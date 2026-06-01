@@ -126,6 +126,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
                 </button>
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={formData.quantity}
                   onChange={(e) => handleNumberChange('quantity', e.target.value)}
                   className="w-full h-10 text-center border-y border-input bg-background text-foreground font-bold"

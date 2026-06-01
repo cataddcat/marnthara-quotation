@@ -1,7 +1,11 @@
-import React, { useId, useRef } from 'react';
+import React, { useId, useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { X, AlertCircle, AlertTriangle } from 'lucide-react';
-import { normalizeDimension } from '@/utils/formatters';
+import { X, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
+import { parseDimension, toNum } from '@/utils/formatters';
+
+/** ช่วงขนาดสมเหตุสมผล (ม.) — นอกช่วงนี้เตือน (ไม่บล็อก) */
+const DIM_MIN_M = 0.1;
+const DIM_MAX_M = 15;
 
 interface InputProps extends Omit<React.ComponentProps<'input'>, 'prefix' | 'size'> {
   label?: string;
@@ -26,7 +30,9 @@ export const Input = ({
   onChange,
   onClear,
   onBlur,
+  onFocus,
   type = 'text',
+  inputMode,
   error,
   warning,
   size = 'md',
@@ -35,22 +41,66 @@ export const Input = ({
   const generatedId = useId();
   const id = providedId || generatedId;
   const internalRef = useRef<HTMLInputElement>(null);
-  
+
+  // ป้ายแปลง ซม.→ม. (โปร่งใส + ย้อนได้) และสถานะ focus (กันเตือนกระพริบระหว่างพิมพ์)
+  const [conversion, setConversion] = useState<{ from: string; to: string; undoTo: string } | null>(
+    null
+  );
+  const [focused, setFocused] = useState(false);
+  const conversionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (conversionTimer.current) clearTimeout(conversionTimer.current);
+  }, []);
+
+  // Smart numeric keyboard: ช่องตัวเลข (ขนาด/number) เด้ง numpad บนมือถือเองโดยไม่ต้องระบุซ้ำ
+  // — caller ยัง override ได้ (เช่นอยากได้ 'numeric' แบบไม่มีจุดทศนิยม)
+  const resolvedInputMode =
+    inputMode ?? (isDimension || type === 'number' ? 'decimal' : undefined);
+
   const refToUse = (externalRef || internalRef) as React.MutableRefObject<HTMLInputElement | null>;
 
+  // ยิง onChange ด้วยค่าใหม่ (synthetic event ขั้นต่ำ — caller อ่าน e.target.value)
+  const emitValue = (val: string) =>
+    onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>);
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setFocused(true);
+    onFocus?.(e);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (conversion) setConversion(null); // ผู้ใช้เริ่มแก้ → ซ่อนป้าย
+    onChange?.(e);
+  };
+
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setFocused(false);
     if (isDimension && onChange) {
-      const currentValue = e.target.value;
-      const smartValue = normalizeDimension(currentValue);
-      if (smartValue !== currentValue && smartValue !== '') {
-        const syntheticEvent = {
+      const raw = e.target.value;
+      const { value: smart, convertedFromCm, rawMeters } = parseDimension(raw);
+      if (smart !== raw && smart !== '') {
+        onChange({
           ...e,
-          target: { ...e.target, value: smartValue },
-        } as React.ChangeEvent<HTMLInputElement>;
-        onChange(syntheticEvent);
+          target: { ...e.target, value: smart },
+        } as React.ChangeEvent<HTMLInputElement>);
+
+        if (convertedFromCm) {
+          if (conversionTimer.current) clearTimeout(conversionTimer.current);
+          setConversion({ from: raw.trim(), to: smart, undoTo: rawMeters });
+          conversionTimer.current = setTimeout(() => setConversion(null), 5000);
+        } else {
+          setConversion(null);
+        }
       }
     }
     onBlur?.(e);
+  };
+
+  const handleUndo = () => {
+    if (!conversion) return;
+    emitValue(conversion.undoTo);
+    setConversion(null);
   };
 
   const handleClear = () => {
@@ -60,10 +110,20 @@ export const Input = ({
     }
   };
 
+  // เตือนค่าขนาดผิดปกติ (soft, ไม่บล็อก) — เฉพาะตอนไม่ได้ focus เพื่อไม่กระพริบระหว่างพิมพ์
+  const numericValue =
+    typeof value === 'number' || typeof value === 'string' ? value : undefined;
+  const dimWarning =
+    isDimension && !focused && toNum(numericValue) > 0 &&
+    (toNum(numericValue) < DIM_MIN_M || toNum(numericValue) > DIM_MAX_M)
+      ? 'ตรวจสอบขนาด (ม.)'
+      : undefined;
+  const effectiveWarning = warning ?? dimWarning;
+
   // Determine status color
   const statusClasses = error
     ? 'border-destructive focus:ring-destructive text-destructive'
-    : warning
+    : effectiveWarning
     ? 'border-warning focus:ring-warning text-warning-foreground'
     : 'border-input focus:ring-primary';
 
@@ -100,8 +160,10 @@ export const Input = ({
           ref={refToUse}
           id={id}
           type={type}
+          inputMode={resolvedInputMode}
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
+          onFocus={handleFocus}
           onBlur={handleBlur}
           className={cn(
             'flex w-full border bg-background py-2 shadow-sm transition-all',
@@ -141,10 +203,26 @@ export const Input = ({
           <AlertCircle className="w-3.5 h-3.5 text-destructive" />
           <span className="text-xs font-medium text-destructive">{error}</span>
         </div>
-      ) : warning ? (
+      ) : conversion ? (
+        <div className="flex items-center justify-between gap-2 px-1 animate-fade-in">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">
+              ป้อน {conversion.from} → <span className="font-semibold text-foreground">{conversion.to} ม.</span>
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            className="text-xs font-semibold text-primary hover:underline shrink-0"
+          >
+            ใช้ {conversion.from} ม.
+          </button>
+        </div>
+      ) : effectiveWarning ? (
         <div className="flex items-center gap-1.5 px-1 animate-fade-in" role="alert">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-          <span className="text-xs font-medium text-warning-foreground">{warning}</span>
+          <span className="text-xs font-medium text-warning-foreground">{effectiveWarning}</span>
         </div>
       ) : null}
     </div>

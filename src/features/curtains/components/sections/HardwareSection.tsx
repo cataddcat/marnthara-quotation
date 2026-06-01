@@ -227,6 +227,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
             prefix={<Ruler className="w-4 h-4 text-muted-foreground" />}
             placeholder="เช่น 10"
             suffix="ซม."
+            inputMode="decimal"
             value={data.pleat_distance || ''}
             onChange={(e) => onChange('pleat_distance', e.target.value)}
             error={errors?.pleat_distance}
