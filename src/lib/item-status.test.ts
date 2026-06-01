@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isItemIncomplete, hasMinimumItemData } from './item-status';
+import { isItemIncomplete, hasMinimumItemData, incompleteLabel } from './item-status';
 import { ItemData } from '@/types';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 
@@ -92,15 +92,84 @@ describe('hasMinimumItemData', () => {
   });
 });
 
-describe('isItemIncomplete — ประเภทอื่น (ยังไม่รองรับ)', () => {
-  it('งานรื้อถอน → false เสมอ', () => {
-    const removal = {
-      type: ITEM_TYPES.REMOVAL,
-      id: 'r1',
-      quantity: 1,
-      price_per_item: 0,
-      description: '',
-    } as ItemData;
-    expect(isItemIncomplete(removal)).toBe(false);
+const area = (over: Record<string, unknown>): ItemData =>
+  ({
+    type: ITEM_TYPES.ROLLER_BLIND,
+    id: 'a1',
+    width_m: '2.5',
+    height_m: '2.0',
+    price_sqyd: '',
+    code: '',
+    ...over,
+  }) as ItemData;
+
+const wallpaper = (over: Record<string, unknown>): ItemData =>
+  ({
+    type: ITEM_TYPES.WALLPAPER,
+    id: 'w1',
+    widths: ['3.0'],
+    height_m: '2.5',
+    price_per_roll: '',
+    ...over,
+  }) as ItemData;
+
+const removal = (over: Record<string, unknown>): ItemData =>
+  ({
+    type: ITEM_TYPES.REMOVAL,
+    id: 'r1',
+    quantity: 1,
+    price_per_item: 0,
+    description: 'รื้อม่านเก่า',
+    ...over,
+  }) as ItemData;
+
+describe('isItemIncomplete — สินค้าพื้นที่ (มู่ลี่/พาร์ทิชัน)', () => {
+  it('มีขนาดแต่ไม่มีราคา → true', () => {
+    expect(isItemIncomplete(area({}))).toBe(true);
+  });
+  it('ใส่ราคา (price_sqyd) แล้ว → false', () => {
+    expect(isItemIncomplete(area({ price_sqyd: '350' }))).toBe(false);
+  });
+  it('ยังไม่มีขนาด → false', () => {
+    expect(isItemIncomplete(area({ width_m: '' }))).toBe(false);
+  });
+  it('กำหนดราคาเอง → false', () => {
+    expect(isItemIncomplete(area({ enable_set_price: true, set_price_override: 1200 }))).toBe(false);
+  });
+  it('พาร์ทิชันใช้เกณฑ์เดียวกัน', () => {
+    expect(isItemIncomplete(area({ type: ITEM_TYPES.PARTITION }))).toBe(true);
+  });
+});
+
+describe('isItemIncomplete — วอลเปเปอร์', () => {
+  it('มีผนัง+สูงแต่ไม่มีราคา/ม้วน → true', () => {
+    expect(isItemIncomplete(wallpaper({}))).toBe(true);
+  });
+  it('ใส่ราคา/ม้วนแล้ว → false', () => {
+    expect(isItemIncomplete(wallpaper({ price_per_roll: '900' }))).toBe(false);
+  });
+  it('ยังไม่มีผนัง → false', () => {
+    expect(isItemIncomplete(wallpaper({ widths: [''] }))).toBe(false);
+  });
+});
+
+describe('isItemIncomplete — งานรื้อถอน', () => {
+  it('มีรายละเอียดแต่ไม่มีราคา → true', () => {
+    expect(isItemIncomplete(removal({}))).toBe(true);
+  });
+  it('ใส่ราคาต่อหน่วยแล้ว → false', () => {
+    expect(isItemIncomplete(removal({ price_per_item: 300 }))).toBe(false);
+  });
+  it('ไม่มีรายละเอียด → false', () => {
+    expect(isItemIncomplete(removal({ description: '' }))).toBe(false);
+  });
+});
+
+describe('incompleteLabel', () => {
+  it('ผ้าม่าน → "ยังไม่ใส่ผ้า"', () => {
+    expect(incompleteLabel(curtain({}))).toBe('ยังไม่ใส่ผ้า');
+  });
+  it('ประเภทอื่น → "ยังไม่ใส่ราคา"', () => {
+    expect(incompleteLabel(area({}))).toBe('ยังไม่ใส่ราคา');
   });
 });
