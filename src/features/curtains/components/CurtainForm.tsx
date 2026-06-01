@@ -95,8 +95,12 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     </button>
   );
 
-  // ส่วนรายละเอียด — ใช้ร่วมทั้ง Lite (ใน collapsible) และ Full (กางไว้)
-  const detailSections = (
+  const dimensionSection = (
+    <DimensionSection data={formData} onChange={safeHandleNumberChange} errors={errors} />
+  );
+
+  // กลุ่ม input (ผ้า/สไตล์/อุปกรณ์) — ใช้ร่วมทั้ง Lite (ใน collapsible) และ Full (คอลัมน์ซ้าย)
+  const inputSections = (
     <>
       <FabricSection
         data={formData}
@@ -124,14 +128,16 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
           warnings={warnings}
         />
       )}
-
-      <PriceSummary
-        data={formData}
-        onChange={safeHandleChange}
-        onNumberChange={safeHandleNumberChange}
-        showProMode={showAdvanced}
-      />
     </>
+  );
+
+  const priceSummary = (
+    <PriceSummary
+      data={formData}
+      onChange={safeHandleChange}
+      onNumberChange={safeHandleNumberChange}
+      showProMode={showAdvanced}
+    />
   );
 
   return (
@@ -141,27 +147,34 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
       onBlur={() => onAutoSave?.(formData)}
       className="space-y-3"
     >
-      <DimensionSection data={formData} onChange={safeHandleNumberChange} errors={errors} />
-
       {isLite ? (
-        <CollapsibleSection
-          title="รายละเอียดสินค้า"
-          defaultOpen={mode === 'edit'}
-          badge={
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums mr-1">
-              ฿{fmtTH(livePrice)}
-            </span>
-          }
-          hint="ผ้า • สไตล์ • ราคา — ใส่ทีหลังได้"
-        >
-          {advancedToggle}
-          {detailSections}
-          {notesInput}
-        </CollapsibleSection>
+        <>
+          {dimensionSection}
+          <CollapsibleSection
+            title="รายละเอียดสินค้า"
+            defaultOpen={mode === 'edit'}
+            badge={
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums mr-1">
+                ฿{fmtTH(livePrice)}
+              </span>
+            }
+            hint="ผ้า • สไตล์ • ราคา — ใส่ทีหลังได้"
+          >
+            {advancedToggle}
+            {inputSections}
+            {priceSummary}
+            {notesInput}
+          </CollapsibleSection>
+        </>
       ) : (
-        <div className="space-y-4">
-          {detailSections}
-          {notesInput}
+        // Full (เดสก์ท็อป): 2 คอลัมน์ — input ซ้าย / สรุปราคา+ต้นทุน sticky ขวา
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
+          <div className="space-y-4">
+            {dimensionSection}
+            {inputSections}
+            {notesInput}
+          </div>
+          <div className="lg:sticky lg:top-0 space-y-4">{priceSummary}</div>
         </div>
       )}
     </form>
