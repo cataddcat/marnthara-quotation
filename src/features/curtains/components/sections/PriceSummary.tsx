@@ -145,9 +145,9 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
                 className={cn(
                   'inline-flex h-2.5 w-2.5 rounded-full ring-2 ring-background shrink-0 transition-colors',
                   trafficLightColor,
-                  (analysis.status === 'warning' || analysis.status === 'loss') && 'animate-pulse'
+                  (status === 'warning' || status === 'loss') && 'animate-pulse'
                 )}
-                title={analysis.status}
+                title={status}
               />
             )}
           </div>
