@@ -65,6 +65,7 @@ const ACCESSORY_LABELS: Record<string, string> = {
   rail_louis: 'ราง/กล่อง ม่านหลุยส์',
   eyelet_ring: 'ห่วงตาไก่ (ต่อชิ้น)',
   tape_wave: 'เทปหัวม่าน/โซ่ (ต่อเมตร)',
+  rod_bracket: 'ขาจับราง ม่านแป๊บ (ต่อขา)',
   install_point: 'ค่าติดตั้ง (ต่อจุด)',
   install_min: 'ค่าติดตั้งขั้นต่ำ (ต่อเที่ยว)',
   transport_base: 'ค่าเดินทาง กทม./ปริมณฑล',

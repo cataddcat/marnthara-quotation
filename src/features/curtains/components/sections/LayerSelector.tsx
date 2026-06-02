@@ -7,9 +7,11 @@ import { useHaptic } from '@/hooks/useHaptic';
 interface LayerSelectorProps {
   value: string;
   onChange: (val: string) => void;
+  /** โหมดที่เลือกได้ (default = ทั้ง 3) — ม่านแป๊บทำ 2 ชั้นไม่ได้ จึงตัด DOUBLE ออก */
+  allowedModes?: string[];
 }
 
-export const LayerSelector: React.FC<LayerSelectorProps> = ({ value, onChange }) => {
+export const LayerSelector: React.FC<LayerSelectorProps> = ({ value, onChange, allowedModes }) => {
   const { trigger } = useHaptic();
 
   const handleSelect = (mode: string) => {
@@ -17,29 +19,38 @@ export const LayerSelector: React.FC<LayerSelectorProps> = ({ value, onChange })
     onChange(mode);
   };
 
-  const options = [
-    { 
-      id: LAYER_MODES.MAIN, 
-      label: 'ผ้าทึบ', 
+  const allOptions = [
+    {
+      id: LAYER_MODES.MAIN,
+      label: 'ผ้าทึบ',
       icon: Moon,
-      desc: 'Single Layer' 
+      desc: 'Single Layer'
     },
-    { 
-      id: LAYER_MODES.DOUBLE, 
-      label: 'ทึบ + โปร่ง', 
+    {
+      id: LAYER_MODES.DOUBLE,
+      label: 'ทึบ + โปร่ง',
       icon: Layers,
-      desc: 'Double Layer' 
+      desc: 'Double Layer'
     },
-    { 
-      id: LAYER_MODES.SHEER, 
-      label: 'ผ้าโปร่ง', 
+    {
+      id: LAYER_MODES.SHEER,
+      label: 'ผ้าโปร่ง',
       icon: Sun,
-      desc: 'Sheer Only' 
+      desc: 'Sheer Only'
     },
   ];
 
+  const options = allowedModes
+    ? allOptions.filter((opt) => allowedModes.includes(opt.id))
+    : allOptions;
+
   return (
-    <div className="grid grid-cols-3 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50">
+    <div
+      className={cn(
+        'grid gap-2 p-1 bg-muted/40 rounded-xl border border-border/50',
+        options.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+      )}
+    >
       {options.map((opt) => {
         const isSelected = value === opt.id;
         return (

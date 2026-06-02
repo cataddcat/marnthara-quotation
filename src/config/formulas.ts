@@ -48,6 +48,7 @@ export interface FormulaConfig {
     pin_spacing: number;
     pin_extra: number;
     roman_sets_per_window: number;
+    rod_brackets_per_set: number;
   };
 }
 
@@ -164,6 +165,13 @@ export const FORMULAS: FormulaConfig = {
      * ⚠️ ถ้าหน้าต่างกว้างมาก → ต้องเพิ่ม manual
      */
     roman_sets_per_window: 1,
+
+    /**
+     * 🎯 ขาจับราง ม่านแป๊บ/สอดราง (Rod Brackets)
+     *   จำนวน = rod_brackets_per_set ขา/ชุด (คงที่)
+     *   ต้นทุน = จำนวน × ราคา/ขา (accessoryCosts.rod_bracket)
+     */
+    rod_brackets_per_set: 4,
   },
 };
 

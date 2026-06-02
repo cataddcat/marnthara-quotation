@@ -157,7 +157,7 @@ export const CurtainStrategy: PricingStrategy<CurtainItemInput> = {
     if (item.style === 'ลอน' && item.button_spacing) {
       parts.push(`ลอน ${item.button_spacing} ซม.`);
     }
-    if (item.opening_style) parts.push(`(${item.opening_style})`);
+    if (item.opening_style && item.style !== 'พับ') parts.push(`(${item.opening_style})`);
     if (item.layer_mode === LAYER_MODES.DOUBLE) parts.push('ผ้าทึบ+โปร่ง');
     return parts;
   }

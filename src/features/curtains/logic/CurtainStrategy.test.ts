@@ -173,4 +173,28 @@ describe('CurtainStrategy.validate / getSpecs', () => {
     expect(specs.join(' ')).toContain('ลอน 14.5');
     expect(specs).toContain('ผ้าทึบ+โปร่ง');
   });
+
+  it('getSpecs พับ → ไม่แสดงทิศทางการเปิด (opening_style ถูกละ)', () => {
+    const specs = CurtainStrategy.getSpecs(
+      asCurtain({
+        width_m: 1.5,
+        height_m: 2,
+        style: 'พับ',
+        opening_style: 'แยกกลาง',
+      })
+    );
+    expect(specs.join(' ')).not.toContain('แยกกลาง');
+  });
+
+  it('getSpecs สไตล์อื่น (จีบ) → แสดงทิศทางการเปิดตามปกติ', () => {
+    const specs = CurtainStrategy.getSpecs(
+      asCurtain({
+        width_m: 1.5,
+        height_m: 2,
+        style: 'จีบ',
+        opening_style: 'แยกกลาง',
+      })
+    );
+    expect(specs.join(' ')).toContain('แยกกลาง');
+  });
 });

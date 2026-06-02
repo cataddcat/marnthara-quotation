@@ -89,13 +89,15 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
   };
   const isPleated = data.style === 'จีบ';
   const isWave = data.style === 'ลอน';
+  const isRod = data.style === 'แป๊บ';
   const hasAnyHardware =
     features.hasRail ||
     features.hasHook ||
     features.hasChain ||
     features.hasEyelet ||
     isPleated ||
-    isWave;
+    isWave ||
+    isRod;
 
   return (
     <FormSection
@@ -216,6 +218,23 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
             error={errors?.eyelet_color}
             className="h-12"
           />
+        </div>
+      )}
+
+      {/* ขาจับราง — ม่านแป๊บ/สอดราง (คงที่ 4 ขา/ชุด · รวมในต้นทุนแล้ว) */}
+      {isRod && (
+        <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
+          <div className="shrink-0 w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <Wrench className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-foreground">
+              ขาจับราง {FORMULAS.materials.rod_brackets_per_set} ขา/ชุด
+            </div>
+            <div className="text-xs text-muted-foreground leading-tight">
+              คิดรวมในต้นทุนแล้ว — ปรับราคา/ขาได้ที่ “ตั้งค่าการผลิต”
+            </div>
+          </div>
         </div>
       )}
 

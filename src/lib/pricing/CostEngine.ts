@@ -3,13 +3,14 @@
 import { useAppStore } from '@/store/useAppStore';
 import { ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { 
-  isCurtainItem, 
-  isWallpaperItem, 
-  isAreaItem, 
-  isRemovalItem 
+import {
+  isCurtainItem,
+  isWallpaperItem,
+  isAreaItem,
+  isRemovalItem
 } from '@/lib/type-guards';
 import { toNum } from '@/utils/formatters';
+import { FORMULAS } from '@/config/formulas';
 
 export interface CostBreakdown {
   totalCost: number;
@@ -45,7 +46,7 @@ export const CostEngine = {
     let sheerCost = 0;
     let railCost = 0;
     let laborCost = 0;
-    const accCost = 0; // reserved for future accessory cost (eyelet rings, brackets, etc.)
+    let accCost = 0; // อุปกรณ์เสริม (เช่น ขาจับราง ม่านแป๊บ)
     let isLaborMinApplied = false; // ✅ NEW: เก็บสถานะว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
     
     let usedQuantity = 0;
@@ -115,6 +116,11 @@ export const CostEngine = {
         const costPerMeterRail = accessoryCosts[railKey] || 0;
         railCost = width * costPerMeterRail;
 
+        // C2. ขาจับราง ม่านแป๊บ/สอดราง — คงที่ 4 ขา/ชุด (ไม่ขึ้นกับความกว้าง)
+        if (item.style === 'แป๊บ') {
+          accCost = FORMULAS.materials.rod_brackets_per_set * (accessoryCosts['rod_bracket'] || 0);
+        }
+
         // D. ต้นทุนค่าแรง (Labor)
         const laborKey = item.style;
         const laborData = laborCosts[laborKey];
@@ -162,7 +168,7 @@ export const CostEngine = {
         }
 
         // รวมต้นทุนทั้งหมด
-        totalCost = fabricCost + sheerCost + railCost + laborCost;
+        totalCost = fabricCost + sheerCost + railCost + laborCost + accCost;
     }
 
     // ==========================================

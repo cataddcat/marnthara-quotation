@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import type { LaborCost } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';
+import { FORMULAS } from '@/config/formulas';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test fixtures — ใช้ค่าจริงจาก src/config/formulas.ts (FORMULAS เป็น compile-time const)
@@ -371,6 +372,48 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
       // แม้ profit margin จะดูดี แต่ฟ้า code ใน Vault ไม่เจอ → unknown
       expect(result.status).toBe('unknown');
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // กลุ่ม F: ขาจับราง ม่านแป๊บ/สอดราง (accessory cost)
+  // ───────────────────────────────────────────────────────────────────────
+  describe('Rod brackets (ม่านแป๊บ)', () => {
+    it('F19: แป๊บ → accCost = rod_brackets_per_set × rod_bracket และรวมใน totalCost', () => {
+      setupStore({
+        fabricCosts: { F001: 50 },
+        accessoryCosts: { rail_rod: 70, rod_bracket: 35 },
+        laborCosts: { แป๊บ: { style: 'แป๊บ', rate: 100, unit: 'meter', min_price: 50 } },
+      });
+      const item = makeCurtainItem({
+        code: 'F001',
+        style: 'แป๊บ',
+        price_per_m_raw: 1000,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      const expectedAcc = FORMULAS.materials.rod_brackets_per_set * 35; // 4 × 35 = 140
+      expect(result.accCost).toBe(expectedAcc);
+      expect(result.railCost).toBeCloseTo(70, 2); // width 1.0 × rail_rod 70
+      // totalCost = fabric(3.34×50) + rail(70) + labor(1.0×100) + acc(140)
+      expect(result.totalCost).toBeCloseTo(
+        EXPECTED_FABRIC_YARDS * 50 + 70 + 100 + expectedAcc,
+        2
+      );
+    });
+
+    it('F20: style อื่น (จีบ) → accCost = 0 แม้มี rod_bracket ในคลัง', () => {
+      setupStore({
+        fabricCosts: { F001: 50 },
+        accessoryCosts: { rod_bracket: 35 },
+        laborCosts: { จีบ: cheapLabor },
+      });
+      const item = makeCurtainItem({ code: 'F001' }); // style 'จีบ' (default)
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.accCost).toBe(0);
     });
   });
 });

@@ -84,6 +84,12 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   const showMain = ([LAYER_MODES.MAIN, LAYER_MODES.DOUBLE] as string[]).includes(layerMode);
   const showSheer = ([LAYER_MODES.SHEER, LAYER_MODES.DOUBLE] as string[]).includes(layerMode);
 
+  // ม่านแป๊บ (สอดราง) ทำ 2 ชั้นไม่ได้ → เหลือผ้าชั้นเดียว (ทึบ/โปร่ง) รหัสเดียว
+  const allowedLayerModes =
+    data.style === 'แป๊บ'
+      ? [LAYER_MODES.MAIN, LAYER_MODES.SHEER]
+      : [LAYER_MODES.MAIN, LAYER_MODES.SHEER, LAYER_MODES.DOUBLE];
+
   // 🧠 Logic: ค้นหาราคากลางจากคลัง
   const findMasterPrice = useCallback((code: string | undefined, isSheer: boolean) => {
     const list = isSheer ? sheerFabrics : mainFabrics;
@@ -164,6 +170,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
         <LayerSelector
           value={layerMode}
           onChange={(val) => onChange('layer_mode', val)}
+          allowedModes={allowedLayerModes}
         />
       </FormSection>
 

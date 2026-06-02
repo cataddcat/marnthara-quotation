@@ -108,8 +108,8 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
           </button>
         </div>
 
-        {/* Opening Style Grid */}
-        {showOpening && (
+        {/* Opening Style Grid — ม่านพับ (Roman) เปิด/ยกขึ้นแนวตั้ง ไม่มีทิศซ้าย/กลาง/ขวา */}
+        {showOpening && data.style !== 'พับ' && (
         <div className="space-y-2 pt-2">
           <label className="text-sm font-medium text-muted-foreground ml-1">ทิศทางการเปิด</label>
           <div className="grid grid-cols-3 gap-3">

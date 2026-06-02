@@ -1,12 +1,12 @@
 // src/features/curtains/components/CurtainForm.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CurtainItemInput, ItemData } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
-import { ITEM_TYPES } from '@/config/enums';
+import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { cn } from '@/lib/utils';
 import { SlidersHorizontal } from 'lucide-react';
 
@@ -65,6 +65,19 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     [formData]
   );
 
+  // Coercion ตามรูปแบบม่าน (ครอบคลุมทั้งตอนเปลี่ยน style และโหลด edit ข้อมูลเก่า)
+  // - พับ (Roman): ไม่มีทิศทางการเปิด → เคลียร์ค่าค้าง
+  // - แป๊บ (สอดราง): ทำ 2 ชั้นไม่ได้ → ถ้าเคยเลือก ทึบ+โปร่ง บังคับกลับเป็นทึบ
+  // เงื่อนไขกันยิงซ้ำ → ไม่ loop
+  useEffect(() => {
+    if (formData.style === 'พับ' && formData.opening_style) {
+      handleChange('opening_style', '');
+    }
+    if (formData.style === 'แป๊บ' && formData.layer_mode === LAYER_MODES.DOUBLE) {
+      handleChange('layer_mode', LAYER_MODES.MAIN);
+    }
+  }, [formData.style, formData.opening_style, formData.layer_mode, handleChange]);
+
   const notesInput = (
     <Input
       label="หมายเหตุ"
@@ -99,7 +112,17 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     <DimensionSection data={formData} onChange={safeHandleNumberChange} errors={errors} />
   );
 
-  // กลุ่ม input (ผ้า/สไตล์/อุปกรณ์) — ใช้ร่วมทั้ง Lite (ใน collapsible) และ Full (คอลัมน์ซ้าย)
+  // รูปแบบม่าน — อยู่ต่อจากขนาดเสมอ (เป็นตัวกำหนดอุปกรณ์/ชั้นผ้า/ทิศเปิด)
+  const styleSection = (
+    <StyleSection
+      data={formData}
+      onChange={safeHandleChange}
+      errors={errors}
+      showOpening={showAdvanced}
+    />
+  );
+
+  // กลุ่ม input (ผ้า/อุปกรณ์) — ใช้ร่วมทั้ง Lite (ใน collapsible) และ Full (คอลัมน์ซ้าย)
   const inputSections = (
     <>
       <FabricSection
@@ -111,13 +134,6 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         errors={errors}
         warnings={warnings}
         showCatalogTools={showAdvanced}
-      />
-
-      <StyleSection
-        data={formData}
-        onChange={safeHandleChange}
-        errors={errors}
-        showOpening={showAdvanced}
       />
 
       {showAdvanced && (
@@ -150,6 +166,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
       {isLite ? (
         <>
           {dimensionSection}
+          {styleSection}
           <CollapsibleSection
             title="รายละเอียดสินค้า"
             defaultOpen={mode === 'edit'}
@@ -158,7 +175,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
                 ฿{fmtTH(livePrice)}
               </span>
             }
-            hint="ผ้า • สไตล์ • ราคา — ใส่ทีหลังได้"
+            hint="ผ้า • ราคา — ใส่ทีหลังได้"
           >
             {advancedToggle}
             {inputSections}
@@ -171,6 +188,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
           <div className="space-y-4">
             {dimensionSection}
+            {styleSection}
             {inputSections}
             {notesInput}
           </div>
