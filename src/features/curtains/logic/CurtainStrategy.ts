@@ -4,6 +4,7 @@ import { CurtainItemInput } from '@/types';
 import { toNum } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
 import { LAYER_MODES } from '@/config/enums';
+import { STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { FORMULAS, type FormulaConfig } from '@/config/formulas';
 
 // ----------------------------------------------------------------------
@@ -157,7 +158,8 @@ export const CurtainStrategy: PricingStrategy<CurtainItemInput> = {
     if (item.style === 'ลอน' && item.button_spacing) {
       parts.push(`ลอน ${item.button_spacing} ซม.`);
     }
-    if (item.opening_style && item.style !== 'พับ') parts.push(`(${item.opening_style})`);
+    if (item.opening_style && !STYLES_WITHOUT_OPENING.includes(item.style))
+      parts.push(`(${item.opening_style})`);
     if (item.layer_mode === LAYER_MODES.DOUBLE) parts.push('ผ้าทึบ+โปร่ง');
     return parts;
   }

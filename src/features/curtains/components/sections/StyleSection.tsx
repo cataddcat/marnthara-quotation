@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CurtainItemInput } from '@/types';
-import { CURTAIN_STYLES } from '@/config/constants';
+import { CURTAIN_STYLES, STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { FormSection } from '@/components/ui/FormSection';
 import {
@@ -108,8 +108,8 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
           </button>
         </div>
 
-        {/* Opening Style Grid — ม่านพับ (Roman) เปิด/ยกขึ้นแนวตั้ง ไม่มีทิศซ้าย/กลาง/ขวา */}
-        {showOpening && data.style !== 'พับ' && (
+        {/* Opening Style Grid — ม่านพับ (ยกขึ้นแนวตั้ง) / แป๊บ (สอดราว) ไม่มีทิศซ้าย/กลาง/ขวา */}
+        {showOpening && !STYLES_WITHOUT_OPENING.includes(data.style) && (
         <div className="space-y-2 pt-2">
           <label className="text-sm font-medium text-muted-foreground ml-1">ทิศทางการเปิด</label>
           <div className="grid grid-cols-3 gap-3">

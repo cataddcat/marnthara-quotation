@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLE_FEATURES } from '@/config/constants';
 import { FORMULAS } from '@/config/formulas';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { FormSection } from '@/components/ui/FormSection';
 import {
   Wrench,
@@ -19,6 +20,17 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// สีราง/อุปกรณ์ — พรีเซ็ตยอดนิยม + "กำหนดเอง" (พิมพ์ข้อความเอง)
+const RAIL_COLOR_CUSTOM = '__custom__';
+const RAIL_COLOR_PRESETS = ['ขาว', 'ดำ', 'ไม้สัก'];
+const RAIL_COLOR_OPTIONS = [
+  { label: 'เลือกสี...', value: '' },
+  { label: 'ขาว', value: 'ขาว' },
+  { label: 'ดำ', value: 'ดำ' },
+  { label: 'ไม้สัก', value: 'ไม้สัก' },
+  { label: 'กำหนดเอง', value: RAIL_COLOR_CUSTOM },
+];
 
 interface HardwareSectionProps {
   data: CurtainItemInput;
@@ -99,6 +111,23 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
     isWave ||
     isRod;
 
+  // สีราง: ถ้าค่าปัจจุบันไม่ใช่พรีเซ็ตและไม่ว่าง → ถือว่าเป็น "กำหนดเอง"
+  const railColor = data.rail_color || '';
+  const [railColorCustom, setRailColorCustom] = useState(
+    () => railColor !== '' && !RAIL_COLOR_PRESETS.includes(railColor)
+  );
+
+  const handleRailColorSelect = (val: string) => {
+    if (val === RAIL_COLOR_CUSTOM) {
+      setRailColorCustom(true);
+      // สลับจากพรีเซ็ตมา "กำหนดเอง" → เคลียร์ให้พิมพ์ใหม่
+      if (RAIL_COLOR_PRESETS.includes(railColor)) onChange('rail_color', '');
+    } else {
+      setRailColorCustom(false);
+      onChange('rail_color', val);
+    }
+  };
+
   return (
     <FormSection
       icon={Wrench}
@@ -115,19 +144,41 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
         </div>
       )}
 
-      {/* Rail Color */}
+      {/* Rail Color — dropdown: ขาว/ดำ/ไม้สัก/กำหนดเอง (กำหนดเอง = พิมพ์ข้อความเอง) */}
       {features.hasRail && (
-        <div className="animate-fade-in">
-          <Input
-            label="สีราง / อุปกรณ์"
-            prefix={<Palette className="w-4 h-4 text-muted-foreground" />}
-            placeholder="ระบุสีราง..."
-            value={data.rail_color || ''}
-            onChange={(e) => onChange('rail_color', e.target.value)}
-            error={errors?.rail_color}
-            warning={warnings?.rail_color}
-            className="h-12"
+        <div className="space-y-2 animate-fade-in">
+          <label className="text-sm font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
+            <Palette className="w-3.5 h-3.5" /> สีราง / อุปกรณ์
+          </label>
+          <Select
+            options={RAIL_COLOR_OPTIONS}
+            value={railColorCustom ? RAIL_COLOR_CUSTOM : railColor}
+            onChange={(e) => handleRailColorSelect(e.target.value)}
+            className={cn(
+              errors?.rail_color && 'border-destructive focus-visible:ring-destructive'
+            )}
           />
+          {railColorCustom && (
+            <Input
+              prefix={<Palette className="w-4 h-4 text-muted-foreground" />}
+              placeholder="ระบุสีราง/อุปกรณ์เอง..."
+              value={data.rail_color || ''}
+              onChange={(e) => onChange('rail_color', e.target.value)}
+              error={errors?.rail_color}
+              warning={warnings?.rail_color}
+              className="h-12"
+            />
+          )}
+          {!railColorCustom && (errors?.rail_color || warnings?.rail_color) && (
+            <p
+              className={cn(
+                'text-xs px-1',
+                errors?.rail_color ? 'text-destructive' : 'text-warning-foreground'
+              )}
+            >
+              {errors?.rail_color || warnings?.rail_color}
+            </p>
+          )}
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
+import { STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { cn } from '@/lib/utils';
 import { SlidersHorizontal } from 'lucide-react';
 
@@ -66,11 +67,11 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
   );
 
   // Coercion ตามรูปแบบม่าน (ครอบคลุมทั้งตอนเปลี่ยน style และโหลด edit ข้อมูลเก่า)
-  // - พับ (Roman): ไม่มีทิศทางการเปิด → เคลียร์ค่าค้าง
+  // - พับ/แป๊บ: ไม่มีทิศทางการเปิด → เคลียร์ค่าค้าง
   // - แป๊บ (สอดราง): ทำ 2 ชั้นไม่ได้ → ถ้าเคยเลือก ทึบ+โปร่ง บังคับกลับเป็นทึบ
   // เงื่อนไขกันยิงซ้ำ → ไม่ loop
   useEffect(() => {
-    if (formData.style === 'พับ' && formData.opening_style) {
+    if (STYLES_WITHOUT_OPENING.includes(formData.style) && formData.opening_style) {
       handleChange('opening_style', '');
     }
     if (formData.style === 'แป๊บ' && formData.layer_mode === LAYER_MODES.DOUBLE) {

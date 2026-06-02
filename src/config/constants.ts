@@ -20,6 +20,9 @@ export const CURTAIN_STYLES = [
   { label: 'ม่านหลุยส์ (Louis)', value: 'หลุยส์' },
 ];
 
+// รูปแบบที่ไม่มี "ทิศทางการเปิด" (พับ = ยกขึ้นแนวตั้ง, แป๊บ = สอดราว)
+export const STYLES_WITHOUT_OPENING: readonly string[] = ['พับ', 'แป๊บ'];
+
 export const OPENING_OPTIONS = [
   { label: 'แยกกลาง', value: 'center' },
   { label: 'เก็บข้างเดียว', value: 'side' },

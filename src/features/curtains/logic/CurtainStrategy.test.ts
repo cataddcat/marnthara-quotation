@@ -174,17 +174,20 @@ describe('CurtainStrategy.validate / getSpecs', () => {
     expect(specs).toContain('ผ้าทึบ+โปร่ง');
   });
 
-  it('getSpecs พับ → ไม่แสดงทิศทางการเปิด (opening_style ถูกละ)', () => {
-    const specs = CurtainStrategy.getSpecs(
-      asCurtain({
-        width_m: 1.5,
-        height_m: 2,
-        style: 'พับ',
-        opening_style: 'แยกกลาง',
-      })
-    );
-    expect(specs.join(' ')).not.toContain('แยกกลาง');
-  });
+  it.each(['พับ', 'แป๊บ'])(
+    'getSpecs %s → ไม่แสดงทิศทางการเปิด (opening_style ถูกละ)',
+    (style) => {
+      const specs = CurtainStrategy.getSpecs(
+        asCurtain({
+          width_m: 1.5,
+          height_m: 2,
+          style,
+          opening_style: 'แยกกลาง',
+        })
+      );
+      expect(specs.join(' ')).not.toContain('แยกกลาง');
+    }
+  );
 
   it('getSpecs สไตล์อื่น (จีบ) → แสดงทิศทางการเปิดตามปกติ', () => {
     const specs = CurtainStrategy.getSpecs(
