@@ -176,7 +176,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         {/* Row 1: Index + Title + Price + Chevron */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-xs font-bold text-muted-foreground/70 tracking-wider uppercase shrink-0">
+            <span className="text-sm font-bold text-muted-foreground tracking-wider uppercase shrink-0">
               #{index + 1}
             </span>
             <span className="font-semibold text-foreground truncate text-[15px]">{title}</span>
@@ -221,7 +221,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {typeChips.map((chip, i) => (
               <span
                 key={i}
-                className="text-[11px] leading-none px-1.5 py-1 rounded-md bg-muted text-muted-foreground font-medium"
+                className="text-xs leading-tight px-2 py-1 rounded-md bg-muted text-foreground/90 font-semibold border border-border/50"
               >
                 {chip}
               </span>
@@ -299,22 +299,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               </div>
             )}
 
-            {/* สินค้าพื้นที่: ตร.ม. */}
-            {isAreaType && areaSqm > 0 && (
+            {/* สินค้าพื้นที่: ตร.ม. · ตร.ล. (บรรทัดเดียว) */}
+            {isAreaType && (areaSqm > 0 || areaSqyd > 0) && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">พื้นที่</span>
                 <span className="font-semibold text-sky-600 dark:text-sky-400">
-                  {areaSqm.toFixed(2)} ตร.ม.
-                </span>
-              </div>
-            )}
-
-            {/* สินค้าพื้นที่: ตร.ล. */}
-            {isAreaType && areaSqyd > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground" />
-                <span className="font-semibold text-sky-500 dark:text-sky-400">
-                  {areaSqyd.toFixed(2)} ตร.ล.
+                  {areaSqm > 0 && `${areaSqm.toFixed(2)} ตร.ม.`}
+                  {areaSqm > 0 && areaSqyd > 0 && ' · '}
+                  {areaSqyd > 0 && `${areaSqyd.toFixed(2)} ตร.ล.`}
                 </span>
               </div>
             )}

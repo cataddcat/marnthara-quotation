@@ -15,9 +15,6 @@ export type ModalPropsMap = {
     initialData?: Partial<ItemData>;
     mode?: 'add' | 'edit';
   };
-  roomDefaults: {
-    roomId: string | null;
-  };
   materialSummary: {
     initialTab?: string;
     initialCategory?: string;

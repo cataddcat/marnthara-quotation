@@ -71,14 +71,6 @@ describe('ProjectSlice — Room actions', () => {
     store().toggleRoomSuspension(roomId);
     expect(store().rooms[0].is_suspended).toBe(false);
   });
-
-  it('updateRoomDefaults merge เข้ากับ defaults เดิม', () => {
-    store().addRoom('A');
-    const roomId = store().rooms[0].id;
-    store().updateRoomDefaults(roomId, { foo: 1 });
-    store().updateRoomDefaults(roomId, { bar: 2 });
-    expect(store().rooms[0].room_defaults).toEqual({ foo: 1, bar: 2 });
-  });
 });
 
 describe('ProjectSlice — Item actions', () => {

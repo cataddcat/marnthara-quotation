@@ -115,10 +115,6 @@ function App() {
     });
   };
 
-  const handleRoomDefaults = (roomId: string) => {
-    openModal('roomDefaults', { roomId });
-  };
-
   return (
     <>
       <MainLayout
@@ -139,7 +135,6 @@ function App() {
             onSetViewMode={setViewMode}
             onAddItem={handleAddItem}
             onEditItem={handleEditItem}
-            onOpenDefaults={handleRoomDefaults}
           />
         ) : (
           <EmptyState

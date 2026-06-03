@@ -11,7 +11,6 @@ const seededState = {
         id: 'r1',
         name: 'ห้องนั่งเล่น',
         is_suspended: false,
-        room_defaults: {},
         items: [
           {
             id: 'i1',

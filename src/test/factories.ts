@@ -142,7 +142,6 @@ export const makeRoom = (overrides?: Partial<Room>): Room => ({
   name: 'ห้องทดสอบ',
   items: [],
   is_suspended: false,
-  room_defaults: {},
   ...overrides,
 });
 

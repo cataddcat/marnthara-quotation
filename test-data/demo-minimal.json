@@ -45,7 +45,6 @@
       "id": "room-new",
       "name": "ห้องใหม่",
       "is_suspended": false,
-      "room_defaults": {},
       "items": []
     }
   ],

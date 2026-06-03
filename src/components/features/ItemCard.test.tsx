@@ -14,7 +14,7 @@ const TITLE = 'ผ้าม่าน ม่านจีบ';
 
 const seedRoom = () => {
   useAppStore.setState({
-    rooms: [{ id: 'r1', name: 'A', is_suspended: false, items: [ITEM], room_defaults: {} }],
+    rooms: [{ id: 'r1', name: 'A', is_suspended: false, items: [ITEM] }],
     fabricCosts: {},
     accessoryCosts: {},
     laborCosts: {},

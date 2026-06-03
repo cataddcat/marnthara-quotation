@@ -31,7 +31,6 @@ const seed = (opts: {
       name: 'A',
       is_suspended: false,
       items: (opts.items ?? []).map(setPriceItem),
-      room_defaults: {},
     },
   ];
   if (opts.suspendedItems) {
@@ -40,7 +39,6 @@ const seed = (opts: {
       name: 'Suspended',
       is_suspended: true,
       items: opts.suspendedItems.map(setPriceItem),
-      room_defaults: {},
     });
   }
   useAppStore.setState({

@@ -12,7 +12,6 @@ import { CustomerModal } from '@/components/modals/CustomerModal';
 import { PdfPreviewModal } from '@/components/modals/PdfPreviewModal';
 import { ShopSettingsModal } from '@/components/modals/ShopSettingsModal';
 import { DiscountModal } from '@/components/modals/DiscountModal';
-import { RoomDefaultsModal } from '@/components/modals/RoomDefaultsModal';
 import { DataModal } from '@/components/modals/DataModal';
 import { LookbookModal } from '@/components/modals/LookbookModal';
 import { ProjectOverviewModal } from '@/components/modals/ProjectOverviewModal';
@@ -30,7 +29,6 @@ export const ModalManager: React.FC = () => {
 
   // narrow modalProps ตาม activeModal — helper จาก UISlice
   const itemProps = modalPropsAs(activeModal, modalProps, 'item');
-  const roomDefaultsProps = modalPropsAs(activeModal, modalProps, 'roomDefaults');
   const materialSummaryProps = modalPropsAs(activeModal, modalProps, 'materialSummary');
   const projectOverviewProps = modalPropsAs(activeModal, modalProps, 'projectOverview');
 
@@ -84,13 +82,6 @@ export const ModalManager: React.FC = () => {
         isOpen={isVisible('projectOverview')}
         onClose={closeModal}
         onNavigateToRoom={projectOverviewProps?.onNavigateToRoom}
-      />
-
-      <RoomDefaultsModal
-        key={roomDefaultsProps?.roomId || 'defaults'}
-        isOpen={isVisible('roomDefaults')}
-        onClose={closeModal}
-        roomId={roomDefaultsProps?.roomId ?? null}
       />
 
       <ProductionSettingsModal isOpen={isVisible('productionSettings')} onClose={closeModal} />

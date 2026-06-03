@@ -13,7 +13,6 @@ interface RoomSliderProps {
   onSetViewMode: (mode: 'focus' | 'overview') => void;
   onAddItem: (roomId: string) => void;
   onEditItem: (roomId: string, item: ItemData) => void;
-  onOpenDefaults: (roomId: string) => void;
 }
 
 const SWIPE_THRESHOLD = 50;
@@ -27,7 +26,6 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   onSetViewMode,
   onAddItem,
   onEditItem,
-  onOpenDefaults,
 }) => {
   const { trigger } = useHaptic();
   const touchStartXRef = useRef<number | null>(null);
@@ -140,7 +138,6 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
           totalRooms={rooms.length}
           onAddItem={onAddItem}
           onEditItem={onEditItem}
-          onOpenDefaults={onOpenDefaults}
         />
       </div>
     );
@@ -159,7 +156,6 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
           }}
           onAddItem={onAddItem}
           onEditItem={onEditItem}
-          onOpenDefaults={onOpenDefaults}
         />
       ))}
     </div>

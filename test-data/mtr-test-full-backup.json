@@ -44,7 +44,6 @@
       "id": "room-test-001",
       "name": "ห้องนั่งเล่น",
       "is_suspended": false,
-      "room_defaults": {},
       "items": [
         {
           "id": "item-test-001",
@@ -85,7 +84,6 @@
       "id": "room-test-002",
       "name": "ห้องนอนใหญ่",
       "is_suspended": false,
-      "room_defaults": {},
       "items": [
         {
           "id": "item-test-003",
@@ -138,7 +136,6 @@
       "id": "room-test-003",
       "name": "ห้องรอรื้อถอน",
       "is_suspended": true,
-      "room_defaults": {},
       "items": [
         {
           "id": "item-test-006",
@@ -157,7 +154,6 @@
       "id": "room-test-004",
       "name": "ห้องว่าง (ไม่มีรายการ)",
       "is_suspended": false,
-      "room_defaults": {},
       "items": []
     }
   ],

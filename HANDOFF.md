@@ -83,7 +83,6 @@ All modals are registered in `UISlice.ts` ModalType union. Render via `ModalMana
 | `data` | Import/Export/Reset | — |
 | `lookbook` | Visual catalog | — |
 | `projectOverview` | Room list overview | — |
-| `roomDefaults` | Room-level defaults | `roomId` |
 | `mainMenu` | Main menu drawer | (many callbacks) |
 | `productionSettings` | **Cost Vault** — labor/accessory/fabric costs | — |
 | `costDashboard` | **Financial Health** — P&L overview | — |

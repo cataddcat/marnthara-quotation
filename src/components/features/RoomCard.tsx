@@ -11,7 +11,6 @@ import { isItemIncomplete } from '@/lib/item-status';
 import {
   ChevronRight,
   Plus,
-  Settings2,
   Trash2,
   Copy,
   EyeOff,
@@ -91,7 +90,6 @@ interface RoomCardProps {
   onSelect?: () => void;
   onAddItem: (roomId: string) => void;
   onEditItem: (roomId: string, item: ItemData) => void;
-  onOpenDefaults: (roomId: string) => void;
   className?: string;
 }
 
@@ -103,7 +101,6 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   onSelect,
   onAddItem,
   onEditItem,
-  onOpenDefaults,
   className,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
@@ -194,19 +191,6 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       >
         <MenuItems className="absolute right-0 z-50 mt-2 w-48 origin-top-right divide-y divide-border rounded-xl bg-popover p-1 shadow-xl ring-1 ring-black/5 focus:outline-none border border-border/50">
           <div className="p-1">
-            <MenuItem>
-              {({ active }) => (
-                <button
-                  onClick={() => onOpenDefaults(room.id)}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm',
-                    active ? 'bg-primary/10 text-primary' : 'text-foreground'
-                  )}
-                >
-                  <Settings2 className="w-4 h-4" /> ตั้งค่าห้อง
-                </button>
-              )}
-            </MenuItem>
             <MenuItem>
               {({ active }) => (
                 <button

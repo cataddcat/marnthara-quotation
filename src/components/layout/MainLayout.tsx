@@ -119,7 +119,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Floating Dock — wide horizontal capsule */}
       <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 mb-safe-bottom w-full max-w-[360px] px-4">
-        <div className="flex items-center gap-1 p-1 rounded-full bg-foreground/95 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.25)] ring-1 ring-black/10 dark:ring-white/10">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-lg border border-border/60">
           <DockPill
             icon={Layers}
             label="ห้อง"
@@ -171,13 +171,13 @@ const DockPill = ({
         onClick?.();
       }}
       aria-label={label}
-      className="group flex flex-1 items-center justify-center gap-2 h-10 px-3 rounded-full transition-all duration-200 active:scale-[0.94] hover:bg-background/10 outline-none"
+      className="group flex flex-1 items-center justify-center gap-2 h-10 px-3 rounded-full transition-all duration-200 active:scale-[0.94] hover:bg-muted outline-none"
     >
       <Icon
-        className="w-4 h-4 text-background/80 group-hover:text-background transition-colors"
+        className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors"
         strokeWidth={2}
       />
-      <span className="text-[13px] font-semibold text-background/85 group-hover:text-background tracking-tight">
+      <span className="text-[13px] font-semibold text-muted-foreground group-hover:text-primary tracking-tight">
         {label}
       </span>
     </button>

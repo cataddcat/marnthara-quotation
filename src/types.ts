@@ -144,5 +144,4 @@ export interface Room {
   name: string;
   items: ItemData[];
   is_suspended: boolean;
-  room_defaults?: Record<string, unknown>;
 }

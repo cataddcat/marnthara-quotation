@@ -14,7 +14,6 @@ export interface ProjectSlice {
   removeRoom: (roomId: string) => void;
   duplicateRoom: (roomId: string) => void;
   toggleRoomSuspension: (roomId: string) => void;
-  updateRoomDefaults: (roomId: string, defaults: Partial<Room['room_defaults']>) => void;
 
   addItem: (roomId: string, data: Omit<ItemData, 'id'>) => void;
   updateItem: (roomId: string, itemId: string, data: Partial<ItemData>) => void;
@@ -47,7 +46,6 @@ export const createProjectSlice: StateCreator<
           name: name || `ห้อง ${state.rooms.length + 1}`,
           items: [],
           is_suspended: false,
-          room_defaults: {},
         },
       ],
     })),
@@ -79,13 +77,6 @@ export const createProjectSlice: StateCreator<
     set((state) => ({
       rooms: state.rooms.map((r) =>
         r.id === roomId ? { ...r, is_suspended: !r.is_suspended } : r
-      ),
-    })),
-
-  updateRoomDefaults: (roomId, defaults) =>
-    set((state) => ({
-      rooms: state.rooms.map((r) =>
-        r.id === roomId ? { ...r, room_defaults: { ...r.room_defaults, ...defaults } } : r
       ),
     })),
 
