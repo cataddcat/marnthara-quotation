@@ -94,6 +94,43 @@ describe('useZodForm — handleSubmit (Save-First)', () => {
   });
 });
 
+describe('useZodForm — normalize ขนาด ตอน submit (กัน race onBlur/บันทึก)', () => {
+  const dimSchema = z.object({
+    width_m: z.string(),
+    height_m: z.string(),
+    widths: z.array(z.string()).optional(),
+  });
+  type DimForm = z.infer<typeof dimSchema>;
+
+  const setupDim = (onSubmit = vi.fn(), initialData: DimForm) =>
+    renderHook(() => useZodForm({ schema: dimSchema, initialData, onSubmit }));
+
+  it('แปลง width_m/height_m แบบ ซม.→ม. (234 → 2.34) แม้ยังไม่ blur', () => {
+    const onSubmit = vi.fn();
+    const { result } = setupDim(onSubmit, { width_m: '234', height_m: '272' });
+    act(() => result.current.handleSubmit());
+    expect(onSubmit).toHaveBeenCalledWith({ width_m: '2.34', height_m: '2.72' });
+  });
+
+  it('ค่าที่แปลงแล้ว (มีจุดทศนิยม) ไม่ถูกแปลงซ้ำ (idempotent)', () => {
+    const onSubmit = vi.fn();
+    const { result } = setupDim(onSubmit, { width_m: '2.34', height_m: '2.72' });
+    act(() => result.current.handleSubmit());
+    expect(onSubmit).toHaveBeenCalledWith({ width_m: '2.34', height_m: '2.72' });
+  });
+
+  it('normalize widths[] ของวอลเปเปอร์ด้วย', () => {
+    const onSubmit = vi.fn();
+    const { result } = setupDim(onSubmit, { width_m: '', height_m: '260', widths: ['300', '2.5'] });
+    act(() => result.current.handleSubmit());
+    expect(onSubmit).toHaveBeenCalledWith({
+      width_m: '',
+      height_m: '2.60',
+      widths: ['3.00', '2.50'],
+    });
+  });
+});
+
 describe('useZodForm — dirty / reset', () => {
   it('isDirty false ตอนเริ่ม, true หลังแก้', () => {
     const { result } = setup();

@@ -2,10 +2,54 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { z } from 'zod';
+import { normalizeDimension } from '@/utils/formatters';
 
-// [FIX] Use z.ZodType<T> directly. This matches the schema structure for type T 
+// [FIX] Use z.ZodType<T> directly. This matches the schema structure for type T
 // and implicitly handles Def and Input types safely, removing 'any' and 'unknown' issues.
 export type ZodSchema<T> = z.ZodType<T>;
+
+// ฟิลด์ที่เป็น "ขนาด (เมตร)" — ใช้ heuristic ซม.→ม. (เช่น 234 → 2.34)
+const DIMENSION_FIELDS = ['width_m', 'height_m'] as const;
+
+/**
+ * Normalize ค่าขนาด (ซม.→ม.) ตอนกดบันทึก เพื่อกัน race ระหว่าง onBlur ของ Input
+ * (ที่แปลงค่าให้) กับการกดปุ่มบันทึก (ที่อ่าน state เดิมก่อน setState จาก blur จะ commit)
+ * — idempotent กับค่าที่แปลงแล้ว ("2.34" → "2.34"), ปลอดภัยกับฟอร์มที่ไม่มีฟิลด์ขนาด
+ */
+function normalizeDimensionFields<T extends Record<string, unknown>>(data: T): T {
+  let changed = false;
+  const out: Record<string, unknown> = { ...data };
+
+  for (const key of DIMENSION_FIELDS) {
+    const v = out[key];
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = normalizeDimension(v);
+      if (n !== v) {
+        out[key] = n;
+        changed = true;
+      }
+    }
+  }
+
+  // วอลเปเปอร์: widths เป็น array ความกว้างของผนัง
+  if (Array.isArray(out.widths)) {
+    let arrChanged = false;
+    const next = (out.widths as unknown[]).map((w) => {
+      if (typeof w === 'string' && w.trim() !== '') {
+        const n = normalizeDimension(w);
+        if (n !== w) arrChanged = true;
+        return n;
+      }
+      return w;
+    });
+    if (arrChanged) {
+      out.widths = next;
+      changed = true;
+    }
+  }
+
+  return changed ? (out as T) : data;
+}
 
 interface UseZodFormProps<T> {
   schema: ZodSchema<T>;
@@ -84,12 +128,29 @@ export const useZodForm = <T extends Record<string, unknown>>({
     (e?: React.FormEvent) => {
       if (e) e.preventDefault();
       setIsSubmitted(true);
-      validate(); // populate inline error hints
-      const result = schema.safeParse(formData);
-      // Save with parsed data when valid, raw formData as fallback
-      onSubmit((result.success ? result.data : formData) as T);
+
+      // กัน race onBlur(แปลง ซม.→ม.) / กดบันทึก: normalize ขนาดก่อนตรวจ+บันทึกเสมอ
+      const data = normalizeDimensionFields(formData);
+
+      // populate inline error hints จากข้อมูลที่ normalize แล้ว
+      const result = schema.safeParse(data);
+      if (!result.success) {
+        const fieldErrors: Partial<Record<keyof T, string>> = {};
+        result.error.issues.forEach((issue) => {
+          const path = issue.path[0];
+          if (path && !fieldErrors[path as keyof T]) {
+            fieldErrors[path as keyof T] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+      } else {
+        setErrors({});
+      }
+
+      // Save with parsed data when valid, normalized formData as fallback
+      onSubmit((result.success ? result.data : data) as T);
     },
-    [validate, formData, onSubmit, schema]
+    [formData, onSubmit, schema]
   );
 
   // 5. Reset form

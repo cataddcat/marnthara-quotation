@@ -111,9 +111,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     if (item.type === ITEM_TYPES.WALLPAPER) {
       const widthTotal = (item.widths || []).reduce((sum, w) => sum + toNum(w), 0);
       const h = toNum(item.height_m);
-      return widthTotal > 0 && h > 0 ? `${widthTotal.toFixed(2)} × ${h.toFixed(2)}` : '';
+      return widthTotal > 0 && h > 0
+        ? `ขนาด กว้าง/สูง : ${widthTotal.toFixed(2)} x ${h.toFixed(2)}`
+        : '';
     }
-    return hasSize ? `${width.toFixed(2)} × ${height.toFixed(2)}` : '';
+    return hasSize ? `ขนาด กว้าง/สูง : ${width.toFixed(2)} x ${height.toFixed(2)}` : '';
   }, [item, hasSize, width, height]);
 
   // ชิป Row 3 — ชนิด + รูปแบบเก็บ + รายละเอียดรอง (สร้างจาก field ตรงๆ ไม่มี prefix)
