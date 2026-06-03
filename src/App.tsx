@@ -8,6 +8,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
 import { ModalManager } from '@/components/managers/ModalManager';
+import { DevInspector } from '@/components/dev/DevInspector';
 import { ItemData } from '@/types';
 import { ITEM_TYPES } from '@/config/enums';
 import { Home, Plus } from 'lucide-react';
@@ -157,6 +158,8 @@ function App() {
       <ModalManager />
       <ToastContainer />
       <AlertDialog />
+      {/* Dev-only: คลิกองค์ประกอบเพื่อคัดลอก ไฟล์:บรรทัด ไปบอก AI (ตัดออกจาก prod) */}
+      {import.meta.env.DEV && <DevInspector />}
     </>
   );
 }

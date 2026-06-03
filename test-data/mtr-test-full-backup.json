@@ -57,12 +57,10 @@
           "price_per_m_raw": "520",
           "sheer_code": "SHEER-WHITE",
           "sheer_price_per_m": "280",
-          "rail_price_per_m": "0",
           "rail_color": "ขาว",
           "bracket_color": "ขาว",
           "opening_style": "center",
           "hook_type": "short",
-          "use_rail": true,
           "is_suspended": false,
           "enable_set_price": false,
           "set_price_override": 0,
@@ -129,7 +127,6 @@
           "rail_color": "ทอง",
           "opening_style": "side",
           "hook_type": "long",
-          "use_rail": true,
           "is_suspended": false,
           "enable_set_price": true,
           "set_price_override": 9800,
@@ -192,26 +189,6 @@
     "aluminum_blind": [],
     "partition": [],
     "pleated_screen": []
-  },
-  "formulas": {
-    "curtain": {
-      "multiplier_wave": 2.70,
-      "multiplier_pleated": 2.70,
-      "multiplier_eyelet": 2.70,
-      "multiplier_roman": 1.50,
-      "roman_blind_offset": 0.45,
-      "hem_offset": 0.30,
-      "yard_conversion": 1.11
-    },
-    "wallpaper": {
-      "roll_width": 0.53,
-      "roll_length": 10.0,
-      "waste_margin": 0.10
-    },
-    "area": {
-      "sqm_to_sqyd": 1.20,
-      "min_yield": 1.00
-    }
   },
   "production": {
     "laborCosts": {

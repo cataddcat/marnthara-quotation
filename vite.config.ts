@@ -9,13 +9,19 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   // 1. Base Path — root domain (Vercel)
   base: '/',
 
   // 2. Plugins
   plugins: [
-    react(),
+    // dev เท่านั้น: ฉีด data-loc="<file>:<line>:<col>" ลง host element (ใช้โดย DevInspector)
+    // prod build (command === 'build') ไม่โหลด → DOM/asset สะอาด, hash ไม่เปลี่ยน
+    react(
+      command === 'serve'
+        ? { babel: { plugins: [path.resolve(__dirname, 'scripts/babel-plugin-data-loc.cjs')] } }
+        : undefined
+    ),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate', // อัปเดตเงียบๆ เมื่อมีเน็ต แล้วรอ User เปิดแอปใหม่
@@ -109,4 +115,4 @@ export default defineConfig({
     port: 3000,
     open: true,
   },
-});
+}));

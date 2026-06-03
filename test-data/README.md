@@ -123,13 +123,20 @@
 
 ## Validation Script
 
-มี automated test ตรวจ JSON shape:
+มี automated test ตรวจ shape ของไฟล์เหล่านี้อยู่ที่ `src/test/test-data-fixtures.test.ts`
+รันอัตโนมัติพร้อม test ทั้งหมด:
 
 ```powershell
-npx vitest run test-data/__validation__/demo.test.ts
+npm run test:run
 ```
 
-หาก JSON shape เปลี่ยน (เช่นมีการ refactor schema) test จะแจ้งให้รู้
+หรือรันเฉพาะชุดนี้:
+
+```powershell
+npm run test:run -- test-data-fixtures
+```
+
+หาก refactor schema (เปลี่ยน/ลบฟิลด์, เพิ่ม item type, ย้าย cost vault) แล้วลืมอัปเดตไฟล์ตัวอย่าง → test จะ fail ทันที
 
 ---
 
@@ -146,10 +153,11 @@ npx vitest run test-data/__validation__/demo.test.ts
 2. เปิด Financial Dashboard
 3. หา item 2-4 (height 10.5m) → ควรเห็น warning banner
 
-**Scenario 3: ทดสอบ Vault auto-sync**
+**Scenario 3: ทดสอบ Vault auto-sync (cost_per_yard → vault)**
 1. Reset แอพ → state ว่าง
-2. Import `demo-favorites-only.json`
-3. ตรวจว่า cost_per_yard ใน favorites → ถูก sync ไปยัง fabricCosts/wallpaperCosts/areaCosts อัตโนมัติ
+2. เปิด "จัดการข้อมูล" → ส่วน "นำเข้าข้อมูลเฉพาะส่วน" → แท็บ **"คลังผ้า"** → วางเนื้อหา `favorites` จาก `demo-favorites-only.json` (หรือใช้ `mtr-test-favorites-import.json` ที่เป็น category map ตรงๆ)
+3. ตรวจว่า cost_per_yard ถูก route ไป fabricCosts/wallpaperCosts/areaCosts อัตโนมัติ แล้ว strip ออกจาก favorites
+   > ⚠️ การ Import ผ่านปุ่ม **Upload File** (restore ทั้งไฟล์) จะ **ไม่** route cost_per_yard เข้า vault — ใช้แท็บ "คลังผ้า" สำหรับ auto-sync นี้
 
 **Scenario 4: ทดสอบ Cost Vault import**
 1. Import `demo-costs-only.json`

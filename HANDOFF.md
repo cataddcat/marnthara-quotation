@@ -260,8 +260,10 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ## 7. Workflow & Dev Notes
 
-### User Preferences (from session memory)
-- **Do NOT run `npx tsc --noEmit` or `npm run build`** after edits — user handles these manually. Saved in `C:\Users\Ygoss\.claude\projects\D---Projects-mtr-qol-all-green-XXX\memory\feedback_no_build_check.md`.
+### Verification policy (updated 2026-06-03)
+- After changes, verify with `npm run lint` (zero-warnings is a hard gate), `npm run test:run`, and `npm run build`. Skipping tests previously let a regression slip through (the `ItemCard` title test), so verification is expected — not optional.
+- *(Superseded: an earlier note said "do not run build/test — user runs manually." That preference is retired.)*
+- **Config files:** `vite.config.ts` / `vitest.config.ts` are the source of truth. `tsc -b` (via `tsconfig.node.json`) emits to `node_modules/.tmp/config` so it never drops `.js`/`.d.ts` into the project root — those would shadow the `.ts` because Vite/Vitest resolve `.js` first.
 
 ### Persistence
 - Zustand `persist` key: `marnthara.input.v6.4` (localStorage), **`version: 2`**
