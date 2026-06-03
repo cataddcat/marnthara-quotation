@@ -26,6 +26,7 @@ import type { CurtainItemInput, WallpaperItemInput, AreaItemInput } from '@/type
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { FORMULAS } from '@/config/formulas';
+import { calcWaveHardware, waveSplitFromOpening } from '@/lib/materials/waveHardware';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,11 @@ interface RailItem {
   pinHooks: number;
   waveTapeM: number;
   romanSets: number;
+  // ── ม่านลอน: ลูกล้อ/กระดุม (เฉพาะ style 'ลอน') ──
+  rollers: number; // ลูกล้อรวม (T)
+  rollersPerPanel: number; // ลูกล้อต่อตับ (N₁ สำหรับ two-way, T สำหรับ one-way)
+  wavePanels: number; // จำนวนตับ (1 = เก็บข้างเดียว, 2 = แยกกลาง)
+  snaps: number; // กระดุม/สแน็ป (= T)
 }
 
 interface AreaGroup {
@@ -144,7 +150,16 @@ function buildSummary(rooms: ReturnType<typeof useAppStore.getState>['rooms']) {
   >();
   const areaByKey = new Map<string, AreaGroup>();
 
-  const acc = { brackets: 0, eyelets: 0, pinHooks: 0, waveTapeM: 0, romanSets: 0 };
+  const acc = {
+    brackets: 0,
+    eyelets: 0,
+    pinHooks: 0,
+    waveTapeM: 0,
+    romanSets: 0,
+    rollers: 0, // ลูกล้อ ม่านลอน
+    snaps: 0, // กระดุม/สแน็ป ม่านลอน
+    oversizeWave: [] as { roomName: string; width: number }[], // รางลอน > max_track_cm
+  };
 
   rooms.forEach((room) => {
     if (room.is_suspended) return;
@@ -166,7 +181,8 @@ function buildSummary(rooms: ReturnType<typeof useAppStore.getState>['rooms']) {
         const layerMode = c.layer_mode || LAYER_MODES.MAIN;
         const isDouble = layerMode === LAYER_MODES.DOUBLE;
         const isSheerOnly = layerMode === LAYER_MODES.SHEER;
-        const opening = c.opening_style === 'side' ? 'เก็บข้างเดียว' : 'แยกกลาง';
+        const waveSplit = waveSplitFromOpening(c.opening_style);
+        const opening = waveSplit === 'one-way' ? 'เก็บข้างเดียว' : 'แยกกลาง';
         const layerLabel = STYLE_LAYER_LABEL[layerMode] || layerMode;
         const desc = `${style} ${width.toFixed(1)}×${height.toFixed(1)}ม. (${layerLabel})`;
 
@@ -193,6 +209,8 @@ function buildSummary(rooms: ReturnType<typeof useAppStore.getState>['rooms']) {
         const itemPinHooks = style === 'จีบ' ? calcPinHooks(width) : 0;
         const itemWaveTape = style === 'ลอน' ? calcWaveTape(width) : 0;
         const itemRomanSets = isRoman ? 1 : 0;
+        // ม่านลอน: ลูกล้อ/กระดุม ตามความยาวราง (width ม. → ซม.)
+        const waveHw = style === 'ลอน' ? calcWaveHardware(width * 100, waveSplit) : null;
 
         const railEntry = railsByKey.get(railKey) ?? {
           label: RAIL_LABELS[railKey] || railKey,
@@ -209,6 +227,10 @@ function buildSummary(rooms: ReturnType<typeof useAppStore.getState>['rooms']) {
           railKey, width, isDouble, roomName: room.name, style, opening,
           brackets: itemBrackets, eyelets: itemEyelets, pinHooks: itemPinHooks,
           waveTapeM: itemWaveTape, romanSets: itemRomanSets,
+          rollers: waveHw?.totalRollers ?? 0,
+          rollersPerPanel: waveHw?.rollersPerPanel ?? 0,
+          wavePanels: waveHw?.panels ?? 0,
+          snaps: waveHw?.snaps ?? 0,
         });
         railsByKey.set(railKey, railEntry);
         acc.brackets += itemBrackets;
@@ -216,6 +238,9 @@ function buildSummary(rooms: ReturnType<typeof useAppStore.getState>['rooms']) {
         acc.pinHooks += itemPinHooks;
         acc.waveTapeM += itemWaveTape;
         acc.romanSets += itemRomanSets;
+        acc.rollers += waveHw?.totalRollers ?? 0;
+        acc.snaps += waveHw?.snaps ?? 0;
+        if (waveHw?.oversize) acc.oversizeWave.push({ roomName: room.name, width });
       }
 
       // ── WALLPAPER ──────────────────────────────────────────────────────────
@@ -914,11 +939,21 @@ const RailCard = ({
                 </span>
               </div>
               {!isRoman && (
-                <div className="flex gap-3 text-[10px] text-muted-foreground/70 pl-2">
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground/70 pl-2">
                   {item.brackets > 0 && <span>ขาจับ: ~{item.brackets} ชิ้น</span>}
                   {item.eyelets > 0 && <span>ห่วงตาไก่: ~{item.eyelets} วง</span>}
                   {item.pinHooks > 0 && <span>ตะขอจีบ: ~{item.pinHooks} ตัว</span>}
                   {item.waveTapeM > 0 && <span>เทปลอน: ~{item.waveTapeM} ม.</span>}
+                  {item.rollers > 0 && (
+                    <span>
+                      ลูกล้อ:{' '}
+                      {item.wavePanels === 2
+                        ? `${item.rollersPerPanel}+${item.rollersPerPanel} (=${item.rollers})`
+                        : item.rollers}{' '}
+                      ตัว
+                    </span>
+                  )}
+                  {item.snaps > 0 && <span>กระดุม: {item.snaps} เม็ด</span>}
                 </div>
               )}
             </div>
@@ -989,7 +1024,14 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
   const hasMaterial =
     fabricsByCode.size > 0 || sheersByCode.size > 0 || wallpapersByCode.size > 0 || areaByKey.size > 0;
   const hasRail = railsByKey.size > 0;
-  const hasAcc = acc.brackets > 0 || acc.eyelets > 0 || acc.pinHooks > 0 || acc.waveTapeM > 0 || acc.romanSets > 0;
+  const hasAcc =
+    acc.brackets > 0 ||
+    acc.eyelets > 0 ||
+    acc.pinHooks > 0 ||
+    acc.waveTapeM > 0 ||
+    acc.romanSets > 0 ||
+    acc.rollers > 0 ||
+    acc.snaps > 0;
 
   const handleCopy = () => {
     const lines: string[] = ['=== คลังต้นทุน ===', ''];
@@ -1016,6 +1058,11 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
         else lines.push(`  ${v.label}: ${fmtTH(v.totalLength)} ม.`);
       });
     }
+    if (acc.rollers > 0 || acc.snaps > 0) {
+      lines.push('', '🔩 อุปกรณ์ม่านลอน');
+      if (acc.rollers > 0) lines.push(`  ลูกล้อ: ${acc.rollers} ตัว`);
+      if (acc.snaps > 0) lines.push(`  กระดุม/สแน็ป: ${acc.snaps} เม็ด`);
+    }
     navigator.clipboard.writeText(lines.join('\n')).then(() => {
       setCopied(true);
       addToast('success', 'คัดลอกรายการแล้ว');
@@ -1035,7 +1082,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
       id: 'accessories',
       label: 'อุปกรณ์',
       icon: Wrench,
-      badge: [acc.brackets, acc.eyelets, acc.pinHooks, acc.waveTapeM, acc.romanSets].filter((v) => v > 0).length,
+      badge: [acc.brackets, acc.eyelets, acc.pinHooks, acc.waveTapeM, acc.romanSets, acc.rollers, acc.snaps].filter((v) => v > 0).length,
     },
     { id: 'catalog', label: 'คลังรหัส', icon: BookOpen },
   ];
@@ -1261,6 +1308,8 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       <AccRow label="ห่วงตาไก่" value={acc.eyelets} unit="วง" note="ทุก 10 ซม. บนผ้าสำเร็จ (เฉพาะม่านตาไก่)" />
                       <AccRow label="ตะขอจีบ (Pin hooks)" value={acc.pinHooks} unit="ตัว" note="ทุก 14 ซม. บนผ้าสำเร็จ (เฉพาะม่านจีบ)" />
                       <AccRow label="เทปหัวม่านลอน" value={acc.waveTapeM} unit="เมตร" note="เท่ากับผ้าก่อนพับลอน (เฉพาะม่านลอน)" />
+                      <AccRow label="ลูกล้อ (ม่านลอน)" value={acc.rollers} unit="ตัว" note={`ทุก ${FORMULAS.wave.roller_pitch_cm} ซม. ตามราง (เฉพาะม่านลอน TW14.5)`} />
+                      <AccRow label="กระดุม/สแน็ป (ม่านลอน)" value={acc.snaps} unit="เม็ด" note="1:1 กับลูกล้อ (เฉพาะม่านลอน)" />
                       <AccRow label="ชุดรางม่านพับ" value={acc.romanSets} unit="ชุด" note="1 ชุด/หน้าต่าง รวมเกียร์ + เส้นดึง" />
                     </div>
                     <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/50 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-300 flex gap-2">
@@ -1269,6 +1318,22 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         ตัวเลขเป็น <strong>ประมาณการ (~)</strong> คำนวณจากขนาดและ style ม่าน
                       </span>
                     </div>
+                    {acc.oversizeWave.length > 0 && (
+                      <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-300/60 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex gap-2">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <div>
+                          <strong>ม่านลอนรางยาวเกิน {FORMULAS.wave.max_track_cm / 100} ม.</strong> —
+                          แนะนำเพิ่มขาค้ำกลางหรือแยกราง:
+                          <ul className="mt-1 list-disc list-inside space-y-0.5">
+                            {acc.oversizeWave.map((o, i) => (
+                              <li key={i}>
+                                {o.roomName} · กว้าง {o.width.toFixed(2)} ม.
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

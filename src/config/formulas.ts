@@ -50,6 +50,12 @@ export interface FormulaConfig {
     roman_sets_per_window: number;
     rod_brackets_per_set: number;
   };
+  wave: {
+    roller_pitch_cm: number;
+    fabric_rollers_per_yard: number;
+    fabric_hem_yards: number;
+    max_track_cm: number;
+  };
 }
 
 // ─── Values ─────────────────────────────────────────────────────────────────
@@ -172,6 +178,28 @@ export const FORMULAS: FormulaConfig = {
      *   ต้นทุน = จำนวน × ราคา/ขา (accessoryCosts.rod_bracket)
      */
     rod_brackets_per_set: 4,
+  },
+
+  // ─── 〰️ ม่านลอน — ลูกล้อ/กระดุม (Wave Hardware) ──────────────────────────
+  wave: {
+    /**
+     * 🎯 ลูกล้อ/กระดุม ม่านลอน (Wave roller + snap tape TW14.5)
+     *   ม่านลอนสั่ง "ลูกล้อ" (rollers) และ "กระดุม/สแน็ป" (snaps) ตามความยาวราง
+     *
+     *   N₁ (ลูกล้อต่อ 1 ฝั่ง) = 2 × (round(รางซม. / roller_pitch_cm) + 1)
+     *   T  (ลูกล้อรวม)        = 2 × N₁
+     *   กระดุม               = T  (1:1 กับลูกล้อ)
+     *   ผ้า (หลา, cross-check) = floor((T / fabric_rollers_per_yard + fabric_hem_yards), 2dp)
+     *
+     * 📐 ถอดจากฐานข้อมูลผลิตจริง (snap tape TW14.5, ระยะลอน 14.5 ซม.)
+     *    ตรง dataset 14/15 แถว (ลูกล้อ) + 8/9 แถว (ผ้า) — outlier เป็น one-way เล็ก
+     *    (W=200 → DB 32, W=90 ผ้า → DB 2.80) = quirk การผลิต, ใช้สูตรทั่วไป
+     *    ดูรายละเอียดที่ src/lib/materials/waveHardware.test.ts
+     */
+    roller_pitch_cm: 26.5, // ระยะลูกล้อ/ลอน (ซม.) — TW14.5
+    fabric_rollers_per_yard: 6, // ลูกล้อ 6 ตัว = ผ้า 1 หลา (ใช้ cross-check ใน test)
+    fabric_hem_yards: 0.27, // เผื่อชายผ้า (หลา)
+    max_track_cm: 400, // เกินนี้ → เตือนเพิ่มขาค้ำ/แยกราง
   },
 };
 

@@ -62,6 +62,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
   const w = FORMULAS.wallpaper;
   const a = FORMULAS.area;
   const m = FORMULAS.materials;
+  const wv = FORMULAS.wave;
   const vatRate = useAppStore((s) => s.shopConfig.baseVatRate);
 
   return (
@@ -220,6 +221,31 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
             <div>
               <p className="font-semibold text-foreground mb-1">เทปลอน (Wave Tape)</p>
               <Formula>ความยาว = กว้าง × {c.multiplier_wave} เมตร</Formula>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-1">ลูกล้อ / กระดุม ม่านลอน (Wave Hardware)</p>
+              <Formula>
+                N₁ (ลูกล้อต่อฝั่ง) = 2 × (round(รางซม. / {wv.roller_pitch_cm}) + 1)
+                <br />
+                ลูกล้อรวม (T) = 2 × N₁
+                <br />
+                กระดุม/สแน็ป = T (1:1 กับลูกล้อ)
+                <br />
+                แยกกลาง → 2 ตับ (N₁+N₁) · เก็บข้างเดียว → 1 ตับ (T)
+              </Formula>
+              <p className="text-xs text-muted-foreground">
+                ระยะลูกล้อ {wv.roller_pitch_cm} ซม. (snap tape TW14.5) · ถอดจากฐานข้อมูลผลิตจริง 15 แถว
+                <br />
+                ผ้า cross-check = floor(T / {wv.fabric_rollers_per_yard} + {wv.fabric_hem_yards} หลา, 2
+                ตำแหน่ง) — ใช้ตรวจสูตรใน test เท่านั้น ไม่โชว์ใน BOM
+              </p>
+              <Note>
+                อิงสแน็ปเทป <strong>TW14.5</strong> (ระยะลอน 14.5 ซม.) — สูตรตรง dataset 14/15 แถว
+                (ลูกล้อ) outlier เป็น one-way ผืนเล็ก (เช่น กว้าง 2.00 ม. ผลิตจริง 32 vs สูตร 36)
+                ใช้สูตรทั่วไป ไม่ hardcode รายตัว
+                <br />
+                รางยาวเกิน {wv.max_track_cm / 100} ม. → ระบบเตือนให้เพิ่มขาค้ำกลาง/แยกราง
+              </Note>
             </div>
             <div>
               <p className="font-semibold text-foreground mb-1">ชุดราง Roman</p>
