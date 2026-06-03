@@ -6,11 +6,17 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { CostEngine } from '@/lib/pricing/CostEngine';
-import { ITEM_CONFIG } from '@/config/constants';
+import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
 import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle, Ruler } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// รูปแบบม่าน → ป้ายไทยสั้น (ตัด " (English)" ออกจาก CURTAIN_STYLES) สำหรับ title การ์ด
+// เช่น 'ลอน' → 'ม่านลอน', 'จีบ' → 'ม่านจีบ'
+const CURTAIN_STYLE_LABELS: Record<string, string> = Object.fromEntries(
+  CURTAIN_STYLES.map((s) => [s.value, s.label.replace(/\s*\(.*?\)\s*/, '').trim()])
+);
 
 interface ItemCardProps {
   item: ItemData;
@@ -45,9 +51,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     const config = ITEM_CONFIG[item.type];
     const rawSpecs = PricingEngine.getItemSpecs(item);
     const cleanSpecs = rawSpecs.filter((s) => s && s.trim() !== '');
+    const baseName = config?.name || 'สินค้า';
+    // ผ้าม่าน: ต่อท้ายด้วยรูปแบบให้ระบุชนิดชัด เช่น "ผ้าม่าน ม่านลอน" / "ผ้าม่าน ม่านจีบ"
+    // ประเภทอื่นใช้ชื่อตามเดิม ("ม่านม้วน", "ฉากกั้นห้อง", ...)
+    const styleLabel =
+      item.type === ITEM_TYPES.CURTAIN && item.style
+        ? CURTAIN_STYLE_LABELS[item.style] || item.style
+        : '';
     // First spec = dimensions (ใช้เป็น fallback ของ hero), ส่วนอื่นสร้างเป็นชิปด้านล่าง
     return {
-      title: config?.name || 'สินค้า',
+      title: styleLabel ? `${baseName} ${styleLabel}` : baseName,
       dimSpec: cleanSpecs[0] || '',
     };
   }, [item]);
@@ -108,7 +121,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     const chips: string[] = [];
     switch (item.type) {
       case ITEM_TYPES.CURTAIN:
-        if (item.style) chips.push(item.style);
+        // รูปแบบ (ลอน/จีบ) ย้ายไปอยู่ใน title แล้ว — ชิปเหลือทิศเปิด/ชั้นผ้า
         if (item.opening_style) chips.push(item.opening_style);
         if (item.layer_mode === LAYER_MODES.DOUBLE) chips.push('ทึบ+โปร่ง');
         else if (item.layer_mode === LAYER_MODES.SHEER) chips.push('โปร่ง');

@@ -10,15 +10,16 @@ These are the core principles that drive every design decision in this codebase.
 
 ### 1.1 Save-First, Validate-Later
 
-**Rule:** Forms save on blur immediately. Validation provides inline hints but **NEVER gates saving**.
+**Rule:** Forms auto-save on every committed change (debounced), immediately. Validation provides inline hints but **NEVER gates saving**.
 
 **Why:** Users work on-site entering partial data across a day. A validation gate that blocks saving produces "I clicked save but nothing happened" bugs — the single most common complaint before this refactor.
 
 **How it's implemented:**
-- Every feature form (`CurtainForm`, `WallpaperForm`, `RollerBlindsForm`, etc.) has `onBlur` at the `<form>` level that bubbles from any field
+- Every feature form (`CurtainForm`, `WallpaperForm`, `RollerBlindsForm`, etc.) calls `useFormAutoSave(formData, onAutoSave)` — a `useLayoutEffect` that fires `onAutoSave` on each committed `formData` change (skips the mount render).
+  - *History:* this replaced the original form-level `<form onBlur={() => onAutoSave?.(formData)}>` (2026-06-03). The blur snapshot missed the just-`smart-parse`d dimension (e.g. `250`→`2.50`) and lost the last-edited field (usually "ความสูง") when the modal closed before the debounce fired. Save-on-change captures every committed value.
 - `useZodForm.handleSubmit` always calls `onSubmit` — with parsed data if valid, raw `formData` as fallback
 - `useItemForm`-based forms call `validate()` for hint display only, then unconditionally `onSubmit(formData)`
-- `ItemModal` owns the actual store write via `handleAutoSave` and `handleSubmit`
+- `ItemModal` owns the actual store write via `handleAutoSave` (debounced 400ms) and `handleSubmit`, and **flushes any pending debounced save on close/unmount** (`flushAutoSave` / `handleClose`) so the last edit is never dropped.
 
 ### 1.2 Priority Chain for Cost Lookups
 
@@ -141,14 +142,15 @@ Returns CostBreakdown {
 useCurtainFormLogic(initialData, onSubmit)     ← thin wrapper over useZodForm
     ↓
 <CurtainForm onAutoSave={...} onSubmit={...} />
-    ├─ <form onBlur={() => onAutoSave?.(formData)}>  ← blur-to-save bubbles
+    ├─ useFormAutoSave(formData, onAutoSave)  ← change-to-save (debounced), skips mount
     │    └─ <DimensionSection> / <FabricSection> / <StyleSection>
     └─ Save button → handleSubmit → onSubmit(formData)
     ↓
-ItemModal owns store writes:
+ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
   - mode === 'edit': updateItem(roomId, itemId, data)
-  - mode === 'add' first blur: addItem with stable autoCreatedIdRef
+  - mode === 'add' first qualifying change: addItem with stable autoCreatedIdRef
   - mode === 'add' subsequent: updateItem(roomId, autoCreatedIdRef.current, data)
+  - close (X / back / backdrop / Esc): handleClose → flushAutoSave → persist pending, then onClose
 ```
 
 ---
@@ -198,7 +200,7 @@ ItemModal owns store writes:
 1. **Labor keys = item.style** — `laborCosts['ลอน']`, `laborCosts['จีบ']`, etc. If you add a new curtain style, add matching labor entry.
 2. **Sheer labor key = `'ผ้าโปร่ง'`** — single entry applies to all double-layer curtains regardless of main style.
 3. **Rail key mapping** — same mapping in `CostEngine.ts` and `MaterialSummaryModal.tsx`. Keep in sync.
-4. **`formData` always saves on blur** — don't add validation gates in `handleSubmit`.
+4. **`formData` always auto-saves on change** (debounced via `useFormAutoSave`); `ItemModal` **flushes the pending save on close/unmount** so the last edit never drops. Never add validation gates in `handleSubmit`.
 5. **`autoCreatedIdRef` resets on modal open** — managed by `useEffect` on `isOpen`.
 6. **`PricingEngine.calculateDetailedPrice(item).breakdown`** — source of truth for `fabricYards`, `sheerYards`, `rolls`. Consuming code should NOT re-derive these.
 7. **`formulas` passed via `PricingContext`** in worker — NEVER call `useAppStore.getState()` inside a Web Worker (separate JS context, store not shared).
@@ -262,7 +264,8 @@ ItemModal owns store writes:
 - **Do NOT run `npx tsc --noEmit` or `npm run build`** after edits — user handles these manually. Saved in `C:\Users\Ygoss\.claude\projects\D---Projects-mtr-qol-all-green-XXX\memory\feedback_no_build_check.md`.
 
 ### Persistence
-- Zustand `persist` key: `marnthara.input.v6.4` (localStorage)
+- Zustand `persist` key: `marnthara.input.v6.4` (localStorage), **`version: 2`**
+- `migrate` (`src/store/migrations.ts`): v1→v2 normalizes legacy curtains (`type: 'set'` + old field names `fabric_code`/`sheer_fabric_code`/`track_color`, missing `layer_mode`) into the current curtain schema. Idempotent.
 - Zundo `temporal` limit: 20 undo states
 - `omitTransientState` excludes: `activeModal`, `modalProps`, `modalStack`
 
@@ -296,7 +299,8 @@ ItemModal owns store writes:
 
 ### Core State
 ```
-src/store/useAppStore.ts              — Root store (temporal + persist + 7 slices)
+src/store/useAppStore.ts              — Root store (temporal + persist v2 + 7 slices)
+src/store/migrations.ts               — persist migrate: legacy type:'set' + old field names → current schema
 src/store/slices/
   UISlice.ts                          — Modals + toast queue
   ProjectSlice.ts                     — rooms[] + CRUD
@@ -326,8 +330,9 @@ src/hooks/
 src/hooks/
   useZodForm.ts                       — Zod form (always-save)
   useItemForm.ts                      — Simpler form (always-save)
-src/components/modals/ItemModal.tsx   — Save coordinator + single-row sticky footer
-src/features/*/components/*Form.tsx   — 8 feature forms (all with onAutoSave)
+  useFormAutoSave.ts                  — change-to-save bridge (debounced via ItemModal); skips mount
+src/components/modals/ItemModal.tsx   — Save coordinator + single-row sticky footer + flush-on-close
+src/features/*/components/*Form.tsx   — 8 feature forms (all call useFormAutoSave + onAutoSave)
 src/features/*/hooks/use*FormLogic.ts — Feature-specific form logic
 ```
 
