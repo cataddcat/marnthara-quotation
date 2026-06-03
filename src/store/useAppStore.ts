@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { STORAGE_KEY } from '@/config/constants';
+import { migrateLegacyState } from './migrations';
 
 // Import Slices
 import { createCustomerSlice, CustomerSlice } from './slices/CustomerSlice';
@@ -53,7 +54,9 @@ export const useAppStore = create<AppState>()(
       {
         name: STORAGE_KEY,
         storage: createJSONStorage(() => localStorage),
-        version: 1,
+        version: 2,
+        // v1→v2: แปลงผ้าม่าน schema เก่า (type:'set' + ชื่อฟิลด์เดิม) → โครงสร้างปัจจุบัน
+        migrate: (persisted) => migrateLegacyState(persisted) as AppState,
         partialize: (state) => omitTransientState(state),
       }
     ),
