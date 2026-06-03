@@ -4,6 +4,7 @@ import {
   Sun,
   Moon,
   FileText,
+  MessageSquareText,
   BookOpen,
   Users,
   Settings,
@@ -27,6 +28,7 @@ interface MainMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenPdf: () => void;
+  onOpenCopySummary: () => void;
   onOpenLookbook: () => void;
   onOpenCustomer: () => void;
   onOpenShopSettings: () => void;
@@ -96,6 +98,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   isOpen,
   onClose,
   onOpenPdf,
+  onOpenCopySummary,
   onOpenLookbook,
   onOpenCustomer,
   onOpenShopSettings,
@@ -200,6 +203,14 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
               desc="แคตตาล็อกนำเสนอลูกค้า"
               onClick={onOpenLookbook}
               accentColor="indigo"
+              isWide
+            />
+            <MenuGridItem
+              icon={MessageSquareText}
+              label="คัดลอกสรุป (LINE)"
+              desc="ส่งลูกค้า / ช่างเย็บ / สั่งของ"
+              onClick={onOpenCopySummary}
+              accentColor="emerald"
               isWide
             />
           </div>

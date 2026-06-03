@@ -25,6 +25,7 @@ export type ModalPropsMap = {
 
   // Modals ที่ไม่รับ props ผ่าน store
   costDashboard: undefined;
+  copySummary: undefined;
   customer: undefined;
   pdf: undefined;
   shopSettings: undefined;

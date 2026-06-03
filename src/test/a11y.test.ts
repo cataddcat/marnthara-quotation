@@ -40,6 +40,7 @@ const mainMenuProps = {
   isOpen: true,
   onClose: vi.fn(),
   onOpenPdf: vi.fn(),
+  onOpenCopySummary: vi.fn(),
   onOpenLookbook: vi.fn(),
   onOpenCustomer: vi.fn(),
   onOpenShopSettings: vi.fn(),

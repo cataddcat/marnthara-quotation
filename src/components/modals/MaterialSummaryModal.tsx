@@ -2,10 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
-import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
-import { ITEM_CONFIG } from '@/config/constants';
-import { toNum, fmtTH } from '@/utils/formatters';
+import { FAVORITE_CATEGORIES } from '@/config/enums';
+import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
   Layers,
@@ -22,37 +20,12 @@ import {
   BookOpen,
   Trash2,
 } from 'lucide-react';
-import type { CurtainItemInput, WallpaperItemInput, AreaItemInput } from '@/types';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { FORMULAS } from '@/config/formulas';
-import { calcWaveHardware, waveSplitFromOpening } from '@/lib/materials/waveHardware';
+import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@/lib/materials/buildSummary';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const STYLE_TO_RAIL: Record<string, string> = {
-  ลอน: 'rail_wave',
-  จีบ: 'rail_pleated',
-  ตาไก่: 'rail_eyelet',
-  พับ: 'rail_roman',
-  แป๊บ: 'rail_rod',
-  หลุยส์: 'rail_louis',
-};
-
-const RAIL_LABELS: Record<string, string> = {
-  rail_wave: 'รางม่านลอน (Wave)',
-  rail_pleated: 'รางม่านจีบ (ราง M)',
-  rail_eyelet: 'รางม่านตาไก่ (รางโชว์)',
-  rail_roman: 'ชุดรางม่านพับ (Roman)',
-  rail_rod: 'ราวม่านแป๊บ (ราวสอด)',
-  rail_louis: 'ราง/กล่อง ม่านหลุยส์',
-};
-
-const STYLE_LAYER_LABEL: Record<string, string> = {
-  main: 'ทึบ',
-  sheer: 'โปร่ง',
-  double: 'ทึบ+โปร่ง',
-};
 
 interface CatalogCategoryDef {
   id: string;
@@ -72,230 +45,6 @@ const CATALOG_CATEGORIES: CatalogCategoryDef[] = [
   { id: FAVORITE_CATEGORIES.PARTITION, label: 'ฉากกั้นห้อง', costUnit: 'ตร.ล.', vault: 'area' },
   { id: FAVORITE_CATEGORIES.PLEATED_SCREEN, label: 'มุ้งจีบ', costUnit: 'ตร.ม.', vault: 'area' },
 ];
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface FabricEntry {
-  code: string;
-  yards: number;
-  roomName: string;
-  desc: string;
-}
-
-interface RailItem {
-  railKey: string;
-  width: number;
-  isDouble: boolean;
-  roomName: string;
-  style: string;
-  opening: string;
-  brackets: number;
-  eyelets: number;
-  pinHooks: number;
-  waveTapeM: number;
-  romanSets: number;
-  // ── ม่านลอน: ลูกล้อ/กระดุม (เฉพาะ style 'ลอน') ──
-  rollers: number; // ลูกล้อรวม (T)
-  rollersPerPanel: number; // ลูกล้อต่อตับ (N₁ สำหรับ two-way, T สำหรับ one-way)
-  wavePanels: number; // จำนวนตับ (1 = เก็บข้างเดียว, 2 = แยกกลาง)
-  snaps: number; // กระดุม/สแน็ป (= T)
-}
-
-interface AreaGroup {
-  costKey: string;
-  type: string;
-  typeName: string;
-  code?: string;
-  unit: 'ตร.ม.' | 'ตร.ล.';
-  totalSqm: number;
-  totalSqyd: number;
-  entries: { roomName: string; sqm: number; sqyd: number; width: number; height: number }[];
-}
-
-// ─── Calculation helpers ──────────────────────────────────────────────────────
-
-// Material formulas — อ่านค่าจาก src/config/formulas.ts (single source of truth)
-
-function calcBrackets(widthM: number, isDouble: boolean): number {
-  const { bracket_spacing, bracket_double_multiplier } = FORMULAS.materials;
-  const base = Math.ceil(widthM / bracket_spacing) + 1;
-  return isDouble ? Math.ceil(base * bracket_double_multiplier) : base;
-}
-
-function calcEyelets(widthM: number): number {
-  return Math.ceil((widthM * FORMULAS.curtain.multiplier_wave) / FORMULAS.materials.eyelet_spacing);
-}
-
-function calcPinHooks(widthM: number): number {
-  const { pin_spacing, pin_extra } = FORMULAS.materials;
-  return Math.ceil((widthM * FORMULAS.curtain.multiplier_pleated) / pin_spacing) + pin_extra;
-}
-
-function calcWaveTape(widthM: number): number {
-  return Math.round(widthM * FORMULAS.curtain.multiplier_wave * 10) / 10;
-}
-
-// ─── Main calculation ─────────────────────────────────────────────────────────
-
-function buildSummary(rooms: ReturnType<typeof useAppStore.getState>['rooms']) {
-  const fabricsByCode = new Map<string, { total: number; entries: FabricEntry[] }>();
-  const sheersByCode = new Map<string, { total: number; entries: FabricEntry[] }>();
-  const wallpapersByCode = new Map<
-    string,
-    { total: number; entries: { rolls: number; roomName: string; desc: string }[] }
-  >();
-  const railsByKey = new Map<
-    string,
-    { label: string; totalLength: number; totalSets: number; items: RailItem[] }
-  >();
-  const areaByKey = new Map<string, AreaGroup>();
-
-  const acc = {
-    brackets: 0,
-    eyelets: 0,
-    pinHooks: 0,
-    waveTapeM: 0,
-    romanSets: 0,
-    rollers: 0, // ลูกล้อ ม่านลอน
-    snaps: 0, // กระดุม/สแน็ป ม่านลอน
-    oversizeWave: [] as { roomName: string; width: number }[], // รางลอน > max_track_cm
-  };
-
-  rooms.forEach((room) => {
-    if (room.is_suspended) return;
-
-    room.items.forEach((item) => {
-      if (item.is_suspended) return;
-
-      // ── CURTAIN ────────────────────────────────────────────────────────────
-      if (item.type === ITEM_TYPES.CURTAIN) {
-        const c = item as CurtainItemInput & { type: typeof ITEM_TYPES.CURTAIN; id: string };
-        const width = toNum(c.width_m);
-        const height = toNum(c.height_m);
-        if (width <= 0) return;
-
-        const breakdown = PricingEngine.calculateDetailedPrice(item).breakdown;
-        const fabricYards = breakdown?.fabricYards ?? 0;
-        const sheerYards = breakdown?.sheerYards ?? 0;
-        const style = c.style || 'ลอน';
-        const layerMode = c.layer_mode || LAYER_MODES.MAIN;
-        const isDouble = layerMode === LAYER_MODES.DOUBLE;
-        const isSheerOnly = layerMode === LAYER_MODES.SHEER;
-        const waveSplit = waveSplitFromOpening(c.opening_style);
-        const opening = waveSplit === 'one-way' ? 'เก็บข้างเดียว' : 'แยกกลาง';
-        const layerLabel = STYLE_LAYER_LABEL[layerMode] || layerMode;
-        const desc = `${style} ${width.toFixed(1)}×${height.toFixed(1)}ม. (${layerLabel})`;
-
-        if (!isSheerOnly && fabricYards > 0) {
-          const code = c.code || '(ไม่ระบุรหัส)';
-          const existing = fabricsByCode.get(code) ?? { total: 0, entries: [] };
-          existing.total += fabricYards;
-          existing.entries.push({ code, yards: fabricYards, roomName: room.name, desc });
-          fabricsByCode.set(code, existing);
-        }
-
-        if ((isDouble || isSheerOnly) && sheerYards > 0) {
-          const code = c.sheer_code || '(ไม่ระบุรหัสโปร่ง)';
-          const existing = sheersByCode.get(code) ?? { total: 0, entries: [] };
-          existing.total += sheerYards;
-          existing.entries.push({ code, yards: sheerYards, roomName: room.name, desc });
-          sheersByCode.set(code, existing);
-        }
-
-        const railKey = STYLE_TO_RAIL[style] || 'rail_wave';
-        const isRoman = style === 'พับ';
-        const itemBrackets = isRoman ? 0 : calcBrackets(width, isDouble);
-        const itemEyelets = style === 'ตาไก่' ? calcEyelets(width) : 0;
-        const itemPinHooks = style === 'จีบ' ? calcPinHooks(width) : 0;
-        const itemWaveTape = style === 'ลอน' ? calcWaveTape(width) : 0;
-        const itemRomanSets = isRoman ? 1 : 0;
-        // ม่านลอน: ลูกล้อ/กระดุม ตามความยาวราง (width ม. → ซม.)
-        const waveHw = style === 'ลอน' ? calcWaveHardware(width * 100, waveSplit) : null;
-
-        const railEntry = railsByKey.get(railKey) ?? {
-          label: RAIL_LABELS[railKey] || railKey,
-          totalLength: 0,
-          totalSets: 0,
-          items: [],
-        };
-        if (isRoman) {
-          railEntry.totalSets += 1;
-        } else {
-          railEntry.totalLength += width;
-        }
-        railEntry.items.push({
-          railKey, width, isDouble, roomName: room.name, style, opening,
-          brackets: itemBrackets, eyelets: itemEyelets, pinHooks: itemPinHooks,
-          waveTapeM: itemWaveTape, romanSets: itemRomanSets,
-          rollers: waveHw?.totalRollers ?? 0,
-          rollersPerPanel: waveHw?.rollersPerPanel ?? 0,
-          wavePanels: waveHw?.panels ?? 0,
-          snaps: waveHw?.snaps ?? 0,
-        });
-        railsByKey.set(railKey, railEntry);
-        acc.brackets += itemBrackets;
-        acc.eyelets += itemEyelets;
-        acc.pinHooks += itemPinHooks;
-        acc.waveTapeM += itemWaveTape;
-        acc.romanSets += itemRomanSets;
-        acc.rollers += waveHw?.totalRollers ?? 0;
-        acc.snaps += waveHw?.snaps ?? 0;
-        if (waveHw?.oversize) acc.oversizeWave.push({ roomName: room.name, width });
-      }
-
-      // ── WALLPAPER ──────────────────────────────────────────────────────────
-      else if (item.type === ITEM_TYPES.WALLPAPER) {
-        const w = item as WallpaperItemInput & { type: typeof ITEM_TYPES.WALLPAPER; id: string };
-        const breakdown = PricingEngine.calculateDetailedPrice(item).breakdown;
-        const rolls = breakdown?.rolls ?? 0;
-        if (rolls > 0) {
-          const code = w.wallpaper_code || '(ไม่ระบุรหัส)';
-          const totalWidth = w.widths.reduce((s, x) => s + toNum(x), 0);
-          const desc = `ผนัง ${totalWidth.toFixed(1)} ม. × สูง ${toNum(w.height_m).toFixed(1)} ม.`;
-          const existing = wallpapersByCode.get(code) ?? { total: 0, entries: [] };
-          existing.total += rolls;
-          existing.entries.push({ rolls, roomName: room.name, desc });
-          wallpapersByCode.set(code, existing);
-        }
-      }
-
-      // ── AREA ITEMS (blinds, partition, screen) ────────────────────────────
-      else if (item.type !== ITEM_TYPES.REMOVAL) {
-        const a = item as AreaItemInput & { type: string; id: string };
-        const width = toNum(a.width_m);
-        const height = toNum(a.height_m);
-        if (width > 0 && height > 0) {
-          const typeName = ITEM_CONFIG[item.type as keyof typeof ITEM_CONFIG]?.name || item.type;
-          const code = a.code || undefined;
-          const costKey = code || item.type;
-          const isPleated = item.type === ITEM_TYPES.PLEATED_SCREEN;
-          const unit: 'ตร.ม.' | 'ตร.ล.' = isPleated ? 'ตร.ม.' : 'ตร.ล.';
-
-          const sqm = width * height;
-          const breakdown = PricingEngine.calculateDetailedPrice(item).breakdown;
-          const sqyd = breakdown?.areaSqyd ?? sqm * 1.20;
-
-          const existing = areaByKey.get(costKey) ?? {
-            costKey,
-            type: item.type,
-            typeName,
-            code,
-            unit,
-            totalSqm: 0,
-            totalSqyd: 0,
-            entries: [],
-          };
-          existing.totalSqm += sqm;
-          existing.totalSqyd += sqyd;
-          existing.entries.push({ roomName: room.name, sqm, sqyd, width, height });
-          areaByKey.set(costKey, existing);
-        }
-      }
-    });
-  });
-
-  return { fabricsByCode, sheersByCode, wallpapersByCode, railsByKey, areaByKey, acc };
-}
 
 // ─── Shared empty state ───────────────────────────────────────────────────────
 

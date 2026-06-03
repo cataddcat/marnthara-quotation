@@ -9,6 +9,7 @@ const makeProps = () => ({
   isOpen: true,
   onClose: vi.fn(),
   onOpenPdf: vi.fn(),
+  onOpenCopySummary: vi.fn(),
   onOpenLookbook: vi.fn(),
   onOpenCustomer: vi.fn(),
   onOpenShopSettings: vi.fn(),
@@ -23,13 +24,14 @@ const makeProps = () => ({
 describe('MainMenuModal', () => {
   it('render เมนูหลัก + ป้ายเมนูครบ', () => {
     render(<MainMenuModal {...makeProps()} />);
-    ['ใบเสนอราคา', 'Lookbook', 'ลูกค้า', 'ตั้งค่าร้าน', 'ส่วนลด', 'สำรองข้อมูล', 'วิเคราะห์กำไร', 'คลังต้นทุน', 'ตั้งค่าต้นทุน', 'อธิบายสูตร'].forEach(
+    ['ใบเสนอราคา', 'คัดลอกสรุป (LINE)', 'Lookbook', 'ลูกค้า', 'ตั้งค่าร้าน', 'ส่วนลด', 'สำรองข้อมูล', 'วิเคราะห์กำไร', 'คลังต้นทุน', 'ตั้งค่าต้นทุน', 'อธิบายสูตร'].forEach(
       (label) => expect(screen.getByText(label)).toBeInTheDocument()
     );
   });
 
   it.each([
     ['ใบเสนอราคา', 'onOpenPdf'],
+    ['คัดลอกสรุป (LINE)', 'onOpenCopySummary'],
     ['Lookbook', 'onOpenLookbook'],
     ['ลูกค้า', 'onOpenCustomer'],
     ['ตั้งค่าร้าน', 'onOpenShopSettings'],

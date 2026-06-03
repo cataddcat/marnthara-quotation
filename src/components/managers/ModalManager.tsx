@@ -20,6 +20,7 @@ import { ProductionSettingsModal } from '@/components/modals/ProductionSettingsM
 import { FinancialDashboardModal } from '@/components/modals/FinancialDashboard';
 import { FormulaDocsModal } from '@/components/modals/FormulaDocsModal';
 import { MaterialSummaryModal } from '@/components/modals/MaterialSummaryModal';
+import { CopySummaryModal } from '@/components/modals/CopySummaryModal';
 
 export const ModalManager: React.FC = () => {
   const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
@@ -106,10 +107,17 @@ export const ModalManager: React.FC = () => {
         initialCategory={materialSummaryProps?.initialCategory}
       />
 
+      <CopySummaryModal
+        key={isVisible('copySummary') ? 'cs-open' : 'cs-closed'}
+        isOpen={isVisible('copySummary')}
+        onClose={closeModal}
+      />
+
       <MainMenuModal
         isOpen={isVisible('mainMenu')}
         onClose={closeModal}
         onOpenPdf={() => openModal('pdf')}
+        onOpenCopySummary={() => openModal('copySummary')}
         onOpenLookbook={() => openModal('lookbook')}
         onOpenCustomer={() => openModal('customer')}
         onOpenShopSettings={() => openModal('shopSettings')}
