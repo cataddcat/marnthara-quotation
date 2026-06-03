@@ -18,6 +18,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
@@ -54,6 +55,9 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
     initialData: { ...DEFAULT_DATA, ...initialData } as RollerBlindsFormValues,
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
+
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData, onAutoSave);
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
@@ -120,7 +124,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
   );
 
   return (
-    <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
+    <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimensions */}
       <FormSection icon={Minimize2} title="ขนาดพื้นที่ (ม.)">

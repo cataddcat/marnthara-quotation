@@ -27,6 +27,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
@@ -64,6 +65,9 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
     initialData: { ...DEFAULT_DATA, ...initialData } as VerticalBlindsFormValues,
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
+
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData, onAutoSave);
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
@@ -128,7 +132,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   );
 
   return (
-    <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
+    <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       <FormSection icon={Columns} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">

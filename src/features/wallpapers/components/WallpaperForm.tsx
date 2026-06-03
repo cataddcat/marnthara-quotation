@@ -11,6 +11,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
@@ -85,10 +86,8 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   );
   const analysis = useCostStatus(previewItem);
 
-  // ── Blur → auto-save ──────────────────────────────────────────────────────
-  const handleFormBlur = () => {
-    onAutoSave?.(formData);
-  };
+  // ── Auto-save เมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ) ──
+  useFormAutoSave(formData, onAutoSave);
 
   const summaryPanel = (
     <ItemSummaryCard
@@ -118,7 +117,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   );
 
   return (
-    <form id={WALLPAPER_FORM_ID} onSubmit={handleSubmit} onBlur={handleFormBlur}>
+    <form id={WALLPAPER_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimensions */}
       <FormSection icon={Ruler} title="ขนาดพื้นที่">

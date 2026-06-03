@@ -18,6 +18,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
 
@@ -54,6 +55,9 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
     initialData: { ...DEFAULT_DATA, ...initialData } as PartitionFormValues,
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
+
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData, onAutoSave);
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
@@ -117,7 +121,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
   );
 
   return (
-    <form id={PARTITION_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
+    <form id={PARTITION_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimension Section */}
       <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">

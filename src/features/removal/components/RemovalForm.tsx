@@ -9,6 +9,7 @@ import { RemovalSchema, RemovalFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { Scissors, DollarSign } from 'lucide-react';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
@@ -62,6 +63,9 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
     },
   });
 
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData, onAutoSave);
+
   const pricePreview = useMemo(() => {
     const previewItem = {
       ...formData,
@@ -93,7 +97,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
   );
 
   return (
-    <form id={REMOVAL_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
+    <form id={REMOVAL_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       <FormSection icon={Scissors} iconClass="text-destructive" title="รายละเอียดงานรื้อถอน">
         <div className="space-y-3">

@@ -13,6 +13,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, OPENING_STYLES } from '@/config/enums';
 
@@ -49,6 +50,9 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
     initialData: { ...DEFAULT_DATA, ...initialData } as PleatedScreenFormValues,
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
+
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData, onAutoSave);
 
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
@@ -107,7 +111,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   );
 
   return (
-    <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData)}>
+    <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">

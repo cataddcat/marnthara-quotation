@@ -15,6 +15,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { FAVORITE_CATEGORIES, ITEM_TYPES } from '@/config/enums';
 
@@ -54,6 +55,9 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
     initialData: { ...DEFAULT_DATA, ...initialData } as WoodenBlindsFormValues,
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
+
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData as unknown as AreaItemInput, onAutoSave);
 
   const { favorites } = useAppStore();
   const { isFull } = useExperienceMode();
@@ -121,7 +125,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   );
 
   return (
-    <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit} onBlur={() => onAutoSave?.(formData as unknown as AreaItemInput)}>
+    <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isFull} right={summaryPanel}>
       {/* 1. Dimensions */}
       <FormSection icon={Blinds} title="ขนาดพื้นที่ (ม.)">

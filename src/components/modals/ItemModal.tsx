@@ -108,6 +108,10 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   // Remount key — bumping it resets the form (blank + autofocus) for "save & add next"
   const [formKey, setFormKey] = useState(0);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ค่าฟอร์มล่าสุดที่ค้างใน debounce — เก็บไว้เพื่อ flush ตอนปิด/unmount (กันค่าช่องสุดท้าย เช่น "ความสูง" หาย)
+  const pendingDataRef = useRef<Partial<ItemData> | null>(null);
+  // ชี้ไปยัง flush ล่าสุด เพื่อให้ cleanup ตอน unmount เรียกเวอร์ชันปัจจุบันได้
+  const flushRef = useRef<() => void>(() => {});
 
   // Reset state when modal opens — setState in effect is intentional for modal reset
   /* eslint-disable */
@@ -127,10 +131,10 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   }, [isOpen, mode, initialItemType, initialData]);
   /* eslint-enable */
 
-  // Cancel pending auto-save on unmount/close
+  // Flush ค่าที่ค้างใน auto-save ตอน unmount (กันค่าช่องสุดท้าย เช่น "ความสูง" หายถ้าปิดแบบไม่ผ่าน handleClose)
   useEffect(() => {
     return () => {
-      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      flushRef.current();
     };
   }, []);
 
@@ -155,53 +159,88 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     setMode(isLite ? 'full' : 'lite');
   };
 
-  // ── Auto-save on blur (debounced 400ms; ADD + EDIT modes) ─────────────────
-  const handleAutoSave = useCallback(
+  // ── Persist draft (immediate) — ใช้ร่วมทั้ง auto-save (หลัง debounce) และ flush ตอนปิด ──
+  const persistDraft = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
 
-      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      // EDIT mode — always update existing item
+      if (mode === 'edit' && itemId) {
+        updateItem(roomId, itemId, { ...data, type: activeType, id: itemId } as ItemData);
+        setAutoSavedTick((n) => n + 1);
+        return;
+      }
 
-      autoSaveTimerRef.current = setTimeout(() => {
-        // EDIT mode — always update existing item
-        if (mode === 'edit' && itemId) {
-          updateItem(roomId, itemId, { ...data, type: activeType, id: itemId } as ItemData);
-          setAutoSavedTick((n) => n + 1);
-          return;
+      // ADD mode — create draft only after minimum data is present (per type)
+      if (mode === 'add') {
+        if (!hasMinimumItemData(activeType, data as Record<string, unknown>)) return;
+
+        if (autoCreatedIdRef.current) {
+          updateItem(
+            roomId,
+            autoCreatedIdRef.current,
+            { ...data, type: activeType, id: autoCreatedIdRef.current } as ItemData
+          );
+        } else {
+          const newId = `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          autoCreatedIdRef.current = newId;
+          addItem(roomId, { ...data, type: activeType, id: newId } as ItemData);
         }
-
-        // ADD mode — create draft only after minimum data is present (per type)
-        if (mode === 'add') {
-          if (!hasMinimumItemData(activeType, data as Record<string, unknown>)) return;
-
-          if (autoCreatedIdRef.current) {
-            updateItem(
-              roomId,
-              autoCreatedIdRef.current,
-              { ...data, type: activeType, id: autoCreatedIdRef.current } as ItemData
-            );
-          } else {
-            const newId = `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-            autoCreatedIdRef.current = newId;
-            addItem(roomId, { ...data, type: activeType, id: newId } as ItemData);
-          }
-          setAutoSavedTick((n) => n + 1);
-        }
-      }, 400);
+        setAutoSavedTick((n) => n + 1);
+      }
     },
     [roomId, mode, itemId, activeType, addItem, updateItem]
   );
+
+  // ── Auto-save เมื่อ formData เปลี่ยน (debounced 400ms; ADD + EDIT) ─────────
+  const handleAutoSave = useCallback(
+    (data: Partial<ItemData>) => {
+      if (!roomId) return;
+      pendingDataRef.current = data;
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = setTimeout(() => {
+        autoSaveTimerRef.current = null;
+        const pending = pendingDataRef.current;
+        pendingDataRef.current = null;
+        if (pending) persistDraft(pending);
+      }, 400);
+    },
+    [roomId, persistDraft]
+  );
+
+  // ── Flush ค่าที่ค้างทันที (ตอนปิด/unmount) — กัน debounce ที่ยังไม่ยิงหาย ─────
+  const flushAutoSave = useCallback(() => {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+    const pending = pendingDataRef.current;
+    pendingDataRef.current = null;
+    if (pending) persistDraft(pending);
+  }, [persistDraft]);
+
+  // เก็บ flush ล่าสุดไว้ใน ref เพื่อให้ cleanup ตอน unmount เรียกเวอร์ชันปัจจุบันได้
+  useEffect(() => {
+    flushRef.current = flushAutoSave;
+  }, [flushAutoSave]);
+
+  // ปิด modal: flush ค่าที่ค้างก่อนเสมอ (ทุกทางปิด — X / back / backdrop / Esc)
+  const handleClose = useCallback(() => {
+    flushAutoSave();
+    onClose();
+  }, [flushAutoSave, onClose]);
 
   // ── Explicit save — always saves, no validation gate (Save-First) ──────────
   const handleSubmit = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
 
-      // Flush any pending debounced auto-save so we don't double-save
+      // Cancel any pending debounced auto-save so we don't double-save
       if (autoSaveTimerRef.current) {
         clearTimeout(autoSaveTimerRef.current);
         autoSaveTimerRef.current = null;
       }
+      pendingDataRef.current = null;
 
       const intent = submitIntentRef.current;
       submitIntentRef.current = 'close'; // reset for next time
@@ -337,7 +376,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title={title}
       variant="fullscreen"
       maxWidth={wideTwoCol ? '5xl' : '2xl'}
@@ -374,7 +413,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
             mode={mode}
           />
@@ -384,7 +423,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}
@@ -393,7 +432,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}
@@ -404,7 +443,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             itemType={activeType}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}
@@ -413,7 +452,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}
@@ -422,7 +461,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}
@@ -431,7 +470,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}
@@ -440,7 +479,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             key={formKey}
             initialData={initialData}
             onSubmit={handleSubmit}
-            onCancel={onClose}
+            onCancel={handleClose}
             onAutoSave={handleAutoSave}
           />
         )}

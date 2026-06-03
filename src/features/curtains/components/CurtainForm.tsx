@@ -4,6 +4,7 @@ import { CurtainItemInput, ItemData } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
@@ -45,6 +46,9 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     handleMainFabricSelect,
     handleSheerFabricSelect,
   } = useCurtainFormLogic(initialData, onSubmit);
+
+  // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
+  useFormAutoSave(formData, onAutoSave);
 
   const { isLite } = useExperienceMode();
   const [showAdvancedLite, setShowAdvancedLite] = useState(false);
@@ -161,7 +165,6 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     <form
       id={CURTAIN_FORM_ID}
       onSubmit={handleSubmit}
-      onBlur={() => onAutoSave?.(formData)}
       className="space-y-3"
     >
       {isLite ? (
