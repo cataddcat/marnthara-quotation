@@ -67,7 +67,11 @@ export const ModalManager: React.FC = () => {
 
       <PdfPreviewModal isOpen={isVisible('pdf')} onClose={closeModal} />
 
-      <ShopSettingsModal isOpen={isVisible('shopSettings')} onClose={closeModal} />
+      <ShopSettingsModal
+        key={isVisible('shopSettings') ? 'shop-open' : 'shop-closed'}
+        isOpen={isVisible('shopSettings')}
+        onClose={closeModal}
+      />
 
       <DiscountModal
         key={isVisible('discount') ? 'discount-open' : 'discount-closed'}
