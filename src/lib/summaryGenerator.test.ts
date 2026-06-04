@@ -324,6 +324,23 @@ describe('generateSummaryText — rail_order', () => {
     expect(out).toContain('6.93'); // ขาว: T=40 → 40/6+0.27 floor = 6.93
   });
 
+  it('รูปแบบ "ย่อ" — ขนาด × เส้น · สไลด์ · ขาจับ(ชั้น) ไม่มีลูกล้อ/ผ้า', () => {
+    const out = generateSummaryText(makeInput(), 'rail_order', 'short');
+    // ม่านลอน ทึบ+โปร่ง กว้าง 2.5 ม. → 250 × (1 ชุด × 2 ชั้น = 2 เส้น)
+    expect(out).toContain('250 × 2 เส้น · แยก · ขาจับ (2ชั้น)');
+    expect(out).toContain('TES101 ( TW14.5 )รางเทปลอน เทป14.5 สีขาว'); // ยังโชว์รุ่นตามสี
+    expect(out).toContain('รวมรางที่ต้องสั่ง: 2 เส้น');
+    // แบบย่อตัดรายละเอียดออก
+    expect(out).not.toContain('ลูกล้อ');
+    expect(out).not.toContain('ผ้า ');
+  });
+
+  it('default ยังเป็นแบบ "ละเอียด" (ไม่ส่ง railFormat)', () => {
+    const out = generateSummaryText(makeInput(), 'rail_order');
+    expect(out).toContain('ลูกล้อ 20+20');
+    expect(out).toContain('ผ้า 6.93 หลา');
+  });
+
   it('ไม่มีราง → แจ้งว่าไม่มีรายการ', () => {
     const rooms: Room[] = [
       {

@@ -20,6 +20,9 @@ import type { Room, Customer, ShopConfig, Discount, ItemData, CurtainItemInput }
 
 export type SummaryType = 'customer' | 'seamstress' | 'purchase_order' | 'rail_order';
 
+/** รูปแบบใบสั่งราง: ย่อ (ขนาด/เส้น/สไลด์/ชั้น) หรือ ละเอียด (ลูกล้อ/ผ้า/ขาจับเต็ม) */
+export type RailFormat = 'short' | 'detailed';
+
 export interface SummaryTotals {
   /** ยอดรวมสินค้า (ก่อนหักส่วนลด / ก่อน VAT) */
   grandTotal: number;
@@ -406,7 +409,7 @@ interface RailRow {
   layer: string; // ป้ายชั้น "1ชั้น"/"2ชั้น"
 }
 
-function railOrderSummary(input: SummaryInput): string {
+function railOrderSummary(input: SummaryInput, format: RailFormat): string {
   let t = header(input, false);
   const m = buildSummary(input.rooms);
 
@@ -414,6 +417,7 @@ function railOrderSummary(input: SummaryInput): string {
     return t + '\nไม่มีรายการรางสำหรับสั่งผลิต\n' + SEP + '\n';
   }
 
+  const isShort = format === 'short';
   t += '\n🛤️ *รายการสั่งราง (ผู้ผลิต)*\n';
 
   m.railsByKey.forEach((rail, railKey) => {
@@ -447,6 +451,11 @@ function railOrderSummary(input: SummaryInput): string {
       t += SEP + '\n';
       t += `🛤️ ${productName}\n`;
       rows.forEach((r, i) => {
+        if (isShort) {
+          // แบบย่อ: ขนาด × จำนวนเส้น (ชุด×ชั้น) · สไลด์ · ขาจับ(ชั้น)
+          t += `${i + 1}) ${r.sizeCm} × ${r.qty * r.layers} เส้น · ${r.slide} · ขาจับ (${r.layer})\n`;
+          return;
+        }
         let line = `${i + 1}) ${r.sizeCm} ซม. ×${r.qty} · ${r.slide}`;
         if (unitHeader) line += ` · ${unitHeader} ${r.unit}`;
         if (isWave && r.fabric) line += ` · ผ้า ${r.fabric} หลา`;
@@ -457,13 +466,22 @@ function railOrderSummary(input: SummaryInput): string {
     });
   });
 
-  t += SEP + '\nℹ️ ขนาด=ซม. · ลูกล้อ N+N=สองตับ · ผ้า/ชุด=หลา · ขาจับ (จำนวน, ชั้นผ้า)\n';
+  t +=
+    SEP +
+    '\n' +
+    (isShort
+      ? 'ℹ️ ขนาด=ซม. · เส้น=จำนวนรางที่ตัด · ขาจับ (ชั้นผ้า)\n'
+      : 'ℹ️ ขนาด=ซม. · ลูกล้อ N+N=สองตับ · ผ้า/ชุด=หลา · ขาจับ (จำนวน, ชั้นผ้า)\n');
   return t;
 }
 
 // ─── Entry ──────────────────────────────────────────────────────────────────
 
-export function generateSummaryText(input: SummaryInput, type: SummaryType): string {
+export function generateSummaryText(
+  input: SummaryInput,
+  type: SummaryType,
+  railFormat: RailFormat = 'detailed'
+): string {
   switch (type) {
     case 'customer':
       return customerSummary(input);
@@ -472,7 +490,7 @@ export function generateSummaryText(input: SummaryInput, type: SummaryType): str
     case 'purchase_order':
       return purchaseOrderSummary(input);
     case 'rail_order':
-      return railOrderSummary(input);
+      return railOrderSummary(input, railFormat);
     default:
       return '';
   }
