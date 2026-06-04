@@ -38,3 +38,23 @@ export const categoryVault = (category: string): VaultKind => BY_ID.get(category
 export const categoryLabel = (category: string): string => BY_ID.get(category)?.label ?? category;
 
 export const categoryCostUnit = (category: string): string => BY_ID.get(category)?.costUnit ?? 'หน่วย';
+
+// ── สีประจำหมวด (color-coding) — จัดกลุ่มตาม vault ให้สอดคล้องทั้งแอป ──
+//   ผ้าทึบ = violet-500, ผ้าโปร่ง = violet-400, วอลเปเปอร์ = orange-500, พื้นที่ = teal
+/** text color ของหมวด — ใช้กับรหัส/ป้ายในคลังรหัส */
+export const categoryAccent = (category: string): string => {
+  if (category === FAVORITE_CATEGORIES.CURTAIN_SHEER) return 'text-violet-400';
+  const v = categoryVault(category);
+  return v === 'wallpaper'
+    ? 'text-orange-500'
+    : v === 'area'
+      ? 'text-teal-600 dark:text-teal-400'
+      : 'text-violet-500';
+};
+
+/** bg color ของจุดนำหน้า (dot) — คู่กับ categoryAccent */
+export const categoryDotClass = (category: string): string => {
+  if (category === FAVORITE_CATEGORIES.CURTAIN_SHEER) return 'bg-violet-400';
+  const v = categoryVault(category);
+  return v === 'wallpaper' ? 'bg-orange-500' : v === 'area' ? 'bg-teal-500' : 'bg-violet-500';
+};

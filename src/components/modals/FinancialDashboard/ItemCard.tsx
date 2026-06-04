@@ -52,7 +52,9 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
       : `${analysis.marginPercent >= 0 ? '+' : ''}${analysis.marginPercent.toFixed(0)}%`;
 
   return (
-    <div className="bg-card border border-border/60 rounded-xl overflow-hidden">
+    <div
+      className={cn('bg-card border border-border/60 border-l-[3px] rounded-xl overflow-hidden', st.accent)}
+    >
       {/* ── Main row (always visible) ── */}
       <button
         onClick={onToggle}
