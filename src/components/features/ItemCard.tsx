@@ -111,7 +111,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const height = toNum(itemRec.height_m as string | number | null | undefined);
   const hasSize = width > 0 && height > 0;
 
-  // ขนาดแบบ "ขนาด กว้าง/สูง : W x H" — รูปแบบเดียวเสมอสำหรับสินค้าที่มีมิติ
+  // ขนาดแบบ "W x H" (ตัวเลขล้วน) — ป้าย "กว้าง/สูง :" แยกแสดงในแถวด้วยสีจาง (ไม่เด่นเท่าตัวเลข)
   // ช่องที่ยังไม่กรอกใช้ "—" (กันค่าว่างทำให้ดูเหมือนบันทึกไม่ครบ / หลุดไปฟอร์แมตเก่าจาก getSpecs)
   const dimNumbers = useMemo(() => {
     if (item.type === ITEM_TYPES.REMOVAL) return '';
@@ -123,7 +123,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     if (w <= 0 && h <= 0) return '';
     const wStr = w > 0 ? w.toFixed(2) : '—';
     const hStr = h > 0 ? h.toFixed(2) : '—';
-    return `ขนาด กว้าง/สูง : ${wStr} x ${hStr}`;
+    return `${wStr} x ${hStr}`;
   }, [item, width, height]);
 
   // แถวขนาดบนการ์ด — สินค้ามีมิติใช้ dimNumbers (รูปแบบใหม่เสมอ), งานรื้อถอนใช้ spec สรุป
@@ -222,9 +222,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
 
         {/* Row 2: Dimensions — hero ตัวเลขล้วน (priority #1 หน้างาน) */}
         {dimLine && (
-          <div className="flex items-center gap-1.5 text-[15px] font-bold text-sky-600 dark:text-sky-400 leading-snug">
-            {item.type !== ITEM_TYPES.REMOVAL && <Ruler className="w-3.5 h-3.5 shrink-0" />}
-            <span className="truncate">{dimLine}</span>
+          <div className="flex items-center gap-1.5 text-[15px] leading-snug">
+            {item.type !== ITEM_TYPES.REMOVAL && (
+              <>
+                <Ruler className="w-3.5 h-3.5 shrink-0 text-sky-600 dark:text-sky-400" />
+                <span className="font-medium text-muted-foreground shrink-0">กว้าง/สูง :</span>
+              </>
+            )}
+            <span className="truncate font-bold text-sky-600 dark:text-sky-400">{dimLine}</span>
           </div>
         )}
 
