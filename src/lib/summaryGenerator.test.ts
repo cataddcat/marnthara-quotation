@@ -157,7 +157,9 @@ describe('generateSummaryText — seamstress', () => {
     expect(out).toContain('ชุดที่ 1/1');
     expect(out).toContain('ผ้าทึบ: #AA1');
     expect(out).toContain('ผ้าโปร่ง: #SS1');
-    expect(out).toContain('กว้าง 2.50 x สูง 2.80 ม.');
+    expect(out).toContain('ขนาด: 2.50 × 2.80'); // รูปแบบใหม่ W × H ไม่มีหน่วย
+    expect(out).toContain('⚠️ ใช้ขา 2 ชั้น'); // ทึบ+โปร่ง → เตือนขา 2 ชั้น
+    expect(out).not.toContain('ตะขอ'); // ม่านลอนไม่มีตะขอ สั้น/ยาว (เฉพาะม่านจีบ)
     // ไม่รวมวอลเปเปอร์ / มู่ลี่ / ห้องที่ไม่มีผ้าม่าน
     expect(out).not.toContain('ห้องนั่งเล่น');
     expect(out).not.toContain('WP9');
@@ -212,5 +214,84 @@ describe('generateSummaryText — purchase_order', () => {
   it('ข้ามห้องที่ถูกระงับ', () => {
     const out = generateSummaryText(makeInput(), 'purchase_order');
     expect(out).not.toContain('#ZZ9');
+  });
+});
+
+// ─── rail_order ───────────────────────────────────────────────────────────────
+
+describe('generateSummaryText — rail_order', () => {
+  it('ตารางสั่งราง (ม่านลอน TES101): ขนาด/สไลด์/ลูกล้อ/ผ้าต่อชุด/ขาจับ(ชั้น)', () => {
+    const out = generateSummaryText(makeInput(), 'rail_order');
+    expect(out).toContain('🛤️ *รายการสั่งราง (ผู้ผลิต)*');
+    expect(out).toContain('TES101 ( TW14.5 )รางเทปลอนสีขาว เทปสีขาว14.5');
+    expect(out).toContain('250'); // ขนาด (ซม.) จาก 2.5 ม.
+    expect(out).toContain('แยก'); // สไลด์ (แยกกลาง = สองตับ)
+    expect(out).toContain('20+20'); // ลูกล้อ N+N (N = 2·round(250/26.5)+2 = 20)
+    expect(out).toContain('6.93'); // ผ้า/ชุด (หลา) = T/6+0.27 = 40/6+0.27
+    expect(out).toContain('2ชั้น'); // ทึบ+โปร่ง → 2 ชั้น
+    // ข้ามห้องระงับ (ม่านจีบ 3×3) + ไม่รวมสินค้าพื้นที่ (ม่านม้วน)
+    expect(out).not.toContain('รางม่านจีบ');
+  });
+
+  it('จีบ→ราง M (LTL-101) ลูกล้อตามตาราง · พับ→U-2 จำนวนตัว', () => {
+    const rooms: Room[] = [
+      {
+        id: 'mix',
+        name: 'ห้องผสม',
+        is_suspended: false,
+        items: [
+          {
+            type: ITEM_TYPES.CURTAIN,
+            id: 'p1',
+            width_m: '2.20',
+            height_m: '2.5',
+            style: 'จีบ',
+            layer_mode: 'main',
+            code: 'P1',
+            opening_style: 'แยกกลาง',
+          },
+          {
+            type: ITEM_TYPES.CURTAIN,
+            id: 'rm1',
+            width_m: '0.90',
+            height_m: '1.5',
+            style: 'พับ',
+            layer_mode: 'main',
+            code: 'RM1',
+            opening_style: 'แยกกลาง',
+          },
+        ],
+      },
+    ];
+    const out = generateSummaryText(makeInput({ rooms }), 'rail_order');
+    // จีบ → ราง M (LTL-101), 220 ซม. → round(220/20)=11 → 11+11
+    expect(out).toContain('LTL-101 ราง M ประกอบชุด สีขาว');
+    expect(out).toContain('11+11');
+    // พับ → U-2, จำนวนตัว = ceil(0.90/0.40) = 3
+    expect(out).toContain('U-2 รางม่านพับ U-2');
+    expect(out).toContain('จำนวนตัว');
+  });
+
+  it('ไม่มีราง → แจ้งว่าไม่มีรายการ', () => {
+    const rooms: Room[] = [
+      {
+        id: 'only-wp',
+        name: 'ห้องโถง',
+        is_suspended: false,
+        items: [
+          {
+            type: ITEM_TYPES.WALLPAPER,
+            id: 'w3',
+            widths: ['3'],
+            height_m: '2.6',
+            price_per_roll: '900',
+            install_cost_per_roll: '100',
+            wallpaper_code: 'WP1',
+          },
+        ],
+      },
+    ];
+    const out = generateSummaryText(makeInput({ rooms }), 'rail_order');
+    expect(out).toContain('ไม่มีรายการรางสำหรับสั่งผลิต');
   });
 });

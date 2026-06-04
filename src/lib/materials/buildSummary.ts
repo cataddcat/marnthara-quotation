@@ -8,7 +8,7 @@
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { ITEM_CONFIG } from '@/config/constants';
-import { toNum } from '@/utils/formatters';
+import { toNum, fmtSize } from '@/utils/formatters';
 import { FORMULAS } from '@/config/formulas';
 import type { Room, CurtainItemInput, WallpaperItemInput, AreaItemInput } from '@/types';
 import { calcWaveHardware, waveSplitFromOpening } from './waveHardware';
@@ -65,6 +65,7 @@ export interface RailItem {
   rollersPerPanel: number; // ลูกล้อต่อตับ (N₁ สำหรับ two-way, T สำหรับ one-way)
   wavePanels: number; // จำนวนตับ (1 = เก็บข้างเดียว, 2 = แยกกลาง)
   snaps: number; // กระดุม/สแน็ป (= T)
+  fabricYards: number; // ผ้า/ชุด (หลา) สำหรับใบสั่งราง = T/6 + 0.27 (ลอนเท่านั้น)
 }
 
 export interface AreaGroup {
@@ -150,7 +151,7 @@ export function buildSummary(rooms: Room[]) {
         const waveSplit = waveSplitFromOpening(c.opening_style);
         const opening = waveSplit === 'one-way' ? 'เก็บข้างเดียว' : 'แยกกลาง';
         const layerLabel = STYLE_LAYER_LABEL[layerMode] || layerMode;
-        const desc = `${style} ${width.toFixed(1)}×${height.toFixed(1)}ม. (${layerLabel})`;
+        const desc = `${style} ${fmtSize(width, height)} (${layerLabel})`;
 
         if (!isSheerOnly && fabricYards > 0) {
           const code = c.code || '(ไม่ระบุรหัส)';
@@ -190,13 +191,22 @@ export function buildSummary(rooms: Room[]) {
           railEntry.totalLength += width;
         }
         railEntry.items.push({
-          railKey, width, isDouble, roomName: room.name, style, opening,
-          brackets: itemBrackets, eyelets: itemEyelets, pinHooks: itemPinHooks,
-          waveTapeM: itemWaveTape, romanSets: itemRomanSets,
+          railKey,
+          width,
+          isDouble,
+          roomName: room.name,
+          style,
+          opening,
+          brackets: itemBrackets,
+          eyelets: itemEyelets,
+          pinHooks: itemPinHooks,
+          waveTapeM: itemWaveTape,
+          romanSets: itemRomanSets,
           rollers: waveHw?.totalRollers ?? 0,
           rollersPerPanel: waveHw?.rollersPerPanel ?? 0,
           wavePanels: waveHw?.panels ?? 0,
           snaps: waveHw?.snaps ?? 0,
+          fabricYards: waveHw?.fabricYards ?? 0,
         });
         railsByKey.set(railKey, railEntry);
         acc.brackets += itemBrackets;
@@ -239,7 +249,7 @@ export function buildSummary(rooms: Room[]) {
 
           const sqm = width * height;
           const breakdown = PricingEngine.calculateDetailedPrice(item).breakdown;
-          const sqyd = breakdown?.areaSqyd ?? sqm * 1.20;
+          const sqyd = breakdown?.areaSqyd ?? sqm * 1.2;
 
           const existing = areaByKey.get(costKey) ?? {
             costKey,
