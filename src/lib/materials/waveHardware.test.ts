@@ -41,6 +41,22 @@ describe('calcWaveHardware — dataset proof (two-way)', () => {
   });
 });
 
+describe('calcWaveHardware — ตรง reference images THONG DECOR (เทปลอน TW14.5, แยกกลาง)', () => {
+  // ใบสั่งราง/ตารางจำนวนผ้าจริง: [กว้างซม., ลูกล้อรวม T, ผ้า/ชุด(หลา)]
+  it.each([
+    [220, 36, 6.27], // 18+18
+    [320, 52, 8.93], // 26+26
+    [270, 44, 7.6], // 22+22
+    [190, 32, 5.6], // 16+16
+    [230, 40, 6.93], // 20+20
+  ])('กว้าง %i ซม. → ลูกล้อ %i, ผ้า %f หลา', (cm, rollers, yards) => {
+    const r = calcWaveHardware(cm, 'two-way');
+    expect(r.totalRollers).toBe(rollers);
+    expect(r.rollersPerPanel).toBe(rollers / 2); // N+N
+    expect(r.fabricYards).toBe(yards);
+  });
+});
+
 describe('calcWaveHardware — กระดุม 1:1 กับลูกล้อ', () => {
   it.each([120, 150, 200, 240, 300, 380, 450])('W=%i → snaps === totalRollers', (w) => {
     const r = calcWaveHardware(w, 'two-way');

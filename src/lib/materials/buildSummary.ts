@@ -55,6 +55,8 @@ export interface RailItem {
   roomName: string;
   style: string;
   opening: string;
+  /** สีราง (จาก item.rail_color) — ใช้แมปรหัสสินค้าในใบสั่งราง */
+  railColor?: string;
   brackets: number;
   eyelets: number;
   pinHooks: number;
@@ -197,6 +199,7 @@ export function buildSummary(rooms: Room[]) {
           roomName: room.name,
           style,
           opening,
+          railColor: c.rail_color,
           brackets: itemBrackets,
           eyelets: itemEyelets,
           pinHooks: itemPinHooks,

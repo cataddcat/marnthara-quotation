@@ -57,8 +57,8 @@ const UNIT_LABELS: Record<string, string> = {
 };
 
 const ACCESSORY_LABELS: Record<string, string> = {
-  rail_wave: 'รางม่านลอน (โซ่ไข่ปลา)',
-  rail_pleated: 'รางม่านจีบ (ราง M)',
+  rail_wave: 'รางม่านลอน — TES (เทปลอน TW14.5)',
+  rail_pleated: 'รางม่านจีบ — LTL (ราง M)',
   rail_eyelet: 'รางม่านตาไก่ (รางโชว์)',
   rail_roman: 'ชุดรางม่านพับ (Roman System)',
   rail_rod: 'ราวม่านแป๊บ (ราวสอด)',

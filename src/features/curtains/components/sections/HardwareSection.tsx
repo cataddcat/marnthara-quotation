@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLE_FEATURES } from '@/config/constants';
 import { FORMULAS } from '@/config/formulas';
+import { RAIL_COLORS } from '@/config/railProducts';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { FormSection } from '@/components/ui/FormSection';
@@ -21,14 +22,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// สีราง/อุปกรณ์ — พรีเซ็ตยอดนิยม + "กำหนดเอง" (พิมพ์ข้อความเอง)
+// สีราง/อุปกรณ์ — 6 สีมาตรฐาน THONG DECOR (จาก config) + "กำหนดเอง" (พิมพ์ข้อความเอง)
 const RAIL_COLOR_CUSTOM = '__custom__';
-const RAIL_COLOR_PRESETS = ['ขาว', 'ดำ', 'ไม้สัก'];
+const RAIL_COLOR_PRESETS = RAIL_COLORS.map((c) => c.value);
 const RAIL_COLOR_OPTIONS = [
   { label: 'เลือกสี...', value: '' },
-  { label: 'ขาว', value: 'ขาว' },
-  { label: 'ดำ', value: 'ดำ' },
-  { label: 'ไม้สัก', value: 'ไม้สัก' },
+  ...RAIL_COLORS,
   { label: 'กำหนดเอง', value: RAIL_COLOR_CUSTOM },
 ];
 
@@ -144,7 +143,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
         </div>
       )}
 
-      {/* Rail Color — dropdown: ขาว/ดำ/ไม้สัก/กำหนดเอง (กำหนดเอง = พิมพ์ข้อความเอง) */}
+      {/* Rail Color — dropdown: 6 สี THONG DECOR + กำหนดเอง (กำหนดเอง = พิมพ์ข้อความเอง) */}
       {features.hasRail && (
         <div className="space-y-2 animate-fade-in">
           <label className="text-sm font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
