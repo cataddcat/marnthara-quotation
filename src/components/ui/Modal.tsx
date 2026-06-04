@@ -50,14 +50,14 @@ export const Modal: React.FC<ModalProps> = ({
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[50]" />
           <Drawer.Content className="bg-card flex flex-col rounded-t-[20px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[51] outline-none max-w-md mx-auto">
-             {/* Handle Bar */}
+            {/* Handle Bar */}
             <div className="p-4 bg-card rounded-t-[20px] shrink-0 border-b border-border/50">
               <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mb-4" />
-              <Drawer.Title className="text-lg font-bold text-center">{title}</Drawer.Title>
+              <Drawer.Title className="text-base font-bold text-center text-foreground">
+                {title}
+              </Drawer.Title>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              {children}
-            </div>
+            <div className="flex-1 overflow-y-auto p-4">{children}</div>
             {footer && (
               <div className="p-4 border-t border-border mt-auto pb-safe-area bg-card">
                 {footer}
@@ -100,10 +100,12 @@ export const Modal: React.FC<ModalProps> = ({
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className={cn(
-            "flex min-h-full items-center justify-center p-0 text-center",
-            !isFullscreen && "sm:p-4" // ถ้าไม่ใช่ Fullscreen ให้มี padding รอบๆ บนจอใหญ่
-          )}>
+          <div
+            className={cn(
+              'flex min-h-full items-center justify-center p-0 text-center',
+              !isFullscreen && 'sm:p-4' // ถ้าไม่ใช่ Fullscreen ให้มี padding รอบๆ บนจอใหญ่
+            )}
+          >
             <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
@@ -117,68 +119,74 @@ export const Modal: React.FC<ModalProps> = ({
                 className={cn(
                   'relative transform overflow-hidden bg-card text-left align-middle shadow-2xl transition-all flex flex-col',
                   // 📱 Mobile Fullscreen Logic
-                  isFullscreen 
-                    ? 'w-full h-[100dvh] rounded-none' 
+                  isFullscreen
+                    ? 'w-full h-[100dvh] rounded-none'
                     : `w-full ${maxWidthClass} rounded-2xl my-4 border border-border/50 max-h-[90vh]` // 🖥️ Desktop Card Logic
                 )}
               >
-                {/* Header */}
-                <div className={cn(
-                  "flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0 bg-background/80 backdrop-blur z-10",
-                  isFullscreen && "pt-safe-top" // Safe Area for notch
-                )}>
-                  <div className="flex items-center gap-2 flex-1">
+                {/* Header — ขนาดกระชับให้สม่ำเสมอกับ ItemCard (title 16px, ไอคอนเล็ก, สี/เส้นขอบตาม token เดียวกัน) */}
+                <div
+                  className={cn(
+                    'flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border shrink-0 bg-card/95 backdrop-blur z-10',
+                    isFullscreen && 'pt-safe-top' // Safe Area for notch
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     {/* ปุ่ม Back สำหรับ Fullscreen Mobile */}
                     {isFullscreen && isMobile && (
-                      <button onClick={onClose} aria-label="ย้อนกลับ" className="-ml-2 p-2 mr-1">
-                        <ChevronLeft className="w-6 h-6 text-primary" />
+                      <button
+                        onClick={onClose}
+                        aria-label="ย้อนกลับ"
+                        className="-ml-1.5 p-1.5 mr-0.5"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-primary" />
                       </button>
                     )}
-                    <div>
-                      <DialogTitle as="h3" className="text-lg font-bold leading-6 text-foreground">
+                    <div className="min-w-0">
+                      <DialogTitle
+                        as="h3"
+                        className="text-base font-bold leading-tight text-foreground truncate"
+                      >
                         {title}
                       </DialogTitle>
                       {description && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {description}
+                        </p>
                       )}
                     </div>
                   </div>
 
-                  {headerAction && (
-                    <div className="flex items-center mr-1">
-                      {headerAction}
-                    </div>
-                  )}
+                  {headerAction && <div className="flex items-center shrink-0">{headerAction}</div>}
 
                   {/* ปุ่ม X (แสดงเสมอถ้าไม่ใช่ Mobile Fullscreen หรือถ้าต้องการปุ่มปิดขวาบน) */}
                   {(!isFullscreen || !isMobile) && (
                     <button
                       onClick={onClose}
                       aria-label="ปิด"
-                      className="p-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95 outline-none focus:ring-2 focus:ring-primary/50"
+                      className="shrink-0 p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95 outline-none focus:ring-2 focus:ring-primary/50"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
                     </button>
                   )}
                 </div>
 
-                {/* Content Container - Scrollable */}
-                <div className={cn(
-                  'flex-1 overflow-y-auto overscroll-contain bg-background/50',
-                  isFullscreen ? 'p-4' : 'p-6'
-                )}>
+                {/* Content Container - Scrollable — padding กระชับ (p-4) สม่ำเสมอกับ ItemCard */}
+                <div className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4">
                   {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks */}
-                  <div className={cn("mx-auto w-full", isFullscreen && "min-h-full")}>
-                     {children}
+                  <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full')}>
+                    {children}
                   </div>
                 </div>
 
                 {/* Footer (Fixed at bottom logic) */}
                 {footer && (
-                  <div className={cn(
-                    'shrink-0 px-4 py-3 border-t border-border bg-background z-20',
-                    isFullscreen && 'pb-safe-bottom'
-                  )}>
+                  <div
+                    className={cn(
+                      'shrink-0 px-4 py-3 border-t border-border bg-background z-20',
+                      isFullscreen && 'pb-safe-bottom'
+                    )}
+                  >
                     {footer}
                   </div>
                 )}
