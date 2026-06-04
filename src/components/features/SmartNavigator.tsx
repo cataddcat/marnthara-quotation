@@ -172,7 +172,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="shrink-0 border-t border-border/40 px-4 pt-3 pb-3 pb-safe-bottom flex gap-2.5">
+        <div className="shrink-0 border-t border-border/40 px-5 pt-3 pb-safe-bottom flex gap-2.5">
           {/* View mode toggle */}
           <button
             onClick={handleToggleViewMode}

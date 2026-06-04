@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
-import { CATALOG_CATEGORIES } from '@/lib/vault';
+import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
@@ -121,6 +121,8 @@ const InventoryItemRow = ({
   cost,
   costUnit,
   highlight,
+  accentClass,
+  dotClass,
   onCostSave,
   onUpdate,
   onRemove,
@@ -130,6 +132,8 @@ const InventoryItemRow = ({
   cost: number;
   costUnit: string;
   highlight?: boolean;
+  accentClass: string;
+  dotClass: string;
   onCostSave: (code: string, cost: number) => void;
   onUpdate: (updates: Partial<InventoryItem>) => void;
   onRemove: () => void;
@@ -219,7 +223,8 @@ const InventoryItemRow = ({
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="font-mono font-bold text-sm text-foreground">{item.code}</span>
+          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotClass)} />
+          <span className={cn('font-mono font-bold text-sm', accentClass)}>{item.code}</span>
           {cost > 0 && (
             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
               ทุน ฿{fmtTH(cost)}/{costUnit}
@@ -298,6 +303,8 @@ const CatalogCategoryView = ({
   const updateWallpaperCost = useAppStore((s) => s.updateWallpaperCost);
   const updateAreaCost = useAppStore((s) => s.updateAreaCost);
   const openModal = useAppStore((s) => s.openModal);
+  const accentClass = categoryAccent(categoryId);
+  const dotClass = categoryDotClass(categoryId);
 
   // Code Jump: ตัดสินใจครั้งเดียวตอน mount ของหมวดนี้ (key={catalogCat} → remount เมื่อเปลี่ยนหมวด)
   // ถ้ามีรหัสที่ส่งมาอยู่แล้ว → ไฮไลต์; ถ้ายังไม่มี → เปิดฟอร์มเพิ่มพร้อมกรอกรหัสไว้
@@ -359,6 +366,8 @@ const CatalogCategoryView = ({
             cost={getCost(item.code)}
             costUnit={costUnit}
             highlight={!!highlightCode && item.code.toUpperCase() === highlightCode}
+            accentClass={accentClass}
+            dotClass={dotClass}
             onCostSave={saveCost}
             onUpdate={(updates) => updateItem(item.id, updates)}
             onRemove={() => removeItem(item.id)}
@@ -964,12 +973,13 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   key={cat.id}
                   onClick={() => setCatalogCat(cat.id)}
                   className={cn(
-                    'flex items-center px-4 py-2 text-sm transition-colors text-left',
+                    'flex items-center gap-2 px-4 py-2 text-sm transition-colors text-left',
                     catalogCat === cat.id
                       ? 'bg-primary/10 text-primary font-medium'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                   )}
                 >
+                  <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', categoryDotClass(cat.id))} />
                   {cat.label}
                 </button>
               ))}
@@ -1194,12 +1204,13 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       key={cat.id}
                       onClick={() => setCatalogCat(cat.id)}
                       className={cn(
-                        'shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                        'shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
                         catalogCat === cat.id
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       )}
                     >
+                      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', categoryDotClass(cat.id))} />
                       {cat.label}
                     </button>
                   ))}
@@ -1207,8 +1218,12 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
 
                 {/* Desktop: category title above content */}
                 <div className="hidden sm:flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
-                  <BookOpen className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-semibold text-sm text-foreground">{activeCatalogDef.label}</span>
+                  <span
+                    className={cn('w-2 h-2 rounded-full shrink-0', categoryDotClass(catalogCat))}
+                  />
+                  <span className={cn('font-semibold text-sm', categoryAccent(catalogCat))}>
+                    {activeCatalogDef.label}
+                  </span>
                   <span className="text-xs text-muted-foreground">· ราคาทุนต่อ {activeCatalogDef.costUnit}</span>
                 </div>
 
