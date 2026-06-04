@@ -6,12 +6,8 @@ import { useUIStore } from '@/store/useUIStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
-import { Users, Scissors, Package, Copy } from 'lucide-react';
-import {
-  generateSummaryText,
-  type SummaryType,
-  type SummaryInput,
-} from '@/lib/summaryGenerator';
+import { Users, Scissors, Package, Train, Copy } from 'lucide-react';
+import { generateSummaryText, type SummaryType, type SummaryInput } from '@/lib/summaryGenerator';
 
 interface CopySummaryModalProps {
   isOpen: boolean;
@@ -19,9 +15,10 @@ interface CopySummaryModalProps {
 }
 
 const OPTIONS: { id: SummaryType; label: string; icon: React.ElementType }[] = [
-  { id: 'customer', label: 'ลูกค้า (LINE)', icon: Users },
+  { id: 'customer', label: 'ลูกค้า', icon: Users },
   { id: 'seamstress', label: 'ช่างเย็บ', icon: Scissors },
   { id: 'purchase_order', label: 'สั่งของ', icon: Package },
+  { id: 'rail_order', label: 'สั่งราง', icon: Train },
 ];
 
 export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onClose }) => {
@@ -93,7 +90,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
     >
       <div className="space-y-4">
         {/* --- Segmented type selector --- */}
-        <div className="grid grid-cols-3 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50">
+        <div className="grid grid-cols-4 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50">
           {OPTIONS.map((opt) => {
             const active = type === opt.id;
             return (

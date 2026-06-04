@@ -11,13 +11,21 @@
 
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { ITEM_CONFIG, STYLES_WITHOUT_OPENING } from '@/config/constants';
-import { fmtTH, toNum, fmtDate } from '@/utils/formatters';
-import { buildSummary } from '@/lib/materials/buildSummary';
+import { fmtTH, toNum, fmtDate, fmtSize } from '@/utils/formatters';
+import { buildSummary, type RailItem } from '@/lib/materials/buildSummary';
 import { isCurtainItem, isWallpaperItem, isRemovalItem, isAreaItem } from '@/lib/type-guards';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import type { Room, Customer, ShopConfig, Discount, ItemData, CurtainItemInput } from '@/types';
 
-export type SummaryType = 'customer' | 'seamstress' | 'purchase_order';
+export type SummaryType = 'customer' | 'seamstress' | 'purchase_order' | 'rail_order';
+
+// ชื่อสินค้า/ราง ต่อชนิดราง (ใช้ในแท็บ "สั่งราง") — แก้ที่นี่จุดเดียว
+// ค่าเริ่มต้น rail_wave จากใบสั่งผู้ผลิตจริง; ชนิดอื่นใช้ label ทั่วไปไปก่อน
+const RAIL_PRODUCT_NAMES: Record<string, string> = {
+  rail_wave: 'TES101 ( TW14.5 )รางเทปลอนสีขาว เทปสีขาว14.5', // ม่านลอน (โซ่ 26.5/เทป14.5)
+  rail_pleated: 'LTL-101 ราง M ประกอบชุด สีขาว', // ม่านจีบ (โซ่ 10 ซม.)
+  rail_roman: 'U-2 รางม่านพับ U-2', // ม่านพับ
+};
 
 export interface SummaryTotals {
   /** ยอดรวมสินค้า (ก่อนหักส่วนลด / ก่อน VAT) */
@@ -178,16 +186,21 @@ function seamstressSummary(input: SummaryInput): string {
       if (!STYLES_WITHOUT_OPENING.includes(s.style) && s.opening_style) {
         t += `  - รูปแบบเปิด: ${s.opening_style}\n`;
       }
-      if (s.hook_type) {
+      // ตะขอ สั้น/ยาว มีเฉพาะม่านจีบ — ม่านลอน/อื่น ๆ ไม่ต้องระบุ
+      if (s.style === 'จีบ' && s.hook_type) {
         t += `  - ตะขอ: ${s.hook_type === 'long' ? 'ตะขอยาว (โชว์ราง)' : 'ตะขอสั้น (บังราง)'}\n`;
       }
 
-      const hasMain = !s.layer_mode || s.layer_mode === LAYER_MODES.MAIN || s.layer_mode === LAYER_MODES.DOUBLE;
+      const hasMain =
+        !s.layer_mode || s.layer_mode === LAYER_MODES.MAIN || s.layer_mode === LAYER_MODES.DOUBLE;
       const hasSheer = s.layer_mode === LAYER_MODES.SHEER || s.layer_mode === LAYER_MODES.DOUBLE;
       if (hasMain) t += `  - ผ้าทึบ: #${s.code || '-'}\n`;
       if (hasSheer) t += `  - ผ้าโปร่ง: #${s.sheer_code || '-'}\n`;
 
-      t += `  - ขนาด: กว้าง ${toNum(s.width_m).toFixed(2)} x สูง ${toNum(s.height_m).toFixed(2)} ม.\n`;
+      t += `  - ขนาด: ${fmtSize(s.width_m, s.height_m)}\n`;
+      if (s.layer_mode === LAYER_MODES.DOUBLE) {
+        t += `  - ⚠️ ใช้ขา 2 ชั้น (ทึบ+โปร่ง = 1 ชุด)\n`;
+      }
       if (s.notes) t += `  📝 หมายเหตุ: ${s.notes}\n`;
     });
     t += '\n';
@@ -285,7 +298,7 @@ function purchaseOrderSummary(input: SummaryInput): string {
       t += `- ${group.typeName}${group.code ? ` · รหัส: #${group.code}` : ''}\n`;
       t += `  รวม: ${totalArea.toFixed(2)} ${group.unit}\n`;
       group.entries.forEach((e) => {
-        t += `    • ${e.roomName}: ${e.width.toFixed(2)} x ${e.height.toFixed(2)} ม.\n`;
+        t += `    • ${e.roomName}: ${fmtSize(e.width, e.height)}\n`;
       });
       t += '\n';
     });
@@ -315,6 +328,150 @@ function purchaseOrderSummary(input: SummaryInput): string {
   return t;
 }
 
+// ─── 4. สั่งราง (ผู้ผลิต) ─────────────────────────────────────────────────────
+//
+// คอลัมน์ตามใบสั่งผู้ผลิต: ขนาด · จำนวน · สไลด์ · ลูกล้อ/จำนวนตัว · (ผ้า/ชุด) · ขาจับ(ชั้น)
+// แยกชนิดรางตามสไตล์ม่าน:
+//   • ลอน → TES101 (เทป14.5): ลูกล้อ N=2·round(W/26.5)+2 · ผ้า/ชุด=T/6+0.27 (waveHardware)
+//   • จีบ → LTL-101 ราง M (โซ่10ซม.): ลูกล้อ/ฝั่ง=round(Wซม./20) · เก็บข้าง=round(Wซม./10)
+//   • พับ → U-2 รางม่านพับ: จำนวนตัว=ceil(กว้างเมตร/0.40)
+// ขาจับ = จำนวนชั้นผ้า (ทึบ&โปร่ง=2ชั้น). ม่านลอนไม่มีตะขอสั้น/ยาว
+
+// ลูกล้อ LTL-101 (ราง M, โซ่ 10 ซม.) — ตารางบิลจริงก่อน, ที่เหลือใช้สูตร round(Wซม./20)
+const LTL101_PERSIDE: Record<number, number> = {
+  180: 9,
+  220: 11,
+  230: 12,
+  270: 14,
+  280: 14,
+  305: 16,
+  320: 16,
+  420: 21,
+};
+
+function ltl101Rollers(wCm: number, oneWay: boolean): string {
+  if (oneWay) return `${Math.round(wCm / 10)}`;
+  const perSide = LTL101_PERSIDE[Math.round(wCm)] ?? Math.round(wCm / 20);
+  return `${perSide}+${perSide}`;
+}
+
+/** ลูกล้อ ม่านลอน "N+N"/"N" (TES101) — จาก waveHardware */
+function waveRollers(it: RailItem): string {
+  if (it.rollersPerPanel <= 0) return '-';
+  return it.wavePanels === 1
+    ? `${it.rollersPerPanel}`
+    : `${it.rollersPerPanel}+${it.rollersPerPanel}`;
+}
+
+/** ค่าคอลัมน์ "ลูกล้อ/จำนวนตัว" ตามชนิดราง */
+function railUnit(it: RailItem): string {
+  const wCm = Math.round(it.width * 100);
+  const oneWay = it.opening === 'เก็บข้างเดียว';
+  if (it.style === 'ลอน') return waveRollers(it);
+  if (it.style === 'จีบ') return ltl101Rollers(wCm, oneWay);
+  if (it.style === 'พับ') return `${Math.ceil(it.width / 0.4)}`;
+  return '-';
+}
+
+// หัวคอลัมน์ "ลูกล้อ/จำนวนตัว" ต่อชนิดราง (ไม่อยู่ในแมป = ไม่โชว์คอลัมน์นี้)
+const RAIL_UNIT_HEADER: Record<string, string> = {
+  rail_wave: 'ลูกล้อ',
+  rail_pleated: 'ลูกล้อ',
+  rail_roman: 'จำนวนตัว',
+};
+
+/** สไลด์: แยก (สองทาง) / ข้าง (เก็บข้างเดียว) */
+function railSlide(it: RailItem): string {
+  return it.opening === 'เก็บข้างเดียว' ? 'ข้าง' : 'แยก';
+}
+
+/** ขาจับ = จำนวนชั้นผ้า (ทึบ&โปร่ง = 2 ชั้น) */
+function railLayer(it: RailItem): string {
+  return it.isDouble ? '2ชั้น' : '1ชั้น';
+}
+
+/** ตารางจัดคอลัมน์ (monospace) — เลขชิดขวา/ข้อความชิดซ้าย, คั่นด้วยช่องว่าง 2 ตัว */
+function monoTable(headers: string[], rows: string[][], aligns: ('l' | 'r')[]): string {
+  const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length)));
+  const fmtRow = (cells: string[]) =>
+    cells
+      .map((c, i) => (aligns[i] === 'r' ? c.padStart(widths[i]) : c.padEnd(widths[i])))
+      .join('  ');
+  return [fmtRow(headers), ...rows.map(fmtRow)].join('\n');
+}
+
+interface RailRow {
+  sizeCm: number;
+  qty: number;
+  slide: string;
+  unit: string;
+  fabric: string;
+  layer: string;
+}
+
+function railOrderSummary(input: SummaryInput): string {
+  let t = header(input, false);
+  const m = buildSummary(input.rooms);
+
+  if (m.railsByKey.size === 0) {
+    return t + '\nไม่มีรายการรางสำหรับสั่งผลิต\n' + SEP + '\n';
+  }
+
+  t += '\n🛤️ *รายการสั่งราง (ผู้ผลิต)*\n';
+
+  m.railsByKey.forEach((rail, railKey) => {
+    const productName = RAIL_PRODUCT_NAMES[railKey] || rail.label;
+    const isWave = railKey === 'rail_wave'; // ผ้า/ชุด เฉพาะม่านลอน
+    const unitHeader = RAIL_UNIT_HEADER[railKey]; // undefined = ไม่โชว์คอลัมน์ลูกล้อ/จำนวนตัว
+
+    // รวมแถวที่เหมือนกัน (ขนาด+สไลด์+ลูกล้อ+ผ้า/ชุด+ชั้น) แล้วนับจำนวน
+    const groups = new Map<string, RailRow>();
+    rail.items.forEach((it) => {
+      const sizeCm = Math.round(it.width * 100);
+      const slide = railSlide(it);
+      const unit = unitHeader ? railUnit(it) : '';
+      const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '-';
+      const layer = railLayer(it);
+      const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
+      const g = groups.get(key) ?? { sizeCm, qty: 0, slide, unit, fabric, layer };
+      g.qty += 1;
+      groups.set(key, g);
+    });
+
+    const rows = [...groups.values()].sort((a, b) => b.sizeCm - a.sizeCm);
+
+    const headers = ['No', 'ขนาด', 'จำนวน', 'สไลด์'];
+    const aligns: ('l' | 'r')[] = ['r', 'r', 'r', 'l'];
+    if (unitHeader) {
+      headers.push(unitHeader);
+      aligns.push('l');
+    }
+    if (isWave) {
+      headers.push('ผ้า/ชุด');
+      aligns.push('r');
+    }
+    headers.push('ขาจับ');
+    aligns.push('l');
+
+    const tableRows = rows.map((r, i) => {
+      const cells = [String(i + 1), String(r.sizeCm), String(r.qty), r.slide];
+      if (unitHeader) cells.push(r.unit);
+      if (isWave) cells.push(r.fabric);
+      cells.push(r.layer);
+      return cells;
+    });
+
+    t += SEP + '\n';
+    t += `ราง: ${productName}\n`;
+    t += monoTable(headers, tableRows, aligns) + '\n';
+  });
+
+  t +=
+    SEP +
+    '\n* ขนาด=ซม. · ลูกล้อ N+N=สองตับ · ผ้า/ชุด=หลา · ขาจับ=จำนวนชั้น (ทึบ+โปร่ง=2ชั้น, นับ 1 ชุด)\n';
+  return t;
+}
+
 // ─── Entry ──────────────────────────────────────────────────────────────────
 
 export function generateSummaryText(input: SummaryInput, type: SummaryType): string {
@@ -325,6 +482,8 @@ export function generateSummaryText(input: SummaryInput, type: SummaryType): str
       return seamstressSummary(input);
     case 'purchase_order':
       return purchaseOrderSummary(input);
+    case 'rail_order':
+      return railOrderSummary(input);
     default:
       return '';
   }

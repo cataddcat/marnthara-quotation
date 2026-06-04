@@ -18,6 +18,13 @@ export const fmtDimension = (v: number | string): string => {
   return num > 0 ? num.toFixed(2) : '';
 };
 
+/**
+ * รูปแบบขนาด "กว้าง × สูง" สำหรับข้อความสรุป (LINE/ช่างเย็บ/สั่งราง)
+ * — ใช้เครื่องหมายคูณ × (U+00D7), เว้นวรรครอบ, ไม่มีหน่วย เช่น "2.75 × 2.83"
+ */
+export const fmtSize = (w: number | string, h: number | string): string =>
+  `${toNum(w).toFixed(2)} × ${toNum(h).toFixed(2)}`;
+
 export interface DimensionResult {
   /** ค่าเมตร (string, 2 ทศนิยม) พร้อมใช้ — '' เมื่อว่าง */
   value: string;
@@ -59,6 +66,50 @@ export const parseDimension = (input: string): DimensionResult => {
 
 // Smart Input Logic: 200 -> 2.00 (wrapper บางๆ — decimal-guard ติดไปทุก caller)
 export const normalizeDimension = (value: string): string => parseDimension(value).value;
+
+// ฟิลด์ที่เป็น "ขนาด (เมตร)" — ใช้ heuristic ซม.→ม. (เช่น 234 → 2.34)
+const DIMENSION_FIELDS = ['width_m', 'height_m'] as const;
+
+/**
+ * Normalize ค่าขนาด (ซม.→ม.) ของทุกฟิลด์มิติในออบเจกต์ข้อมูลฟอร์ม/รายการ — ใช้ร่วมทั้ง
+ * explicit submit (useZodForm) และ autosave/flush ตอนปิด (ItemModal.persistDraft) เพื่อให้
+ * ทุกเส้นทางบันทึกได้ค่าเดียวกัน (กันค่าดิบ "278" ค้างเมื่อปิดโดยไม่กดบันทึก)
+ * — idempotent กับค่าที่แปลงแล้ว ("2.34" → "2.34"), ปลอดภัยกับข้อมูลที่ไม่มีฟิลด์ขนาด (no-op)
+ */
+export function normalizeDimensionFields<T extends Record<string, unknown>>(data: T): T {
+  let changed = false;
+  const out: Record<string, unknown> = { ...data };
+
+  for (const key of DIMENSION_FIELDS) {
+    const v = out[key];
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = normalizeDimension(v);
+      if (n !== v) {
+        out[key] = n;
+        changed = true;
+      }
+    }
+  }
+
+  // วอลเปเปอร์: widths เป็น array ความกว้างของผนัง
+  if (Array.isArray(out.widths)) {
+    let arrChanged = false;
+    const next = (out.widths as unknown[]).map((w) => {
+      if (typeof w === 'string' && w.trim() !== '') {
+        const n = normalizeDimension(w);
+        if (n !== w) arrChanged = true;
+        return n;
+      }
+      return w;
+    });
+    if (arrChanged) {
+      out.widths = next;
+      changed = true;
+    }
+  }
+
+  return changed ? (out as T) : data;
+}
 
 export const fmt = (n: number, fixed = 2, asCurrency = false): string => {
   if (!Number.isFinite(n)) return '0';
