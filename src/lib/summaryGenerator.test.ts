@@ -229,6 +229,7 @@ describe('generateSummaryText — rail_order', () => {
     expect(out).toContain('20+20'); // ลูกล้อ N+N (N = 2·round(250/26.5)+2 = 20)
     expect(out).toContain('6.93'); // ผ้า/ชุด (หลา) = T/6+0.27 = 40/6+0.27
     expect(out).toContain('2ชั้น'); // ทึบ+โปร่ง → 2 ชั้น
+    expect(out).toContain('รวมรางที่ต้องสั่ง: 2 เส้น'); // 1 ชุด ทึบ+โปร่ง = 2 เส้น
     // ข้ามห้องระงับ (ม่านจีบ 3×3) + ไม่รวมสินค้าพื้นที่ (ม่านม้วน)
     expect(out).not.toContain('รางม่านจีบ');
   });
