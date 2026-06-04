@@ -98,8 +98,8 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
             <div className="flex items-start gap-2 text-amber-700 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2 mb-2 border border-amber-200/50 dark:border-amber-800/50">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span>
-                ยังไม่มีราคาทุนผ้า — กดรหัสผ้า (
-                <span className="font-mono font-bold">{mainCode || '?'}</span>)
+                ยังไม่มีราคาทุน{mainLabel} — กดรหัส (
+                <span className="font-mono font-bold">{mainCode || sheerCode || '?'}</span>)
                 ด้านล่างเพื่อเพิ่มทุนได้เลย
               </span>
             </div>
