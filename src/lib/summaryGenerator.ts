@@ -402,11 +402,12 @@ function monoTable(headers: string[], rows: string[][], aligns: ('l' | 'r')[]): 
 
 interface RailRow {
   sizeCm: number;
-  qty: number;
+  qty: number; // จำนวนชุดม่าน
+  layers: number; // 1 = ชั้นเดียว, 2 = ทึบ+โปร่ง (ใช้ราง 2 เส้น/ชุด)
   slide: string;
   unit: string;
   fabric: string;
-  layer: string;
+  layer: string; // ป้ายขาจับ "1ชั้น"/"2ชั้น"
 }
 
 function railOrderSummary(input: SummaryInput): string {
@@ -424,7 +425,7 @@ function railOrderSummary(input: SummaryInput): string {
     const isWave = railKey === 'rail_wave'; // ผ้า/ชุด เฉพาะม่านลอน
     const unitHeader = RAIL_UNIT_HEADER[railKey]; // undefined = ไม่โชว์คอลัมน์ลูกล้อ/จำนวนตัว
 
-    // รวมแถวที่เหมือนกัน (ขนาด+สไลด์+ลูกล้อ+ผ้า/ชุด+ชั้น) แล้วนับจำนวน
+    // รวมแถวที่เหมือนกัน (ขนาด+สไลด์+ลูกล้อ+ผ้า/ชุด+ชั้น) แล้วนับเป็น "ชุด"
     const groups = new Map<string, RailRow>();
     rail.items.forEach((it) => {
       const sizeCm = Math.round(it.width * 100);
@@ -432,15 +433,18 @@ function railOrderSummary(input: SummaryInput): string {
       const unit = unitHeader ? railUnit(it) : '';
       const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '-';
       const layer = railLayer(it);
+      const layers = it.isDouble ? 2 : 1; // ทึบ+โปร่ง = 2 เส้น/ชุด
       const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
-      const g = groups.get(key) ?? { sizeCm, qty: 0, slide, unit, fabric, layer };
+      const g = groups.get(key) ?? { sizeCm, qty: 0, layers, slide, unit, fabric, layer };
       g.qty += 1;
       groups.set(key, g);
     });
 
     const rows = [...groups.values()].sort((a, b) => b.sizeCm - a.sizeCm);
+    const totalRails = rows.reduce((s, r) => s + r.qty * r.layers, 0);
 
-    const headers = ['No', 'ขนาด', 'จำนวน', 'สไลด์'];
+    // คอลัมน์: No · ขนาด · ชุด · สไลด์ · [ลูกล้อ/จำนวนตัว] · [ผ้า/ชุด] · ขาจับ · ราง(เส้น)
+    const headers = ['No', 'ขนาด', 'ชุด', 'สไลด์'];
     const aligns: ('l' | 'r')[] = ['r', 'r', 'r', 'l'];
     if (unitHeader) {
       headers.push(unitHeader);
@@ -450,25 +454,28 @@ function railOrderSummary(input: SummaryInput): string {
       headers.push('ผ้า/ชุด');
       aligns.push('r');
     }
-    headers.push('ขาจับ');
-    aligns.push('l');
+    headers.push('ขาจับ', 'ราง');
+    aligns.push('l', 'r');
 
     const tableRows = rows.map((r, i) => {
       const cells = [String(i + 1), String(r.sizeCm), String(r.qty), r.slide];
       if (unitHeader) cells.push(r.unit);
       if (isWave) cells.push(r.fabric);
-      cells.push(r.layer);
+      cells.push(r.layer, String(r.qty * r.layers));
       return cells;
     });
 
     t += SEP + '\n';
     t += `ราง: ${productName}\n`;
     t += monoTable(headers, tableRows, aligns) + '\n';
+    t += `👉 รวมรางที่ต้องสั่ง: ${totalRails} เส้น\n`;
   });
 
   t +=
     SEP +
-    '\n* ขนาด=ซม. · ลูกล้อ N+N=สองตับ · ผ้า/ชุด=หลา · ขาจับ=จำนวนชั้น (ทึบ+โปร่ง=2ชั้น, นับ 1 ชุด)\n';
+    '\n* "ชุด" = จำนวนชุดม่าน  ·  ขาจับ "2ชั้น" (ทึบ+โปร่ง) = ใช้ราง 2 เส้น/ชุด' +
+    '\n* "ราง" = จำนวนเส้นรางที่ต้องตัดจริง  (1ชั้น = ชุด×1,  2ชั้น = ชุด×2)' +
+    '\n* ขนาด=ซม.  ·  ลูกล้อ N+N=สองตับ  ·  ผ้า/ชุด=หลา\n';
   return t;
 }
 
