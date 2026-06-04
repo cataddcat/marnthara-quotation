@@ -6,6 +6,7 @@
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { FORMULAS } from '@/config/formulas';
+import { RAIL_COLORS, RAIL_COLOR_CODE } from '@/config/railProducts';
 import { useAppStore } from '@/store/useAppStore';
 import {
   BookOpen,
@@ -251,6 +252,44 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
               <p className="font-semibold text-foreground mb-1">ชุดราง Roman</p>
               <Formula>จำนวน = {m.roman_sets_per_window} ชุด/หน้าต่าง</Formula>
               <Note>หน้าต่างกว้างมาก (&gt; 3 ม.) อาจต้องเพิ่มชุด — ต้อง adjust manual</Note>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-1">รุ่นราง / รหัสสินค้า (THONG DECOR)</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                รหัสสินค้าตามสีราง — เทปลอน (Wave) = ตระกูล TES · จีบ (Pleated) = ตระกูล LTL
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px] border-collapse">
+                  <thead>
+                    <tr className="text-muted-foreground border-b border-border/60">
+                      <th className="text-left py-1 pr-3 font-medium">สี</th>
+                      <th className="text-left py-1 pr-3 font-medium">เทปลอน (ลอน)</th>
+                      <th className="text-left py-1 font-medium">จีบ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-mono">
+                    {RAIL_COLORS.map((rc) => (
+                      <tr key={rc.value} className="border-b border-border/30">
+                        <td className="py-1 pr-3 font-sans">{rc.label}</td>
+                        <td className="py-1 pr-3 text-primary">TES1{RAIL_COLOR_CODE[rc.value]}</td>
+                        <td className="py-1 text-primary">LTL1{RAIL_COLOR_CODE[rc.value]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                ใบสั่งราง (แท็บ "สั่งราง") สร้างชื่อสินค้าอัตโนมัติจาก "ชนิดราง × สีราง" เช่น{' '}
+                <Code>TES103 ( TW14.5 )รางเทปลอน เทป14.5 สีไม้สัก</Code>
+              </p>
+              <Note>
+                สูตรลูกล้อ/ผ้าม่านลอน ตรวจสอบกับฐานข้อมูลผลิตจริง THONG DECOR (snap tape TW14.5):
+                กว้าง 220 ซม. → 18+18 = 36 ลูกล้อ → ผ้า{' '}
+                {Math.floor((36 / wv.fabric_rollers_per_yard + wv.fabric_hem_yards) * 100) / 100}{' '}
+                หลา/ชุด · กว้าง 320 ซม. → 26+26 = 52 → ผ้า{' '}
+                {Math.floor((52 / wv.fabric_rollers_per_yard + wv.fabric_hem_yards) * 100) / 100}{' '}
+                หลา/ชุด
+              </Note>
             </div>
           </Section>
 

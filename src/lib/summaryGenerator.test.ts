@@ -223,7 +223,7 @@ describe('generateSummaryText — rail_order', () => {
   it('ตารางสั่งราง (ม่านลอน TES101): ขนาด/สไลด์/ลูกล้อ/ผ้าต่อชุด/ขาจับ(ชั้น)', () => {
     const out = generateSummaryText(makeInput(), 'rail_order');
     expect(out).toContain('🛤️ *รายการสั่งราง (ผู้ผลิต)*');
-    expect(out).toContain('TES101 ( TW14.5 )รางเทปลอนสีขาว เทปสีขาว14.5');
+    expect(out).toContain('TES101 ( TW14.5 )รางเทปลอน เทป14.5 สีขาว'); // สีขาว → TES101
     expect(out).toContain('250'); // ขนาด (ซม.) จาก 2.5 ม.
     expect(out).toContain('แยก'); // สไลด์ (แยกกลาง = สองตับ)
     expect(out).toContain('20+20'); // ลูกล้อ N+N (N = 2·round(250/26.5)+2 = 20)
@@ -250,6 +250,7 @@ describe('generateSummaryText — rail_order', () => {
             layer_mode: 'main',
             code: 'P1',
             opening_style: 'แยกกลาง',
+            rail_color: 'ขาว',
           },
           {
             type: ITEM_TYPES.CURTAIN,
@@ -265,12 +266,54 @@ describe('generateSummaryText — rail_order', () => {
       },
     ];
     const out = generateSummaryText(makeInput({ rooms }), 'rail_order');
-    // จีบ → ราง M (LTL-101), 220 ซม. → round(220/20)=11 → 11+11
-    expect(out).toContain('LTL-101 ราง M ประกอบชุด สีขาว');
+    // จีบ สีขาว → ราง M (LTL101), 220 ซม. → round(220/20)=11 → 11+11
+    expect(out).toContain('LTL101 ราง M ประกอบชุด สีขาว');
     expect(out).toContain('11+11');
     // พับ → U-2, จำนวนตัว = ceil(0.90/0.40) = 3
     expect(out).toContain('U-2 รางม่านพับ U-2');
     expect(out).toContain('จำนวนตัว');
+  });
+
+  it('ม่านลอน 2 สีต่างกัน → แยกหัวตาราง/สินค้าตามสี (TES103 ไม้สัก + TES101 ขาว)', () => {
+    const rooms: Room[] = [
+      {
+        id: 'two-color',
+        name: 'ห้องสองสี',
+        is_suspended: false,
+        items: [
+          {
+            type: ITEM_TYPES.CURTAIN,
+            id: 'wv-teak',
+            width_m: '3.20',
+            height_m: '2.8',
+            style: 'ลอน',
+            layer_mode: 'main',
+            code: 'T1',
+            opening_style: 'แยกกลาง',
+            rail_color: 'ไม้สัก',
+          },
+          {
+            type: ITEM_TYPES.CURTAIN,
+            id: 'wv-white',
+            width_m: '2.30',
+            height_m: '2.8',
+            style: 'ลอน',
+            layer_mode: 'main',
+            code: 'W1',
+            opening_style: 'แยกกลาง',
+            rail_color: 'ขาว',
+          },
+        ],
+      },
+    ];
+    const out = generateSummaryText(makeInput({ rooms }), 'rail_order');
+    // สองสี = สองสินค้า (สองหัวตาราง "ราง: ...")
+    expect(out).toContain('TES103 ( TW14.5 )รางเทปลอน เทป14.5 สีไม้สัก');
+    expect(out).toContain('TES101 ( TW14.5 )รางเทปลอน เทป14.5 สีขาว');
+    expect(out).toContain('26+26'); // 320 ซม. → 2·round(320/26.5)+2 = 26
+    expect(out).toContain('20+20'); // 230 ซม. → 20
+    expect(out).toContain('8.93'); // ไม้สัก: T=52 → 52/6+0.27 floor = 8.93
+    expect(out).toContain('6.93'); // ขาว: T=40 → 40/6+0.27 floor = 6.93
   });
 
   it('ไม่มีราง → แจ้งว่าไม่มีรายการ', () => {

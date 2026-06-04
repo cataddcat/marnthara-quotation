@@ -15,17 +15,10 @@ import { fmtTH, toNum, fmtDate, fmtSize } from '@/utils/formatters';
 import { buildSummary, type RailItem } from '@/lib/materials/buildSummary';
 import { isCurtainItem, isWallpaperItem, isRemovalItem, isAreaItem } from '@/lib/type-guards';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
+import { railProductName } from '@/config/railProducts';
 import type { Room, Customer, ShopConfig, Discount, ItemData, CurtainItemInput } from '@/types';
 
 export type SummaryType = 'customer' | 'seamstress' | 'purchase_order' | 'rail_order';
-
-// ชื่อสินค้า/ราง ต่อชนิดราง (ใช้ในแท็บ "สั่งราง") — แก้ที่นี่จุดเดียว
-// ค่าเริ่มต้น rail_wave จากใบสั่งผู้ผลิตจริง; ชนิดอื่นใช้ label ทั่วไปไปก่อน
-const RAIL_PRODUCT_NAMES: Record<string, string> = {
-  rail_wave: 'TES101 ( TW14.5 )รางเทปลอนสีขาว เทปสีขาว14.5', // ม่านลอน (โซ่ 26.5/เทป14.5)
-  rail_pleated: 'LTL-101 ราง M ประกอบชุด สีขาว', // ม่านจีบ (โซ่ 10 ซม.)
-  rail_roman: 'U-2 รางม่านพับ U-2', // ม่านพับ
-};
 
 export interface SummaryTotals {
   /** ยอดรวมสินค้า (ก่อนหักส่วนลด / ก่อน VAT) */
@@ -422,64 +415,76 @@ function railOrderSummary(input: SummaryInput): string {
   t += '\n🛤️ *รายการสั่งราง (ผู้ผลิต)*\n';
 
   m.railsByKey.forEach((rail, railKey) => {
-    const productName = RAIL_PRODUCT_NAMES[railKey] || rail.label;
     const isWave = railKey === 'rail_wave'; // ผ้า/ชุด เฉพาะม่านลอน
     const unitHeader = RAIL_UNIT_HEADER[railKey]; // undefined = ไม่โชว์คอลัมน์ลูกล้อ/จำนวนตัว
 
-    // รวมแถวที่เหมือนกัน (ขนาด+สไลด์+ลูกล้อ+ผ้า/ชุด+ชั้น) แล้วนับเป็น "ชุด"
-    const groups = new Map<string, RailRow>();
+    // แยกตามสีราง — แต่ละสี = สินค้าคนละรหัส (เช่น TES103 ไม้สัก vs TES101 ขาว)
+    const byColor = new Map<string, RailItem[]>();
     rail.items.forEach((it) => {
-      const sizeCm = Math.round(it.width * 100);
-      const slide = railSlide(it);
-      const unit = unitHeader ? railUnit(it) : '';
-      const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '-';
-      const layer = railLayer(it);
-      const layers = it.isDouble ? 2 : 1; // ทึบ+โปร่ง = 2 เส้น/ชุด
-      const brackets = Math.ceil(it.width / 0.6); // ขาจับ 1 ตัว/~0.6 ม. (2ชั้น = จำนวนเท่าเดิม)
-      const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
-      const g = groups.get(key) ?? {
-        sizeCm,
-        qty: 0,
-        layers,
-        brackets,
-        slide,
-        unit,
-        fabric,
-        layer,
-      };
-      g.qty += 1;
-      groups.set(key, g);
+      const colorKey = (it.railColor || '').trim();
+      const arr = byColor.get(colorKey) ?? [];
+      arr.push(it);
+      byColor.set(colorKey, arr);
     });
 
-    const rows = [...groups.values()].sort((a, b) => b.sizeCm - a.sizeCm);
-    const totalRails = rows.reduce((s, r) => s + r.qty * r.layers, 0);
+    byColor.forEach((items, color) => {
+      const productName = railProductName(railKey, color) ?? rail.label;
 
-    // คอลัมน์: No · ขนาด · ชุด · สไลด์ · [ลูกล้อ/จำนวนตัว] · [ผ้า/ชุด] · ขาจับ · ราง(เส้น)
-    const headers = ['No', 'ขนาด', 'ชุด', 'สไลด์'];
-    const aligns: ('l' | 'r')[] = ['r', 'r', 'r', 'l'];
-    if (unitHeader) {
-      headers.push(unitHeader);
-      aligns.push('l');
-    }
-    if (isWave) {
-      headers.push('ผ้า/ชุด');
-      aligns.push('r');
-    }
-    headers.push('ขาจับ', 'ราง');
-    aligns.push('l', 'r');
+      // รวมแถวที่เหมือนกัน (ขนาด+สไลด์+ลูกล้อ+ผ้า/ชุด+ชั้น) แล้วนับเป็น "ชุด"
+      const groups = new Map<string, RailRow>();
+      items.forEach((it) => {
+        const sizeCm = Math.round(it.width * 100);
+        const slide = railSlide(it);
+        const unit = unitHeader ? railUnit(it) : '';
+        const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '-';
+        const layer = railLayer(it);
+        const layers = it.isDouble ? 2 : 1; // ทึบ+โปร่ง = 2 เส้น/ชุด
+        const brackets = Math.ceil(it.width / 0.6); // ขาจับ 1 ตัว/~0.6 ม. (2ชั้น = จำนวนเท่าเดิม)
+        const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
+        const g = groups.get(key) ?? {
+          sizeCm,
+          qty: 0,
+          layers,
+          brackets,
+          slide,
+          unit,
+          fabric,
+          layer,
+        };
+        g.qty += 1;
+        groups.set(key, g);
+      });
 
-    const tableRows = rows.map((r, i) => {
-      const cells = [String(i + 1), String(r.sizeCm), String(r.qty), r.slide];
-      if (unitHeader) cells.push(r.unit);
-      if (isWave) cells.push(r.fabric);
-      cells.push(`${r.brackets} (${r.layer})`, String(r.qty * r.layers));
-      return cells;
+      const rows = [...groups.values()].sort((a, b) => b.sizeCm - a.sizeCm);
+      const totalRails = rows.reduce((s, r) => s + r.qty * r.layers, 0);
+
+      // คอลัมน์: No · ขนาด · ชุด · สไลด์ · [ลูกล้อ/จำนวนตัว] · [ผ้า/ชุด] · ขาจับ · ราง(เส้น)
+      const headers = ['No', 'ขนาด', 'ชุด', 'สไลด์'];
+      const aligns: ('l' | 'r')[] = ['r', 'r', 'r', 'l'];
+      if (unitHeader) {
+        headers.push(unitHeader);
+        aligns.push('l');
+      }
+      if (isWave) {
+        headers.push('ผ้า/ชุด');
+        aligns.push('r');
+      }
+      headers.push('ขาจับ', 'ราง');
+      aligns.push('l', 'r');
+
+      const tableRows = rows.map((r, i) => {
+        const cells = [String(i + 1), String(r.sizeCm), String(r.qty), r.slide];
+        if (unitHeader) cells.push(r.unit);
+        if (isWave) cells.push(r.fabric);
+        cells.push(`${r.brackets} (${r.layer})`, String(r.qty * r.layers));
+        return cells;
+      });
+
+      t += SEP + '\n';
+      t += `ราง: ${productName}\n`;
+      t += monoTable(headers, tableRows, aligns) + '\n';
+      t += `👉 รวมรางที่ต้องสั่ง: ${totalRails} เส้น\n`;
     });
-
-    t += SEP + '\n';
-    t += `ราง: ${productName}\n`;
-    t += monoTable(headers, tableRows, aligns) + '\n';
-    t += `👉 รวมรางที่ต้องสั่ง: ${totalRails} เส้น\n`;
   });
 
   t +=

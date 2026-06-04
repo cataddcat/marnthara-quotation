@@ -96,8 +96,8 @@ export const DEFAULT_LABOR_COSTS: Record<string, LaborCost> = {
 // ─────────────────────────────────────────────────────────────────────────────
 export const DEFAULT_ACCESSORY_COSTS: Record<string, number> = {
   // ── รางผ้าม่าน ─────────────────────────────────────────────────────────
-  rail_wave:    160,   // รางม่านลอน (ระบบโซ่ไข่ปลา) บาท/เมตร
-  rail_pleated: 100,   // รางม่านจีบ (ราง M) บาท/เมตร
+  rail_wave:    130,   // รางม่านลอน TES เทปลอน TW14.5 (THONG DECOR) บาท/เมตร
+  rail_pleated: 100,   // รางม่านจีบ LTL (ราง M) บาท/เมตร
   rail_eyelet:  190,   // รางม่านตาไก่ (รางโชว์) บาท/เมตร
   rail_roman:   450,   // ชุดรางม่านพับ (Roman System พร้อมเกียร์) บาท/ชุด
   rail_rod:      70,   // ราวม่านแป๊บ (ราวสอด อลูมิเนียม) บาท/เมตร
