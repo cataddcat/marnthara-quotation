@@ -38,8 +38,9 @@ export interface SummaryInput {
   totals: SummaryTotals;
 }
 
-const SEP = '------------------------------';
-const DSEP = '==============================';
+// ตัวคั่นสั้น — LINE/มือถือ render ฟอนต์ไม่คงที่ เส้นยาวจะตัดบรรทัด เลยใช้สั้น ๆ
+const SEP = '────────────';
+const DSEP = '━━━━━━━━━━━━';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -98,6 +99,18 @@ function lengthCounts(widths: number[]): [string, number][] {
   return Object.entries(counts).sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
 }
 
+/** แยกรายการรางตามสี (รหัสสินค้าต่างกันต่อสี) — คงลำดับที่พบครั้งแรก */
+function groupByColor(items: RailItem[]): Map<string, RailItem[]> {
+  const byColor = new Map<string, RailItem[]>();
+  items.forEach((it) => {
+    const key = (it.railColor || '').trim();
+    const arr = byColor.get(key) ?? [];
+    arr.push(it);
+    byColor.set(key, arr);
+  });
+  return byColor;
+}
+
 // ─── 1. ลูกค้า (LINE) ──────────────────────────────────────────────────────
 
 function simpleItemList(rooms: Room[]): string {
@@ -122,7 +135,7 @@ function simpleItemList(rooms: Room[]): string {
         const name = ITEM_CONFIG[item.type]?.name ?? 'สินค้าตกแต่ง';
         out += ` ${n}) ${name}\n`;
       }
-      if (item.notes) out += `  > _${item.notes}_\n`;
+      if (item.notes) out += `   📝 ${item.notes}\n`;
     });
   });
 
@@ -172,7 +185,7 @@ function seamstressSummary(input: SummaryInput): string {
     t += `\n*🚪 ห้อง: ${room.name || 'ไม่ระบุ'}*\n\n`;
 
     sets.forEach((s, idx) => {
-      if (idx > 0) t += '--------------------\n';
+      if (idx > 0) t += SEP + '\n';
       const variant = fabricVariant(s.layer_mode);
       t += `*ชุดที่ ${idx + 1}/${sets.length}: ${curtainName(s.style)} ${variant}*\n`;
 
@@ -214,39 +227,40 @@ function purchaseOrderSummary(input: SummaryInput): string {
 
   // --- ผ้า (ทึบ + โปร่ง) ตามรหัส ---
   if (m.fabricsByCode.size > 0 || m.sheersByCode.size > 0) {
-    t += '✂️ *รายการสั่งซื้อ (ผ้า)*\n' + SEP + '\n';
+    t += '✂️ *รายการสั่งซื้อ (ผ้า)*\n';
     const groups: [string, typeof m.fabricsByCode][] = [
       ['ผ้าทึบ (Curtain)', m.fabricsByCode],
       ['ผ้าโปร่ง (Sheer)', m.sheersByCode],
     ];
     groups.forEach(([label, map]) => {
       map.forEach((data, code) => {
-        t += `- ${label} · รหัส: #${code}\n`;
+        t += `\n• ${label} · รหัส: #${code}\n`;
         t += `  รวม: ${data.total.toFixed(2)} หลา\n`;
         data.entries.forEach((e) => {
-          t += `    • ${e.roomName}: ${e.desc} = ${e.yards.toFixed(2)} หลา\n`;
+          t += `  - ${e.roomName}: ${e.desc} = ${e.yards.toFixed(2)} หลา\n`;
         });
-        t += '\n';
       });
     });
   }
 
-  // --- ราง (ตัดตามความยาว) ---
+  // --- ราง (ตัดตามความยาว · แยกตามสี/รุ่นสินค้า) ---
   if (m.railsByKey.size > 0) {
-    t += SEP + '\n📏 *รายการสั่งซื้อ ราง*\n' + SEP + '\n';
-    m.railsByKey.forEach((rail) => {
-      t += `\n*${rail.label}*\n`;
-      if (rail.totalSets > 0) t += `  - จำนวน: ${rail.totalSets} ชุด\n`;
-      if (rail.totalLength > 0) {
-        t += `  - ความยาวรวม: ${rail.totalLength.toFixed(2)} ม.\n`;
-        const cuts = lengthCounts(rail.items.filter((i) => i.romanSets === 0).map((i) => i.width));
-        if (cuts.length > 0) {
-          t += `  - ตัดราง:\n`;
-          cuts.forEach(([len, count]) => {
-            t += `    • ${len} ม. × ${count} เส้น\n`;
+    t += '\n' + SEP + '\n📏 *รายการสั่งซื้อ ราง*\n';
+    m.railsByKey.forEach((rail, railKey) => {
+      groupByColor(rail.items).forEach((items, color) => {
+        const productName = railProductName(railKey, color) ?? rail.label;
+        const romanCount = items.filter((i) => i.romanSets > 0).length;
+        const lengthItems = items.filter((i) => i.romanSets === 0);
+        const totalLength = lengthItems.reduce((s, i) => s + i.width, 0);
+        t += `\n• ${productName}\n`;
+        if (romanCount > 0) t += `  รวม: ${romanCount} ชุด\n`;
+        if (totalLength > 0) {
+          t += `  ยาวรวม: ${totalLength.toFixed(2)} ม.\n`;
+          lengthCounts(lengthItems.map((i) => i.width)).forEach(([len, count]) => {
+            t += `  - ${len} ม. × ${count} เส้น\n`;
           });
         }
-      }
+      });
     });
     t += '\n';
   }
@@ -262,7 +276,7 @@ function purchaseOrderSummary(input: SummaryInput): string {
   if (acc.snaps > 0) hwLines.push(`  - กระดุม/สแน็ป (ม่านลอน): ${acc.snaps} ตัว`);
   if (acc.romanSets > 0) hwLines.push(`  - ชุดรางม่านพับ: ${acc.romanSets} ชุด`);
   if (hwLines.length > 0) {
-    t += SEP + '\n🔩 *รายการสั่งซื้อ อุปกรณ์ (Hardware)*\n' + SEP + '\n';
+    t += SEP + '\n🔩 *รายการสั่งซื้อ อุปกรณ์ (Hardware)*\n';
     t += hwLines.join('\n') + '\n';
     if (acc.oversizeWave.length > 0) {
       t += `  ⚠️ ม่านลอนรางยาวเกินมาตรฐาน (ควรแยกราง/เพิ่มขาค้ำ): `;
@@ -273,27 +287,25 @@ function purchaseOrderSummary(input: SummaryInput): string {
 
   // --- วอลเปเปอร์ ---
   if (m.wallpapersByCode.size > 0) {
-    t += SEP + '\n🎨 *รายการสั่งซื้อ (Wallpaper)*\n' + SEP + '\n';
+    t += SEP + '\n🎨 *รายการสั่งซื้อ (Wallpaper)*\n';
     m.wallpapersByCode.forEach((data, code) => {
-      t += `- รหัส: #${code} · รวม: ${data.total} ม้วน\n`;
+      t += `\n• รหัส: #${code} · รวม: ${data.total} ม้วน\n`;
       data.entries.forEach((e) => {
-        t += `    • ${e.roomName}: ${e.desc} = ${e.rolls} ม้วน\n`;
+        t += `  - ${e.roomName}: ${e.desc} = ${e.rolls} ม้วน\n`;
       });
-      t += '\n';
     });
   }
 
   // --- พื้นที่ (มู่ลี่ / ฉาก / มุ้ง) ---
   if (m.areaByKey.size > 0) {
-    t += SEP + '\n📦 *รายการสั่งซื้อ (มู่ลี่/ฉาก/มุ้ง)*\n' + SEP + '\n';
+    t += SEP + '\n📦 *รายการสั่งซื้อ (มู่ลี่/ฉาก/มุ้ง)*\n';
     m.areaByKey.forEach((group) => {
       const totalArea = group.unit === 'ตร.ม.' ? group.totalSqm : group.totalSqyd;
-      t += `- ${group.typeName}${group.code ? ` · รหัส: #${group.code}` : ''}\n`;
+      t += `\n• ${group.typeName}${group.code ? ` · รหัส: #${group.code}` : ''}\n`;
       t += `  รวม: ${totalArea.toFixed(2)} ${group.unit}\n`;
       group.entries.forEach((e) => {
-        t += `    • ${e.roomName}: ${fmtSize(e.width, e.height)}\n`;
+        t += `  - ${e.roomName}: ${fmtSize(e.width, e.height)}\n`;
       });
-      t += '\n';
     });
   }
 
@@ -306,13 +318,13 @@ function purchaseOrderSummary(input: SummaryInput): string {
     });
   });
   if (removals.length > 0) {
-    t += SEP + '\n📦 *รายการรื้อถอน/ค่าแรง*\n' + SEP + '\n';
+    t += SEP + '\n📦 *รายการรื้อถอน/ค่าแรง*\n';
     removals.forEach(({ room, item }, i) => {
       if (!isRemovalItem(item)) return;
       const price = PricingEngine.calculatePrice(item);
-      t += `- รายการ #${i + 1}: ${item.description || 'ไม่ระบุ'} (ห้อง: ${room})\n`;
-      t += `    จำนวน: ${toNum(item.quantity)} หน่วย · ราคา: ${fmtTH(price)} บาท\n`;
-      if (item.notes) t += `    📝 หมายเหตุ: ${item.notes}\n`;
+      t += `\n• #${i + 1}: ${item.description || 'ไม่ระบุ'} (ห้อง: ${room})\n`;
+      t += `  จำนวน: ${toNum(item.quantity)} หน่วย · ราคา: ${fmtTH(price)} บาท\n`;
+      if (item.notes) t += `  📝 หมายเหตุ: ${item.notes}\n`;
     });
     t += '\n';
   }
@@ -383,16 +395,6 @@ function railLayer(it: RailItem): string {
   return it.isDouble ? '2ชั้น' : '1ชั้น';
 }
 
-/** ตารางจัดคอลัมน์ (monospace) — เลขชิดขวา/ข้อความชิดซ้าย, คั่นด้วยช่องว่าง 2 ตัว */
-function monoTable(headers: string[], rows: string[][], aligns: ('l' | 'r')[]): string {
-  const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length)));
-  const fmtRow = (cells: string[]) =>
-    cells
-      .map((c, i) => (aligns[i] === 'r' ? c.padStart(widths[i]) : c.padEnd(widths[i])))
-      .join('  ');
-  return [fmtRow(headers), ...rows.map(fmtRow)].join('\n');
-}
-
 interface RailRow {
   sizeCm: number;
   qty: number; // จำนวนชุดม่าน
@@ -416,18 +418,10 @@ function railOrderSummary(input: SummaryInput): string {
 
   m.railsByKey.forEach((rail, railKey) => {
     const isWave = railKey === 'rail_wave'; // ผ้า/ชุด เฉพาะม่านลอน
-    const unitHeader = RAIL_UNIT_HEADER[railKey]; // undefined = ไม่โชว์คอลัมน์ลูกล้อ/จำนวนตัว
+    const unitHeader = RAIL_UNIT_HEADER[railKey]; // undefined = ไม่โชว์ลูกล้อ/จำนวนตัว
 
     // แยกตามสีราง — แต่ละสี = สินค้าคนละรหัส (เช่น TES103 ไม้สัก vs TES101 ขาว)
-    const byColor = new Map<string, RailItem[]>();
-    rail.items.forEach((it) => {
-      const colorKey = (it.railColor || '').trim();
-      const arr = byColor.get(colorKey) ?? [];
-      arr.push(it);
-      byColor.set(colorKey, arr);
-    });
-
-    byColor.forEach((items, color) => {
+    groupByColor(rail.items).forEach((items, color) => {
       const productName = railProductName(railKey, color) ?? rail.label;
 
       // รวมแถวที่เหมือนกัน (ขนาด+สไลด์+ลูกล้อ+ผ้า/ชุด+ชั้น) แล้วนับเป็น "ชุด"
@@ -436,21 +430,12 @@ function railOrderSummary(input: SummaryInput): string {
         const sizeCm = Math.round(it.width * 100);
         const slide = railSlide(it);
         const unit = unitHeader ? railUnit(it) : '';
-        const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '-';
+        const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '';
         const layer = railLayer(it);
         const layers = it.isDouble ? 2 : 1; // ทึบ+โปร่ง = 2 เส้น/ชุด
         const brackets = Math.ceil(it.width / 0.6); // ขาจับ 1 ตัว/~0.6 ม. (2ชั้น = จำนวนเท่าเดิม)
         const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
-        const g = groups.get(key) ?? {
-          sizeCm,
-          qty: 0,
-          layers,
-          brackets,
-          slide,
-          unit,
-          fabric,
-          layer,
-        };
+        const g = groups.get(key) ?? { sizeCm, qty: 0, layers, brackets, slide, unit, fabric, layer };
         g.qty += 1;
         groups.set(key, g);
       });
@@ -458,41 +443,21 @@ function railOrderSummary(input: SummaryInput): string {
       const rows = [...groups.values()].sort((a, b) => b.sizeCm - a.sizeCm);
       const totalRails = rows.reduce((s, r) => s + r.qty * r.layers, 0);
 
-      // คอลัมน์: No · ขนาด · ชุด · สไลด์ · [ลูกล้อ/จำนวนตัว] · [ผ้า/ชุด] · ขาจับ · ราง(เส้น)
-      const headers = ['No', 'ขนาด', 'ชุด', 'สไลด์'];
-      const aligns: ('l' | 'r')[] = ['r', 'r', 'r', 'l'];
-      if (unitHeader) {
-        headers.push(unitHeader);
-        aligns.push('l');
-      }
-      if (isWave) {
-        headers.push('ผ้า/ชุด');
-        aligns.push('r');
-      }
-      headers.push('ขาจับ', 'ราง');
-      aligns.push('l', 'r');
-
-      const tableRows = rows.map((r, i) => {
-        const cells = [String(i + 1), String(r.sizeCm), String(r.qty), r.slide];
-        if (unitHeader) cells.push(r.unit);
-        if (isWave) cells.push(r.fabric);
-        cells.push(`${r.brackets} (${r.layer})`, String(r.qty * r.layers));
-        return cells;
-      });
-
+      // 1 บรรทัด/รายการ — LINE ตัดบรรทัดเองได้ ไม่ต้องพึ่ง monospace
       t += SEP + '\n';
-      t += `ราง: ${productName}\n`;
-      t += monoTable(headers, tableRows, aligns) + '\n';
+      t += `🛤️ ${productName}\n`;
+      rows.forEach((r, i) => {
+        let line = `${i + 1}) ${r.sizeCm} ซม. ×${r.qty} · ${r.slide}`;
+        if (unitHeader) line += ` · ${unitHeader} ${r.unit}`;
+        if (isWave && r.fabric) line += ` · ผ้า ${r.fabric} หลา`;
+        line += ` · ขาจับ ${r.brackets} (${r.layer})`;
+        t += line + '\n';
+      });
       t += `👉 รวมรางที่ต้องสั่ง: ${totalRails} เส้น\n`;
     });
   });
 
-  t +=
-    SEP +
-    '\n* "ชุด" = จำนวนชุดม่าน  ·  "ขาจับ" = จำนวนตัว (ปัดขึ้น กว้าง ÷ 0.6)' +
-    '\n* "2ชั้น" = ขาจับแบบ 2 ชั้น (ทึบ+โปร่ง · 1 ตัวจับ 2 ราง) จำนวนเท่าม่านชั้นเดียว' +
-    '\n* "ราง" = จำนวนเส้นรางที่ต้องตัดจริง  (1ชั้น = ชุด×1,  2ชั้น = ชุด×2)' +
-    '\n* ขนาด=ซม.  ·  ลูกล้อ N+N=สองตับ  ·  ผ้า/ชุด=หลา\n';
+  t += SEP + '\nℹ️ ขนาด=ซม. · ลูกล้อ N+N=สองตับ · ผ้า/ชุด=หลา · ขาจับ (จำนวน, ชั้นผ้า)\n';
   return t;
 }
 

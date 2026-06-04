@@ -215,6 +215,14 @@ describe('generateSummaryText — purchase_order', () => {
     const out = generateSummaryText(makeInput(), 'purchase_order');
     expect(out).not.toContain('#ZZ9');
   });
+
+  it('ส่วน "ราง" ใช้ชื่อรุ่นตามสี (ลอน ขาว → TES101) ไม่ใช่ป้ายทั่วไป', () => {
+    const out = generateSummaryText(makeInput(), 'purchase_order');
+    expect(out).toContain('📏 *รายการสั่งซื้อ ราง*');
+    expect(out).toContain('TES101 ( TW14.5 )รางเทปลอน เทป14.5 สีขาว');
+    expect(out).toContain('ยาวรวม: 2.50 ม.'); // ราง 1 เส้น กว้าง 2.5 ม.
+    expect(out).not.toContain('รางม่านลอน (Wave)'); // ไม่ตกไป fallback เมื่อมีสี
+  });
 });
 
 // ─── rail_order ───────────────────────────────────────────────────────────────

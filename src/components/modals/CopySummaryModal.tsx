@@ -88,9 +88,9 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
         </Button>
       }
     >
-      <div className="space-y-4">
+      <div className="flex flex-col gap-3 h-full min-h-0">
         {/* --- Segmented type selector --- */}
-        <div className="grid grid-cols-4 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50">
+        <div className="grid grid-cols-4 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50 shrink-0">
           {OPTIONS.map((opt) => {
             const active = type === opt.id;
             return (
@@ -114,17 +114,17 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
           })}
         </div>
 
-        {/* --- Editable preview --- */}
+        {/* --- Editable preview — เต็มความสูง drawer, มีพื้นขั้นต่ำสูง ๆ --- */}
         <textarea
           value={text}
           onChange={(e) => setEdited(e.target.value)}
-          rows={14}
+          rows={18}
           aria-label="ข้อความสรุป (แก้ไขได้)"
           spellCheck={false}
-          className="w-full rounded-xl border border-border bg-background p-3 text-[13px] leading-relaxed font-mono whitespace-pre-wrap resize-y focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full flex-1 min-h-[55vh] rounded-xl border border-border bg-background p-3 text-[13px] leading-relaxed font-mono whitespace-pre-wrap resize-y focus:outline-none focus:ring-1 focus:ring-primary"
         />
 
-        <p className="text-[11px] text-muted-foreground/80 px-1">
+        <p className="text-[11px] text-muted-foreground/80 px-1 shrink-0">
           แก้ไขข้อความได้ก่อนคัดลอก · สลับแบบจะรีเซ็ตเป็นข้อความใหม่
         </p>
       </div>
