@@ -404,10 +404,11 @@ interface RailRow {
   sizeCm: number;
   qty: number; // จำนวนชุดม่าน
   layers: number; // 1 = ชั้นเดียว, 2 = ทึบ+โปร่ง (ใช้ราง 2 เส้น/ชุด)
+  brackets: number; // จำนวนขาจับ = ceil(กว้าง/0.6) (เท่ากันทั้ง 1ชั้น/2ชั้น)
   slide: string;
   unit: string;
   fabric: string;
-  layer: string; // ป้ายขาจับ "1ชั้น"/"2ชั้น"
+  layer: string; // ป้ายชั้น "1ชั้น"/"2ชั้น"
 }
 
 function railOrderSummary(input: SummaryInput): string {
@@ -434,8 +435,18 @@ function railOrderSummary(input: SummaryInput): string {
       const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '-';
       const layer = railLayer(it);
       const layers = it.isDouble ? 2 : 1; // ทึบ+โปร่ง = 2 เส้น/ชุด
+      const brackets = Math.ceil(it.width / 0.6); // ขาจับ 1 ตัว/~0.6 ม. (2ชั้น = จำนวนเท่าเดิม)
       const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
-      const g = groups.get(key) ?? { sizeCm, qty: 0, layers, slide, unit, fabric, layer };
+      const g = groups.get(key) ?? {
+        sizeCm,
+        qty: 0,
+        layers,
+        brackets,
+        slide,
+        unit,
+        fabric,
+        layer,
+      };
       g.qty += 1;
       groups.set(key, g);
     });
@@ -461,7 +472,7 @@ function railOrderSummary(input: SummaryInput): string {
       const cells = [String(i + 1), String(r.sizeCm), String(r.qty), r.slide];
       if (unitHeader) cells.push(r.unit);
       if (isWave) cells.push(r.fabric);
-      cells.push(r.layer, String(r.qty * r.layers));
+      cells.push(`${r.brackets} (${r.layer})`, String(r.qty * r.layers));
       return cells;
     });
 
@@ -473,7 +484,8 @@ function railOrderSummary(input: SummaryInput): string {
 
   t +=
     SEP +
-    '\n* "ชุด" = จำนวนชุดม่าน  ·  ขาจับ "2ชั้น" (ทึบ+โปร่ง) = ใช้ราง 2 เส้น/ชุด' +
+    '\n* "ชุด" = จำนวนชุดม่าน  ·  "ขาจับ" = จำนวนตัว (ปัดขึ้น กว้าง ÷ 0.6)' +
+    '\n* "2ชั้น" = ขาจับแบบ 2 ชั้น (ทึบ+โปร่ง · 1 ตัวจับ 2 ราง) จำนวนเท่าม่านชั้นเดียว' +
     '\n* "ราง" = จำนวนเส้นรางที่ต้องตัดจริง  (1ชั้น = ชุด×1,  2ชั้น = ชุด×2)' +
     '\n* ขนาด=ซม.  ·  ลูกล้อ N+N=สองตับ  ·  ผ้า/ชุด=หลา\n';
   return t;
