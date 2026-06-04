@@ -9,7 +9,16 @@ import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
-import { ChevronDown, Edit2, Copy, Trash2, EyeOff, CheckCircle2, AlertTriangle, Ruler } from 'lucide-react';
+import {
+  ChevronDown,
+  Edit2,
+  Copy,
+  Trash2,
+  EyeOff,
+  CheckCircle2,
+  AlertTriangle,
+  Ruler,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // รูปแบบม่าน → ป้ายไทยสั้น (ตัด " (English)" ออกจาก CURTAIN_STYLES) สำหรับ title การ์ด
@@ -42,10 +51,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   }, [item]);
 
   // "ยังไม่เสร็จ" — มีขนาดแล้วแต่ยังไม่ได้ใส่ผ้า/รายละเอียดที่จำเป็น
-  const incomplete = useMemo(
-    () => !item.is_suspended && isItemIncomplete(item),
-    [item]
-  );
+  const incomplete = useMemo(() => !item.is_suspended && isItemIncomplete(item), [item]);
 
   const { title, dimSpec } = useMemo(() => {
     const config = ITEM_CONFIG[item.type];
@@ -105,18 +111,23 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const height = toNum(itemRec.height_m as string | number | null | undefined);
   const hasSize = width > 0 && height > 0;
 
-  // ขนาดแบบตัวเลขล้วน "กว้าง × สูง" — ผู้ใช้รู้อยู่แล้วว่าเป็นเมตร (hero)
+  // ขนาดแบบ "ขนาด กว้าง/สูง : W x H" — รูปแบบเดียวเสมอสำหรับสินค้าที่มีมิติ
+  // ช่องที่ยังไม่กรอกใช้ "—" (กันค่าว่างทำให้ดูเหมือนบันทึกไม่ครบ / หลุดไปฟอร์แมตเก่าจาก getSpecs)
   const dimNumbers = useMemo(() => {
     if (item.type === ITEM_TYPES.REMOVAL) return '';
-    if (item.type === ITEM_TYPES.WALLPAPER) {
-      const widthTotal = (item.widths || []).reduce((sum, w) => sum + toNum(w), 0);
-      const h = toNum(item.height_m);
-      return widthTotal > 0 && h > 0
-        ? `ขนาด กว้าง/สูง : ${widthTotal.toFixed(2)} x ${h.toFixed(2)}`
-        : '';
-    }
-    return hasSize ? `ขนาด กว้าง/สูง : ${width.toFixed(2)} x ${height.toFixed(2)}` : '';
-  }, [item, hasSize, width, height]);
+    const w =
+      item.type === ITEM_TYPES.WALLPAPER
+        ? (item.widths || []).reduce((sum, x) => sum + toNum(x), 0)
+        : width;
+    const h = item.type === ITEM_TYPES.WALLPAPER ? toNum(item.height_m) : height;
+    if (w <= 0 && h <= 0) return '';
+    const wStr = w > 0 ? w.toFixed(2) : '—';
+    const hStr = h > 0 ? h.toFixed(2) : '—';
+    return `ขนาด กว้าง/สูง : ${wStr} x ${hStr}`;
+  }, [item, width, height]);
+
+  // แถวขนาดบนการ์ด — สินค้ามีมิติใช้ dimNumbers (รูปแบบใหม่เสมอ), งานรื้อถอนใช้ spec สรุป
+  const dimLine = item.type === ITEM_TYPES.REMOVAL ? dimSpec : dimNumbers;
 
   // ชิป Row 3 — ชนิด + รูปแบบเก็บ + รายละเอียดรอง (สร้างจาก field ตรงๆ ไม่มี prefix)
   const typeChips = useMemo<string[]>(() => {
@@ -210,10 +221,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         </div>
 
         {/* Row 2: Dimensions — hero ตัวเลขล้วน (priority #1 หน้างาน) */}
-        {(dimNumbers || dimSpec) && (
+        {dimLine && (
           <div className="flex items-center gap-1.5 text-[15px] font-bold text-sky-600 dark:text-sky-400 leading-snug">
-            {dimNumbers && <Ruler className="w-3.5 h-3.5 shrink-0" />}
-            <span className="truncate">{dimNumbers || dimSpec}</span>
+            {item.type !== ITEM_TYPES.REMOVAL && <Ruler className="w-3.5 h-3.5 shrink-0" />}
+            <span className="truncate">{dimLine}</span>
           </div>
         )}
 
@@ -232,7 +243,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         )}
 
         {/* Fallback: no specs at all */}
-        {!dimNumbers && !dimSpec && typeChips.length === 0 && (
+        {!dimLine && typeChips.length === 0 && (
           <div className="text-xs text-muted-foreground/50 italic leading-relaxed">
             ยังไม่ระบุรายละเอียด
           </div>
@@ -317,7 +328,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {item.notes && (
               <div className="flex justify-between items-start text-sm gap-4">
                 <span className="text-muted-foreground shrink-0">หมายเหตุ</span>
-                <span className="font-medium text-slate-500 dark:text-slate-400 text-right">{item.notes}</span>
+                <span className="font-medium text-slate-500 dark:text-slate-400 text-right">
+                  {item.notes}
+                </span>
               </div>
             )}
           </div>

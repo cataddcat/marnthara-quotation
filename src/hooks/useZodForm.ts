@@ -2,54 +2,11 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { z } from 'zod';
-import { normalizeDimension } from '@/utils/formatters';
+import { normalizeDimensionFields } from '@/utils/formatters';
 
 // [FIX] Use z.ZodType<T> directly. This matches the schema structure for type T
 // and implicitly handles Def and Input types safely, removing 'any' and 'unknown' issues.
 export type ZodSchema<T> = z.ZodType<T>;
-
-// ฟิลด์ที่เป็น "ขนาด (เมตร)" — ใช้ heuristic ซม.→ม. (เช่น 234 → 2.34)
-const DIMENSION_FIELDS = ['width_m', 'height_m'] as const;
-
-/**
- * Normalize ค่าขนาด (ซม.→ม.) ตอนกดบันทึก เพื่อกัน race ระหว่าง onBlur ของ Input
- * (ที่แปลงค่าให้) กับการกดปุ่มบันทึก (ที่อ่าน state เดิมก่อน setState จาก blur จะ commit)
- * — idempotent กับค่าที่แปลงแล้ว ("2.34" → "2.34"), ปลอดภัยกับฟอร์มที่ไม่มีฟิลด์ขนาด
- */
-function normalizeDimensionFields<T extends Record<string, unknown>>(data: T): T {
-  let changed = false;
-  const out: Record<string, unknown> = { ...data };
-
-  for (const key of DIMENSION_FIELDS) {
-    const v = out[key];
-    if (typeof v === 'string' && v.trim() !== '') {
-      const n = normalizeDimension(v);
-      if (n !== v) {
-        out[key] = n;
-        changed = true;
-      }
-    }
-  }
-
-  // วอลเปเปอร์: widths เป็น array ความกว้างของผนัง
-  if (Array.isArray(out.widths)) {
-    let arrChanged = false;
-    const next = (out.widths as unknown[]).map((w) => {
-      if (typeof w === 'string' && w.trim() !== '') {
-        const n = normalizeDimension(w);
-        if (n !== w) arrChanged = true;
-        return n;
-      }
-      return w;
-    });
-    if (arrChanged) {
-      out.widths = next;
-      changed = true;
-    }
-  }
-
-  return changed ? (out as T) : data;
-}
 
 interface UseZodFormProps<T> {
   schema: ZodSchema<T>;
@@ -64,11 +21,11 @@ export const useZodForm = <T extends Record<string, unknown>>({
 }: UseZodFormProps<T>) => {
   const [formData, setFormData] = useState<T>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
-  
+
   // [FIX] ESLint: Removed unused 'setWarnings'.
   // Kept 'warnings' state to maintain API shape (returns empty object).
   const [warnings] = useState<Partial<Record<keyof T, string>>>({});
-  
+
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Check Dirty State
@@ -81,7 +38,7 @@ export const useZodForm = <T extends Record<string, unknown>>({
     setFormData((prev) => {
       return { ...prev, [field]: value };
     });
-    
+
     // Clear error for this field immediately for better UX
     setErrors((prev) => {
       if (!prev[field]) return prev;
@@ -92,21 +49,24 @@ export const useZodForm = <T extends Record<string, unknown>>({
   }, []);
 
   // 2. Handle Number Input (Specific for string-based numbers)
-  const handleNumberChange = useCallback((field: keyof T, value: string) => {
-    // Allow numbers, dots, and empty string (allow negative numbers too)
-    if (/^-?\d*\.?\d*$/.test(value)) {
-      handleChange(field, value as T[keyof T]);
-    }
-  }, [handleChange]);
+  const handleNumberChange = useCallback(
+    (field: keyof T, value: string) => {
+      // Allow numbers, dots, and empty string (allow negative numbers too)
+      if (/^-?\d*\.?\d*$/.test(value)) {
+        handleChange(field, value as T[keyof T]);
+      }
+    },
+    [handleChange]
+  );
 
   // 3. Validation Logic (Full form validation)
   const validate = useCallback(() => {
     // [FIX] schema.safeParse returns SafeParseReturnType<T, T> because schema is ZodType<T>
     const result = schema.safeParse(formData);
-    
+
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof T, string>> = {};
-      
+
       result.error.issues.forEach((issue) => {
         // [FIX] issue.path[0] is strictly typed as string | number key
         const path = issue.path[0];
@@ -114,11 +74,11 @@ export const useZodForm = <T extends Record<string, unknown>>({
           fieldErrors[path as keyof T] = issue.message;
         }
       });
-      
+
       setErrors(fieldErrors);
       return false;
     }
-    
+
     setErrors({});
     return true;
   }, [formData, schema]);
@@ -161,9 +121,12 @@ export const useZodForm = <T extends Record<string, unknown>>({
   }, [initialData]);
 
   // 6. Set field value (manual update)
-  const setFieldValue = useCallback((field: keyof T, value: T[keyof T]) => {
-    handleChange(field, value);
-  }, [handleChange]);
+  const setFieldValue = useCallback(
+    (field: keyof T, value: T[keyof T]) => {
+      handleChange(field, value);
+    },
+    [handleChange]
+  );
 
   return {
     // State
@@ -172,7 +135,7 @@ export const useZodForm = <T extends Record<string, unknown>>({
     warnings,
     isDirty,
     isSubmitted,
-    
+
     // Handlers
     handleChange,
     handleNumberChange,
@@ -180,7 +143,7 @@ export const useZodForm = <T extends Record<string, unknown>>({
     validate,
     resetForm,
     setFieldValue,
-    
+
     // State setters (for advanced usage)
     setFormData,
     setErrors,

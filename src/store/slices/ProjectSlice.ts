@@ -15,7 +15,8 @@ export interface ProjectSlice {
   duplicateRoom: (roomId: string) => void;
   toggleRoomSuspension: (roomId: string) => void;
 
-  addItem: (roomId: string, data: Omit<ItemData, 'id'>) => void;
+  // คืน id ที่ store gen ให้ — ผู้เรียกต้องใช้ id นี้อ้างถึงรายการตอน update รอบถัดไป
+  addItem: (roomId: string, data: Omit<ItemData, 'id'>) => string;
   updateItem: (roomId: string, itemId: string, data: Partial<ItemData>) => void;
   removeItem: (roomId: string, itemId: string) => void;
   duplicateItem: (roomId: string, itemId: string) => void;
@@ -80,16 +81,23 @@ export const createProjectSlice: StateCreator<
       ),
     })),
 
-  addItem: (roomId, itemData) =>
+  // store เป็นเจ้าของการ gen id เสมอ (กัน id ซ้ำ/ค้างจาก caller) และ "คืน id จริง" กลับไป
+  // เพื่อให้ผู้เรียก (ItemModal) อ้างถึง draft เดิมตอน auto-save/บันทึกครั้งถัดไปได้ตรงรายการ
+  // — เดิมผู้เรียก gen id เองแล้วส่งมา แต่ store เมินทิ้ง → updateItem รอบถัดไปหา id ไม่เจอ →
+  //   ค่าที่แก้ (เช่น "ความสูง") หายเงียบ ๆ ตอนเพิ่มสินค้าครั้งแรก
+  addItem: (roomId, itemData) => {
+    const id = generateId();
     set((state) => ({
       rooms: state.rooms.map((room) => {
         if (room.id !== roomId) return room;
         return {
           ...room,
-          items: [...room.items, { ...itemData, id: generateId() } as ItemData],
+          items: [...room.items, { ...itemData, id } as ItemData],
         };
       }),
-    })),
+    }));
+    return id;
+  },
 
   updateItem: (roomId, itemId, data) =>
     set((state) => ({

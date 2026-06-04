@@ -3,8 +3,19 @@ import { Modal } from '@/components/ui/Modal';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
 import {
-  AlignLeft, ScrollText, Scissors, Grid3X3, Blinds, Columns, Minimize2,
-  Save, CheckCircle2, ChevronDown, Plus, Smartphone, Monitor,
+  AlignLeft,
+  ScrollText,
+  Scissors,
+  Grid3X3,
+  Blinds,
+  Columns,
+  Minimize2,
+  Save,
+  CheckCircle2,
+  ChevronDown,
+  Plus,
+  Smartphone,
+  Monitor,
 } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
@@ -14,17 +25,30 @@ import { useUIStore } from '@/store/useUIStore';
 // --- [ARCHITECT] IMPORT FORMS FROM FEATURE DIRECTORIES ---
 import { CurtainForm, CURTAIN_FORM_ID } from '@/features/curtains/components/CurtainForm';
 import { WallpaperForm, WALLPAPER_FORM_ID } from '@/features/wallpapers/components/WallpaperForm';
-import { RollerBlindsForm, ROLLER_BLINDS_FORM_ID } from '@/features/roller-blinds/components/RollerBlindsForm';
-import { WoodenBlindsForm, WOODEN_BLINDS_FORM_ID } from '@/features/wooden-blinds/components/WoodenBlindsForm';
-import { VerticalBlindsForm, VERTICAL_BLINDS_FORM_ID } from '@/features/vertical-blinds/components/VerticalBlindsForm';
+import {
+  RollerBlindsForm,
+  ROLLER_BLINDS_FORM_ID,
+} from '@/features/roller-blinds/components/RollerBlindsForm';
+import {
+  WoodenBlindsForm,
+  WOODEN_BLINDS_FORM_ID,
+} from '@/features/wooden-blinds/components/WoodenBlindsForm';
+import {
+  VerticalBlindsForm,
+  VERTICAL_BLINDS_FORM_ID,
+} from '@/features/vertical-blinds/components/VerticalBlindsForm';
 import { PartitionForm, PARTITION_FORM_ID } from '@/features/partition/components/PartitionForm';
-import { PleatedScreenForm, PLEATED_SCREEN_FORM_ID } from '@/features/pleated-screen/components/PleatedScreenForm';
+import {
+  PleatedScreenForm,
+  PLEATED_SCREEN_FORM_ID,
+} from '@/features/pleated-screen/components/PleatedScreenForm';
 import { RemovalForm, REMOVAL_FORM_ID } from '@/features/removal/components/RemovalForm';
 
 import { ItemTypeKey, ItemData } from '@/types';
 import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES } from '@/config/enums';
 import { hasMinimumItemData } from '@/lib/item-status';
+import { normalizeDimensionFields } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 // [ARCHITECT] Import Unified Theme System
 import { getItemTheme } from '@/lib/theme-utils';
@@ -103,6 +127,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
   const [activeType, setActiveType] = useState<ItemTypeKey>(normalizeType(initialItemType));
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
+  // โหมด add: ต้อง "เลือกประเภทสินค้าก่อน" จึงจะ mount ฟอร์ม (กันการ remount ที่ล้างค่าที่พิมพ์ไว้
+  // เมื่อเลือกประเภทหลังพิมพ์). โหมด edit ถือว่ายืนยันประเภทแล้วเสมอ
+  const [typeConfirmed, setTypeConfirmed] = useState(false);
   const [autoSavedTick, setAutoSavedTick] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
   // Remount key — bumping it resets the form (blank + autofocus) for "save & add next"
@@ -122,6 +149,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       setSavedCount(0);
       setFormKey(0);
       setTypeSheetOpen(false);
+      // add → เริ่มที่หน้าเลือกประเภท (ยังไม่ mount ฟอร์ม); edit → เข้าฟอร์มทันที
+      setTypeConfirmed(mode === 'edit');
       if (mode === 'add') {
         setActiveType(normalizeType(initialItemType));
       } else if (mode === 'edit' && initialData) {
@@ -147,10 +176,13 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
   const handleSelectType = (typeId: ItemTypeKey) => {
     trigger('selection');
-    // เปลี่ยนประเภทระหว่างเพิ่ม → เริ่ม draft ใหม่ของประเภทนั้น
+    setTypeSheetOpen(false);
+    // เลือกประเภทเดิมซ้ำ (ยืนยันแล้ว) → ปิด sheet เฉย ๆ ไม่ remount ฟอร์ม (กันค่าที่พิมพ์ไว้ถูกล้าง)
+    if (typeConfirmed && typeId === activeType) return;
+    // เลือกครั้งแรก (product-first) หรือเปลี่ยนประเภทจริง → เริ่ม draft ใหม่ของประเภทนั้น
     autoCreatedIdRef.current = null;
     setActiveType(typeId);
-    setTypeSheetOpen(false);
+    setTypeConfirmed(true);
     setFormKey((k) => k + 1);
   };
 
@@ -161,8 +193,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
   // ── Persist draft (immediate) — ใช้ร่วมทั้ง auto-save (หลัง debounce) และ flush ตอนปิด ──
   const persistDraft = useCallback(
-    (data: Partial<ItemData>) => {
+    (raw: Partial<ItemData>) => {
       if (!roomId) return;
+
+      // Normalize ขนาด (ซม.→ม.) ให้ทุกเส้นทางบันทึก (autosave/flush ตอนปิด) ได้ค่าเดียวกับ
+      // explicit submit — กันค่าดิบ "278" ค้างเมื่อปิดโดยไม่กดบันทึก (idempotent)
+      const data = normalizeDimensionFields(raw as Record<string, unknown>) as Partial<ItemData>;
 
       // EDIT mode — always update existing item
       if (mode === 'edit' && itemId) {
@@ -176,15 +212,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         if (!hasMinimumItemData(activeType, data as Record<string, unknown>)) return;
 
         if (autoCreatedIdRef.current) {
-          updateItem(
-            roomId,
-            autoCreatedIdRef.current,
-            { ...data, type: activeType, id: autoCreatedIdRef.current } as ItemData
-          );
+          updateItem(roomId, autoCreatedIdRef.current, {
+            ...data,
+            type: activeType,
+            id: autoCreatedIdRef.current,
+          } as ItemData);
         } else {
-          const newId = `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-          autoCreatedIdRef.current = newId;
-          addItem(roomId, { ...data, type: activeType, id: newId } as ItemData);
+          // ให้ store gen id แล้วเก็บ id จริงไว้ — update รอบถัดไป (เช่นกรอก "ความสูง") จะตรงรายการเดิม
+          autoCreatedIdRef.current = addItem(roomId, { ...data, type: activeType } as ItemData);
         }
         setAutoSavedTick((n) => n + 1);
       }
@@ -267,9 +302,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           id: autoCreatedIdRef.current,
         } as ItemData);
       } else {
-        const newId = `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-        autoCreatedIdRef.current = newId;
-        addItem(roomId, { ...data, type: activeType, id: newId } as ItemData);
+        // ให้ store gen id แล้วเก็บ id จริงไว้ (กัน id ไม่ตรงทำให้ค่าที่แก้รอบถัดไปหาย)
+        autoCreatedIdRef.current = addItem(roomId, { ...data, type: activeType } as ItemData);
       }
 
       if (intent === 'next') {
@@ -288,7 +322,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   );
 
   const itemName = ITEM_CONFIG[activeType]?.name || activeType;
-  const title = mode === 'add' ? `เพิ่ม${itemName}` : `แก้ไข${itemName}`;
+  // add: แสดงฟอร์มหลังเลือกประเภทแล้วเท่านั้น; edit: แสดงฟอร์มทันที
+  const showForm = mode === 'edit' || typeConfirmed;
+  const title =
+    mode === 'add'
+      ? typeConfirmed
+        ? `เพิ่ม${itemName}`
+        : 'เลือกประเภทสินค้า'
+      : `แก้ไข${itemName}`;
   const activeFormId = FORM_ID_BY_TYPE[activeType];
   // โหมด Full ทุกประเภทใช้ layout 2 คอลัมน์ → ต้องการ modal กว้างบนเดสก์ท็อป
   const wideTwoCol = !isLite;
@@ -329,46 +370,47 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     </div>
   );
 
-  // ── Footer: sticky actions (ทุกประเภทสินค้า) ───────────────────────────────
-  const footer = activeFormId ? (
-    mode === 'edit' ? (
-      <Button
-        type="submit"
-        form={activeFormId}
-        size="md"
-        className="w-full"
-        onClick={() => (submitIntentRef.current = 'close')}
-      >
-        <Save className="w-4 h-4 mr-2" />
-        บันทึกการแก้ไข
-      </Button>
-    ) : (
-      // จัดข้างกันในแถวเดียวทุกอุปกรณ์ + ขอบบาง (md = 48px, px แคบ) ให้กิน footer น้อยลง
-      <div className="flex gap-2">
+  // ── Footer: sticky actions (เฉพาะเมื่อฟอร์มแสดงแล้ว — หน้าเลือกประเภทไม่มีปุ่มบันทึก) ──
+  const footer =
+    showForm && activeFormId ? (
+      mode === 'edit' ? (
         <Button
           type="submit"
           form={activeFormId}
           size="md"
-          className="flex-[1.4] min-w-0 px-3 text-sm whitespace-normal leading-tight"
-          onClick={() => (submitIntentRef.current = 'next')}
-        >
-          <Plus className="w-4 h-4 mr-1.5 shrink-0" />
-          บันทึก &amp; เพิ่มจุดถัดไป
-        </Button>
-        <Button
-          type="submit"
-          form={activeFormId}
-          variant="outline"
-          size="md"
-          className="flex-1 min-w-0 px-3 text-sm whitespace-normal leading-tight"
+          className="w-full"
           onClick={() => (submitIntentRef.current = 'close')}
         >
-          <Save className="w-4 h-4 mr-1.5 shrink-0" />
-          บันทึก &amp; ปิด
+          <Save className="w-4 h-4 mr-2" />
+          บันทึกการแก้ไข
         </Button>
-      </div>
-    )
-  ) : undefined;
+      ) : (
+        // จัดข้างกันในแถวเดียวทุกอุปกรณ์ + ขอบบาง (md = 48px, px แคบ) ให้กิน footer น้อยลง
+        <div className="flex gap-2">
+          <Button
+            type="submit"
+            form={activeFormId}
+            size="md"
+            className="flex-[1.4] min-w-0 px-3 text-sm whitespace-normal leading-tight"
+            onClick={() => (submitIntentRef.current = 'next')}
+          >
+            <Plus className="w-4 h-4 mr-1.5 shrink-0" />
+            บันทึก &amp; เพิ่มจุดถัดไป
+          </Button>
+          <Button
+            type="submit"
+            form={activeFormId}
+            variant="outline"
+            size="md"
+            className="flex-1 min-w-0 px-3 text-sm whitespace-normal leading-tight"
+            onClick={() => (submitIntentRef.current = 'close')}
+          >
+            <Save className="w-4 h-4 mr-1.5 shrink-0" />
+            บันทึก &amp; ปิด
+          </Button>
+        </div>
+      )
+    ) : undefined;
 
   const theme = getItemTheme(activeType);
   const TypeIcon = TYPE_ICON_MAP[activeType];
@@ -384,104 +426,147 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       footer={footer}
     >
       <div className="animate-fade-in">
-        {/* Type switcher (add mode) — แทน type picker เต็มจอเดิม */}
-        {mode === 'add' && (
-          <button
-            type="button"
-            onClick={() => setTypeSheetOpen(true)}
-            className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-2xl border border-border bg-card shadow-sm active:scale-[0.99] transition-transform"
-          >
-            <span className="flex items-center gap-2.5 min-w-0">
-              <span className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', theme.iconWrapper)}>
-                {TypeIcon && <TypeIcon className={cn('w-5 h-5', theme.icon)} />}
-              </span>
-              <span className="flex flex-col items-start min-w-0">
-                <span className="text-[11px] text-muted-foreground leading-none">ประเภทสินค้า</span>
-                <span className="font-bold text-foreground leading-tight truncate">{itemName}</span>
-              </span>
-            </span>
-            <span className="flex items-center gap-1 text-xs font-semibold text-primary shrink-0">
-              เปลี่ยน
-              <ChevronDown className="w-4 h-4" />
-            </span>
-          </button>
-        )}
+        {mode === 'add' && !typeConfirmed ? (
+          <div>
+            <p className="text-sm text-muted-foreground mb-3 px-0.5">
+              เลือกประเภทสินค้าที่ต้องการเพิ่ม
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {typeOptions.map((opt) => {
+                const OptIcon = opt.icon;
+                const optTheme = getItemTheme(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleSelectType(opt.value)}
+                    className="flex items-center gap-2.5 min-h-[60px] px-3.5 rounded-2xl border border-border bg-card shadow-sm active:scale-[0.98] transition-transform text-left"
+                  >
+                    <span
+                      className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                        optTheme.iconWrapper
+                      )}
+                    >
+                      {OptIcon && <OptIcon className={cn('w-5 h-5', optTheme.icon)} />}
+                    </span>
+                    <span className="font-bold text-foreground leading-tight">{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Type switcher (add mode) — แตะเพื่อเปลี่ยนประเภท */}
+            {mode === 'add' && (
+              <button
+                type="button"
+                onClick={() => setTypeSheetOpen(true)}
+                className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-2xl border border-border bg-card shadow-sm active:scale-[0.99] transition-transform"
+              >
+                <span className="flex items-center gap-2.5 min-w-0">
+                  <span
+                    className={cn(
+                      'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+                      theme.iconWrapper
+                    )}
+                  >
+                    {TypeIcon && <TypeIcon className={cn('w-5 h-5', theme.icon)} />}
+                  </span>
+                  <span className="flex flex-col items-start min-w-0">
+                    <span className="text-[11px] text-muted-foreground leading-none">
+                      ประเภทสินค้า
+                    </span>
+                    <span className="font-bold text-foreground leading-tight truncate">
+                      {itemName}
+                    </span>
+                  </span>
+                </span>
+                <span className="flex items-center gap-1 text-xs font-semibold text-primary shrink-0">
+                  เปลี่ยน
+                  <ChevronDown className="w-4 h-4" />
+                </span>
+              </button>
+            )}
 
-        {/* ── Product Form ── */}
-        {activeType === ITEM_TYPES.CURTAIN && (
-          <CurtainForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-            mode={mode}
-          />
-        )}
-        {activeType === ITEM_TYPES.WALLPAPER && (
-          <WallpaperForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
-        )}
-        {activeType === ITEM_TYPES.ROLLER_BLIND && (
-          <RollerBlindsForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
-        )}
-        {(activeType === ITEM_TYPES.WOODEN_BLIND ||
-          activeType === ITEM_TYPES.ALUMINUM_BLIND) && (
-          <WoodenBlindsForm
-            key={formKey}
-            itemType={activeType}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
-        )}
-        {activeType === ITEM_TYPES.VERTICAL_BLIND && (
-          <VerticalBlindsForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
-        )}
-        {activeType === ITEM_TYPES.PARTITION && (
-          <PartitionForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
-        )}
-        {activeType === ITEM_TYPES.PLEATED_SCREEN && (
-          <PleatedScreenForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
-        )}
-        {activeType === ITEM_TYPES.REMOVAL && (
-          <RemovalForm
-            key={formKey}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            onCancel={handleClose}
-            onAutoSave={handleAutoSave}
-          />
+            {/* ── Product Form ── */}
+            {activeType === ITEM_TYPES.CURTAIN && (
+              <CurtainForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+                mode={mode}
+              />
+            )}
+            {activeType === ITEM_TYPES.WALLPAPER && (
+              <WallpaperForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+            {activeType === ITEM_TYPES.ROLLER_BLIND && (
+              <RollerBlindsForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+            {(activeType === ITEM_TYPES.WOODEN_BLIND ||
+              activeType === ITEM_TYPES.ALUMINUM_BLIND) && (
+              <WoodenBlindsForm
+                key={formKey}
+                itemType={activeType}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+            {activeType === ITEM_TYPES.VERTICAL_BLIND && (
+              <VerticalBlindsForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+            {activeType === ITEM_TYPES.PARTITION && (
+              <PartitionForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+            {activeType === ITEM_TYPES.PLEATED_SCREEN && (
+              <PleatedScreenForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+            {activeType === ITEM_TYPES.REMOVAL && (
+              <RemovalForm
+                key={formKey}
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                onAutoSave={handleAutoSave}
+              />
+            )}
+          </>
         )}
       </div>
 
