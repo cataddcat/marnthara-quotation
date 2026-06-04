@@ -931,6 +931,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
       onClose={onClose}
       title="คลังต้นทุน"
       variant="fullscreen"
+      maxWidth="5xl"
       headerAction={
         <button
           onClick={handleCopy}
