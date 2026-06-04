@@ -12,11 +12,11 @@ interface ItemCardProps {
   row: ItemRow;
   expanded: boolean;
   onToggle: () => void;
-  onJumpToInventory: (code: string, tab: string) => void;
+  onOpenCodeDetail: (code: string, tab: string) => void;
 }
 
 // Expandable item card
-export const ItemCard = ({ row, expanded, onToggle, onJumpToInventory }: ItemCardProps) => {
+export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCardProps) => {
   const { analysis, typeName, roomName, item } = row;
   const st = STATUS_STYLE[analysis.status];
 
@@ -35,12 +35,16 @@ export const ItemCard = ({ row, expanded, onToggle, onJumpToInventory }: ItemCar
   const sheerCode = isCurtain ? (item as { sheer_code?: string }).sheer_code : undefined;
   const showSheer = isCurtain && !!sheerCode;
 
-  // Map item type → tab ใน MaterialSummary modal
+  // Map item type → หมวดในคลังรหัส (MaterialSummary)
+  // area items (มู่ลี่/ฉาก/มุ้ง): หมวดในแค็ตตาล็อก = item.type ตรงๆ (ตรงกับ FAVORITE_CATEGORIES)
   const mainTab = isCurtain
     ? FAVORITE_CATEGORIES.CURTAIN_MAIN
     : isWallpaper
       ? FAVORITE_CATEGORIES.WALLPAPER
-      : FAVORITE_CATEGORIES.CURTAIN_MAIN;
+      : item.type;
+
+  // ป้ายกำกับวัสดุหลัก: ผ้าม่าน=ผ้าทึบ, วอลเปเปอร์, อื่นๆ (มู่ลี่/ฉาก/มุ้ง)=ชื่อชนิดสินค้า
+  const mainLabel = isWallpaper ? 'วอลเปเปอร์' : isCurtain ? 'ผ้าทึบ' : typeName;
 
   const marginLabel =
     analysis.status === 'unknown'
@@ -106,18 +110,17 @@ export const ItemCard = ({ row, expanded, onToggle, onJumpToInventory }: ItemCar
             <>
               {/* Main fabric / wallpaper */}
               <div className="flex justify-between items-center gap-2">
-                <div className="flex items-center gap-1 min-w-0 flex-1">
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {isWallpaper ? 'วอลเปเปอร์' : 'ผ้าทึบ'}
-                  </span>
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+                  <span className="text-xs text-muted-foreground shrink-0">{mainLabel}</span>
                   {mainCode ? (
-                    <CodeJumpButton code={mainCode} tab={mainTab} onJump={onJumpToInventory} />
+                    <CodeJumpButton code={mainCode} tab={mainTab} onJump={onOpenCodeDetail} />
                   ) : (
                     <span className="text-[10px] text-muted-foreground/40 italic">
                       ยังไม่ระบุรหัส
                     </span>
                   )}
-                  {!showSheer && analysis.usedQuantity > 0 && (
+                  {analysis.usedQuantity > 0 && (
                     <span className="text-[10px] text-muted-foreground/50 font-mono">
                       {analysis.usedQuantity.toFixed(2)} {analysis.unit}
                     </span>
@@ -138,16 +141,17 @@ export const ItemCard = ({ row, expanded, onToggle, onJumpToInventory }: ItemCar
               {/* Sheer fabric — แสดงถ้ามี sheer_code ในรายการ */}
               {showSheer && (
                 <div className="flex justify-between items-center gap-2">
-                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
                     <span className="text-xs text-muted-foreground shrink-0">ผ้าโปร่ง</span>
                     <CodeJumpButton
                       code={sheerCode!}
                       tab={FAVORITE_CATEGORIES.CURTAIN_SHEER}
-                      onJump={onJumpToInventory}
+                      onJump={onOpenCodeDetail}
                     />
-                    {analysis.usedQuantity > 0 && (
+                    {(analysis.sheerQuantity ?? 0) > 0 && (
                       <span className="text-[10px] text-muted-foreground/50 font-mono">
-                        {analysis.usedQuantity.toFixed(2)} {analysis.unit}
+                        {(analysis.sheerQuantity ?? 0).toFixed(2)} {analysis.unit}
                       </span>
                     )}
                   </div>
@@ -171,11 +175,14 @@ export const ItemCard = ({ row, expanded, onToggle, onJumpToInventory }: ItemCar
             <CostRow
               label={`ค่าแรง${analysis.isLaborMinApplied ? ' ⚡ ขั้นต่ำ' : ''}`}
               value={laborTotal}
+              dotClass="bg-blue-500"
             />
           )}
 
           {/* Rail */}
-          {railTotal > 0 && <CostRow label="ราง + อุปกรณ์" value={railTotal} />}
+          {railTotal > 0 && (
+            <CostRow label="ราง + อุปกรณ์" value={railTotal} dotClass="bg-orange-400" />
+          )}
 
           {/* No cost data at all */}
           {analysis.totalCost === 0 && analysis.status !== 'unknown' && (

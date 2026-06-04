@@ -21,6 +21,7 @@ import { FinancialDashboardModal } from '@/components/modals/FinancialDashboard'
 import { FormulaDocsModal } from '@/components/modals/FormulaDocsModal';
 import { MaterialSummaryModal } from '@/components/modals/MaterialSummaryModal';
 import { CopySummaryModal } from '@/components/modals/CopySummaryModal';
+import { CodeDetailModal } from '@/components/modals/CodeDetailModal';
 
 export const ModalManager: React.FC = () => {
   const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
@@ -32,6 +33,7 @@ export const ModalManager: React.FC = () => {
   const itemProps = modalPropsAs(activeModal, modalProps, 'item');
   const materialSummaryProps = modalPropsAs(activeModal, modalProps, 'materialSummary');
   const projectOverviewProps = modalPropsAs(activeModal, modalProps, 'projectOverview');
+  const codeDetailProps = modalPropsAs(activeModal, modalProps, 'codeDetail');
 
   // Handler for Item Form Submit (Add/Edit)
   const handleItemSubmit = (data: ItemData) => {
@@ -109,12 +111,21 @@ export const ModalManager: React.FC = () => {
         onClose={closeModal}
         initialTab={materialSummaryProps?.initialTab}
         initialCategory={materialSummaryProps?.initialCategory}
+        prefillCode={materialSummaryProps?.prefillCode}
       />
 
       <CopySummaryModal
         key={isVisible('copySummary') ? 'cs-open' : 'cs-closed'}
         isOpen={isVisible('copySummary')}
         onClose={closeModal}
+      />
+
+      <CodeDetailModal
+        key={isVisible('codeDetail') ? `cd-${codeDetailProps?.code}` : 'cd-closed'}
+        isOpen={isVisible('codeDetail')}
+        onClose={closeModal}
+        code={codeDetailProps?.code}
+        category={codeDetailProps?.category}
       />
 
       <MainMenuModal

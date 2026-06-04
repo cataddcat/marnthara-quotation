@@ -18,9 +18,16 @@ export type ModalPropsMap = {
   materialSummary: {
     initialTab?: string;
     initialCategory?: string;
+    /** Code Jump: รหัสที่ต้องการโฟกัสในแค็ตตาล็อก — ถ้ายังไม่มีจะเปิดฟอร์มเพิ่มพร้อมกรอกรหัสให้ */
+    prefillCode?: string;
   };
   projectOverview: {
     onNavigateToRoom?: (roomId: string) => void;
+  };
+  // รายละเอียดรหัส (Code Detail) — ต้นทุน/ราคา + จุดที่ใช้รหัสนี้ทั้งโครงการ
+  codeDetail: {
+    code: string;
+    category: string;
   };
 
   // Modals ที่ไม่รับ props ผ่าน store

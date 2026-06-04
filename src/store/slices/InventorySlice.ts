@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { AppState } from '../useAppStore';
-import { FAVORITE_CATEGORIES } from '@/config/enums';
+import { categoryVault } from '@/lib/vault';
 
 // [REFACTOR] Renamed from FavoriteItem to InventoryItem
 export interface InventoryItem {
@@ -23,20 +23,12 @@ export interface InventorySlice {
   importFavorites: (jsonString: string) => boolean;
 }
 
-const AREA_CATEGORIES = new Set<string>([
-  FAVORITE_CATEGORIES.WOODEN_BLIND,
-  FAVORITE_CATEGORIES.ROLLER_BLIND,
-  FAVORITE_CATEGORIES.VERTICAL_BLIND,
-  FAVORITE_CATEGORIES.ALUMINUM_BLIND,
-  FAVORITE_CATEGORIES.PARTITION,
-  FAVORITE_CATEGORIES.PLEATED_SCREEN,
-]);
-
 function routeCostToVault(get: () => AppState, category: string, code: string, cost: number): void {
   if (!cost || cost <= 0) return;
-  if (category === FAVORITE_CATEGORIES.WALLPAPER) {
+  const vault = categoryVault(category);
+  if (vault === 'wallpaper') {
     get().updateWallpaperCost(code, cost);
-  } else if (AREA_CATEGORIES.has(category)) {
+  } else if (vault === 'area') {
     get().updateAreaCost(code, cost);
   } else {
     get().updateFabricCost(code, cost);

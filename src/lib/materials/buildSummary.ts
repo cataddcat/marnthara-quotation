@@ -44,7 +44,9 @@ const STYLE_LAYER_LABEL: Record<string, string> = {
 export interface FabricEntry {
   code: string;
   yards: number;
+  roomId: string;
   roomName: string;
+  itemId: string;
   desc: string;
 }
 
@@ -78,7 +80,15 @@ export interface AreaGroup {
   unit: 'ตร.ม.' | 'ตร.ล.';
   totalSqm: number;
   totalSqyd: number;
-  entries: { roomName: string; sqm: number; sqyd: number; width: number; height: number }[];
+  entries: {
+    roomId: string;
+    roomName: string;
+    itemId: string;
+    sqm: number;
+    sqyd: number;
+    width: number;
+    height: number;
+  }[];
 }
 
 // ─── Calculation helpers ──────────────────────────────────────────────────────
@@ -111,7 +121,10 @@ export function buildSummary(rooms: Room[]) {
   const sheersByCode = new Map<string, { total: number; entries: FabricEntry[] }>();
   const wallpapersByCode = new Map<
     string,
-    { total: number; entries: { rolls: number; roomName: string; desc: string }[] }
+    {
+      total: number;
+      entries: { rolls: number; roomId: string; roomName: string; itemId: string; desc: string }[];
+    }
   >();
   const railsByKey = new Map<
     string,
@@ -159,7 +172,14 @@ export function buildSummary(rooms: Room[]) {
           const code = c.code || '(ไม่ระบุรหัส)';
           const existing = fabricsByCode.get(code) ?? { total: 0, entries: [] };
           existing.total += fabricYards;
-          existing.entries.push({ code, yards: fabricYards, roomName: room.name, desc });
+          existing.entries.push({
+            code,
+            yards: fabricYards,
+            roomId: room.id,
+            roomName: room.name,
+            itemId: c.id,
+            desc,
+          });
           fabricsByCode.set(code, existing);
         }
 
@@ -167,7 +187,14 @@ export function buildSummary(rooms: Room[]) {
           const code = c.sheer_code || '(ไม่ระบุรหัสโปร่ง)';
           const existing = sheersByCode.get(code) ?? { total: 0, entries: [] };
           existing.total += sheerYards;
-          existing.entries.push({ code, yards: sheerYards, roomName: room.name, desc });
+          existing.entries.push({
+            code,
+            yards: sheerYards,
+            roomId: room.id,
+            roomName: room.name,
+            itemId: c.id,
+            desc,
+          });
           sheersByCode.set(code, existing);
         }
 
@@ -233,7 +260,13 @@ export function buildSummary(rooms: Room[]) {
           const desc = `ผนัง ${totalWidth.toFixed(1)} ม. × สูง ${toNum(w.height_m).toFixed(1)} ม.`;
           const existing = wallpapersByCode.get(code) ?? { total: 0, entries: [] };
           existing.total += rolls;
-          existing.entries.push({ rolls, roomName: room.name, desc });
+          existing.entries.push({
+            rolls,
+            roomId: room.id,
+            roomName: room.name,
+            itemId: w.id,
+            desc,
+          });
           wallpapersByCode.set(code, existing);
         }
       }
@@ -266,7 +299,15 @@ export function buildSummary(rooms: Room[]) {
           };
           existing.totalSqm += sqm;
           existing.totalSqyd += sqyd;
-          existing.entries.push({ roomName: room.name, sqm, sqyd, width, height });
+          existing.entries.push({
+            roomId: room.id,
+            roomName: room.name,
+            itemId: a.id,
+            sqm,
+            sqyd,
+            width,
+            height,
+          });
           areaByKey.set(costKey, existing);
         }
       }

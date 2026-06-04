@@ -7,7 +7,7 @@ import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
-import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
+import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
 import {
   ChevronDown,
@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Ruler,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +39,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const removeItem = useAppStore((state) => state.removeItem);
   const duplicateItem = useAppStore((state) => state.duplicateItem);
   const updateItem = useAppStore((state) => state.updateItem);
+  const openModal = useAppStore((state) => state.openModal);
   const { confirm } = useConfirm();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -163,6 +165,28 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     }
     return chips;
   }, [item]);
+
+  // รหัสสินค้าที่อ้างถึงในรายการนี้ → กดเปิด "รายละเอียดรหัส (Code Detail)" ดูจุดที่ใช้ทั้งโครงการ
+  const codeRefs = useMemo<{ code: string; category: string }[]>(() => {
+    const refs: { code: string; category: string }[] = [];
+    if (item.type === ITEM_TYPES.CURTAIN) {
+      if (item.code) refs.push({ code: item.code, category: FAVORITE_CATEGORIES.CURTAIN_MAIN });
+      if (item.sheer_code)
+        refs.push({ code: item.sheer_code, category: FAVORITE_CATEGORIES.CURTAIN_SHEER });
+    } else if (item.type === ITEM_TYPES.WALLPAPER) {
+      if (item.wallpaper_code)
+        refs.push({ code: item.wallpaper_code, category: FAVORITE_CATEGORIES.WALLPAPER });
+    } else if (item.type !== ITEM_TYPES.REMOVAL) {
+      const code = (item as { code?: string }).code;
+      if (code) refs.push({ code, category: item.type });
+    }
+    return refs;
+  }, [item]);
+
+  const handleOpenCodeDetail = (e: React.MouseEvent, code: string, category: string) => {
+    e.stopPropagation();
+    openModal('codeDetail', { code, category });
+  };
 
   const isAreaType =
     item.type === ITEM_TYPES.WOODEN_BLIND ||
@@ -326,6 +350,26 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                   {areaSqm > 0 && areaSqyd > 0 && ' · '}
                   {areaSqyd > 0 && `${areaSqyd.toFixed(2)} ตร.ล.`}
                 </span>
+              </div>
+            )}
+
+            {/* รหัสสินค้า — กดเพื่อดูรายละเอียด/จุดที่ใช้รหัสนี้ทั้งโครงการ */}
+            {codeRefs.length > 0 && (
+              <div className="flex justify-between items-center text-sm gap-3">
+                <span className="text-muted-foreground shrink-0">รหัส</span>
+                <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-0">
+                  {codeRefs.map((ref) => (
+                    <button
+                      key={`${ref.category}-${ref.code}`}
+                      onClick={(e) => handleOpenCodeDetail(e, ref.code, ref.category)}
+                      className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-primary hover:underline underline-offset-2 active:opacity-70"
+                      title={`ดูรายละเอียด/จุดที่ใช้รหัส ${ref.code}`}
+                    >
+                      {ref.code}
+                      <ExternalLink className="w-3 h-3 opacity-70" />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
