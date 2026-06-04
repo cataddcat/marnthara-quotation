@@ -7,7 +7,12 @@ import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
 import { Users, Scissors, Package, Train, Copy } from 'lucide-react';
-import { generateSummaryText, type SummaryType, type SummaryInput } from '@/lib/summaryGenerator';
+import {
+  generateSummaryText,
+  type SummaryType,
+  type SummaryInput,
+  type RailFormat,
+} from '@/lib/summaryGenerator';
 
 interface CopySummaryModalProps {
   isOpen: boolean;
@@ -31,6 +36,8 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
   const { trigger } = useHaptic();
 
   const [type, setType] = useState<SummaryType>('customer');
+  // รูปแบบใบสั่งราง (ใช้เฉพาะแท็บ "สั่งราง")
+  const [railFormat, setRailFormat] = useState<RailFormat>('detailed');
   // null = ยังไม่ถูกแก้ → ใช้ข้อความที่สร้างอัตโนมัติ; string = ผู้ใช้แก้ไขเอง
   const [edited, setEdited] = useState<string | null>(null);
 
@@ -52,13 +59,22 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
   );
 
   // ข้อความที่สร้างอัตโนมัติตามแบบ/ข้อมูล — เป็น derived value (ไม่ใช้ effect)
-  const generated = useMemo(() => generateSummaryText(input, type), [input, type]);
+  const generated = useMemo(
+    () => generateSummaryText(input, type, railFormat),
+    [input, type, railFormat]
+  );
   const text = edited ?? generated;
 
   const handleSelectType = (next: SummaryType) => {
     trigger('selection');
     setType(next);
     setEdited(null); // สลับแบบ → รีเซ็ตการแก้ไขกลับเป็นข้อความใหม่
+  };
+
+  const handleSelectRailFormat = (next: RailFormat) => {
+    trigger('selection');
+    setRailFormat(next);
+    setEdited(null); // สลับรูปแบบ → รีเซ็ตการแก้ไขกลับเป็นข้อความใหม่
   };
 
   const handleCopy = async () => {
@@ -113,6 +129,34 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
             );
           })}
         </div>
+
+        {/* --- รูปแบบใบสั่งราง: ย่อ / ละเอียด (เฉพาะแท็บ "สั่งราง") --- */}
+        {type === 'rail_order' && (
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[11px] text-muted-foreground">รูปแบบ:</span>
+            <div
+              role="group"
+              aria-label="รูปแบบใบสั่งราง"
+              className="inline-flex rounded-lg border border-border/50 bg-muted/40 p-0.5"
+            >
+              {(['short', 'detailed'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => handleSelectRailFormat(f)}
+                  aria-pressed={railFormat === f}
+                  className={cn(
+                    'px-3 py-1 text-[12px] font-semibold rounded-md transition-all',
+                    railFormat === f
+                      ? 'bg-card shadow-sm text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {f === 'short' ? 'ย่อ' : 'ละเอียด'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* --- Editable preview — เต็มความสูง drawer, มีพื้นขั้นต่ำสูง ๆ --- */}
         <textarea
