@@ -72,6 +72,8 @@ export const useAppStore = create<AppState>()(
           laborCosts,
           accessoryCosts,
           fabricCosts,
+          wallpaperCosts,
+          areaCosts,
           favorites,
         } = state;
         return {
@@ -82,6 +84,8 @@ export const useAppStore = create<AppState>()(
           laborCosts,
           accessoryCosts,
           fabricCosts,
+          wallpaperCosts,
+          areaCosts,
           favorites,
         };
       },

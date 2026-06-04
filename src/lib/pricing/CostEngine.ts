@@ -27,15 +27,18 @@ export interface CostBreakdown {
   accCost?: number;      // อุปกรณ์อื่นๆ
   
   isLaborMinApplied?: boolean; // ✅ NEW: บอกว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
-  usedQuantity: number;  // จำนวนที่ใช้ (หลา/ม้วน/ตร.ล./ชิ้น)
+  usedQuantity: number;  // จำนวนที่ใช้ ผ้าทึบ/วัสดุหลัก (หลา/ม้วน/ตร.ล./ชิ้น)
+  sheerQuantity?: number; // จำนวนผ้าโปร่งที่ใช้ (หลา) — เฉพาะ DOUBLE
   unit: string;          // หน่วย (หลา/ม้วน/ตร.ล./ชิ้น)
 }
 
 export const CostEngine = {
   analyze: (item: ItemData): CostBreakdown => {
     // 1. ดึงคลังข้อมูลต้นทุน (Vault)
+    // ผ้า/ผ้าโปร่ง → fabricCosts, วอลเปเปอร์ → wallpaperCosts, มู่ลี่/ฉาก/มุ้ง → areaCosts
+    // (ต้องตรงกับฝั่งบันทึก: routeCostToVault ใน InventorySlice + แค็ตตาล็อกใน MaterialSummaryModal)
     const state = useAppStore.getState();
-    const { fabricCosts, accessoryCosts, laborCosts } = state;
+    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts } = state;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
     // (รองรับ Manual Override ราคาขายมาแล้วจาก PricingEngine)
@@ -50,6 +53,7 @@ export const CostEngine = {
     let isLaborMinApplied = false; // ✅ NEW: เก็บสถานะว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
     
     let usedQuantity = 0;
+    let sheerQuantity = 0;
     let unit = 'หน่วย';
     let hasMissingCost = false;
 
@@ -84,6 +88,7 @@ export const CostEngine = {
         // B. ต้นทุนผ้าโปร่ง (Sheer) — เฉพาะ layer mode ทึบ+โปร่ง (DOUBLE)
         if (breakdown?.sheerYards && breakdown.sheerYards > 0) {
            const sheerYards = breakdown.sheerYards;
+           sheerQuantity = sheerYards;
            const sheerCode = item.sheer_code;
 
            if (sheerCode) {
@@ -180,11 +185,11 @@ export const CostEngine = {
         if (breakdown?.rolls) {
              const rolls = breakdown.rolls;
              usedQuantity = rolls;
-             
-             const code = item.wallpaper_code; 
-             const cost = code ? (fabricCosts[code] || 0) : 0;
-             if (code && cost === 0) hasMissingCost = true;
-             
+
+             const code = item.wallpaper_code;
+             const cost = code ? (wallpaperCosts[code] || 0) : 0;
+             if (cost === 0) hasMissingCost = true;
+
              fabricCost = rolls * cost;
              totalCost = fabricCost;
         }
@@ -198,11 +203,12 @@ export const CostEngine = {
         // ใช้พื้นที่ (ตร.ล.) เป็นตัวคูณต้นทุน
         if (breakdown?.areaSqyd) {
             usedQuantity = breakdown.areaSqyd;
-            
-            const code = item.code;
-            // สมมติ: มู่ลี่ใช้ต้นทุนต่อ ตร.ล. ที่เก็บใน fabricCosts (หรือจะแยก accessoryCosts ก็ได้)
-            const cost = code ? (fabricCosts[code] || 0) : 0;
-            if (code && cost === 0) hasMissingCost = true;
+
+            // ต้นทุนพื้นที่อยู่ใน areaCosts — key เป็นรหัสสินค้า ถ้าไม่ระบุรหัสใช้ประเภทสินค้า
+            // (ตรงกับ buildSummary: costKey = code || item.type และ routeCostToVault → areaCosts)
+            const costKey = item.code || item.type;
+            const cost = areaCosts[costKey] || 0;
+            if (cost === 0) hasMissingCost = true;
 
             fabricCost = usedQuantity * cost;
             totalCost = fabricCost;
@@ -260,6 +266,7 @@ export const CostEngine = {
       accCost,
       isLaborMinApplied, // ✅ ส่ง Flag ออกไป
       usedQuantity,
+      sheerQuantity,
       unit
     };
   }

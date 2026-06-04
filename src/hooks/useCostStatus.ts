@@ -12,12 +12,14 @@ import { useAppStore } from '@/store/useAppStore';
  */
 export const useCostStatus = (item: ItemData | null): CostBreakdown | null => {
   const fabricCosts = useAppStore((s) => s.fabricCosts);
+  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
+  const areaCosts = useAppStore((s) => s.areaCosts);
   const accessoryCosts = useAppStore((s) => s.accessoryCosts);
   const laborCosts = useAppStore((s) => s.laborCosts);
 
   return useMemo(
     () => (item ? CostEngine.analyze(item) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, fabricCosts, accessoryCosts, laborCosts]
+    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts]
   );
 };

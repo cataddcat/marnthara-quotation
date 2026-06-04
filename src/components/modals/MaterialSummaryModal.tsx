@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
-import { FAVORITE_CATEGORIES } from '@/config/enums';
+import { CATALOG_CATEGORIES } from '@/lib/vault';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
@@ -19,32 +19,13 @@ import {
   Plus,
   BookOpen,
   Trash2,
+  ArrowRight,
+  MapPin,
 } from 'lucide-react';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { FORMULAS } from '@/config/formulas';
 import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@/lib/materials/buildSummary';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-interface CatalogCategoryDef {
-  id: string;
-  label: string;
-  costUnit: string;
-  vault: 'fabric' | 'wallpaper' | 'area';
-}
-
-const CATALOG_CATEGORIES: CatalogCategoryDef[] = [
-  { id: FAVORITE_CATEGORIES.CURTAIN_MAIN, label: 'ผ้าทึบ', costUnit: 'หลา', vault: 'fabric' },
-  { id: FAVORITE_CATEGORIES.CURTAIN_SHEER, label: 'ผ้าโปร่ง', costUnit: 'หลา', vault: 'fabric' },
-  { id: FAVORITE_CATEGORIES.WALLPAPER, label: 'วอลเปเปอร์', costUnit: 'ม้วน', vault: 'wallpaper' },
-  { id: FAVORITE_CATEGORIES.ROLLER_BLIND, label: 'มู่ลี่ม้วน', costUnit: 'ตร.ล.', vault: 'area' },
-  { id: FAVORITE_CATEGORIES.WOODEN_BLIND, label: 'มู่ลี่ไม้', costUnit: 'ตร.ล.', vault: 'area' },
-  { id: FAVORITE_CATEGORIES.VERTICAL_BLIND, label: 'มู่ลี่แนวตั้ง', costUnit: 'ตร.ล.', vault: 'area' },
-  { id: FAVORITE_CATEGORIES.ALUMINUM_BLIND, label: 'มู่ลี่อลูมิเนียม', costUnit: 'ตร.ล.', vault: 'area' },
-  { id: FAVORITE_CATEGORIES.PARTITION, label: 'ฉากกั้นห้อง', costUnit: 'ตร.ล.', vault: 'area' },
-  { id: FAVORITE_CATEGORIES.PLEATED_SCREEN, label: 'มุ้งจีบ', costUnit: 'ตร.ม.', vault: 'area' },
-];
 
 // ─── Shared empty state ───────────────────────────────────────────────────────
 
@@ -139,22 +120,34 @@ const InventoryItemRow = ({
   item,
   cost,
   costUnit,
+  highlight,
   onCostSave,
   onUpdate,
   onRemove,
+  onOpenDetail,
 }: {
   item: HydratedInventoryItem;
   cost: number;
   costUnit: string;
+  highlight?: boolean;
   onCostSave: (code: string, cost: number) => void;
   onUpdate: (updates: Partial<InventoryItem>) => void;
   onRemove: () => void;
+  onOpenDetail: () => void;
 }) => {
   const [editing, setEditing] = useState(false);
   const [draftCode, setDraftCode] = useState('');
   const [draftPrice, setDraftPrice] = useState('');
   const [draftNote, setDraftNote] = useState('');
   const [confirmDel, setConfirmDel] = useState(false);
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Code Jump: เลื่อนมาที่รายการที่กระโดดมา (ไฮไลต์ค้างไว้จนปิด/เปลี่ยนหมวด)
+  useEffect(() => {
+    if (highlight && rowRef.current) {
+      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlight]);
 
   const startEdit = () => {
     setDraftCode(item.code);
@@ -215,7 +208,15 @@ const InventoryItemRow = ({
   }
 
   return (
-    <div className="flex items-start gap-2 px-3 py-2.5 bg-card border border-border/50 rounded-xl">
+    <div
+      ref={rowRef}
+      className={cn(
+        'flex items-start gap-2 px-3 py-2.5 bg-card border rounded-xl transition-colors',
+        highlight
+          ? 'border-primary ring-2 ring-primary/30'
+          : 'border-border/50'
+      )}
+    >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="font-mono font-bold text-sm text-foreground">{item.code}</span>
@@ -242,6 +243,13 @@ const InventoryItemRow = ({
         </div>
       </div>
       <div className="flex items-center gap-1 pt-0.5 shrink-0">
+        <button
+          onClick={onOpenDetail}
+          title="ดูจุดที่ใช้รหัสนี้"
+          className="p-1.5 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted/50 transition-colors"
+        >
+          <MapPin className="w-3.5 h-3.5" />
+        </button>
         <button
           onClick={startEdit}
           className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
@@ -273,10 +281,14 @@ const CatalogCategoryView = ({
   categoryId,
   costUnit,
   vault,
+  prefillCode,
+  onPrefillHandled,
 }: {
   categoryId: string;
   costUnit: string;
   vault: 'fabric' | 'wallpaper' | 'area';
+  prefillCode?: string;
+  onPrefillHandled?: () => void;
 }) => {
   const { items, addItem, updateItem, removeItem } = useInventory(categoryId);
   const fabricCosts = useAppStore((s) => s.fabricCosts);
@@ -285,11 +297,28 @@ const CatalogCategoryView = ({
   const updateFabricCost = useAppStore((s) => s.updateFabricCost);
   const updateWallpaperCost = useAppStore((s) => s.updateWallpaperCost);
   const updateAreaCost = useAppStore((s) => s.updateAreaCost);
+  const openModal = useAppStore((s) => s.openModal);
 
-  const [adding, setAdding] = useState(false);
-  const [newCode, setNewCode] = useState('');
+  // Code Jump: ตัดสินใจครั้งเดียวตอน mount ของหมวดนี้ (key={catalogCat} → remount เมื่อเปลี่ยนหมวด)
+  // ถ้ามีรหัสที่ส่งมาอยู่แล้ว → ไฮไลต์; ถ้ายังไม่มี → เปิดฟอร์มเพิ่มพร้อมกรอกรหัสไว้
+  const [prefill] = useState<{ highlight: string | null; addCode: string | null }>(() => {
+    const target = prefillCode?.trim().toUpperCase();
+    if (!target) return { highlight: null, addCode: null };
+    const exists = items.some((it) => it.code.toUpperCase() === target);
+    return exists ? { highlight: target, addCode: null } : { highlight: null, addCode: target };
+  });
+  const highlightCode = prefill.highlight;
+
+  const [adding, setAdding] = useState(() => prefill.addCode !== null);
+  const [newCode, setNewCode] = useState(() => prefill.addCode ?? '');
   const [newPrice, setNewPrice] = useState('');
   const [newNote, setNewNote] = useState('');
+
+  // แจ้ง parent ว่าใช้ prefill แล้ว — กัน trigger ซ้ำเมื่อสลับหมวดแล้วกลับมาหมวดเดิม
+  useEffect(() => {
+    if (prefillCode) onPrefillHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getCost = (code: string): number => {
     if (vault === 'wallpaper') return wallpaperCosts[code] ?? 0;
@@ -329,9 +358,11 @@ const CatalogCategoryView = ({
             item={item}
             cost={getCost(item.code)}
             costUnit={costUnit}
+            highlight={!!highlightCode && item.code.toUpperCase() === highlightCode}
             onCostSave={saveCost}
             onUpdate={(updates) => updateItem(item.id, updates)}
             onRemove={() => removeItem(item.id)}
+            onOpenDetail={() => openModal('codeDetail', { code: item.code, category: categoryId })}
           />
         ))}
       </div>
@@ -431,6 +462,7 @@ const FabricCard = ({
   accent,
   costLookup,
   onCostSave,
+  onJumpItem,
 }: {
   code: string;
   total: number;
@@ -439,6 +471,7 @@ const FabricCard = ({
   accent: string;
   costLookup: Record<string, number>;
   onCostSave: (code: string, cost: number) => void;
+  onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
   const hasUnknownCode = code.startsWith('(');
@@ -485,16 +518,25 @@ const FabricCard = ({
           </div>
           <div className="px-3 py-2 space-y-1">
             {entries.map((e, i) => (
-              <div key={i} className="flex justify-between items-center text-xs">
+              <button
+                key={i}
+                onClick={() => onJumpItem(e.roomId, e.itemId)}
+                className="w-full flex justify-between items-center text-xs rounded-md -mx-1 px-1 py-1 hover:bg-muted/50 transition-colors group"
+              >
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-muted-foreground truncate">{e.roomName}</span>
+                  <span className="text-muted-foreground truncate group-hover:text-primary">
+                    {e.roomName}
+                  </span>
                   <span className="text-muted-foreground/60 truncate">· {e.desc}</span>
                 </div>
-                <span className={cn('font-mono shrink-0 ml-2', accent, 'opacity-80')}>
-                  {fmtTH(e.yards)} {unit}
+                <span className="flex items-center gap-1 shrink-0 ml-2">
+                  <span className={cn('font-mono', accent, 'opacity-80')}>
+                    {fmtTH(e.yards)} {unit}
+                  </span>
+                  <ArrowRight className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -507,10 +549,12 @@ const WallpaperCostCard = ({
   code,
   total,
   entries,
+  onJumpItem,
 }: {
   code: string;
   total: number;
-  entries: { rolls: number; roomName: string; desc: string }[];
+  entries: { rolls: number; roomId: string; roomName: string; itemId: string; desc: string }[];
+  onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
   const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
@@ -553,16 +597,23 @@ const WallpaperCostCard = ({
           </div>
           <div className="px-3 py-2 space-y-1">
             {entries.map((e, i) => (
-              <div key={i} className="flex justify-between items-center text-xs">
+              <button
+                key={i}
+                onClick={() => onJumpItem(e.roomId, e.itemId)}
+                className="w-full flex justify-between items-center text-xs rounded-md -mx-1 px-1 py-1 hover:bg-muted/50 transition-colors group"
+              >
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-muted-foreground truncate">{e.roomName}</span>
+                  <span className="text-muted-foreground truncate group-hover:text-primary">
+                    {e.roomName}
+                  </span>
                   <span className="text-muted-foreground/60 truncate">· {e.desc}</span>
                 </div>
-                <span className="font-mono text-orange-500 opacity-80 shrink-0 ml-2">
-                  {Math.ceil(e.rolls)} ม้วน
+                <span className="flex items-center gap-1 shrink-0 ml-2">
+                  <span className="font-mono text-orange-500 opacity-80">{Math.ceil(e.rolls)} ม้วน</span>
+                  <ArrowRight className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -571,7 +622,13 @@ const WallpaperCostCard = ({
   );
 };
 
-const AreaCostCard = ({ group }: { group: AreaGroup }) => {
+const AreaCostCard = ({
+  group,
+  onJumpItem,
+}: {
+  group: AreaGroup;
+  onJumpItem: (roomId: string, itemId: string) => void;
+}) => {
   const [open, setOpen] = useState(false);
   const areaCosts = useAppStore((s) => s.areaCosts);
   const updateAreaCost = useAppStore((s) => s.updateAreaCost);
@@ -623,18 +680,27 @@ const AreaCostCard = ({ group }: { group: AreaGroup }) => {
             {group.entries.map((e, i) => {
               const entryQty = group.unit === 'ตร.ม.' ? e.sqm : e.sqyd;
               return (
-                <div key={i} className="flex justify-between items-center text-xs">
+                <button
+                  key={i}
+                  onClick={() => onJumpItem(e.roomId, e.itemId)}
+                  className="w-full flex justify-between items-center text-xs rounded-md -mx-1 px-1 py-1 hover:bg-muted/50 transition-colors group"
+                >
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                    <span className="text-muted-foreground truncate">{e.roomName}</span>
+                    <span className="text-muted-foreground truncate group-hover:text-primary">
+                      {e.roomName}
+                    </span>
                     <span className="text-muted-foreground/60 truncate">
                       · {e.width.toFixed(1)}×{e.height.toFixed(1)} ม.
                     </span>
                   </div>
-                  <span className="font-mono text-teal-600 dark:text-teal-400 opacity-80 shrink-0 ml-2">
-                    {fmtTH(entryQty)} {group.unit}
+                  <span className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="font-mono text-teal-600 dark:text-teal-400 opacity-80">
+                      {fmtTH(entryQty)} {group.unit}
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                   </span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -736,6 +802,7 @@ interface MaterialSummaryModalProps {
   onClose: () => void;
   initialTab?: string;
   initialCategory?: string;
+  prefillCode?: string;
 }
 
 type TabId = 'fabric' | 'rail' | 'accessories' | 'catalog';
@@ -745,14 +812,34 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
   onClose,
   initialTab,
   initialCategory,
+  prefillCode,
 }) => {
   const rooms = useAppStore((s) => s.rooms);
   const fabricCosts = useAppStore((s) => s.fabricCosts);
   const updateFabricCost = useAppStore((s) => s.updateFabricCost);
+  const openModal = useAppStore((s) => s.openModal);
   const addToast = useUIStore((s) => s.addToast);
 
-  const [activeTab, setActiveTab] = useState<TabId>(() => (initialTab as TabId) || 'fabric');
-  const [catalogCat, setCatalogCat] = useState(() => initialCategory || CATALOG_CATEGORIES[0].id);
+  // กดจุดที่ใช้ในการ์ดวัสดุ → กระโดดไปแก้รายการนั้น (push บน modal stack — ปิดแล้วกลับมาที่นี่)
+  const handleJumpItem = (roomId: string, itemId: string) => {
+    const item = rooms.find((r) => r.id === roomId)?.items.find((i) => i.id === itemId);
+    if (!item) return;
+    openModal('item', {
+      mode: 'edit',
+      roomId,
+      itemId,
+      itemType: item.type,
+      initialData: item,
+    });
+  };
+
+  // Code Jump พร้อมรหัส → บังคับเปิดที่แท็บ "คลังรหัส"
+  const resolvedInitialCat = initialCategory || CATALOG_CATEGORIES[0].id;
+  const [activeTab, setActiveTab] = useState<TabId>(
+    () => (initialTab as TabId) || (prefillCode ? 'catalog' : 'fabric')
+  );
+  const [catalogCat, setCatalogCat] = useState(() => resolvedInitialCat);
+  const [pendingPrefill, setPendingPrefill] = useState<string | undefined>(() => prefillCode);
   const [copied, setCopied] = useState(false);
 
   const summary = useMemo(() => buildSummary(rooms), [rooms]);
@@ -943,6 +1030,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         accent="text-orange-500"
                         costLookup={fabricCosts}
                         onCostSave={updateFabricCost}
+                        onJumpItem={handleJumpItem}
                       />
                     ))}
                   </section>
@@ -967,6 +1055,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         accent="text-orange-400"
                         costLookup={fabricCosts}
                         onCostSave={updateFabricCost}
+                        onJumpItem={handleJumpItem}
                       />
                     ))}
                   </section>
@@ -981,7 +1070,13 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       valueColor="text-orange-500"
                     />
                     {[...wallpapersByCode.entries()].map(([code, v]) => (
-                      <WallpaperCostCard key={code} code={code} total={v.total} entries={v.entries} />
+                      <WallpaperCostCard
+                        key={code}
+                        code={code}
+                        total={v.total}
+                        entries={v.entries}
+                        onJumpItem={handleJumpItem}
+                      />
                     ))}
                   </section>
                 )}
@@ -997,7 +1092,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       </span>
                     </div>
                     {[...areaByKey.values()].map((group) => (
-                      <AreaCostCard key={group.costKey} group={group} />
+                      <AreaCostCard key={group.costKey} group={group} onJumpItem={handleJumpItem} />
                     ))}
                   </section>
                 )}
@@ -1121,6 +1216,8 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   categoryId={catalogCat}
                   costUnit={activeCatalogDef.costUnit}
                   vault={activeCatalogDef.vault}
+                  prefillCode={catalogCat === resolvedInitialCat ? pendingPrefill : undefined}
+                  onPrefillHandled={() => setPendingPrefill(undefined)}
                 />
               </div>
             )}

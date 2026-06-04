@@ -19,11 +19,15 @@ const EXPECTED_FABRIC_YARDS = 3.34;
 
 const setupStore = (overrides?: {
   fabricCosts?: Record<string, number>;
+  wallpaperCosts?: Record<string, number>;
+  areaCosts?: Record<string, number>;
   accessoryCosts?: Record<string, number>;
   laborCosts?: Record<string, LaborCost>;
 }) => {
   useAppStore.setState({
     fabricCosts: overrides?.fabricCosts ?? {},
+    wallpaperCosts: overrides?.wallpaperCosts ?? {},
+    areaCosts: overrides?.areaCosts ?? {},
     accessoryCosts: overrides?.accessoryCosts ?? {},
     laborCosts: overrides?.laborCosts ?? {},
   });
@@ -125,8 +129,9 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.sheerCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 50, 2); // 144.5
       expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2);
       // หมายเหตุ: usedQuantity นับเฉพาะผ้าทึบ (main fabric) ไม่บวก sheerYards
-      // — CostEngine.ts line 65 เพิ่ม fabricYards เท่านั้น
+      // — sheerQuantity แยกไว้ต่างหากสำหรับ DOUBLE
       expect(result.usedQuantity).toBeCloseTo(EXPECTED_FABRIC_YARDS, 2);
+      expect(result.sheerQuantity).toBeCloseTo(EXPECTED_FABRIC_YARDS, 2);
     });
 
     it('B6: DOUBLE + sheer_code miss + sheer_price_sqyd → direct used', () => {
@@ -169,6 +174,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       const result = CostEngine.analyze(item);
 
       expect(result.sheerCost).toBe(0);
+      expect(result.sheerQuantity).toBe(0);
     });
   });
 
@@ -230,8 +236,8 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
   // กลุ่ม D: Item type dispatch
   // ───────────────────────────────────────────────────────────────────────
   describe('Item type dispatch', () => {
-    it('D12: Wallpaper → rolls × fabricCosts[wallpaper_code]', () => {
-      setupStore({ fabricCosts: { W001: 800 } });
+    it('D12: Wallpaper → rolls × wallpaperCosts[wallpaper_code]', () => {
+      setupStore({ wallpaperCosts: { W001: 800 } });
       // FORMULAS.wallpaper: roll_width=0.53, roll_length=10, waste_margin=0.10
       // input: widths=['2.0'], height_m=2.5
       //   cutLength = 2.5 + 0.10 = 2.60
@@ -253,10 +259,29 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.unit).toBe('ม้วน');
       expect(result.fabricCost).toBe(1600); // 2 × 800
       expect(result.totalCost).toBe(1600);
+      expect(result.status).not.toBe('unknown');
     });
 
-    it('D13: Area-type (Wooden Blind) → areaSqyd × fabricCosts[code]', () => {
-      setupStore({ fabricCosts: { B001: 300 } });
+    it('D12b: Wallpaper cost ใน fabricCosts (vault ผิด) → ไม่ถูกใช้ → unknown', () => {
+      // regression guard: ต้นทุนวอลเปเปอร์ต้องอยู่ wallpaperCosts เท่านั้น
+      setupStore({ fabricCosts: { W001: 800 } });
+      const item = makeItem({
+        type: ITEM_TYPES.WALLPAPER,
+        id: 'wp-2',
+        widths: ['2.0'],
+        height_m: 2.5,
+        wallpaper_code: 'W001',
+        price_per_roll: 1500,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.fabricCost).toBe(0);
+      expect(result.status).toBe('unknown');
+    });
+
+    it('D13: Area-type (Wooden Blind) → areaSqyd × areaCosts[code]', () => {
+      setupStore({ areaCosts: { B001: 300 } });
       // width=2.0, height=2.0 → 4 sqm × 1.2 = 4.8 sqyd
       const item = makeItem({
         type: ITEM_TYPES.WOODEN_BLIND,
@@ -272,6 +297,42 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.usedQuantity).toBeCloseTo(4.8, 2);
       expect(result.unit).toBe('ตร.ล.');
       expect(result.fabricCost).toBeCloseTo(4.8 * 300, 2); // 1440
+      expect(result.status).not.toBe('unknown');
+    });
+
+    it('D13b: Area-type ไม่มี code → ใช้ areaCosts[item.type] เป็น fallback', () => {
+      // ตรงกับ buildSummary: costKey = code || item.type
+      setupStore({ areaCosts: { [ITEM_TYPES.WOODEN_BLIND]: 250 } });
+      const item = makeItem({
+        type: ITEM_TYPES.WOODEN_BLIND,
+        id: 'wb-2',
+        width_m: 2.0,
+        height_m: 2.0,
+        code: undefined,
+        price_sqyd: 500,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.fabricCost).toBeCloseTo(4.8 * 250, 2); // 1200
+      expect(result.status).not.toBe('unknown');
+    });
+
+    it('D13c: Area-type ไม่มีต้นทุนเลย → unknown', () => {
+      setupStore({ areaCosts: {} });
+      const item = makeItem({
+        type: ITEM_TYPES.WOODEN_BLIND,
+        id: 'wb-3',
+        width_m: 2.0,
+        height_m: 2.0,
+        code: 'B999',
+        price_sqyd: 500,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.fabricCost).toBe(0);
+      expect(result.status).toBe('unknown');
     });
 
     it('D14: Removal → totalCost = 0 regardless of selling price', () => {

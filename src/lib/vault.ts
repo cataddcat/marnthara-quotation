@@ -1,0 +1,40 @@
+// src/lib/vault.ts
+// ────────────────────────────────────────────────────────────────────────────
+// แหล่งกลางของการแมป "หมวดรหัส (FAVORITE_CATEGORIES)" → คลังต้นทุน (vault) + ป้าย + หน่วย
+// เดิมการแมปนี้ซ้ำอยู่ 3 ที่ (useInventory, InventorySlice.routeCostToVault, MaterialSummaryModal)
+// รวมไว้ที่เดียวเพื่อกัน drift — ต้นทุนผ้า→fabricCosts, วอลเปเปอร์→wallpaperCosts, พื้นที่→areaCosts
+// ────────────────────────────────────────────────────────────────────────────
+
+import { FAVORITE_CATEGORIES } from '@/config/enums';
+
+export type VaultKind = 'fabric' | 'wallpaper' | 'area';
+
+export interface CatalogCategoryDef {
+  id: string;
+  label: string;
+  costUnit: string;
+  vault: VaultKind;
+}
+
+export const CATALOG_CATEGORIES: CatalogCategoryDef[] = [
+  { id: FAVORITE_CATEGORIES.CURTAIN_MAIN, label: 'ผ้าทึบ', costUnit: 'หลา', vault: 'fabric' },
+  { id: FAVORITE_CATEGORIES.CURTAIN_SHEER, label: 'ผ้าโปร่ง', costUnit: 'หลา', vault: 'fabric' },
+  { id: FAVORITE_CATEGORIES.WALLPAPER, label: 'วอลเปเปอร์', costUnit: 'ม้วน', vault: 'wallpaper' },
+  { id: FAVORITE_CATEGORIES.ROLLER_BLIND, label: 'มู่ลี่ม้วน', costUnit: 'ตร.ล.', vault: 'area' },
+  { id: FAVORITE_CATEGORIES.WOODEN_BLIND, label: 'มู่ลี่ไม้', costUnit: 'ตร.ล.', vault: 'area' },
+  { id: FAVORITE_CATEGORIES.VERTICAL_BLIND, label: 'มู่ลี่แนวตั้ง', costUnit: 'ตร.ล.', vault: 'area' },
+  { id: FAVORITE_CATEGORIES.ALUMINUM_BLIND, label: 'มู่ลี่อลูมิเนียม', costUnit: 'ตร.ล.', vault: 'area' },
+  { id: FAVORITE_CATEGORIES.PARTITION, label: 'ฉากกั้นห้อง', costUnit: 'ตร.ล.', vault: 'area' },
+  { id: FAVORITE_CATEGORIES.PLEATED_SCREEN, label: 'มุ้งจีบ', costUnit: 'ตร.ม.', vault: 'area' },
+];
+
+const BY_ID = new Map<string, CatalogCategoryDef>(CATALOG_CATEGORIES.map((c) => [c.id, c]));
+
+export const categoryDef = (category: string): CatalogCategoryDef | undefined => BY_ID.get(category);
+
+/** หมวด → คลังต้นทุนที่ถูกต้อง (default 'fabric' สำหรับ curtain_main/curtain_sheer และค่าที่ไม่รู้จัก) */
+export const categoryVault = (category: string): VaultKind => BY_ID.get(category)?.vault ?? 'fabric';
+
+export const categoryLabel = (category: string): string => BY_ID.get(category)?.label ?? category;
+
+export const categoryCostUnit = (category: string): string => BY_ID.get(category)?.costUnit ?? 'หน่วย';

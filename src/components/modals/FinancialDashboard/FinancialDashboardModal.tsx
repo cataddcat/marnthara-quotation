@@ -28,19 +28,22 @@ export const FinancialDashboardModal: React.FC<{
 }> = ({ isOpen, onClose }) => {
   const rooms = useAppStore((s) => s.rooms);
   const openModal = useAppStore((s) => s.openModal);
+  // ต้นทุนทุก vault — CostEngine.analyze อ่านผ่าน getState() เอง, select ที่นี่เป็น cache-invalidation hint
+  const fabricCosts = useAppStore((s) => s.fabricCosts);
+  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
+  const areaCosts = useAppStore((s) => s.areaCosts);
+  const laborCosts = useAppStore((s) => s.laborCosts);
+  const accessoryCosts = useAppStore((s) => s.accessoryCosts);
   const { trigger } = useHaptic();
 
   const [targetMargin, setTargetMargin] = useState(30);
   const [blind, setBlind] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // กดรหัสผ้า → เปิดคลังผ้า; ถ้ารหัสยังไม่มี → เปิดฟอร์มเพิ่มใหม่พร้อม pre-fill
-  const handleJumpToInventory = (_code: string, tab: string) => {
+  // กดรหัส → เปิด "รายละเอียดรหัส (Code Detail)" — ต้นทุน/ราคา + จุดที่ใช้รหัสนี้ + กระโดดไปแก้
+  const handleOpenCodeDetail = (code: string, tab: string) => {
     trigger('light');
-    openModal('materialSummary', {
-      initialTab: 'catalog',
-      initialCategory: tab,
-    });
+    openModal('codeDetail', { code, category: tab });
   };
 
   // ── Build item rows from all active rooms/items ──────────────────────────
@@ -74,7 +77,9 @@ export const FinancialDashboardModal: React.FC<{
       if (sDiff !== 0) return sDiff;
       return a.analysis.profitAmount - b.analysis.profitAmount;
     });
-  }, [rooms]);
+    // cost maps เป็น dependency เพราะ CostEngine.analyze อ่านค่าผ่าน getState() (ไม่ได้ใช้ตรงๆ ใน memo)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rooms, fabricCosts, wallpaperCosts, areaCosts, laborCosts, accessoryCosts]);
 
   // ── Aggregates ────────────────────────────────────────────────────────────
   const totals = useMemo(() => {
@@ -237,7 +242,7 @@ export const FinancialDashboardModal: React.FC<{
                   row={row}
                   expanded={expandedId === row.id}
                   onToggle={() => toggleExpand(row.id)}
-                  onJumpToInventory={handleJumpToInventory}
+                  onOpenCodeDetail={handleOpenCodeDetail}
                 />
               ))
             )}
