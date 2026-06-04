@@ -13,6 +13,7 @@ import {
   Save,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Plus,
   Smartphone,
   Monitor,
@@ -427,34 +428,35 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     >
       <div className="animate-fade-in">
         {mode === 'add' && !typeConfirmed ? (
-          <div>
-            <p className="text-sm text-muted-foreground mb-3 px-0.5">
-              เลือกประเภทสินค้าที่ต้องการเพิ่ม
-            </p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {typeOptions.map((opt) => {
-                const OptIcon = opt.icon;
-                const optTheme = getItemTheme(opt.value);
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleSelectType(opt.value)}
-                    className="flex items-center gap-2.5 min-h-[60px] px-3.5 rounded-2xl border border-border bg-card shadow-sm active:scale-[0.98] transition-transform text-left"
+          // iOS HIG grouped inset list — แถวสูง ≥44pt (นิ้วกดง่าย), ไอคอนสีตามชนิด (สีสัน),
+          // เส้นคั่นบาง + เส้นขอบกลุ่ม + chevron ตามมาตรฐาน Apple HIG
+          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm divide-y divide-border/60">
+            {typeOptions.map((opt) => {
+              const OptIcon = opt.icon;
+              const optTheme = getItemTheme(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleSelectType(opt.value)}
+                  className="flex w-full items-center gap-3 min-h-[54px] px-3.5 text-left transition-colors hover:bg-muted/30 active:bg-muted/60"
+                >
+                  <span
+                    className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] border',
+                      optTheme.bgSoft,
+                      optTheme.border
+                    )}
                   >
-                    <span
-                      className={cn(
-                        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
-                        optTheme.iconWrapper
-                      )}
-                    >
-                      {OptIcon && <OptIcon className={cn('w-5 h-5', optTheme.icon)} />}
-                    </span>
-                    <span className="font-bold text-foreground leading-tight">{opt.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+                    {OptIcon && <OptIcon className={cn('h-4 w-4', optTheme.icon)} />}
+                  </span>
+                  <span className="flex-1 text-[15px] font-semibold leading-tight text-foreground">
+                    {opt.label}
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+                </button>
+              );
+            })}
           </div>
         ) : (
           <>

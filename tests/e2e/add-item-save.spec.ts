@@ -28,9 +28,10 @@ const seed = async (page: Page) => {
 // เปิด add → เลือกประเภท "ผ้าม่าน" (flow ใหม่: เลือกประเภทก่อนจึงมีฟอร์ม)
 const openAddCurtain = async (page: Page) => {
   await page.getByRole('button', { name: 'เพิ่มสินค้าใหม่' }).click();
-  // หน้าเลือกประเภทต้องขึ้นก่อน — ยังไม่มีช่องกรอกขนาด
-  await expect(page.getByText('เลือกประเภทสินค้าที่ต้องการเพิ่ม')).toBeVisible();
-  await page.getByRole('button', { name: 'ผ้าม่าน', exact: true }).click();
+  // หน้าเลือกประเภทต้องขึ้นก่อน (pill ประเภทสินค้า) — ยังไม่มีช่องกรอกขนาด
+  const curtainPill = page.getByRole('button', { name: 'ผ้าม่าน', exact: true });
+  await expect(curtainPill).toBeVisible();
+  await curtainPill.click();
   await expect(page.getByLabel('กว้าง (W)')).toBeVisible();
 };
 
