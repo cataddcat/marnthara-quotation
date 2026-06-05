@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Marnthara Smart Quotation** — A React + TypeScript PWA for generating interior decoration quotations (curtains, wallpapers, blinds, partitions, etc.) for the Thai market. Mobile-first, offline-capable via service worker, deployed to GitHub Pages at base path `/g/`.
+**Marnthara Smart Quotation** — A React + TypeScript PWA for generating interior decoration quotations (curtains, wallpapers, blinds, partitions, etc.) for the Thai market. Mobile-first, offline-capable via service worker, deployed to Vercel at root domain (`base: '/'`).
 
 ## Commands
 
