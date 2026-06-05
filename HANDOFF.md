@@ -192,6 +192,28 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
   - `prefillCode` — if code not found in filteredItems → auto-open create form with that code
 - **Naming:** previously "รายการโปรด" (Favorites) — renamed to "คลังผ้า" / "คลังรหัสผ้าและต้นทุน" throughout UI
 
+### Lookbook — A4 print sheet (NEW, 2026-06)
+- `src/components/modals/LookbookModal.tsx` — on-screen A4 preview + one-click export.
+- **Pagination:** room-grouped, deterministic *fixed-height* packing into A4 pages (mm budget in
+  `paginate()`); per-room 📍 headers, 2-col cards, odd count → empty trailing cell, long rooms
+  continue on the next page with a "(ต่อ)" header. No DOM measuring, no mid-card clipping.
+- **Export:** **PDF** via `jsPDF` (one A4 image per page) and **PNG** via `html2canvas-pro`
+  (one A4 PNG per page — single file when 1 page, bundled `.zip` via `jszip` when many). Capture is
+  done from **off-screen natural-size** page nodes (transform-free → exact A4); the visible preview is
+  the same component wrapped in `transform: scale()` + manual zoom.
+  - ⚠️ Must use **`html2canvas-pro`** (not `html2canvas`): Tailwind v4's palette compiles to `oklch()`,
+    which `html2canvas@1` cannot parse → export throws.
+- **Filter:** item-type chips; `presentTypes` + derived `effective` set (no setState-in-effect);
+  empty rooms vanish after filtering.
+- **Proportional, semantic drawings:** `src/lib/svgGenerator.ts` (`generateItemVisualSvg`) — aspect-correct
+  per item + W×H labels; communicates **style** (ลอน/จีบ/ตาไก่/พับ/แป๊บ/หลุยส์, wallpaper, each blind type),
+  **opening direction** (curtain `opening_style` is Thai `แยกกลาง`→🡄🡆 / `เก็บซ้าย`→🡄 / `เก็บขวา`→🡆;
+  partition/pleated use `'center'`/`'side'` codes + `adjustment_side`), and **cord/chain side**
+  (blinds `adjustment_side` ซ้าย/ขวา). All styling INLINE (survives html2canvas). Roller count
+  ("ลูกล้อ N+N") for ลอน via `calcWaveHardware`. Covered by `svgGenerator.test.ts`.
+- Replaced the old `react-to-print`-based `LookbookDocument` (deleted; `react-to-print` is still used by
+  `PdfPreviewModal`).
+
 ---
 
 ## 4. Critical Invariants (Do Not Break)
@@ -361,8 +383,10 @@ src/components/modals/
   FormulaStudioModal.tsx              — Multipliers config (validation added)
   DataModal.tsx                       — Import/Export (formulas added)
   MainMenuModal.tsx                   — Drawer menu (materialSummary button added)
+  LookbookModal.tsx                   — A4 lookbook: paginate + PDF/PNG-zip export + type filter (NEW)
   ... (other modals)
 src/components/managers/ModalManager.tsx — Modal router
+src/lib/svgGenerator.ts                  — proportional semantic item drawings (style/opening/cord + dims)
 ```
 
 ### Config
