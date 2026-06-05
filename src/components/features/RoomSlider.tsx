@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Room, ItemData } from '@/types';
 import { RoomCard } from './RoomCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -29,6 +29,8 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 }) => {
   const { trigger } = useHaptic();
   const touchStartXRef = useRef<number | null>(null);
+  // ทิศการสลับห้องล่าสุด — ใช้เลือกทิศ slide animation (state: อ่านตอน render ได้)
+  const [direction, setDirection] = useState<'next' | 'prev'>('next');
 
   const activeIndex = rooms.findIndex((r) => r.id === activeRoomId);
   const canPrev = activeIndex > 0;
@@ -43,12 +45,14 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   const navigatePrev = () => {
     if (!canPrev) return;
     trigger('selection');
+    setDirection('prev');
     onSetActiveRoom(rooms[activeIndex - 1].id);
   };
 
   const navigateNext = () => {
     if (!canNext) return;
     trigger('selection');
+    setDirection('next');
     onSetActiveRoom(rooms[activeIndex + 1].id);
   };
 
@@ -73,30 +77,32 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 
     return (
       <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        {/* Room Navigation Strip */}
-        <div className="flex items-center justify-between mb-3 px-1">
+        {/* Room Navigation Strip — large horizontal capsule prev/next (easy tap) */}
+        <div className="flex items-center justify-between gap-2 mb-3 px-1">
           <button
             onClick={navigatePrev}
             disabled={!canPrev}
             aria-label="ห้องก่อนหน้า"
             className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center transition-all outline-none',
+              'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
               canPrev
-                ? 'text-foreground/60 hover:bg-muted active:scale-90'
-                : 'text-muted-foreground/20 cursor-not-allowed'
+                ? 'border-border bg-card text-foreground hover:bg-muted active:scale-95'
+                : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
           >
             <ChevronLeft className="w-4 h-4" />
+            ก่อนหน้า
           </button>
 
           {useDots ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               {rooms.map((room, i) => (
                 <button
                   key={room.id}
                   onClick={() => {
                     if (i !== activeIndex) {
                       trigger('selection');
+                      setDirection(i > activeIndex ? 'next' : 'prev');
                       onSetActiveRoom(room.id);
                     }
                   }}
@@ -111,7 +117,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
               ))}
             </div>
           ) : (
-            <span className="text-xs font-medium text-muted-foreground tabular-nums">
+            <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
               {activeIndex + 1} / {rooms.length}
             </span>
           )}
@@ -121,24 +127,33 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
             disabled={!canNext}
             aria-label="ห้องถัดไป"
             className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center transition-all outline-none',
+              'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
               canNext
-                ? 'text-foreground/60 hover:bg-muted active:scale-90'
-                : 'text-muted-foreground/20 cursor-not-allowed'
+                ? 'border-border bg-card text-foreground hover:bg-muted active:scale-95'
+                : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
           >
+            ถัดไป
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        <RoomCard
+        {/* Keyed wrapper remounts per room → slide animation fires from the swipe/nav direction */}
+        <div
           key={activeRoom.id}
-          room={activeRoom}
-          roomIndex={activeIndex}
-          totalRooms={rooms.length}
-          onAddItem={onAddItem}
-          onEditItem={onEditItem}
-        />
+          className={cn(
+            'animate-in fade-in duration-300',
+            direction === 'next' ? 'slide-in-from-right-8' : 'slide-in-from-left-8'
+          )}
+        >
+          <RoomCard
+            room={activeRoom}
+            roomIndex={activeIndex}
+            totalRooms={rooms.length}
+            onAddItem={onAddItem}
+            onEditItem={onEditItem}
+          />
+        </div>
       </div>
     );
   }

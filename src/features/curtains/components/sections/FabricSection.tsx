@@ -57,6 +57,8 @@ interface FabricSectionProps {
   warnings: Partial<Record<keyof CurtainItemInput, string>>;
   /** แสดงเครื่องมือคลัง (ปุ่มจัดการรายการ / ปุ่มดาวบันทึก / ตัวบอก sync) — ซ่อนในโหมด Lite */
   showCatalogTools?: boolean;
+  /** โหมด Lite: วางรหัสผ้า + ราคา คนละบรรทัด (ไม่แบ่ง 2 คอลัมน์) ให้กดง่ายบนจอแคบ */
+  stack?: boolean;
 }
 
 export const FabricSection: React.FC<FabricSectionProps> = ({
@@ -68,6 +70,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   errors,
   warnings,
   showCatalogTools = true,
+  stack = false,
 }) => {
   const { openModal } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
@@ -206,7 +209,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             {/* Responsive grid: 7/5 split — give price column more room for xx,xxx */}
             <div className="grid grid-cols-12 gap-3 items-start">
               {/* Code Selection */}
-              <div className="col-span-12 sm:col-span-7">
+              <div className={cn('col-span-12', !stack && 'sm:col-span-7')}>
                 <ComboboxInput<InventoryItem>
                   label="รหัสผ้าทึบ"
                   placeholder="ค้นหาหรือพิมพ์รหัส..."
@@ -238,7 +241,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
               </div>
 
               {/* Price Input + Save Button */}
-              <div className="col-span-12 sm:col-span-5">
+              <div className={cn('col-span-12', !stack && 'sm:col-span-5')}>
                 <div className="flex gap-2 items-end">
                   <div className="flex-1 min-w-0">
                     <Input
@@ -341,7 +344,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             {/* Responsive grid: 7/5 split */}
             <div className="grid grid-cols-12 gap-3 items-start">
               {/* Code Selection */}
-              <div className="col-span-12 sm:col-span-7">
+              <div className={cn('col-span-12', !stack && 'sm:col-span-7')}>
                 <ComboboxInput<InventoryItem>
                   label="รหัสผ้าโปร่ง"
                   placeholder="ค้นหา..."
@@ -373,7 +376,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
               </div>
 
               {/* Price Input + Save Button */}
-              <div className="col-span-12 sm:col-span-5">
+              <div className={cn('col-span-12', !stack && 'sm:col-span-5')}>
                 <div className="flex gap-2 items-end">
                   <div className="flex-1 min-w-0">
                     <Input
