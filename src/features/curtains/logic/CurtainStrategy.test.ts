@@ -11,12 +11,12 @@ const asCurtain = (o: Record<string, unknown>): CurtainItemInput =>
   o as unknown as CurtainItemInput;
 
 describe('calculateFabricYardage', () => {
-  it('จีบ: width 1.0 → 3.34 หลา (1×2.7+0.3 = 3.0 /0.9)', () => {
-    expect(calculateFabricYardage(1.0, 'จีบ')).toBeCloseTo(3.34, 2);
+  it('จีบ: width 1.0 → 2.89 หลา (1×2.3+0.3 = 2.6 /0.9)', () => {
+    expect(calculateFabricYardage(1.0, 'จีบ')).toBeCloseTo(2.89, 2);
   });
 
-  it('ตาไก่: multiplier_eyelet 2.7 → เท่าจีบ', () => {
-    expect(calculateFabricYardage(1.0, 'ตาไก่')).toBeCloseTo(3.34, 2);
+  it('ตาไก่: multiplier_eyelet 2.3 → เท่าจีบ', () => {
+    expect(calculateFabricYardage(1.0, 'ตาไก่')).toBeCloseTo(2.89, 2);
   });
 
   it('ลอน + button_spacing "14.5" → multiplier 2.7 (catalog hit)', () => {
@@ -73,7 +73,7 @@ describe('CurtainStrategy.calculate', () => {
     expect(r.total).toBe(200);
     expect(r.breakdown?.fabricPrice).toBe(200);
     expect(r.breakdown?.sheerPrice).toBe(0);
-    expect(r.breakdown?.fabricYards).toBeCloseTo(6.34, 2);
+    expect(r.breakdown?.fabricYards).toBeCloseTo(5.45, 2);
     expect(r.breakdown?.sheerYards).toBe(0);
   });
 
@@ -91,7 +91,7 @@ describe('CurtainStrategy.calculate', () => {
     expect(r.breakdown?.fabricPrice).toBe(0);
     expect(r.breakdown?.sheerPrice).toBe(300);
     expect(r.breakdown?.fabricYards).toBe(0);
-    expect(r.breakdown?.sheerYards).toBeCloseTo(6.34, 2);
+    expect(r.breakdown?.sheerYards).toBeCloseTo(5.45, 2);
   });
 
   it('DOUBLE: รวมทึบ + โปร่ง + ทั้งสอง yards > 0', () => {

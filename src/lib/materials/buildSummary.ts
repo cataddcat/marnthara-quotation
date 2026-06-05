@@ -102,7 +102,7 @@ function calcBrackets(widthM: number, isDouble: boolean): number {
 }
 
 function calcEyelets(widthM: number): number {
-  return Math.ceil((widthM * FORMULAS.curtain.multiplier_wave) / FORMULAS.materials.eyelet_spacing);
+  return Math.ceil((widthM * FORMULAS.curtain.multiplier_eyelet) / FORMULAS.materials.eyelet_spacing);
 }
 
 function calcPinHooks(widthM: number): number {

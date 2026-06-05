@@ -11,11 +11,11 @@ import { FORMULAS } from '@/config/formulas';
 // ─────────────────────────────────────────────────────────────────────────────
 // Test fixtures — ใช้ค่าจริงจาก src/config/formulas.ts (FORMULAS เป็น compile-time const)
 //
-// width = 1.0, style = 'จีบ' → multiplier_pleated = 2.7, hem_offset = 0.30
-// totalMeters = 1.0 × 2.7 + 0.30 = 3.00
-// fabricYards = ceil(3.00 / 0.90 × 100) / 100 = 3.34
+// width = 1.0, style = 'จีบ' → multiplier_pleated = 2.3, hem_offset = 0.30
+// totalMeters = 1.0 × 2.3 + 0.30 = 2.60
+// fabricYards = ceil(2.60 / 0.90 × 100) / 100 = 2.89
 // ─────────────────────────────────────────────────────────────────────────────
-const EXPECTED_FABRIC_YARDS = 3.34;
+const EXPECTED_FABRIC_YARDS = 2.89;
 
 const setupStore = (overrides?: {
   fabricCosts?: Record<string, number>;
@@ -390,11 +390,11 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
       const result = CostEngine.analyze(item);
 
-      // fabricCost = 3.34 × 200 = 668
+      // fabricCost = 2.89 × 200 = 578
       // railCost = 1.0 × 100 = 100
       // laborCost = 1.0 × 100 = 100
-      // totalCost = 868
-      // margin = (1000 - 868) / 1000 × 100 = 13.2% → warning
+      // totalCost = 778
+      // margin = (1000 - 778) / 1000 × 100 = 22.2% → warning
       expect(result.status).toBe('warning');
       expect(result.marginPercent).toBeGreaterThanOrEqual(0);
       expect(result.marginPercent).toBeLessThan(30);
@@ -457,7 +457,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       const expectedAcc = FORMULAS.materials.rod_brackets_per_set * 35; // 4 × 35 = 140
       expect(result.accCost).toBe(expectedAcc);
       expect(result.railCost).toBeCloseTo(70, 2); // width 1.0 × rail_rod 70
-      // totalCost = fabric(3.34×50) + rail(70) + labor(1.0×100) + acc(140)
+      // totalCost = fabric(2.89×50) + rail(70) + labor(1.0×100) + acc(140)
       expect(result.totalCost).toBeCloseTo(
         EXPECTED_FABRIC_YARDS * 50 + 70 + 100 + expectedAcc,
         2
