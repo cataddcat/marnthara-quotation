@@ -16,10 +16,11 @@ export const useCostStatus = (item: ItemData | null): CostBreakdown | null => {
   const areaCosts = useAppStore((s) => s.areaCosts);
   const accessoryCosts = useAppStore((s) => s.accessoryCosts);
   const laborCosts = useAppStore((s) => s.laborCosts);
+  const serviceCosts = useAppStore((s) => s.serviceCosts);
 
   return useMemo(
     () => (item ? CostEngine.analyze(item) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts]
+    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts, serviceCosts]
   );
 };

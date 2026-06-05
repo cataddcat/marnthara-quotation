@@ -54,8 +54,9 @@ export const useAppStore = create<AppState>()(
       {
         name: STORAGE_KEY,
         storage: createJSONStorage(() => localStorage),
-        version: 2,
+        version: 3,
         // v1→v2: แปลงผ้าม่าน schema เก่า (type:'set' + ชื่อฟิลด์เดิม) → โครงสร้างปัจจุบัน
+        // v2→v3: ย้ายค่าบริการ (install/transport/fuel) จาก accessoryCosts → serviceCosts
         migrate: (persisted) => migrateLegacyState(persisted) as AppState,
         partialize: (state) => omitTransientState(state),
       }
@@ -70,6 +71,7 @@ export const useAppStore = create<AppState>()(
           shopConfig,
           discount,
           laborCosts,
+          serviceCosts,
           accessoryCosts,
           fabricCosts,
           wallpaperCosts,
@@ -82,6 +84,7 @@ export const useAppStore = create<AppState>()(
           shopConfig,
           discount,
           laborCosts,
+          serviceCosts,
           accessoryCosts,
           fabricCosts,
           wallpaperCosts,

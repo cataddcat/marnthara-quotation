@@ -38,7 +38,7 @@ export const CostEngine = {
     // ผ้า/ผ้าโปร่ง → fabricCosts, วอลเปเปอร์ → wallpaperCosts, มู่ลี่/ฉาก/มุ้ง → areaCosts
     // (ต้องตรงกับฝั่งบันทึก: routeCostToVault ใน InventorySlice + แค็ตตาล็อกใน MaterialSummaryModal)
     const state = useAppStore.getState();
-    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts } = state;
+    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts, serviceCosts } = state;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
     // (รองรับ Manual Override ราคาขายมาแล้วจาก PricingEngine)
@@ -221,10 +221,11 @@ export const CostEngine = {
     else if (isRemovalItem(item)) {
         unit = 'จุด';
         usedQuantity = toNum(item.quantity);
-        // สำหรับงานบริการ ต้นทุนอาจจะเป็นค่าแรง หรือ 0 (กำไร 100%)
-        // หากต้องการใส่ต้นทุน ให้ใส่ใน accessoryCosts หรือ fabricCosts โดยใช้รหัสอ้างอิง
-        // ในที่นี้สมมติว่าเป็น 0 หรือดึงจาก Labor ถ้ามี Logic รองรับ
-        totalCost = 0; 
+        // ทุนค่ารื้อถอน = อัตรา/จุด × จำนวนจุด (serviceCosts.removal_per_point)
+        // ถ้าอัตรา = 0 (ยังไม่ตั้ง) → totalCost = 0 = พฤติกรรมเดิม (กำไรเต็ม)
+        const removalRate = serviceCosts['removal_per_point'] || 0;
+        totalCost = removalRate * usedQuantity;
+        laborCost = totalCost; // นับเป็นค่าแรงบริการใน breakdown
     }
 
     // ==========================================

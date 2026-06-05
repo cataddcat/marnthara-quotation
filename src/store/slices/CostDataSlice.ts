@@ -14,13 +14,16 @@ export interface LaborCost {
 
 export interface CostDataSlice {
   laborCosts: Record<string, LaborCost>;
-  accessoryCosts: Record<string, number>;
+  serviceCosts: Record<string, number>;   // ค่าติดตั้ง/เดินทาง/รื้อถอน (flat rate)
+  accessoryCosts: Record<string, number>; // อุปกรณ์ฮาร์ดแวร์ล้วน (ราง/ห่วง/เทป/ขาจับ)
   fabricCosts: Record<string, number>;
   wallpaperCosts: Record<string, number>; // code → cost per roll
   areaCosts: Record<string, number>;      // code or type → cost per sqm
 
   updateLaborCost: (key: string, data: Partial<LaborCost>) => void;
   removeLaborCost: (key: string) => void;
+  updateServiceCost: (key: string, price: number) => void;
+  removeServiceCost: (key: string) => void;
   updateAccessoryCost: (key: string, price: number) => void;
   removeAccessoryCost: (key: string) => void;
 
@@ -92,7 +95,7 @@ export const DEFAULT_LABOR_COSTS: Record<string, LaborCost> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ราคาวัสดุ/อุปกรณ์มาตรฐาน 2025
+// ราคาอุปกรณ์ฮาร์ดแวร์มาตรฐาน 2025 (ราง + อุปกรณ์เสริมที่จับต้องได้)
 // ─────────────────────────────────────────────────────────────────────────────
 export const DEFAULT_ACCESSORY_COSTS: Record<string, number> = {
   // ── รางผ้าม่าน ─────────────────────────────────────────────────────────
@@ -107,7 +110,13 @@ export const DEFAULT_ACCESSORY_COSTS: Record<string, number> = {
   eyelet_ring:    5,   // ห่วงตาไก่ (ต่อชิ้น)
   tape_wave:     10,   // เทปหัวม่าน/โซ่ (ต่อเมตร)
   rod_bracket:   35,   // ขาจับราง ม่านแป๊บ/สอดราง (ต่อขา) — แป๊บใช้ 4 ขา/ชุด
+};
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ค่าบริการมาตรฐาน 2025 (ค่าติดตั้ง / เดินทาง / รื้อถอน) — flat rate ตัวเลขล้วน
+// ปัจจุบันเป็น reference data (ยังไม่ผูกเข้าการคิดบิลระดับใบเสนอราคา ยกเว้นรื้อถอน)
+// ─────────────────────────────────────────────────────────────────────────────
+export const DEFAULT_SERVICE_COSTS: Record<string, number> = {
   // ── ค่าติดตั้ง ─────────────────────────────────────────────────────────
   install_point: 350,  // ค่าติดตั้ง (ต่อจุด/ต่อช่องหน้าต่าง)
   install_min:   600,  // ค่าติดตั้งขั้นต่ำต่อเที่ยว
@@ -116,6 +125,9 @@ export const DEFAULT_ACCESSORY_COSTS: Record<string, number> = {
   transport_base:       400,   // ค่าเดินทาง กทม. และปริมณฑล (ต่อเที่ยว)
   transport_upcountry: 1200,   // ค่าเดินทางต่างจังหวัด (ต่อเที่ยว)
   fuel_diesel_liter:     32,   // ราคาน้ำมันดีเซล B7 อ้างอิง (บาท/ลิตร)
+
+  // ── ค่ารื้อถอน ─────────────────────────────────────────────────────────
+  removal_per_point: 0,  // ทุนค่ารื้อถอน (ต่อจุด) — 0 = ยังไม่ตั้ง → CostEngine ไม่คิดต้นทุน
 };
 
 export const createCostDataSlice: StateCreator<
@@ -125,6 +137,7 @@ export const createCostDataSlice: StateCreator<
   CostDataSlice
 > = (set, get) => ({
   laborCosts: DEFAULT_LABOR_COSTS,
+  serviceCosts: DEFAULT_SERVICE_COSTS,
   accessoryCosts: DEFAULT_ACCESSORY_COSTS,
   fabricCosts: {},
   wallpaperCosts: {},
@@ -143,6 +156,18 @@ export const createCostDataSlice: StateCreator<
       const newCosts = { ...state.laborCosts };
       delete newCosts[key];
       return { laborCosts: newCosts };
+    }),
+
+  updateServiceCost: (key, price) =>
+    set((state) => ({
+      serviceCosts: { ...state.serviceCosts, [key]: price },
+    })),
+
+  removeServiceCost: (key) =>
+    set((state) => {
+      const newCosts = { ...state.serviceCosts };
+      delete newCosts[key];
+      return { serviceCosts: newCosts };
     }),
 
   updateAccessoryCost: (key, price) =>
@@ -188,16 +213,18 @@ export const createCostDataSlice: StateCreator<
       fabricCosts: { ...state.fabricCosts, ...costs },
     })),
 
-  // โหลดเฉพาะค่าแรง + อุปกรณ์ ไม่แตะ fabricCosts (ข้อมูลผ้าเป็นของส่วนตัวร้าน)
+  // โหลดเฉพาะค่าแรง + บริการ + อุปกรณ์ ไม่แตะ fabricCosts (ข้อมูลผ้าเป็นของส่วนตัวร้าน)
   loadDefaultCosts: () =>
     set(() => ({
       laborCosts: DEFAULT_LABOR_COSTS,
+      serviceCosts: DEFAULT_SERVICE_COSTS,
       accessoryCosts: DEFAULT_ACCESSORY_COSTS,
     })),
 
   resetProductionCosts: () =>
     set(() => ({
       laborCosts: DEFAULT_LABOR_COSTS,
+      serviceCosts: DEFAULT_SERVICE_COSTS,
       accessoryCosts: DEFAULT_ACCESSORY_COSTS,
       fabricCosts: {},
       wallpaperCosts: {},
@@ -205,16 +232,22 @@ export const createCostDataSlice: StateCreator<
     })),
 
   exportSecrets: () => {
-    const { laborCosts, accessoryCosts, fabricCosts, wallpaperCosts, areaCosts } = get();
-    return JSON.stringify({ laborCosts, accessoryCosts, fabricCosts, wallpaperCosts, areaCosts }, null, 2);
+    const { laborCosts, serviceCosts, accessoryCosts, fabricCosts, wallpaperCosts, areaCosts } = get();
+    return JSON.stringify(
+      { laborCosts, serviceCosts, accessoryCosts, fabricCosts, wallpaperCosts, areaCosts },
+      null,
+      2
+    );
   },
 
   importSecrets: (inputString) => {
     try {
       const data = JSON.parse(inputString);
-      if (!data.laborCosts && !data.accessoryCosts && !data.fabricCosts) return false;
+      if (!data.laborCosts && !data.serviceCosts && !data.accessoryCosts && !data.fabricCosts)
+        return false;
       set((state) => ({
         laborCosts: data.laborCosts ? { ...state.laborCosts, ...data.laborCosts } : state.laborCosts,
+        serviceCosts: data.serviceCosts ? { ...state.serviceCosts, ...data.serviceCosts } : state.serviceCosts,
         accessoryCosts: data.accessoryCosts ? { ...state.accessoryCosts, ...data.accessoryCosts } : state.accessoryCosts,
         fabricCosts: data.fabricCosts ? { ...state.fabricCosts, ...data.fabricCosts } : state.fabricCosts,
         wallpaperCosts: data.wallpaperCosts ? { ...state.wallpaperCosts, ...data.wallpaperCosts } : state.wallpaperCosts,

@@ -3,7 +3,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useAppStore } from '@/store/useAppStore';
-import { DEFAULT_LABOR_COSTS, DEFAULT_ACCESSORY_COSTS } from './CostDataSlice';
+import { DEFAULT_LABOR_COSTS, DEFAULT_SERVICE_COSTS, DEFAULT_ACCESSORY_COSTS } from './CostDataSlice';
 
 const store = () => useAppStore.getState();
 
@@ -30,6 +30,25 @@ describe('CostDataSlice — labor', () => {
   it('removeLaborCost ลบ key', () => {
     store().removeLaborCost('ลอน');
     expect(store().laborCosts).not.toHaveProperty('ลอน');
+  });
+});
+
+describe('CostDataSlice — service', () => {
+  it('updateServiceCost ตั้งราคา', () => {
+    store().updateServiceCost('removal_per_point', 150);
+    expect(store().serviceCosts.removal_per_point).toBe(150);
+  });
+
+  it('removeServiceCost ลบ key', () => {
+    store().removeServiceCost('install_point');
+    expect(store().serviceCosts).not.toHaveProperty('install_point');
+  });
+
+  it('accessoryCosts ไม่ปนค่าบริการ (install/transport ย้ายไป serviceCosts)', () => {
+    expect(store().accessoryCosts).not.toHaveProperty('install_point');
+    expect(store().accessoryCosts).not.toHaveProperty('transport_base');
+    expect(store().serviceCosts).toHaveProperty('install_point');
+    expect(store().serviceCosts).toHaveProperty('transport_base');
   });
 });
 
@@ -82,16 +101,18 @@ describe('CostDataSlice — wallpaper / area', () => {
 });
 
 describe('CostDataSlice — lifecycle', () => {
-  it('loadDefaultCosts คืนค่าแรง+อุปกรณ์ default แต่ไม่แตะ fabricCosts', () => {
+  it('loadDefaultCosts คืนค่าแรง+บริการ+อุปกรณ์ default แต่ไม่แตะ fabricCosts', () => {
     store().updateFabricCost('F001', 120);
     store().updateLaborCost('ลอน', { rate: 1 });
+    store().updateServiceCost('install_point', 1);
     store().loadDefaultCosts();
     expect(store().laborCosts).toEqual(DEFAULT_LABOR_COSTS);
+    expect(store().serviceCosts).toEqual(DEFAULT_SERVICE_COSTS);
     expect(store().accessoryCosts).toEqual(DEFAULT_ACCESSORY_COSTS);
     expect(store().fabricCosts.F001).toBe(120); // ผ้าไม่ถูกล้าง
   });
 
-  it('resetProductionCosts ล้าง fabric/wallpaper/area + คืน default labor/accessory', () => {
+  it('resetProductionCosts ล้าง fabric/wallpaper/area + คืน default labor/service/accessory', () => {
     store().updateFabricCost('F001', 120);
     store().updateWallpaperCost('WP01', 1500);
     store().resetProductionCosts();
@@ -99,14 +120,16 @@ describe('CostDataSlice — lifecycle', () => {
     expect(store().wallpaperCosts).toEqual({});
     expect(store().areaCosts).toEqual({});
     expect(store().laborCosts).toEqual(DEFAULT_LABOR_COSTS);
+    expect(store().serviceCosts).toEqual(DEFAULT_SERVICE_COSTS);
   });
 });
 
 describe('CostDataSlice — import/export', () => {
-  it('exportSecrets คืน JSON ที่มี 5 vault keys', () => {
+  it('exportSecrets คืน JSON ที่มี 6 vault keys', () => {
     store().updateFabricCost('F001', 120);
     const parsed = JSON.parse(store().exportSecrets());
     expect(parsed).toHaveProperty('laborCosts');
+    expect(parsed).toHaveProperty('serviceCosts');
     expect(parsed).toHaveProperty('accessoryCosts');
     expect(parsed.fabricCosts).toMatchObject({ F001: 120 });
     expect(parsed).toHaveProperty('wallpaperCosts');

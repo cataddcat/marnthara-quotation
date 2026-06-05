@@ -54,10 +54,45 @@ export const migrateLegacyItem = (raw: unknown): unknown => {
   return item;
 };
 
+/** v2→v3: ค่าบริการที่เคยปนอยู่ใน accessoryCosts → serviceCosts */
+const SERVICE_KEYS = [
+  'install_point',
+  'install_min',
+  'transport_base',
+  'transport_upcountry',
+  'fuel_diesel_liter',
+  'removal_per_point',
+];
+
+/**
+ * ย้าย service keys ออกจาก accessoryCosts → serviceCosts — idempotent
+ * (ของที่ปกติอยู่แล้วจะไม่ถูกแตะ; รันได้ซ้ำโดยไม่เพี้ยน)
+ */
+const migrateCostVaults = (state: Record<string, unknown>): Record<string, unknown> => {
+  const accessory = state.accessoryCosts;
+  if (!accessory || typeof accessory !== 'object') return state;
+
+  const acc = { ...(accessory as Record<string, unknown>) };
+  const service = { ...((state.serviceCosts as Record<string, unknown>) ?? {}) };
+
+  let moved = false;
+  for (const key of SERVICE_KEYS) {
+    if (key in acc) {
+      if (!(key in service)) service[key] = acc[key]; // ไม่ทับค่าที่ user ตั้งใน serviceCosts แล้ว
+      delete acc[key];
+      moved = true;
+    }
+  }
+  if (!moved) return state;
+  return { ...state, accessoryCosts: acc, serviceCosts: service };
+};
+
 /** แปลง persisted state ทั้งก้อน — เดินทุกห้อง/ทุกรายการ (ทนต่อรูปร่างที่ไม่คาดคิด) */
 export const migrateLegacyState = (persisted: unknown): unknown => {
   if (!persisted || typeof persisted !== 'object') return persisted;
-  const state = persisted as Record<string, unknown>;
+  // v2→v3: จัดถังต้นทุนก่อน (รันแม้ rooms จะมีรูปร่างผิดคาด)
+  const state = migrateCostVaults(persisted as Record<string, unknown>);
+
   const rooms = state.rooms;
   if (!Array.isArray(rooms)) return state;
 
