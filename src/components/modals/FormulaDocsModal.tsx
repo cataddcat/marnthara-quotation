@@ -204,7 +204,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
             <div>
               <p className="font-semibold text-foreground mb-1">ห่วงตาไก่ (Eyelet Rings)</p>
               <Formula>
-                จำนวน = ceil(กว้าง × {c.multiplier_wave} / {m.eyelet_spacing})
+                จำนวน = ceil(กว้าง × {c.multiplier_eyelet} / {m.eyelet_spacing})
               </Formula>
               <p className="text-xs text-muted-foreground">
                 ระยะห่าง {m.eyelet_spacing * 100} ซม./ห่วง — มาตรฐานช่างไทย
