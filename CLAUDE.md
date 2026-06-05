@@ -67,6 +67,18 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 
 `@/` maps to `src/` (configured in both `vite.config.ts` and `tsconfig.json`).
 
+## UX/UI Standards (Apple HIG + NN/g)
+
+All new or changed UI must satisfy the 5-pillar UX baseline before merge:
+
+1. **Visual hierarchy** — typography + contrast drive the eye; reserve the `primary` color **exclusively** for the primary CTA (don't tint secondary affordances/icons with it).
+2. **Touch targets ≥ 44×44 (HIG)** — reuse the `Button` primitive (`size="icon"`/`"md"` = 48px) or `h-11 w-11` + centered icon; size controls by tier via `useTierSize().control`, never hardcode heights.
+3. **Minimize cognitive load (NN/g)** — Law of Proximity grouping, universal `lucide` icons, progressive disclosure via `AdvancedSection`.
+4. **System status & feedback** — every control ships `hover`/`active`/`focus-visible` (NOT `focus`)/`loading`/`disabled`.
+5. **Error prevention & forgiveness (NN/g)** — smart constraints + input formatting; `destructive` variant + explicit confirm for irreversible actions only (autosave already makes closing a form non-destructive — see HANDOFF §1.1).
+
+See **[`HANDOFF.md`](./HANDOFF.md) §1.6** for the full contract + reference implementation (`src/components/ui/Modal.tsx`).
+
 ## TypeScript & Linting
 
 - Strict mode with `noUnusedLocals`, `noUnusedParameters`, `noUncheckedSideEffectImports`
