@@ -43,8 +43,11 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         shopConfig: state.shopConfig,
         discount: state.discount,
         favorites: state.favorites,
+        // ⚠️ ให้ครบทุก cost vault ใน CostDataSlice (กัน backup ตกข้อมูล) —
+        // ปัจจุบัน 6 ถัง: labor / service / accessory / fabric / wallpaper / area
         production: {
           laborCosts: state.laborCosts,
+          serviceCosts: state.serviceCosts,
           accessoryCosts: state.accessoryCosts,
           fabricCosts: state.fabricCosts,
           wallpaperCosts: state.wallpaperCosts,
@@ -97,7 +100,9 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           shopConfig:     json.shopConfig      ?? s.shopConfig,
           discount:       json.discount        ?? s.discount,
           favorites:      json.favorites       ?? s.favorites,
+          // ให้ครบทุก vault เท่ากับฝั่ง handleExport (replace ต่อ vault — ไม่ merge)
           laborCosts:     json.production?.laborCosts      ?? s.laborCosts,
+          serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
           accessoryCosts: json.production?.accessoryCosts  ?? s.accessoryCosts,
           fabricCosts:    json.production?.fabricCosts     ?? s.fabricCosts,
           wallpaperCosts: json.production?.wallpaperCosts  ?? s.wallpaperCosts,
@@ -275,7 +280,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           <p className="text-sm text-muted-foreground">
             {activeImportTab === 'favorites'
               ? 'วางโค้ด JSON ของคลังผ้า (รหัส ราคาขาย ราคาทุน) ที่คัดลอกมาจากระบบอื่น'
-              : 'วางโค้ด JSON ของการตั้งค่าต้นทุน (Labor, Accessory, Fabric)'}
+              : 'วางโค้ด JSON ของการตั้งค่าต้นทุน (Labor, Service, Accessory, Fabric)'}
           </p>
 
           <textarea

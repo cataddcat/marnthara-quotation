@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand';
 import { AppState } from '../useAppStore';
 import { Room, ItemData } from '@/types';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
+import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { isAreaItem } from '@/lib/type-guards';
 
 // [REFACTOR] Renamed from RoomSlice to ProjectSlice to reflect broader scope
@@ -35,7 +36,7 @@ export const createProjectSlice: StateCreator<
   [['zustand/persist', unknown], ['temporal', unknown]],
   [],
   ProjectSlice
-> = (set) => ({
+> = (set, get) => ({
   rooms: [],
 
   addRoom: (name) =>
@@ -197,7 +198,17 @@ export const createProjectSlice: StateCreator<
     })),
 
   factoryReset: () => {
-    localStorage.removeItem('marnthara.input.v6.4');
+    // ── ล้างข้อมูลทั้งหมด (เหมือนติดตั้งแอพใหม่) ──
+    // 1) reset state ในหน่วยความจำให้ clean "ก่อน" — กัน persist เขียนข้อมูลเก่ากลับ
+    //    (onClose ของ modal จะ trigger closeModal → re-persist state ปัจจุบันหลัง factoryReset)
+    get().resetProject(); // rooms / customer / discount
+    get().resetProductionCosts(); // ค่าแรง/บริการ/อุปกรณ์/ผ้า/วอลฯ/พื้นที่ → default
+    set(() => ({ favorites: {}, shopConfig: DEFAULT_SHOP_CONFIG }));
+
+    // 2) ล้าง persisted storage ทุกตัว (main + theme + experience) ไม่ใช่แค่ key เดียว
+    localStorage.clear();
+
+    // 3) hard reload → re-init จาก default ทั้งหมด
     window.location.reload();
   },
 });
