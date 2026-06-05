@@ -115,6 +115,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const { addItem, updateItem } = useAppStore();
   const addToast = useUIStore((s) => s.addToast);
   const { isLite, setMode } = useExperienceMode();
+  // ชื่อห้องปัจจุบัน — แสดงด้านบน Modal กันผู้ใช้สับสนว่ากำลังเพิ่ม/แก้ไขในห้องไหน
+  const roomName = useAppStore((s) => s.rooms.find((r) => r.id === roomId)?.name);
 
   // Tracks the ID of an item created via auto-save in add mode
   const autoCreatedIdRef = useRef<string | null>(null);
@@ -421,6 +423,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={title}
+      description={roomName ? `📍 ห้อง: ${roomName}` : undefined}
       variant="fullscreen"
       maxWidth={wideTwoCol ? '5xl' : '2xl'}
       headerAction={headerActions}
