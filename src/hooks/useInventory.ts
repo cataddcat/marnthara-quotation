@@ -14,6 +14,7 @@ export const useInventory = (category: string) => {
   const fabricCosts = useAppStore((state) => state.fabricCosts);
   const wallpaperCosts = useAppStore((state) => state.wallpaperCosts);
   const areaCosts = useAppStore((state) => state.areaCosts);
+  const hardwareCosts = useAppStore((state) => state.hardwareCosts);
 
   const addFavorite = useAppStore((state) => state.addFavorite);
   const updateFavorite = useAppStore((state) => state.updateFavorite);
@@ -22,12 +23,18 @@ export const useInventory = (category: string) => {
   const items = useMemo(() => {
     const vault = categoryVault(category);
     const costVault =
-      vault === 'wallpaper' ? wallpaperCosts : vault === 'area' ? areaCosts : fabricCosts;
+      vault === 'wallpaper'
+        ? wallpaperCosts
+        : vault === 'area'
+          ? areaCosts
+          : vault === 'hardware'
+            ? hardwareCosts
+            : fabricCosts;
     return favorites.map((item) => ({
       ...item,
       cost_per_yard: costVault[item.code] || 0,
     })) as HydratedInventoryItem[];
-  }, [favorites, fabricCosts, wallpaperCosts, areaCosts, category]);
+  }, [favorites, fabricCosts, wallpaperCosts, areaCosts, hardwareCosts, category]);
 
   return {
     items,

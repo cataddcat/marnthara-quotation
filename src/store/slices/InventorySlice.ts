@@ -17,6 +17,11 @@ export interface InventoryItem {
   default_price_per_m: number;
   cost_per_yard?: number; // Legacy support (deprecated)
   note?: string;
+  // ── v2 SKU identity (catalog: ผ้า/ราง/ฮาร์ดแวร์ ที่มีหลายยี่ห้อ/รุ่น/สี) ──
+  brand?: string;
+  model?: string;
+  color?: string;
+  variant?: string;
 }
 
 export type InventoryState = Record<string, InventoryItem[]>;
@@ -44,6 +49,8 @@ function routeCostToVault(get: () => AppState, category: string, code: string, c
     get().updateWallpaperCost(code, cost);
   } else if (vault === 'area') {
     get().updateAreaCost(code, cost);
+  } else if (vault === 'hardware') {
+    get().updateHardwareCost(code, cost);
   } else {
     get().updateFabricCost(code, cost);
   }
@@ -163,6 +170,7 @@ export const createInventorySlice: StateCreator<
       const fabricCosts = { ...state.fabricCosts };
       const wallpaperCosts = { ...state.wallpaperCosts };
       const areaCosts = { ...state.areaCosts };
+      const hardwareCosts = { ...state.hardwareCosts };
 
       for (const e of entries) {
         const code = e.code.trim().toUpperCase();
@@ -172,26 +180,29 @@ export const createInventorySlice: StateCreator<
           const vault = categoryVault(e.category);
           if (vault === 'wallpaper') wallpaperCosts[code] = e.cost;
           else if (vault === 'area') areaCosts[code] = e.cost;
+          else if (vault === 'hardware') hardwareCosts[code] = e.cost;
           else fabricCosts[code] = e.cost;
         }
 
-        // 2) inventory upsert (by code ภายใน category)
+        // 2) inventory upsert (by code ภายใน category) + SKU identity (brand/model/color/variant)
         const list = favorites[e.category] ? [...favorites[e.category]] : [];
         const idx = list.findIndex((f) => f.code.toUpperCase() === code);
         const sell = e.sell_price ?? 0;
+        const sku = { brand: e.brand, model: e.model, color: e.color, variant: e.variant };
         if (idx >= 0) {
           list[idx] = {
             ...list[idx],
+            ...sku,
             default_price_per_m: sell > 0 ? sell : list[idx].default_price_per_m,
             note: e.note ?? list[idx].note,
           };
         } else {
-          list.push({ id: generateId(), code, default_price_per_m: sell, note: e.note });
+          list.push({ id: generateId(), code, default_price_per_m: sell, note: e.note, ...sku });
         }
         favorites[e.category] = list;
       }
 
-      return { favorites, fabricCosts, wallpaperCosts, areaCosts };
+      return { favorites, fabricCosts, wallpaperCosts, areaCosts, hardwareCosts };
     });
 
     return { ok: true, imported: entries.length, skipped: 0, errors: [] };
@@ -208,7 +219,9 @@ export const createInventorySlice: StateCreator<
           ? state.wallpaperCosts
           : cat.vault === 'area'
             ? state.areaCosts
-            : state.fabricCosts;
+            : cat.vault === 'hardware'
+              ? state.hardwareCosts
+              : state.fabricCosts;
 
       for (const item of items) {
         const cost = costVault[item.code] ?? 0;
@@ -218,6 +231,10 @@ export const createInventorySlice: StateCreator<
           ...(cost > 0 ? { cost } : {}),
           ...(item.default_price_per_m > 0 ? { sell_price: item.default_price_per_m } : {}),
           unit: cat.costUnit,
+          ...(item.brand ? { brand: item.brand } : {}),
+          ...(item.model ? { model: item.model } : {}),
+          ...(item.color ? { color: item.color } : {}),
+          ...(item.variant ? { variant: item.variant } : {}),
           ...(item.note ? { note: item.note } : {}),
         });
       }

@@ -14,6 +14,7 @@ import {
   HardDrive,
   Star,
   DollarSign,
+  Package,
 } from 'lucide-react';
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
@@ -25,14 +26,22 @@ interface DataModalProps {
 }
 
 export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
-  const { resetProject, factoryReset, importFavorites, importSecrets } = useAppStore();
+  const { resetProject, factoryReset, importFavorites, importSecrets, importCatalog } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
   const { confirm } = useConfirm();
 
   const [resetInput, setResetInput] = useState('');
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [importInput, setImportInput] = useState('');
-  const [activeImportTab, setActiveImportTab] = useState<'favorites' | 'cost'>('favorites');
+  const [activeImportTab, setActiveImportTab] = useState<'favorites' | 'cost' | 'catalog'>(
+    'favorites'
+  );
+
+  const TAB_LABEL: Record<typeof activeImportTab, string> = {
+    favorites: 'คลังผ้า',
+    cost: 'ต้นทุน',
+    catalog: 'แค็ตตาล็อก',
+  };
 
   const handleExport = () => {
     try {
@@ -49,6 +58,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           laborCosts: state.laborCosts,
           serviceCosts: state.serviceCosts,
           accessoryCosts: state.accessoryCosts,
+          hardwareCosts: state.hardwareCosts,
           fabricCosts: state.fabricCosts,
           wallpaperCosts: state.wallpaperCosts,
           areaCosts: state.areaCosts,
@@ -104,6 +114,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           laborCosts:     json.production?.laborCosts      ?? s.laborCosts,
           serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
           accessoryCosts: json.production?.accessoryCosts  ?? s.accessoryCosts,
+          hardwareCosts:  json.production?.hardwareCosts   ?? s.hardwareCosts,
           fabricCosts:    json.production?.fabricCosts     ?? s.fabricCosts,
           wallpaperCosts: json.production?.wallpaperCosts  ?? s.wallpaperCosts,
           areaCosts:      json.production?.areaCosts       ?? s.areaCosts,
@@ -128,26 +139,40 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
     }
 
     try {
-      let success = false;
-
-      if (activeImportTab === 'favorites') {
-        success = importFavorites(importInput);
-        if (success) {
-          addToast('success', 'นำเข้าคลังผ้าสำเร็จ');
-          setImportInput('');
+      // ── แค็ตตาล็อก (Catalog Contract) — parse object ก่อนส่ง importCatalog ──
+      if (activeImportTab === 'catalog') {
+        let data: unknown;
+        try {
+          data = JSON.parse(importInput);
+        } catch {
+          addToast('error', 'JSON ไม่ถูกต้อง');
+          return;
         }
-      } else {
-        success = importSecrets(importInput);
-        if (success) {
-          addToast('success', 'นำเข้าต้นทุนการผลิตสำเร็จ');
+        const res = importCatalog(data);
+        if (res.ok) {
+          addToast('success', `นำเข้าแค็ตตาล็อก ${res.imported} รายการ`);
           setImportInput('');
+          onClose();
+        } else {
+          addToast('error', `แค็ตตาล็อกไม่ถูกต้อง: ${res.errors[0] ?? ''}`);
         }
+        return;
       }
 
-      if (!success) {
-        addToast('error', 'รูปแบบ JSON ไม่ถูกต้อง');
-      } else {
+      const success =
+        activeImportTab === 'favorites'
+          ? importFavorites(importInput)
+          : importSecrets(importInput);
+
+      if (success) {
+        addToast(
+          'success',
+          activeImportTab === 'favorites' ? 'นำเข้าคลังผ้าสำเร็จ' : 'นำเข้าต้นทุนการผลิตสำเร็จ'
+        );
+        setImportInput('');
         onClose();
+      } else {
+        addToast('error', 'รูปแบบ JSON ไม่ถูกต้อง');
       }
     } catch (error) {
       console.error('Import error:', error);
@@ -275,19 +300,35 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
                 ต้นทุน (Cost)
               </div>
             </button>
+            <button
+              className={cn(
+                'flex-1 py-2 text-sm font-medium border-b-2 transition-colors',
+                activeImportTab === 'catalog'
+                  ? 'border-warning text-warning'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+              onClick={() => setActiveImportTab('catalog')}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Package className="w-4 h-4" />
+                แค็ตตาล็อก
+              </div>
+            </button>
           </div>
 
           <p className="text-sm text-muted-foreground">
             {activeImportTab === 'favorites'
               ? 'วางโค้ด JSON ของคลังผ้า (รหัส ราคาขาย ราคาทุน) ที่คัดลอกมาจากระบบอื่น'
-              : 'วางโค้ด JSON ของการตั้งค่าต้นทุน (Labor, Service, Accessory, Fabric)'}
+              : activeImportTab === 'catalog'
+                ? 'วาง Catalog Contract (marnthara.catalog) — ผ้า/ราง/ฮาร์ดแวร์ พร้อมยี่ห้อ/รุ่น/สี'
+                : 'วางโค้ด JSON ของการตั้งค่าต้นทุน (Labor, Service, Accessory, Fabric)'}
           </p>
 
           <textarea
-            className="w-full h-32 p-3 text-sm font-mono border border-warning/20 rounded-lg 
+            className="w-full h-32 p-3 text-sm font-mono border border-warning/20 rounded-lg
                        focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent
                        bg-background resize-none text-foreground"
-            placeholder={`วาง JSON ${activeImportTab === 'favorites' ? 'คลังผ้า' : 'ต้นทุน'} ที่นี่...`}
+            placeholder={`วาง JSON ${TAB_LABEL[activeImportTab]} ที่นี่...`}
             value={importInput}
             onChange={(e) => setImportInput(e.target.value)}
           />
@@ -299,7 +340,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
             disabled={!importInput.trim()}
           >
             <Upload className="w-4 h-4 mr-2" />
-            นำเข้าข้อมูล {activeImportTab === 'favorites' ? 'คลังผ้า' : 'ต้นทุน'}
+            นำเข้าข้อมูล {TAB_LABEL[activeImportTab]}
           </Button>
         </div>
 

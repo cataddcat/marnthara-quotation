@@ -15,7 +15,8 @@ export interface LaborCost {
 export interface CostDataSlice {
   laborCosts: Record<string, LaborCost>;
   serviceCosts: Record<string, number>;   // ค่าติดตั้ง/เดินทาง/รื้อถอน (flat rate)
-  accessoryCosts: Record<string, number>; // อุปกรณ์ฮาร์ดแวร์ล้วน (ราง/ห่วง/เทป/ขาจับ)
+  accessoryCosts: Record<string, number>; // อุปกรณ์ฮาร์ดแวร์ล้วน (ราง/ห่วง/เทป/ขาจับ) — legacy, retire Phase B
+  hardwareCosts: Record<string, number>;  // ราง/ฮาร์ดแวร์ catalog SKU → ทุน/หน่วย (Phase A+)
   fabricCosts: Record<string, number>;
   wallpaperCosts: Record<string, number>; // code → cost per roll
   areaCosts: Record<string, number>;      // code or type → cost per sqm
@@ -26,6 +27,8 @@ export interface CostDataSlice {
   removeServiceCost: (key: string) => void;
   updateAccessoryCost: (key: string, price: number) => void;
   removeAccessoryCost: (key: string) => void;
+  updateHardwareCost: (code: string, cost: number) => void;
+  removeHardwareCost: (code: string) => void;
 
   updateFabricCost: (code: string, cost: number) => void;
   removeFabricCost: (code: string) => void;
@@ -139,6 +142,7 @@ export const createCostDataSlice: StateCreator<
   laborCosts: DEFAULT_LABOR_COSTS,
   serviceCosts: DEFAULT_SERVICE_COSTS,
   accessoryCosts: DEFAULT_ACCESSORY_COSTS,
+  hardwareCosts: {},
   fabricCosts: {},
   wallpaperCosts: {},
   areaCosts: {},
@@ -180,6 +184,18 @@ export const createCostDataSlice: StateCreator<
       const newCosts = { ...state.accessoryCosts };
       delete newCosts[key];
       return { accessoryCosts: newCosts };
+    }),
+
+  updateHardwareCost: (code, cost) =>
+    set((state) => ({
+      hardwareCosts: { ...state.hardwareCosts, [code]: cost },
+    })),
+
+  removeHardwareCost: (code) =>
+    set((state) => {
+      const newCosts = { ...state.hardwareCosts };
+      delete newCosts[code];
+      return { hardwareCosts: newCosts };
     }),
 
   updateFabricCost: (code, cost) =>
@@ -226,15 +242,17 @@ export const createCostDataSlice: StateCreator<
       laborCosts: DEFAULT_LABOR_COSTS,
       serviceCosts: DEFAULT_SERVICE_COSTS,
       accessoryCosts: DEFAULT_ACCESSORY_COSTS,
+      hardwareCosts: {},
       fabricCosts: {},
       wallpaperCosts: {},
       areaCosts: {},
     })),
 
   exportSecrets: () => {
-    const { laborCosts, serviceCosts, accessoryCosts, fabricCosts, wallpaperCosts, areaCosts } = get();
+    const { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts } =
+      get();
     return JSON.stringify(
-      { laborCosts, serviceCosts, accessoryCosts, fabricCosts, wallpaperCosts, areaCosts },
+      { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts },
       null,
       2
     );
@@ -249,6 +267,7 @@ export const createCostDataSlice: StateCreator<
         laborCosts: data.laborCosts ? { ...state.laborCosts, ...data.laborCosts } : state.laborCosts,
         serviceCosts: data.serviceCosts ? { ...state.serviceCosts, ...data.serviceCosts } : state.serviceCosts,
         accessoryCosts: data.accessoryCosts ? { ...state.accessoryCosts, ...data.accessoryCosts } : state.accessoryCosts,
+        hardwareCosts: data.hardwareCosts ? { ...state.hardwareCosts, ...data.hardwareCosts } : state.hardwareCosts,
         fabricCosts: data.fabricCosts ? { ...state.fabricCosts, ...data.fabricCosts } : state.fabricCosts,
         wallpaperCosts: data.wallpaperCosts ? { ...state.wallpaperCosts, ...data.wallpaperCosts } : state.wallpaperCosts,
         areaCosts: data.areaCosts ? { ...state.areaCosts, ...data.areaCosts } : state.areaCosts,

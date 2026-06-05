@@ -114,6 +114,45 @@ describe('CatalogContract — importCatalog (store)', () => {
     expect(res.ok).toBe(false);
     expect(res.errors.length).toBeGreaterThan(0);
   });
+
+  it('v2: ราง/ฮาร์ดแวร์ → hardwareCosts + SKU (brand/model/color/variant) ลง inventory', () => {
+    const res = store().importCatalog(
+      makeContract([
+        {
+          code: 'tes-w145-wh',
+          category: 'rail_wave',
+          brand: 'TES',
+          model: 'TW14.5',
+          color: 'ขาว',
+          variant: '2 ชั้น',
+          cost: 300,
+          sell_price: 450,
+          unit: 'meter',
+        },
+      ])
+    );
+    expect(res.ok).toBe(true);
+    expect(store().hardwareCosts['TES-W145-WH']).toBe(300);
+    const list = store().favorites['rail_wave'];
+    expect(list[0]).toMatchObject({
+      code: 'TES-W145-WH',
+      brand: 'TES',
+      model: 'TW14.5',
+      color: 'ขาว',
+      variant: '2 ชั้น',
+      default_price_per_m: 450,
+    });
+  });
+
+  it('v1 contract ยัง valid (backward compat)', () => {
+    const res = store().importCatalog({
+      contract: 'marnthara.catalog',
+      version: 1,
+      entries: [{ code: 'F009', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 80 }],
+    });
+    expect(res.ok).toBe(true);
+    expect(store().fabricCosts.F009).toBe(80);
+  });
 });
 
 describe('CatalogContract — exportCatalog round-trip', () => {
@@ -122,11 +161,12 @@ describe('CatalogContract — exportCatalog round-trip', () => {
     store().resetProductionCosts();
   });
 
-  it('export → valid contract + import กลับได้ค่าเดิม', () => {
+  it('export → valid contract + import กลับได้ค่าเดิม (รวม hardware + SKU)', () => {
     store().importCatalog(
       makeContract([
         { code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 90, sell_price: 350, note: 'A' },
         { code: 'WP01', category: FAVORITE_CATEGORIES.WALLPAPER, cost: 700, sell_price: 1200 },
+        { code: 'RW-1', category: 'rail_wave', brand: 'TES', color: 'ขาว', cost: 300, sell_price: 450 },
       ])
     );
     const json = store().exportCatalog();
@@ -140,6 +180,8 @@ describe('CatalogContract — exportCatalog round-trip', () => {
     expect(res.ok).toBe(true);
     expect(store().fabricCosts.F001).toBe(90);
     expect(store().wallpaperCosts.WP01).toBe(700);
+    expect(store().hardwareCosts['RW-1']).toBe(300);
     expect(store().favorites[FAVORITE_CATEGORIES.CURTAIN_MAIN][0].default_price_per_m).toBe(350);
+    expect(store().favorites['rail_wave'][0]).toMatchObject({ brand: 'TES', color: 'ขาว' });
   });
 });

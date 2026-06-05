@@ -15,7 +15,12 @@ import { z } from 'zod';
 import { CATALOG_CATEGORIES } from '@/lib/vault';
 
 export const CATALOG_CONTRACT_MAGIC = 'marnthara.catalog';
-export const CATALOG_CONTRACT_VERSION = 1;
+export const CATALOG_CONTRACT_VERSION = 2;
+/** version ที่รับ import ได้ (v1 ยัง valid — v2 เป็น superset เพิ่มฟิลด์ optional) */
+export const SUPPORTED_CONTRACT_VERSIONS = [1, 2] as const;
+
+/** หน่วยราคาที่แนะนำ (informational — ราง/ฮาร์ดแวร์ = meter/set, ผ้า = yard, พื้นที่ = sqm/sqyd) */
+export const CATALOG_UNITS = ['meter', 'set', 'sqm', 'sqyd', 'roll', 'piece', 'yard'] as const;
 
 // category ต้องเป็น id ที่รู้จักใน CATALOG_CATEGORIES (single source of truth) — กัน mis-route เงียบๆ
 const VALID_CATEGORY_IDS = new Set(CATALOG_CATEGORIES.map((c) => c.id));
@@ -31,8 +36,19 @@ export const CatalogEntrySchema = z.object({
   cost: z.number().nonnegative().optional(),
   /** ราคาขายร้าน → inventory default_price_per_m */
   sell_price: z.number().nonnegative().optional(),
-  /** หน่วย (informational — จริงๆ fix ตาม category) */
+  /** หน่วย — แนะนำใช้ CATALOG_UNITS (informational, lenient เพื่อ compat) */
   unit: z.string().optional(),
+
+  // ── v2: SKU identity (ยี่ห้อ/รุ่น/สี/variant) — สำหรับ catalog ที่มีหลาย SKU ต่อหมวด ──
+  /** ยี่ห้อ เช่น TES, LTL */
+  brand: z.string().optional(),
+  /** รุ่น เช่น TW14.5 */
+  model: z.string().optional(),
+  /** สี เช่น ขาว, เงิน */
+  color: z.string().optional(),
+  /** ตัวเลือกย่อย เช่น "2 ชั้น", หน้ากว้างผ้า */
+  variant: z.string().optional(),
+
   /** ผู้ผลิต/แหล่งที่มา (provenance) */
   supplier: z.string().optional(),
   note: z.string().optional(),
@@ -42,7 +58,8 @@ export const CatalogEntrySchema = z.object({
 
 export const CatalogContractSchema = z.object({
   contract: z.literal(CATALOG_CONTRACT_MAGIC),
-  version: z.literal(CATALOG_CONTRACT_VERSION),
+  // รับ v1 หรือ v2 (v2 superset เพิ่ม brand/model/color/variant + หมวดราง)
+  version: z.union([z.literal(1), z.literal(2)]),
   generated_at: z.string().optional(),
   source: z.string().optional(),
   entries: z.array(CatalogEntrySchema),

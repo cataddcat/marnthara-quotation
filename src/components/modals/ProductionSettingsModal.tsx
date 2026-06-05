@@ -540,7 +540,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="ตั้งค่าต้นทุน (Vault)" maxWidth="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="ตั้งค่าต้นทุน" maxWidth="2xl">
       <input
         type="file"
         ref={fileInputRef}

@@ -44,6 +44,13 @@ describe('CostDataSlice — service', () => {
     expect(store().serviceCosts).not.toHaveProperty('install_point');
   });
 
+  it('updateHardwareCost / removeHardwareCost (catalog SKU → ทุน)', () => {
+    store().updateHardwareCost('RW-1', 300);
+    expect(store().hardwareCosts['RW-1']).toBe(300);
+    store().removeHardwareCost('RW-1');
+    expect(store().hardwareCosts).not.toHaveProperty('RW-1');
+  });
+
   it('accessoryCosts ไม่ปนค่าบริการ (install/transport ย้ายไป serviceCosts)', () => {
     expect(store().accessoryCosts).not.toHaveProperty('install_point');
     expect(store().accessoryCosts).not.toHaveProperty('transport_base');
@@ -125,12 +132,13 @@ describe('CostDataSlice — lifecycle', () => {
 });
 
 describe('CostDataSlice — import/export', () => {
-  it('exportSecrets คืน JSON ที่มี 6 vault keys', () => {
+  it('exportSecrets คืน JSON ที่มี 7 vault keys', () => {
     store().updateFabricCost('F001', 120);
     const parsed = JSON.parse(store().exportSecrets());
     expect(parsed).toHaveProperty('laborCosts');
     expect(parsed).toHaveProperty('serviceCosts');
     expect(parsed).toHaveProperty('accessoryCosts');
+    expect(parsed).toHaveProperty('hardwareCosts');
     expect(parsed.fabricCosts).toMatchObject({ F001: 120 });
     expect(parsed).toHaveProperty('wallpaperCosts');
     expect(parsed).toHaveProperty('areaCosts');

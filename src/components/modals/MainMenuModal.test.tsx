@@ -24,7 +24,7 @@ const makeProps = () => ({
 describe('MainMenuModal', () => {
   it('render เมนูหลัก + ป้ายเมนูครบ', () => {
     render(<MainMenuModal {...makeProps()} />);
-    ['ใบเสนอราคา', 'คัดลอกสรุป (LINE)', 'Lookbook', 'ลูกค้า', 'ตั้งค่าร้าน', 'ส่วนลด', 'สำรองข้อมูล', 'วิเคราะห์กำไร', 'คลังต้นทุน', 'ตั้งค่าต้นทุน', 'อธิบายสูตร'].forEach(
+    ['ใบเสนอราคา', 'คัดลอกสรุป (LINE)', 'Lookbook', 'ลูกค้า', 'ตั้งค่าร้าน', 'ส่วนลด', 'สำรองข้อมูล', 'วิเคราะห์กำไร', 'คลังวัสดุ', 'ตั้งค่าต้นทุน', 'อธิบายสูตร'].forEach(
       (label) => expect(screen.getByText(label)).toBeInTheDocument()
     );
   });
@@ -38,7 +38,7 @@ describe('MainMenuModal', () => {
     ['ส่วนลด', 'onOpenDiscount'],
     ['สำรองข้อมูล', 'onOpenData'],
     ['วิเคราะห์กำไร', 'onOpenCostDashboard'],
-    ['คลังต้นทุน', 'onOpenMaterialSummary'],
+    ['คลังวัสดุ', 'onOpenMaterialSummary'],
     ['ตั้งค่าต้นทุน', 'onOpenProductionSettings'],
     ['อธิบายสูตร', 'onOpenFormulaDocs'],
   ] as const)('คลิก "%s" → เรียก %s', (label, handler) => {

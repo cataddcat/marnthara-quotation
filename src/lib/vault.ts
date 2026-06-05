@@ -7,7 +7,7 @@
 
 import { FAVORITE_CATEGORIES } from '@/config/enums';
 
-export type VaultKind = 'fabric' | 'wallpaper' | 'area';
+export type VaultKind = 'fabric' | 'wallpaper' | 'area' | 'hardware';
 
 export interface CatalogCategoryDef {
   id: string;
@@ -26,6 +26,14 @@ export const CATALOG_CATEGORIES: CatalogCategoryDef[] = [
   { id: FAVORITE_CATEGORIES.ALUMINUM_BLIND, label: 'มู่ลี่อลูมิเนียม', costUnit: 'ตร.ล.', vault: 'area' },
   { id: FAVORITE_CATEGORIES.PARTITION, label: 'ฉากกั้นห้อง', costUnit: 'ตร.ล.', vault: 'area' },
   { id: FAVORITE_CATEGORIES.PLEATED_SCREEN, label: 'มุ้งจีบ', costUnit: 'ตร.ม.', vault: 'area' },
+
+  // ── ราง + ฮาร์ดแวร์ (ชุดประกอบ — SKU มียี่ห้อ/รุ่น/สี ราคารวมอุปกรณ์ในตัว) ──
+  { id: 'rail_wave', label: 'รางม่านลอน', costUnit: 'เมตร', vault: 'hardware' },
+  { id: 'rail_pleated', label: 'รางม่านจีบ', costUnit: 'เมตร', vault: 'hardware' },
+  { id: 'rail_eyelet', label: 'รางม่านตาไก่', costUnit: 'เมตร', vault: 'hardware' },
+  { id: 'rail_roman', label: 'ชุดรางม่านพับ', costUnit: 'ชุด', vault: 'hardware' },
+  { id: 'rail_rod', label: 'ราวม่านแป๊บ', costUnit: 'เมตร', vault: 'hardware' },
+  { id: 'rail_louis', label: 'ราง/กล่องม่านหลุยส์', costUnit: 'เมตร', vault: 'hardware' },
 ];
 
 const BY_ID = new Map<string, CatalogCategoryDef>(CATALOG_CATEGORIES.map((c) => [c.id, c]));
@@ -49,12 +57,20 @@ export const categoryAccent = (category: string): string => {
     ? 'text-orange-500'
     : v === 'area'
       ? 'text-teal-600 dark:text-teal-400'
-      : 'text-violet-500';
+      : v === 'hardware'
+        ? 'text-sky-600 dark:text-sky-400'
+        : 'text-violet-500';
 };
 
 /** bg color ของจุดนำหน้า (dot) — คู่กับ categoryAccent */
 export const categoryDotClass = (category: string): string => {
   if (category === FAVORITE_CATEGORIES.CURTAIN_SHEER) return 'bg-violet-400';
   const v = categoryVault(category);
-  return v === 'wallpaper' ? 'bg-orange-500' : v === 'area' ? 'bg-teal-500' : 'bg-violet-500';
+  return v === 'wallpaper'
+    ? 'bg-orange-500'
+    : v === 'area'
+      ? 'bg-teal-500'
+      : v === 'hardware'
+        ? 'bg-sky-500'
+        : 'bg-violet-500';
 };

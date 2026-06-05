@@ -291,7 +291,7 @@ const CatalogCategoryView = ({
 }: {
   categoryId: string;
   costUnit: string;
-  vault: 'fabric' | 'wallpaper' | 'area';
+  vault: 'fabric' | 'wallpaper' | 'area' | 'hardware';
   prefillCode?: string;
   onPrefillHandled?: () => void;
 }) => {
@@ -299,9 +299,11 @@ const CatalogCategoryView = ({
   const fabricCosts = useAppStore((s) => s.fabricCosts);
   const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
   const areaCosts = useAppStore((s) => s.areaCosts);
+  const hardwareCosts = useAppStore((s) => s.hardwareCosts);
   const updateFabricCost = useAppStore((s) => s.updateFabricCost);
   const updateWallpaperCost = useAppStore((s) => s.updateWallpaperCost);
   const updateAreaCost = useAppStore((s) => s.updateAreaCost);
+  const updateHardwareCost = useAppStore((s) => s.updateHardwareCost);
   const openModal = useAppStore((s) => s.openModal);
   const accentClass = categoryAccent(categoryId);
   const dotClass = categoryDotClass(categoryId);
@@ -330,12 +332,14 @@ const CatalogCategoryView = ({
   const getCost = (code: string): number => {
     if (vault === 'wallpaper') return wallpaperCosts[code] ?? 0;
     if (vault === 'area') return areaCosts[code] ?? 0;
+    if (vault === 'hardware') return hardwareCosts[code] ?? 0;
     return fabricCosts[code] ?? 0;
   };
 
   const saveCost = (code: string, cost: number) => {
     if (vault === 'wallpaper') updateWallpaperCost(code, cost);
     else if (vault === 'area') updateAreaCost(code, cost);
+    else if (vault === 'hardware') updateHardwareCost(code, cost);
     else updateFabricCost(code, cost);
   };
 
@@ -879,7 +883,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
     acc.snaps > 0;
 
   const handleCopy = () => {
-    const lines: string[] = ['=== คลังต้นทุน ===', ''];
+    const lines: string[] = ['=== คลังวัสดุ ===', ''];
     if (fabricsByCode.size > 0) {
       lines.push('🧵 ผ้าทึบ');
       fabricsByCode.forEach((v, code) => lines.push(`  ${code}: ${fmtTH(v.total)} หลา`));
@@ -938,7 +942,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="คลังต้นทุน"
+      title="คลังวัสดุ"
       variant="fullscreen"
       maxWidth="5xl"
       headerAction={
