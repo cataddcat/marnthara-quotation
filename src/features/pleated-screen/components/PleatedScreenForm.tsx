@@ -138,7 +138,8 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
       </FormSection>
 
       <FormSection icon={Tag} iconClass={theme.icon} title="สเปค / ราคา">
-        <div className="grid grid-cols-2 gap-3">
+        {/* one field per line in Lite + on mobile; side-by-side only on desktop Full */}
+        <div className={cn('grid gap-3 grid-cols-1', isFull && 'sm:grid-cols-2')}>
           <Input
             label="สีเฟรม"
             value={formData.code || ''}
