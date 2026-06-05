@@ -171,8 +171,8 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
           ))}
         </div>
 
-        {/* Code & Price */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Code & Price — one field per line in Lite + on mobile; side-by-side only on desktop Full */}
+        <div className={cn('grid gap-3 grid-cols-1', isFull && 'sm:grid-cols-2')}>
           {/* [FIX] Keep Combobox ONLY for Code/Color */}
           <ComboboxInput
             label="รุ่น/รหัส/สี"
