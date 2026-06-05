@@ -171,7 +171,7 @@ const DockPill = ({
         onClick?.();
       }}
       aria-label={label}
-      className="group flex flex-1 items-center justify-center gap-2 h-10 px-3 rounded-full transition-all duration-200 active:scale-[0.94] hover:bg-muted outline-none"
+      className="group flex flex-1 items-center justify-center gap-2 h-11 px-3 rounded-full transition-all duration-200 active:scale-[0.94] hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-inset"
     >
       <Icon
         className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors"

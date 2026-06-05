@@ -1,10 +1,18 @@
 import React, { Fragment, useMemo } from 'react';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Description,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import { Drawer } from 'vaul';
-import { X, ChevronLeft } from 'lucide-react'; // เพิ่ม ChevronLeft
+import { X, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
 import { useMobileBack } from '@/hooks/useMobileBack';
-import { useIsMobile } from '@/hooks/useIsMobile'; // ✅ ต้องมี hook นี้
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 
 export type ModalVariant = 'center' | 'fullscreen' | 'drawer';
 
@@ -32,34 +40,59 @@ export const Modal: React.FC<ModalProps> = ({
   description,
 }) => {
   useMobileBack(isOpen, onClose);
-  const isMobile = useIsMobile();
+  // Tier มาจาก single source (device + persisted override) — เคารพ override ของผู้ใช้
+  // แทนการอ่านความกว้างจอตรง ๆ (เดิม useIsMobile) ตาม HANDOFF §10
+  const { isLite } = useExperienceMode();
 
   // 🧠 Smart Adaptive Logic:
-  // ถ้าไม่ใช่ Mobile ให้เปลี่ยน Fullscreen/Drawer เป็น Center ให้หมด (เพื่อความสวยงามบนจอใหญ่)
+  // Full tier (เดสก์ท็อป หรือ override=full บนมือถือ) → เปลี่ยน Fullscreen/Drawer เป็น Center ให้หมด
   const effectiveVariant = useMemo(() => {
-    if (!isMobile && (variant === 'fullscreen' || variant === 'drawer')) {
+    if (!isLite && (variant === 'fullscreen' || variant === 'drawer')) {
       return 'center';
     }
     return variant;
-  }, [isMobile, variant]);
+  }, [isLite, variant]);
 
   // --- 1. DRAWER (Mobile Bottom Sheet) ---
   if (effectiveVariant === 'drawer') {
     return (
       <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[50]" />
+          <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-50" />
           <Drawer.Content className="bg-card flex flex-col rounded-t-[20px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[51] outline-none max-w-md mx-auto">
-            {/* Handle Bar */}
-            <div className="p-4 bg-card rounded-t-[20px] shrink-0 border-b border-border/50">
-              <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mb-4" />
-              <Drawer.Title className="text-base font-bold text-center text-foreground">
-                {title}
-              </Drawer.Title>
+            {/* Handle Bar + Header */}
+            <div className="bg-card rounded-t-[20px] shrink-0 border-b border-border/50">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-12 h-1.5 rounded-full bg-muted" />
+              </div>
+              {/* แถวหัวเรื่อง — title/description กึ่งกลาง + (headerAction) + ปุ่มปิดที่มองเห็น
+                  NN/g: ปิดได้ชัดเจนไม่ต้องเดาว่าปัดลง · description ผูก aria ผ่าน Drawer.Description */}
+              <div className="relative flex flex-col items-center justify-center px-12 pb-3 pt-1">
+                <Drawer.Title className="max-w-full text-base font-bold text-center text-foreground truncate">
+                  {title}
+                </Drawer.Title>
+                {description && (
+                  <Drawer.Description className="max-w-full text-xs text-muted-foreground text-center mt-0.5 truncate">
+                    {description}
+                  </Drawer.Description>
+                )}
+                <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                  {headerAction}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    aria-label="ปิด"
+                    className="h-11 w-11 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4">{children}</div>
             {footer && (
-              <div className="p-4 border-t border-border mt-auto pb-safe-area bg-card">
+              <div className="p-4 border-t border-border mt-auto pb-safe-bottom bg-card">
                 {footer}
               </div>
             )}
@@ -124,23 +157,25 @@ export const Modal: React.FC<ModalProps> = ({
                     : `w-full ${maxWidthClass} rounded-2xl my-4 border border-border/50 max-h-[90vh]` // 🖥️ Desktop Card Logic
                 )}
               >
-                {/* Header — ขนาดกระชับให้สม่ำเสมอกับ ItemCard (title 16px, ไอคอนเล็ก, สี/เส้นขอบตาม token เดียวกัน) */}
+                {/* Header — title 16px; ปุ่มมี hit area 44px (HIG) padding กระชับให้หัวเรื่องไม่สูงเกิน */}
                 <div
                   className={cn(
-                    'flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border shrink-0 bg-card/95 backdrop-blur z-10',
+                    'flex items-center justify-between gap-2 px-4 py-2 border-b border-border shrink-0 bg-card/95 backdrop-blur z-10',
                     isFullscreen && 'pt-safe-top' // Safe Area for notch
                   )}
                 >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    {/* ปุ่ม Back สำหรับ Fullscreen Mobile */}
-                    {isFullscreen && isMobile && (
-                      <button
+                    {/* ปุ่ม Back สำหรับ Fullscreen (Lite tier) — hit area ≥44px + hover/active/focus-visible */}
+                    {isFullscreen && isLite && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={onClose}
                         aria-label="ย้อนกลับ"
-                        className="-ml-1.5 p-1.5 mr-0.5"
+                        className="-ml-2 h-11 w-11 shrink-0 rounded-full text-foreground"
                       >
-                        <ChevronLeft className="w-5 h-5 text-primary" />
-                      </button>
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
                     )}
                     <div className="min-w-0">
                       <DialogTitle
@@ -150,24 +185,29 @@ export const Modal: React.FC<ModalProps> = ({
                         {title}
                       </DialogTitle>
                       {description && (
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        <Description
+                          as="p"
+                          className="text-xs text-muted-foreground mt-0.5 truncate"
+                        >
                           {description}
-                        </p>
+                        </Description>
                       )}
                     </div>
                   </div>
 
                   {headerAction && <div className="flex items-center shrink-0">{headerAction}</div>}
 
-                  {/* ปุ่ม X (แสดงเสมอถ้าไม่ใช่ Mobile Fullscreen หรือถ้าต้องการปุ่มปิดขวาบน) */}
-                  {(!isFullscreen || !isMobile) && (
-                    <button
+                  {/* ปุ่ม X — แสดงเมื่อไม่ใช่ Fullscreen แบบ Lite (กรณีนั้นใช้ปุ่ม Back แทน) */}
+                  {(!isFullscreen || !isLite) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={onClose}
                       aria-label="ปิด"
-                      className="shrink-0 p-1.5 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95 outline-none focus:ring-2 focus:ring-primary/50"
+                      className="h-11 w-11 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
                     >
-                      <X className="w-4 h-4" />
-                    </button>
+                      <X className="h-5 w-5" />
+                    </Button>
                   )}
                 </div>
 

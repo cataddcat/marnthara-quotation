@@ -140,7 +140,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
       title="สรุปรายการ"
       description={`มูลค่าโครงการ ${fmtTH(grandTotal)}`}
     >
-      <div className="space-y-4 pb-6">
+      <div className="space-y-4 pb-safe-area">
         {/* Grand Total Card */}
         <div className="bg-primary/5 rounded-2xl p-4 flex items-center justify-between border border-primary/10">
           <div className="flex items-center gap-3">
@@ -173,7 +173,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
               <button
                 onClick={() => setActiveFilter(null)}
                 className={cn(
-                  'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border',
+                  'flex-shrink-0 flex items-center gap-1.5 px-3 py-2 min-h-11 rounded-full text-xs font-semibold transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
                   activeFilter === null
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
@@ -206,7 +206,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                   key={type}
                   onClick={() => handleFilterToggle(type)}
                   className={cn(
-                    'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border',
+                    'flex-shrink-0 flex items-center gap-1.5 px-3 py-2 min-h-11 rounded-full text-xs font-semibold transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
                     isActive
                       ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                       : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
@@ -259,7 +259,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                   {onNavigateToRoom ? (
                     <button
                       onClick={() => handleRoomClick(room.id)}
-                      className="flex items-center gap-2 group text-left outline-none active:scale-95 transition-transform"
+                      className="flex items-center gap-2 group text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 transition-transform"
                     >
                       <span className="w-1 h-4 bg-primary rounded-full group-hover:h-5 transition-all" />
                       <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
@@ -287,7 +287,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(room.id, item)}
-                        className="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-muted/50 transition-colors group active:bg-muted"
+                        className="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-muted/50 transition-colors group active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-inset"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
                           <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">

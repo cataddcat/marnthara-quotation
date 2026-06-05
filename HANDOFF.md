@@ -64,6 +64,18 @@ Thai market 2025 prices are baked into `DEFAULT_LABOR_COSTS` and `DEFAULT_ACCESS
 
 **Why:** A brand-new install should give reasonable cost calculations immediately, not zeros.
 
+### 1.6 UX Baseline — Apple HIG + NN/g (mandatory for every screen)
+
+The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen Norman Group usability heuristics, mapped to this codebase's primitives. **New or changed UI must satisfy all five before merge.**
+
+1. **Visual hierarchy & clarity.** Drive the eye with typography (weight / size / line-height) and contrast. **Reserve the `primary` color exclusively for the primary CTA** — don't tint secondary affordances, nav chevrons, or decorative icons with `primary` where it competes with the real action.
+2. **Touch targets & ergonomics (HIG ≥ 44×44).** Every interactive element gets a ≥ 44×44px hit area. Reuse `Button` (`size="icon"` / `"md"` = 48px) or apply `h-11 w-11` (44px) + a centered icon — never ship a bare icon with only `p-1.5`. Drive control size by tier via `useTierSize().control` (Lite = lg/56px); never hardcode input heights per tier.
+3. **Minimize cognitive load (NN/g).** Group related fields by the Law of Proximity; use universal `lucide` icons; apply progressive disclosure via `AdvancedSection` (installation-spec fields collapse in Lite). Don't surface every field at once.
+4. **System status & fluid feedback.** Every control ships the full state set — `hover`, `active`, `focus-visible` (NOT `focus`, which also fires on mouse click), plus `loading` / `disabled` where applicable. `Button` already encodes these; custom controls must match.
+5. **Error prevention & forgiveness (NN/g).** Prevent mistakes with smart constraints + input formatting (smart-parse). Irreversible actions use the `destructive` variant + an explicit confirm. **Coexists with §1.1 Save-First:** autosave makes *closing a form* non-destructive (no confirm needed), so reserve confirmations for true data deletion (delete room / item / cost entry), never for navigation.
+
+**Reference implementation:** `src/components/ui/Modal.tsx` — 44px header close/back buttons via the reused `Button`, tier resolved from `useExperienceMode()` (respects the persisted override, not raw screen width — see §10), and a visible drawer close button.
+
 ---
 
 ## 2. System Map
