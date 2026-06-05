@@ -68,10 +68,10 @@ export const FORMULAS: FormulaConfig = {
      * - ลอน: ใช้ค่าจาก wave_spacings ด้านล่าง (multiplier_wave เป็น fallback)
      * - จีบ / ตาไก่ / พับ: ใช้ค่าด้านล่าง
      *
-     * 📐 มาตรฐานสากล: ม่านจีบ 2.0-2.5, ลอน 2.5-2.8, ตาไก่ 2.5-2.7
+     * 📐 มาตรฐานสากล: ม่านจีบ 2.0-2.5, ลอน 2.7-2.8, ตาไก่ 2.3-2.7
      */
-    multiplier_pleated: 2.7,
-    multiplier_eyelet: 2.7,
+    multiplier_pleated: 2.3,
+    multiplier_eyelet: 2.3,
     multiplier_roman: 1.5,
     multiplier_wave: 2.7,
 
