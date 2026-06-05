@@ -27,7 +27,7 @@ const RAIL_COLOR_CUSTOM = '__custom__';
 const RAIL_COLOR_PRESETS = RAIL_COLORS.map((c) => c.value);
 const RAIL_COLOR_OPTIONS = [
   { label: 'เลือกสี...', value: '' },
-  ...RAIL_COLORS,
+  ...RAIL_COLORS.map((c) => ({ label: c.label, value: c.value, color: c.hex })),
   { label: 'กำหนดเอง', value: RAIL_COLOR_CUSTOM },
 ];
 

@@ -15,16 +15,18 @@ export interface RailColor {
   value: string;
   /** ป้ายแสดงใน dropdown */
   label: string;
+  /** สีตัวอย่าง (hex) — ใช้โชว์ swatch ใน dropdown */
+  hex: string;
 }
 
 /** 6 สีมาตรฐานของราง THONG DECOR (เรียงตามรหัส 01–06) */
 export const RAIL_COLORS: RailColor[] = [
-  { value: 'ขาว', label: 'ขาว' },
-  { value: 'ดำ', label: 'ดำ' },
-  { value: 'ไม้สัก', label: 'ไม้สัก' },
-  { value: 'เมเปิ้ล', label: 'เมเปิ้ล' },
-  { value: 'ไม้แดง', label: 'ไม้แดง' },
-  { value: 'เงินเทา', label: 'เงินเทา' },
+  { value: 'ขาว', label: 'ขาว', hex: '#f8fafc' },
+  { value: 'ดำ', label: 'ดำ', hex: '#1f2937' },
+  { value: 'ไม้สัก', label: 'ไม้สัก', hex: '#9a6a3a' },
+  { value: 'เมเปิ้ล', label: 'เมเปิ้ล', hex: '#d9b382' },
+  { value: 'ไม้แดง', label: 'ไม้แดง', hex: '#7b3f2f' },
+  { value: 'เงินเทา', label: 'เงินเทา', hex: '#9ca3af' },
 ];
 
 /** สี (ไทย) → รหัสลงท้าย 2 หลัก (TES1xx / LTL1xx) */

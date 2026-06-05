@@ -139,6 +139,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         errors={errors}
         warnings={warnings}
         showCatalogTools={showAdvanced}
+        stack={isLite}
       />
 
       {showAdvanced && (
