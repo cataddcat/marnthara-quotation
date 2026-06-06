@@ -20,6 +20,8 @@ import {
   RotateCcw,
   Bookmark,
   History,
+  Scissors,
+  Wrench,
 } from 'lucide-react';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -252,7 +254,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
     const isConfirmed = await confirm({
       title: 'โหลดค่ามาตรฐาน 2025?',
       description:
-        'ระบบจะโหลดค่าแรง บริการ และราคาอุปกรณ์มาตรฐานตลาดไทย (ข้อมูลจะทับค่าแรง/บริการ/อุปกรณ์ปัจจุบัน แต่ไม่กระทบต้นทุนผ้า)',
+        'ระบบจะโหลดค่าเย็บ + บริการ มาตรฐานตลาดไทย (ทับค่าเย็บ/บริการปัจจุบัน — ไม่กระทบต้นทุนผ้า/ราง)',
       confirmLabel: 'โหลดค่ามาตรฐาน',
       variant: 'default',
     });
@@ -323,93 +325,102 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
 
   const renderFormCard = (isEditMode: boolean, kind: ItemKind) => {
     const isLaborKind = kind === 'labor';
+    const labelCls = 'text-xs font-semibold text-muted-foreground uppercase tracking-wide';
+    const fieldCls =
+      'flex h-11 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
     return (
-      <div className="p-3 rounded-xl border bg-card border-primary shadow-md ring-1 ring-primary/20 animate-in fade-in zoom-in-95 duration-150 mb-2">
+      <div className="p-3 rounded-xl border border-primary/40 bg-card shadow-sm animate-in fade-in zoom-in-95 duration-150 mb-2">
         <div className="space-y-3">
-          {/* Row 1 */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {isLaborKind ? 'ชื่อสไตล์ม่าน' : 'รหัส / ชื่อรายการ'}
-              </label>
-              <input
-                className="flex h-11 w-full rounded-xl border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-background text-foreground border-input"
-                value={form.code}
-                onChange={(e) => setForm({ ...form, code: e.target.value })}
-                placeholder={isLaborKind ? 'เช่น ลอน, จีบ, พับ' : 'เช่น ABC-001'}
-                autoFocus={!isEditMode}
-              />
-            </div>
+          {isLaborKind ? (
+            <>
+              {/* ชื่อสไตล์ | หน่วย */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className={labelCls}>ชื่อสไตล์ม่าน</label>
+                  <input
+                    className={cn(fieldCls, 'text-foreground')}
+                    value={form.code}
+                    onChange={(e) => setForm({ ...form, code: e.target.value })}
+                    placeholder="เช่น ลอน, จีบ, พับ"
+                    autoFocus={!isEditMode}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className={labelCls}>หน่วย</label>
+                  <select
+                    className={cn(fieldCls, 'text-foreground')}
+                    value={form.unit}
+                    onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                  >
+                    <option value="meter">/ เมตร (กว้างช่อง)</option>
+                    <option value="yard">/ หลา (ผ้าที่ใช้จริง)</option>
+                    <option value="sqm">/ ตร.ม. (กว้าง×สูง)</option>
+                    <option value="set">/ ชุด (เหมา)</option>
+                  </select>
+                </div>
+              </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {isLaborKind ? 'หน่วย' : 'หมายเหตุ'}
-              </label>
-              {isLaborKind ? (
-                <select
-                  className="flex h-11 w-full rounded-xl border px-3 text-sm bg-background text-foreground border-input focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  value={form.unit}
-                  onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                >
-                  <option value="meter">/ เมตร (กว้างช่อง)</option>
-                  <option value="yard">/ หลา (ผ้าที่ใช้จริง)</option>
-                  <option value="sqm">/ ตร.ม. (กว้าง×สูง)</option>
-                  <option value="set">/ ชุด (เหมา)</option>
-                </select>
-              ) : (
+              {/* ค่าแรง | ขั้นต่ำ */}
+              <div className="grid grid-cols-2 gap-3 p-3 bg-muted/40 rounded-lg">
+                <div className="space-y-1">
+                  <label className={labelCls}>
+                    ค่าแรง / หน่วย <span className="text-amber-500">฿</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    className={cn(fieldCls, 'font-mono font-bold text-amber-600')}
+                    value={form.cost}
+                    onChange={(e) => setForm({ ...form, cost: e.target.value })}
+                    autoFocus={isEditMode}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className={labelCls}>
+                    ขั้นต่ำ <span className="text-muted-foreground">฿</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    className={cn(fieldCls, 'font-mono font-bold text-foreground')}
+                    value={form.minPrice}
+                    onChange={(e) => setForm({ ...form, minPrice: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* บริการ — ชื่อ + ต้นทุน/จุด (เลขเดียว ไม่มีหน่วย/ราคาขาย) */}
+              <div className="space-y-1">
+                <label className={labelCls}>ชื่อรายการบริการ</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border px-3 text-sm bg-background text-foreground border-input focus:outline-none disabled:opacity-60 disabled:bg-muted/30"
-                  value={form.note}
-                  onChange={(e) => setForm({ ...form, note: e.target.value })}
-                  disabled={isEditMode}
-                  placeholder="-"
+                  className={cn(fieldCls, 'text-foreground')}
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+                  placeholder="เช่น ค่าติดตั้ง (ต่อจุด)"
+                  autoFocus={!isEditMode}
                 />
-              )}
-            </div>
-          </div>
-
-          {/* Row 2 */}
-          <div className="grid grid-cols-2 gap-3 p-3 bg-muted/40 rounded-xl">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {isLaborKind ? 'ค่าแรง / หน่วย' : 'ต้นทุน'}{' '}
-                <span className="text-amber-500">฿</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                className="flex h-11 w-full rounded-xl border px-3 text-sm font-bold font-mono text-amber-600 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-background border-input"
-                value={form.cost}
-                onChange={(e) => setForm({ ...form, cost: e.target.value })}
-                autoFocus={isEditMode}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {isLaborKind ? 'ขั้นต่ำ' : 'ราคาขาย (Ref)'}{' '}
-                <span className="text-sky-500">฿</span>
-              </label>
-              {isLaborKind ? (
+              </div>
+              <div className="space-y-1 p-3 bg-muted/40 rounded-lg">
+                <label className={labelCls}>
+                  ต้นทุน / จุด <span className="text-amber-500">฿</span>
+                </label>
                 <input
                   type="number"
                   min="0"
                   step="any"
-                  className="flex h-11 w-full rounded-xl border px-3 text-sm font-bold font-mono text-sky-600 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-background border-input"
-                  value={form.minPrice}
-                  onChange={(e) => setForm({ ...form, minPrice: e.target.value })}
-                  placeholder="0"
+                  className={cn(fieldCls, 'font-mono font-bold text-amber-600')}
+                  value={form.cost}
+                  onChange={(e) => setForm({ ...form, cost: e.target.value })}
+                  autoFocus={isEditMode}
                 />
-              ) : (
-                <input
-                  className="flex h-11 w-full rounded-xl border px-3 text-sm font-bold text-emerald-600 bg-muted/30 border-input opacity-70 cursor-default"
-                  value={toNum(form.priceRef) > 0 ? `฿${fmtTH(parseFloat(form.priceRef))}` : '-'}
-                  readOnly
-                />
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
 
           {/* Footer */}
           <div className="flex justify-between items-center pt-1 border-t border-border/50">
@@ -452,9 +463,9 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
         key={`${item.kind}:${item.key}`}
         onClick={() => !isLocked && handleStartEdit(item)}
         className={cn(
-          'px-3 py-2.5 rounded-xl border transition-all bg-card border-border group',
+          'px-3 py-2.5 rounded-lg border transition-all bg-card border-border group',
           !isLocked &&
-            'hover:border-primary/40 cursor-pointer hover:bg-primary/5 active:scale-[0.99]'
+            'hover:border-foreground/30 cursor-pointer hover:bg-muted/50 active:scale-[0.99]'
         )}
       >
         <div className="flex items-center gap-3">
@@ -465,7 +476,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
             </div>
             <div className="text-[11px] text-muted-foreground truncate mt-0.5 font-mono">
               {item.kind === 'labor'
-                ? `${item.unit} · ขั้นต่ำ ฿${fmtTH(item.minPrice ?? 0)}`
+                ? `${item.unit}${(item.minPrice ?? 0) > 0 ? ` · ขั้นต่ำ ฿${fmtTH(item.minPrice ?? 0)}` : ''}`
                 : item.note || item.key}
             </div>
           </div>
@@ -484,7 +495,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
 
           {/* Edit icon */}
           {!isLocked && (
-            <Pencil className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary/70 transition-colors shrink-0" />
+            <Pencil className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" strokeWidth={1.5} />
           )}
         </div>
       </div>
@@ -542,7 +553,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               leaveFrom="transform scale-100 opacity-100"
               leaveTo="transform scale-95 opacity-0"
             >
-              <MenuItems className="absolute right-0 mt-2 w-56 bg-popover border border-border rounded-xl shadow-lg z-50 p-1 focus:outline-none">
+              <MenuItems className="absolute right-0 mt-2 w-56 bg-popover border border-border rounded-xl shadow-md z-50 p-1 focus:outline-none">
                 <MenuItem>
                   {({ active }) => (
                     <button
@@ -552,10 +563,10 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                         active && 'bg-accent'
                       )}
                     >
-                      <RotateCcw className="w-4 h-4 text-primary" />
+                      <RotateCcw className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                       <div className="text-left">
                         <div className="font-medium">โหลดค่ามาตรฐาน 2025</div>
-                        <div className="text-xs text-muted-foreground">ราคาตลาดไทย (แรง + บริการ + อุปกรณ์)</div>
+                        <div className="text-xs text-muted-foreground">ค่าเย็บ + บริการ (ราคาตลาดไทย)</div>
                       </div>
                     </button>
                   )}
@@ -570,7 +581,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                         active && 'bg-accent'
                       )}
                     >
-                      <Bookmark className="w-4 h-4 text-primary" />
+                      <Bookmark className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                       <div className="text-left">
                         <div className="font-medium">บันทึกเป็นค่าตั้งต้นของฉัน</div>
                         <div className="text-xs text-muted-foreground">จดจำค่าเย็บ + บริการ ปัจจุบันเป็นจุดเริ่มต้น</div>
@@ -588,7 +599,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                           active && 'bg-accent'
                         )}
                       >
-                        <History className="w-4 h-4 text-primary" />
+                        <History className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                         <div className="text-left">
                           <div className="font-medium">โหลดค่าตั้งต้นของฉัน</div>
                           <div className="text-xs text-muted-foreground">
@@ -656,24 +667,39 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
         </div>
 
         {/* Tabs: ค่าเย็บ / บริการ */}
-        <div className="flex gap-1 p-1 bg-muted/50 rounded-xl shrink-0">
-          {(['labor', 'service'] as ItemKind[]).map((k) => (
-            <button
-              key={k}
-              onClick={() => {
-                setActiveTab(k);
-                resetForm();
-              }}
-              className={cn(
-                'flex-1 h-9 rounded-lg text-sm font-semibold transition-colors',
-                activeTab === k
-                  ? 'bg-card shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {k === 'labor' ? 'ค่าเย็บ' : 'บริการ'}
-            </button>
-          ))}
+        <div className="flex gap-1 p-1 bg-muted/50 rounded-lg shrink-0">
+          {[
+            { k: 'labor' as ItemKind, Icon: Scissors, label: 'ค่าเย็บ', count: Object.keys(laborCosts).length },
+            { k: 'service' as ItemKind, Icon: Wrench, label: 'บริการ', count: Object.keys(serviceCosts).length },
+          ].map(({ k, Icon, label, count }) => {
+            const active = activeTab === k;
+            return (
+              <button
+                key={k}
+                onClick={() => {
+                  setActiveTab(k);
+                  resetForm();
+                }}
+                className={cn(
+                  'flex-1 h-9 rounded-md text-sm font-semibold transition-colors inline-flex items-center justify-center gap-1.5',
+                  active
+                    ? 'bg-card border border-border text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Icon className="w-4 h-4" strokeWidth={1.5} />
+                {label}
+                <span
+                  className={cn(
+                    'min-w-[1.25rem] h-5 px-1 rounded text-[11px] font-mono inline-flex items-center justify-center',
+                    active ? 'bg-muted text-foreground' : 'bg-muted/60 text-muted-foreground'
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* List */}

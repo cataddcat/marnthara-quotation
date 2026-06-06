@@ -1,6 +1,20 @@
 @import 'tailwindcss';
 
+/* ── Geist Mono (Vercel) — เลเยอร์ตัวเลข/รหัส (HANDOFF §1.7) ──
+   self-host เพื่อออฟไลน์ (PWA); variable woff2 (100–900).
+   ถ้าไฟล์หาย → fallback ลง ui-monospace อัตโนมัติ (degrade ปลอดภัย) */
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMono-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
+  /* ฟอนต์ตัวเลข/รหัส (font-mono ทุกจุดในแอป) = Geist Mono → monospace เรียงตรงคอลัมน์ */
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
   /* --- 1. Base Semantic Colors (Eye-Care Palette 2025) --- */
 
   /* Core Surfaces: Soft & Eye-Friendly */

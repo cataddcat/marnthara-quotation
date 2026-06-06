@@ -79,6 +79,23 @@ The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen 
 
 **Reference implementation:** `src/components/ui/Modal.tsx` — 44px header close/back buttons via the reused `Button`, tier resolved from `useExperienceMode()` (respects the persisted override, not raw screen width — see §10), and a visible drawer close button.
 
+### 1.7 Geist-aligned visual language (synthesized from §1.6 + Vercel Geist)
+
+We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standing visual language, synthesized from §1.6 and Vercel's **Geist** design system, mapped to our tokens/primitives. It decides look-and-feel so we don't have to re-litigate per screen. **§1.7 layers on top of §1.6 — never overrides §1.6's ergonomics.**
+
+*Why this fits us:* our foundation is already ~70% Geist — `--primary` is Slate-900 (≈black) / near-white in dark (Geist's monochrome core), tokens are semantic, headings track tight (-0.02em), base is 16px. The gap is flatness, the numeric layer, radii, and icon discipline.
+
+1. **Monochrome-first ⊇ §1.6#1 (primary = CTA only).** Decorative/affordance icons, chips, and labels default to `text-foreground` / `text-muted-foreground` — **never `text-primary`** unless the element *is* the primary CTA. (Status/brand/traffic-light colors are the sanctioned exceptions — they carry meaning.)
+2. **Borders over shadows.** Separate surfaces with a 1px `border-border` + a background shift (`bg-card` / `bg-muted/40`), not elevation. Avoid `shadow-md`/`shadow-2xl`/`shadow-primary/*`, gradients (`gradient-*`), and `.glass-card`. Allowed: a single neutral `shadow-sm` for true overlays (menus/popovers), and the modal backdrop.
+3. **Sharper, consistent radii.** Controls (button / input / tab / chip) → ~8px (`rounded-lg`); cards/containers → ~10–12px (`rounded-xl`). Avoid `rounded-2xl`+ on interactive controls (too pillowy for Geist). Token: `--radius: 0.75rem` stays the card baseline.
+4. **Geist Mono = the numeric layer.** `--font-mono` is **Geist Mono** (self-hosted `public/fonts/GeistMono-Variable.woff2`, precached for offline). Every `font-mono` (prices, dims, codes, units — ~72 sites) renders in it; being monospaced it aligns numbers into columns for free. Use `font-mono` for any number/code the eye scans or compares. Body text keeps the system Thai sans (Geist has no Thai glyphs).
+5. **Icon discipline (keep lucide).** `lucide` everywhere, but Geist-tuned: `strokeWidth={1.5}`, sizes on a 16px grid (`w-3.5`/`w-4`/`w-5`), `currentColor` only (monochrome — see #1). Do **not** migrate icon libraries; tuned lucide ≈ Geist look at zero churn.
+6. **Restrained accent + clear focus.** Keep `focus-visible:ring-ring` (NOT `:focus`). Accents (status / brand / amber prices / emerald profit) are *accents* — text/border/dot, not full fills.
+7. **Keep §1.6#2 ergonomics — do NOT adopt Geist's desktop density.** 44×44 hit areas, `useTierSize().control` (Lite = 56px), 16px base stay. Geist is desktop-dense; we are mobile/on-site first.
+8. **Motion: subtle + fast.** Keep the existing `cubic-bezier(0.16,1,0.3,1)` easings; drop gradient/glow flourishes (they read "2021", not Geist).
+
+**Rollout:** apply per screen when you touch it (don't sweep all 14 modals at once). Reference application = `ProductionSettingsModal` ("ตั้งค่าต้นทุน").
+
 ---
 
 ## 2. System Map
