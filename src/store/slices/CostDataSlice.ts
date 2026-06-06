@@ -21,6 +21,9 @@ export interface CostDataSlice {
   wallpaperCosts: Record<string, number>; // code → cost per roll
   areaCosts: Record<string, number>;      // code or type → cost per sqm
 
+  // ค่าตั้งต้นของฉัน (owner baseline) — snapshot ค่าเย็บ+บริการ ของเจ้าของ; null = ยังไม่เคยบันทึก
+  userCostDefaults: { laborCosts: Record<string, LaborCost>; serviceCosts: Record<string, number>; savedAt: number } | null;
+
   updateLaborCost: (key: string, data: Partial<LaborCost>) => void;
   removeLaborCost: (key: string) => void;
   updateServiceCost: (key: string, price: number) => void;
@@ -41,6 +44,11 @@ export interface CostDataSlice {
   loadDefaultCosts: () => void;
   resetProductionCosts: () => void;
 
+  // owner baseline actions
+  saveCostDefaults: () => void;   // snapshot ค่าเย็บ+บริการ ปัจจุบัน → userCostDefaults
+  loadCostDefaults: () => void;   // คืนค่าจาก userCostDefaults (ไม่มี → fallback DEFAULT ในโค้ด)
+  clearCostDefaults: () => void;  // ล้าง baseline → null
+
   exportSecrets: () => string;
   importSecrets: (jsonString: string) => boolean;
 }
@@ -49,51 +57,52 @@ export interface CostDataSlice {
 // ค่าแรงมาตรฐานตลาดไทย 2025
 // อ้างอิง: ราคากลางร้านผ้าม่านทั่วกรุงเทพฯ และปริมณฑล
 // ─────────────────────────────────────────────────────────────────────────────
+// ค่าเย็บต่อเมตรความกว้างหน้าต่าง (min_price = 0 → คิดตามเมตรล้วน, เจ้าของปรับขั้นต่ำเองได้)
 export const DEFAULT_LABOR_COSTS: Record<string, LaborCost> = {
   'ลอน': {
     style: 'ลอน',
-    rate: 110,   // บาท/เมตร (ค่าเย็บ + ติดตั้ง)
+    rate: 130,   // บาท/เมตร (ค่าเย็บ)
     unit: 'meter',
-    min_price: 400,
+    min_price: 0,
   },
   'จีบ': {
     style: 'จีบ',
-    rate: 110,
+    rate: 130,
     unit: 'meter',
-    min_price: 400,
+    min_price: 0,
   },
   'ตาไก่': {
     style: 'ตาไก่',
-    rate: 90,
+    rate: 130,
     unit: 'meter',
-    min_price: 300,
+    min_price: 0,
   },
   'พับ': {
     style: 'พับ',
-    rate: 220,   // บาท/ตร.ม. (ม่านพับคิดเป็นพื้นที่)
-    unit: 'sqm',
-    min_price: 600,
+    rate: 300,   // บาท/เมตร (ม่านพับคิดต่อเมตรราง)
+    unit: 'meter',
+    min_price: 0,
   },
   'หลุยส์': {
     style: 'หลุยส์',
-    rate: 160,
+    rate: 500,
     unit: 'meter',
-    min_price: 500,
+    min_price: 0,
   },
   'แป๊บ': {
     style: 'แป๊บ',
-    rate: 60,
+    rate: 130,
     unit: 'meter',
-    min_price: 200,
+    min_price: 0,
   },
 
   // ค่าแรงเย็บผ้าโปร่ง — ใช้เมื่อ layer_mode = DOUBLE (ทึบ+โปร่ง)
-  // คำนวณแยกต่างหากจากค่าแรงผ้าทึบ
+  // คิดแยกต่างหาก (เท่าค่าเย็บผ้าทึบต่อเมตร) → DOUBLE = ค่าเย็บทึบ + โปร่ง รวมกัน
   'ผ้าโปร่ง': {
     style: 'ผ้าโปร่ง',
-    rate: 70,    // บาท/เมตร (ผ้าโปร่งเย็บง่ายกว่าผ้าทึบ)
+    rate: 130,   // บาท/เมตร (เท่าค่าเย็บผ้าทึบ)
     unit: 'meter',
-    min_price: 200,
+    min_price: 0,
   },
 };
 
@@ -112,21 +121,12 @@ export const DEFAULT_ACCESSORY_COSTS: Record<string, number> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ค่าบริการมาตรฐาน 2025 (ค่าติดตั้ง / เดินทาง / รื้อถอน) — flat rate ตัวเลขล้วน
-// ปัจจุบันเป็น reference data (ยังไม่ผูกเข้าการคิดบิลระดับใบเสนอราคา ยกเว้นรื้อถอน)
+// ค่าบริการมาตรฐาน — flat rate ต่อจุด (ติดตั้ง / รื้อถอน)
+// removal_per_point ผูกเข้า CostEngine (item รื้อถอน = rate × จำนวนจุด); install_point เป็น reference
 // ─────────────────────────────────────────────────────────────────────────────
 export const DEFAULT_SERVICE_COSTS: Record<string, number> = {
-  // ── ค่าติดตั้ง ─────────────────────────────────────────────────────────
-  install_point: 350,  // ค่าติดตั้ง (ต่อจุด/ต่อช่องหน้าต่าง)
-  install_min:   600,  // ค่าติดตั้งขั้นต่ำต่อเที่ยว
-
-  // ── ค่าเดินทาง/ขนส่ง ───────────────────────────────────────────────────
-  transport_base:       400,   // ค่าเดินทาง กทม. และปริมณฑล (ต่อเที่ยว)
-  transport_upcountry: 1200,   // ค่าเดินทางต่างจังหวัด (ต่อเที่ยว)
-  fuel_diesel_liter:     32,   // ราคาน้ำมันดีเซล B7 อ้างอิง (บาท/ลิตร)
-
-  // ── ค่ารื้อถอน ─────────────────────────────────────────────────────────
-  removal_per_point: 0,  // ทุนค่ารื้อถอน (ต่อจุด) — 0 = ยังไม่ตั้ง → CostEngine ไม่คิดต้นทุน
+  install_point:     300,  // ค่าติดตั้ง (ต่อจุด/ต่อช่องหน้าต่าง)
+  removal_per_point: 300,  // ทุนค่ารื้อถอน (ต่อจุด)
 };
 
 export const createCostDataSlice: StateCreator<
@@ -142,6 +142,7 @@ export const createCostDataSlice: StateCreator<
   fabricCosts: {},
   wallpaperCosts: {},
   areaCosts: {},
+  userCostDefaults: null,
 
   updateLaborCost: (key, data) =>
     set((state) => ({
@@ -242,7 +243,30 @@ export const createCostDataSlice: StateCreator<
       fabricCosts: {},
       wallpaperCosts: {},
       areaCosts: {},
+      userCostDefaults: null, // factory reset = ล้าง baseline ของเจ้าของด้วย
     })),
+
+  // ── ค่าตั้งต้นของฉัน (owner baseline) ──────────────────────────────────────
+  // snapshot ค่าเย็บ+บริการ ปัจจุบันเป็น "จุดรีเซ็ตของเจ้าของ" — เก็บถาวรใน persist
+  // ไม่ต้องพึ่ง dev: เจ้าของกดบันทึก/คืนค่าได้เอง (ต่างจาก loadDefaultCosts = ค่ามาตรฐานในโค้ด)
+  saveCostDefaults: () =>
+    set((state) => ({
+      userCostDefaults: {
+        laborCosts: { ...state.laborCosts },
+        serviceCosts: { ...state.serviceCosts },
+        savedAt: Date.now(),
+      },
+    })),
+
+  loadCostDefaults: () =>
+    set((state) => {
+      const snap = state.userCostDefaults;
+      return snap
+        ? { laborCosts: { ...snap.laborCosts }, serviceCosts: { ...snap.serviceCosts } }
+        : { laborCosts: DEFAULT_LABOR_COSTS, serviceCosts: DEFAULT_SERVICE_COSTS };
+    }),
+
+  clearCostDefaults: () => set(() => ({ userCostDefaults: null })),
 
   exportSecrets: () => {
     const { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts } =

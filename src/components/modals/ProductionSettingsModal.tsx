@@ -18,6 +18,8 @@ import {
   Lock,
   Unlock,
   RotateCcw,
+  Bookmark,
+  History,
 } from 'lucide-react';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -51,13 +53,9 @@ const UNIT_LABELS: Record<string, string> = {
   set: '/ ชุด',
 };
 
-// ค่าบริการ (ติดตั้ง / เดินทาง / รื้อถอน) — แสดงในแท็บ "ค่าแรง" section "บริการ"
+// ค่าบริการ — แสดงในแท็บ "บริการ" (flat rate ต่อจุด)
 const SERVICE_LABELS: Record<string, string> = {
   install_point: 'ค่าติดตั้ง (ต่อจุด)',
-  install_min: 'ค่าติดตั้งขั้นต่ำ (ต่อเที่ยว)',
-  transport_base: 'ค่าเดินทาง กทม./ปริมณฑล',
-  transport_upcountry: 'ค่าเดินทางต่างจังหวัด',
-  fuel_diesel_liter: 'ราคาน้ำมันดีเซล (อ้างอิง/ลิตร)',
   removal_per_point: 'ค่ารื้อถอน (ต่อจุด)',
 };
 
@@ -109,6 +107,9 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
     updateServiceCost,
     removeServiceCost,
     loadDefaultCosts,
+    userCostDefaults,
+    saveCostDefaults,
+    loadCostDefaults,
     exportSecrets,
     importSecrets,
     importCatalog,
@@ -124,6 +125,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [isAdding, setIsAdding] = useState(false);
   const [formKind, setFormKind] = useState<ItemKind>('labor');
+  const [activeTab, setActiveTab] = useState<ItemKind>('labor');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Data ─────────────────────────────────────────────────────────────────
@@ -156,13 +158,8 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
       note: SERVICE_LABELS[k] ? k : '',
     }));
     return [
-      { kind: 'labor', title: 'ค่าเย็บ', addLabel: 'เพิ่มค่าเย็บ', items: prep(laborItems) },
-      {
-        kind: 'service',
-        title: 'บริการ (ติดตั้ง / เดินทาง / รื้อถอน)',
-        addLabel: 'เพิ่มบริการ',
-        items: prep(serviceItems),
-      },
+      { kind: 'labor', addLabel: 'เพิ่มค่าเย็บ', items: prep(laborItems) },
+      { kind: 'service', addLabel: 'เพิ่มบริการ', items: prep(serviceItems) },
     ];
   }, [laborCosts, serviceCosts, searchTerm]);
 
@@ -262,6 +259,33 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
     if (isConfirmed) {
       loadDefaultCosts();
       addToast('success', 'โหลดค่ามาตรฐานสำเร็จ');
+    }
+  };
+
+  const handleSaveMyDefaults = async () => {
+    const ok = await confirm({
+      title: 'บันทึกเป็นค่าตั้งต้นของฉัน?',
+      description:
+        'ระบบจะจดจำค่าเย็บ + บริการ ปัจจุบันเป็นจุดเริ่มต้นของคุณ — กด "โหลดค่าตั้งต้นของฉัน" เพื่อย้อนกลับมาค่านี้ได้ทุกเมื่อ',
+      confirmLabel: 'บันทึก',
+      variant: 'default',
+    });
+    if (ok) {
+      saveCostDefaults();
+      addToast('success', 'บันทึกค่าตั้งต้นของคุณแล้ว');
+    }
+  };
+
+  const handleLoadMyDefaults = async () => {
+    const ok = await confirm({
+      title: 'โหลดค่าตั้งต้นของฉัน?',
+      description: 'ค่าเย็บ + บริการ จะถูกแทนที่ด้วยค่าตั้งต้นที่คุณบันทึกไว้ (ไม่กระทบต้นทุนผ้า/ราง)',
+      confirmLabel: 'โหลด',
+      variant: 'default',
+    });
+    if (ok) {
+      loadCostDefaults();
+      addToast('success', 'คืนค่าตั้งต้นของคุณแล้ว');
     }
   };
 
@@ -540,6 +564,50 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                 <MenuItem>
                   {({ active }) => (
                     <button
+                      onClick={handleSaveMyDefaults}
+                      className={cn(
+                        'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm',
+                        active && 'bg-accent'
+                      )}
+                    >
+                      <Bookmark className="w-4 h-4 text-primary" />
+                      <div className="text-left">
+                        <div className="font-medium">บันทึกเป็นค่าตั้งต้นของฉัน</div>
+                        <div className="text-xs text-muted-foreground">จดจำค่าเย็บ + บริการ ปัจจุบันเป็นจุดเริ่มต้น</div>
+                      </div>
+                    </button>
+                  )}
+                </MenuItem>
+                {userCostDefaults && (
+                  <MenuItem>
+                    {({ active }) => (
+                      <button
+                        onClick={handleLoadMyDefaults}
+                        className={cn(
+                          'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm',
+                          active && 'bg-accent'
+                        )}
+                      >
+                        <History className="w-4 h-4 text-primary" />
+                        <div className="text-left">
+                          <div className="font-medium">โหลดค่าตั้งต้นของฉัน</div>
+                          <div className="text-xs text-muted-foreground">
+                            บันทึกเมื่อ{' '}
+                            {new Date(userCostDefaults.savedAt).toLocaleDateString('th-TH', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: '2-digit',
+                            })}
+                          </div>
+                        </div>
+                      </button>
+                    )}
+                  </MenuItem>
+                )}
+                <div className="h-px bg-border my-1" />
+                <MenuItem>
+                  {({ active }) => (
+                    <button
                       onClick={() => fileInputRef.current?.click()}
                       className={cn(
                         'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm',
@@ -587,6 +655,27 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
           </Menu>
         </div>
 
+        {/* Tabs: ค่าเย็บ / บริการ */}
+        <div className="flex gap-1 p-1 bg-muted/50 rounded-xl shrink-0">
+          {(['labor', 'service'] as ItemKind[]).map((k) => (
+            <button
+              key={k}
+              onClick={() => {
+                setActiveTab(k);
+                resetForm();
+              }}
+              className={cn(
+                'flex-1 h-9 rounded-lg text-sm font-semibold transition-colors',
+                activeTab === k
+                  ? 'bg-card shadow-sm text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {k === 'labor' ? 'ค่าเย็บ' : 'บริการ'}
+            </button>
+          ))}
+        </div>
+
         {/* List */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-0.5 rounded-xl border border-border p-2 bg-background/50">
           {totalItemCount === 0 && !isAdding && (
@@ -609,17 +698,10 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
             </div>
           )}
 
-          {sections.map((section) => {
-            const showSection = section.title || section.items.length > 0 || (isAdding && formKind === section.kind);
-            if (!showSection) return null;
-            return (
+          {sections
+            .filter((section) => section.kind === activeTab)
+            .map((section) => (
               <div key={section.kind} className="space-y-1.5">
-                {section.title && (
-                  <div className="px-1 pt-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    {section.title}
-                  </div>
-                )}
-
                 {isAdding && formKind === section.kind && renderFormCard(false, section.kind)}
 
                 {section.items.map((item) => renderRow(item))}
@@ -634,8 +716,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                   </button>
                 )}
               </div>
-            );
-          })}
+            ))}
         </div>
 
         {/* Footer hint */}

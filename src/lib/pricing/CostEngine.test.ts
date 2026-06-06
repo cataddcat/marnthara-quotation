@@ -23,6 +23,7 @@ const setupStore = (overrides?: {
   accessoryCosts?: Record<string, number>;
   hardwareCosts?: Record<string, number>;
   laborCosts?: Record<string, LaborCost>;
+  serviceCosts?: Record<string, number>;
 }) => {
   useAppStore.setState({
     fabricCosts: overrides?.fabricCosts ?? {},
@@ -31,6 +32,7 @@ const setupStore = (overrides?: {
     accessoryCosts: overrides?.accessoryCosts ?? {},
     hardwareCosts: overrides?.hardwareCosts ?? {},
     laborCosts: overrides?.laborCosts ?? {},
+    serviceCosts: overrides?.serviceCosts ?? {},
   });
 };
 
@@ -220,6 +222,42 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.laborCost).toBe(170);
     });
 
+    it('C10b: พับ unit "meter" → labor = width × rate (ไม่ใช่ area กว้าง×สูง)', () => {
+      setupStore({
+        fabricCosts: { F001: 50 },
+        laborCosts: { พับ: { style: 'พับ', rate: 300, unit: 'meter', min_price: 0 } },
+      });
+      const item = makeCurtainItem({ code: 'F001', style: 'พับ', width_m: 2.0, height_m: 3.0 });
+
+      const result = CostEngine.analyze(item);
+
+      // meter: 2.0 × 300 = 600 (ไม่ใช่ 2.0 × 3.0 × 300)
+      expect(result.laborCost).toBe(600);
+    });
+
+    it('C10c: DOUBLE → ค่าเย็บ = ทึบ + โปร่ง รวมกัน (เท่ากันต่อเมตร)', () => {
+      setupStore({
+        fabricCosts: { F001: 50, S001: 30 },
+        laborCosts: {
+          ลอน: { style: 'ลอน', rate: 130, unit: 'meter', min_price: 0 },
+          ผ้าโปร่ง: { style: 'ผ้าโปร่ง', rate: 130, unit: 'meter', min_price: 0 },
+        },
+      });
+      const item = makeCurtainItem({
+        code: 'F001',
+        style: 'ลอน',
+        width_m: 2.0,
+        layer_mode: LAYER_MODES.DOUBLE,
+        sheer_code: 'S001',
+        sheer_price_per_m: 300,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      // main 2.0×130=260 + sheer 2.0×130=260 = 520
+      expect(result.laborCost).toBe(520);
+    });
+
     it('C11: labor key missing (no entry) → laborCost = 0, no crash', () => {
       setupStore({
         fabricCosts: { F001: 100 },
@@ -336,7 +374,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.status).toBe('unknown');
     });
 
-    it('D14: Removal → totalCost = 0 regardless of selling price', () => {
+    it('D14: Removal ไม่มีอัตรารื้อถอน (serviceCosts ว่าง) → totalCost = 0 (ไม่ผูกกับราคาขาย)', () => {
       const item = makeItem({
         type: ITEM_TYPES.REMOVAL,
         id: 'rm-1',
@@ -350,6 +388,22 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.totalCost).toBe(0);
       expect(result.unit).toBe('จุด');
       expect(result.usedQuantity).toBe(5);
+    });
+
+    it('D14b: Removal → totalCost = removal_per_point × จำนวนจุด', () => {
+      setupStore({ serviceCosts: { removal_per_point: 300 } });
+      const item = makeItem({
+        type: ITEM_TYPES.REMOVAL,
+        id: 'rm-2',
+        quantity: 5,
+        price_per_item: 200,
+        description: 'รื้อม่านเก่า',
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.totalCost).toBe(1500); // 300 × 5
+      expect(result.laborCost).toBe(1500); // นับเป็นค่าแรงบริการ
     });
   });
 

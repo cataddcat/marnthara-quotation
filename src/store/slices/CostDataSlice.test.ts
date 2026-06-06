@@ -51,11 +51,11 @@ describe('CostDataSlice — service', () => {
     expect(store().hardwareCosts).not.toHaveProperty('RW-1');
   });
 
-  it('accessoryCosts ไม่ปนค่าบริการ (install/transport ย้ายไป serviceCosts)', () => {
+  it('accessoryCosts ไม่ปนค่าบริการ (install/removal อยู่ใน serviceCosts)', () => {
     expect(store().accessoryCosts).not.toHaveProperty('install_point');
-    expect(store().accessoryCosts).not.toHaveProperty('transport_base');
+    expect(store().accessoryCosts).not.toHaveProperty('removal_per_point');
     expect(store().serviceCosts).toHaveProperty('install_point');
-    expect(store().serviceCosts).toHaveProperty('transport_base');
+    expect(store().serviceCosts).toHaveProperty('removal_per_point');
   });
 });
 
@@ -136,6 +136,49 @@ describe('CostDataSlice — lifecycle', () => {
     expect(store().areaCosts).toEqual({});
     expect(store().laborCosts).toEqual(DEFAULT_LABOR_COSTS);
     expect(store().serviceCosts).toEqual(DEFAULT_SERVICE_COSTS);
+  });
+});
+
+describe('CostDataSlice — owner baseline (ค่าตั้งต้นของฉัน)', () => {
+  it('saveCostDefaults snapshot ค่าเย็บ+บริการ ปัจจุบัน', () => {
+    store().updateLaborCost('ลอน', { rate: 999 });
+    store().updateServiceCost('install_point', 777);
+    store().saveCostDefaults();
+    const snap = store().userCostDefaults;
+    expect(snap).not.toBeNull();
+    expect(snap!.laborCosts['ลอน'].rate).toBe(999);
+    expect(snap!.serviceCosts.install_point).toBe(777);
+    expect(typeof snap!.savedAt).toBe('number');
+  });
+
+  it('loadCostDefaults คืนค่าจาก baseline ที่บันทึกไว้ (ทับค่าที่แก้ภายหลัง)', () => {
+    store().updateLaborCost('ลอน', { rate: 999 });
+    store().saveCostDefaults();
+    store().updateLaborCost('ลอน', { rate: 1 });
+    store().loadCostDefaults();
+    expect(store().laborCosts['ลอน'].rate).toBe(999);
+  });
+
+  it('loadCostDefaults fallback ค่ามาตรฐานในโค้ดเมื่อยังไม่มี baseline', () => {
+    store().updateLaborCost('ลอน', { rate: 1 });
+    expect(store().userCostDefaults).toBeNull();
+    store().loadCostDefaults();
+    expect(store().laborCosts).toEqual(DEFAULT_LABOR_COSTS);
+    expect(store().serviceCosts).toEqual(DEFAULT_SERVICE_COSTS);
+  });
+
+  it('clearCostDefaults ล้าง baseline → null', () => {
+    store().saveCostDefaults();
+    expect(store().userCostDefaults).not.toBeNull();
+    store().clearCostDefaults();
+    expect(store().userCostDefaults).toBeNull();
+  });
+
+  it('resetProductionCosts ล้าง baseline ด้วย (factory reset)', () => {
+    store().saveCostDefaults();
+    expect(store().userCostDefaults).not.toBeNull();
+    store().resetProductionCosts();
+    expect(store().userCostDefaults).toBeNull();
   });
 });
 

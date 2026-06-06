@@ -172,9 +172,10 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 ## 3. Feature Modules (Key Files)
 
 ### Cost Vault
-- `src/store/slices/CostDataSlice.ts` — **7 vaults** (`laborCosts`, `serviceCosts`, `accessoryCosts`, `hardwareCosts`, `fabricCosts`, `wallpaperCosts`, `areaCosts`) + `DEFAULT_LABOR_COSTS` / `DEFAULT_SERVICE_COSTS` / `DEFAULT_ACCESSORY_COSTS` (rail-only). See §11 for what each vault means + which UI edits it.
-- `src/components/modals/ProductionSettingsModal.tsx` — CRUD UI for **ค่าแรง + บริการ only** (tabs removed in §11). Product/rail costs moved to `MaterialSummaryModal`.
-- Actions: `updateLaborCost`, `removeLaborCost`, `updateServiceCost`, `removeServiceCost`, `updateHardwareCost`, `removeHardwareCost`, `updateFabricCost`, `updateWallpaperCost`, `updateAreaCost`, `loadDefaultCosts`, `resetProductionCosts`, `importCatalog`, `exportCatalog`
+- `src/store/slices/CostDataSlice.ts` — **7 vaults** (`laborCosts`, `serviceCosts`, `accessoryCosts`, `hardwareCosts`, `fabricCosts`, `wallpaperCosts`, `areaCosts`) + `DEFAULT_LABOR_COSTS` / `DEFAULT_SERVICE_COSTS` / `DEFAULT_ACCESSORY_COSTS` (rail-only). Plus `userCostDefaults` (owner baseline snapshot — see §11.7). See §11 for what each vault means + which UI edits it.
+- `src/components/modals/ProductionSettingsModal.tsx` — CRUD UI for **ค่าเย็บ + บริการ** in **2 tabs** `[ค่าเย็บ][บริการ]` (`activeTab` state). Product/rail costs live in `MaterialSummaryModal`. ⋯ menu: load factory defaults / save-as-my-defaults / restore-my-defaults / import (auto-detect) / export.
+- Defaults: labor = 130/ม. (ลอน/จีบ/ตาไก่/แป๊บ), 300/ม. (พับ — `unit: 'meter'`), 500/ม. (หลุยส์), 130/ม. (ผ้าโปร่ง); all `min_price: 0`. Service = `{ install_point: 300, removal_per_point: 300 }` only.
+- Actions: `updateLaborCost`, `removeLaborCost`, `updateServiceCost`, `removeServiceCost`, `updateHardwareCost`, `removeHardwareCost`, `updateFabricCost`, `updateWallpaperCost`, `updateAreaCost`, `loadDefaultCosts`, `resetProductionCosts`, `saveCostDefaults`/`loadCostDefaults`/`clearCostDefaults` (owner baseline), `importCatalog`, `exportCatalog`
 
 ### Financial Dashboard
 - `src/components/modals/FinancialDashboardModal.tsx`
@@ -474,8 +475,8 @@ The app is a **pure quotation calculator**. Costs are an **optional overlay**:
 
 | Vault | Holds | Edited in | Read by |
 |---|---|---|---|
-| `laborCosts` | ค่าเย็บ per style (`LaborCost{rate,unit,min_price}`) | ProductionSettings | CostEngine D/D2 |
-| `serviceCosts` | ค่าติดตั้ง/เดินทาง/รื้อถอน (flat) | ProductionSettings | CostEngine (removal); rest is reference |
+| `laborCosts` | ค่าเย็บ per style (`LaborCost{rate,unit,min_price}`) | ProductionSettings (แท็บ ค่าเย็บ) | CostEngine D/D2 |
+| `serviceCosts` | ค่าติดตั้ง + รื้อถอน ต่อจุด (flat) | ProductionSettings (แท็บ บริการ) | CostEngine (removal); install_point = reference |
 | `accessoryCosts` | **rail-only `rail_*`** legacy fallback (฿/m) | *(seed-only — not in any UI)* | CostEngine C fallback |
 | `hardwareCosts` | rail/hardware **catalog SKU** → ฿/unit | คลังวัสดุ (catalog) | CostEngine C primary |
 | `fabricCosts` | ผ้าทึบ/โปร่ง code → ฿/yard | คลังวัสดุ + InventoryManager | CostEngine A/B |
@@ -500,6 +501,16 @@ The roller/bracket/snap **counts** for ม่านลอน (shown in คัด
 ### 11.5 Catalog contract (`src/lib/catalog/contract.ts`)
 
 Versioned Zod schema for import/export. `CATALOG_CONTRACT_MAGIC = 'marnthara.catalog'`, current `version: 2` (accepts v1|v2). Each entry: `code`, `category` (validated against `CATALOG_CATEGORIES`), `cost`, plus optional `sell_price`/`unit`/`brand`/`model`/`color`/`variant`/`supplier`/`note`/`captured_at`. `InventorySlice.importCatalog` validates → atomic upsert-by-code + routes cost to the right vault via `categoryVault()`; `exportCatalog` emits the same shape. Import surfaces in `DataModal` (paste tab) + `ProductionSettings`/`MaterialSummary` menus (auto-detect: catalog vs vault-dump).
+
+### 11.7 Owner baseline ("ค่าตั้งต้นของฉัน") — defaults without a developer
+
+The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (persisted localStorage shadows them on every rehydrate — there's no custom `merge`, so a persisted `laborCosts` wholesale replaces the default). To let the shop owner own their own reset point without editing code, `CostDataSlice` carries `userCostDefaults: { laborCosts; serviceCosts; savedAt } | null`:
+- `saveCostDefaults()` snapshots the current ค่าเย็บ+บริการ; `loadCostDefaults()` restores from the snapshot (falls back to code `DEFAULT_*` when null); `clearCostDefaults()` nulls it.
+- `resetProductionCosts()` (and thus `factoryReset`) also nulls `userCostDefaults` → factory reset = back to code defaults.
+- Persists automatically (not transient); intentionally **not** in the temporal/undo partialize. No version bump (additive optional field).
+- UI: ProductionSettings ⋯ menu — "บันทึกเป็นค่าตั้งต้นของฉัน" / "โหลดค่าตั้งต้นของฉัน" (shows `savedAt`, hidden until a baseline exists), alongside the existing "โหลดค่ามาตรฐาน 2025" (`loadDefaultCosts` = code factory).
+
+> Note for devs: after editing a `DEFAULT_*` constant, an existing install won't see it until the owner taps "โหลดค่ามาตรฐาน 2025" (or factory-resets) — persisted state shadows the seed.
 
 ### 11.6 Open follow-ups (next session — excludes Phase D)
 
