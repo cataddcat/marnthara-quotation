@@ -66,7 +66,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose })
         <hr className="border-border" />
 
         {/* Section 2: Installation Site */}
-        <div className="space-y-4 bg-muted/30 p-4 rounded-2xl border border-border">
+        <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-border">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               <Truck className="w-4 h-4" /> สถานที่ติดตั้ง (Site Location)

@@ -433,7 +433,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         {mode === 'add' && !typeConfirmed ? (
           // iOS HIG grouped inset list — แถวสูง ≥44pt (นิ้วกดง่าย), ไอคอนสีตามชนิด (สีสัน),
           // เส้นคั่นบาง + เส้นขอบกลุ่ม + chevron ตามมาตรฐาน Apple HIG
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm divide-y divide-border/60">
+          <div className="overflow-hidden rounded-xl border border-border bg-card divide-y divide-border/60">
             {typeOptions.map((opt) => {
               const OptIcon = opt.icon;
               const optTheme = getItemTheme(opt.value);
@@ -451,12 +451,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                       optTheme.border
                     )}
                   >
-                    {OptIcon && <OptIcon className={cn('h-4 w-4', optTheme.icon)} />}
+                    {OptIcon && <OptIcon className={cn('h-4 w-4', optTheme.icon)} strokeWidth={1.5} />}
                   </span>
                   <span className="flex-1 text-[15px] font-semibold leading-tight text-foreground">
                     {opt.label}
                   </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40" strokeWidth={1.5} />
                 </button>
               );
             })}
@@ -468,7 +468,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               <button
                 type="button"
                 onClick={() => setTypeSheetOpen(true)}
-                className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-2xl border border-border bg-card shadow-sm active:scale-[0.99] transition-transform"
+                className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-xl border border-border bg-card active:scale-[0.99] transition-transform"
               >
                 <span className="flex items-center gap-2.5 min-w-0">
                   <span
@@ -488,9 +488,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                     </span>
                   </span>
                 </span>
-                <span className="flex items-center gap-1 text-xs font-semibold text-primary shrink-0">
+                <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground shrink-0">
                   เปลี่ยน
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
                 </span>
               </button>
             )}

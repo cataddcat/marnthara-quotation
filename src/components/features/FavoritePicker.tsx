@@ -40,7 +40,7 @@ export const FavoritePicker: React.FC<FavoritePickerProps> = ({
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="h-8 px-2 text-xs text-muted-foreground hover:text-primary"
+        className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
       >
         เลือกจากรายการ ({myFavorites.length})
       </Button>
@@ -48,7 +48,7 @@ export const FavoritePicker: React.FC<FavoritePickerProps> = ({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 w-64 max-h-60 overflow-y-auto bg-popover border border-border rounded-xl shadow-xl z-50 p-1">
+          <div className="absolute top-full left-0 mt-1 w-64 max-h-60 overflow-y-auto bg-popover border border-border rounded-xl shadow-md z-50 p-1">
             {myFavorites.length === 0 ? (
               <div className="p-3 text-center text-xs text-muted-foreground">ไม่มีรายการบันทึก</div>
             ) : (
@@ -70,7 +70,7 @@ export const FavoritePicker: React.FC<FavoritePickerProps> = ({
                   </div>
                   {/* แสดงราคาขาย */}
                   {fav.default_price_per_m > 0 && (
-                    <span className="text-xs text-muted-foreground group-hover:text-primary shrink-0 ml-2">
+                    <span className="text-xs font-mono text-muted-foreground group-hover:text-foreground shrink-0 ml-2">
                       {fmtTH(fav.default_price_per_m)}
                     </span>
                   )}
@@ -82,9 +82,9 @@ export const FavoritePicker: React.FC<FavoritePickerProps> = ({
               <div className="pt-2 mt-1 border-t border-border">
                 <button
                   onClick={handleSaveCurrent}
-                  className="w-full flex items-center justify-center gap-2 text-xs text-primary hover:bg-primary/10 py-2 rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center gap-2 text-xs text-foreground hover:bg-muted py-2 rounded-lg transition-colors"
                 >
-                  <Plus className="w-3 h-3" /> บันทึก "{currentValue.code}"
+                  <Plus className="w-3 h-3" strokeWidth={1.5} /> บันทึก "{currentValue.code}"
                 </button>
               </div>
             )}

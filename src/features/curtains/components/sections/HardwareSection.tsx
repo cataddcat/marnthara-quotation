@@ -78,12 +78,12 @@ const PillButton: React.FC<PillButtonProps> = ({
       className={cn(
         'relative flex flex-col items-center justify-center min-h-20 py-2 px-3 rounded-xl border-2 transition-all active:scale-95',
         isSelected
-          ? 'border-primary bg-primary/10 text-primary shadow-md'
-          : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-primary/50'
+          ? 'border-foreground bg-accent text-foreground'
+          : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-foreground/40'
       )}
     >
       <Icon
-        className={cn('w-6 h-6 mb-1', isSelected ? 'text-primary' : 'text-slate-400')}
+        className={cn('w-6 h-6 mb-1', isSelected ? 'text-foreground' : 'text-slate-400')}
         strokeWidth={1.5}
       />
       <span className="text-xs font-semibold leading-tight text-center">{label}</span>
@@ -160,7 +160,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
   return (
     <FormSection
       icon={Wrench}
-      iconClass="text-primary"
+      iconClass="text-foreground"
       title="อุปกรณ์ม่าน"
       headerRight={
         <span className="text-xs text-muted-foreground">ข้อมูลสำหรับฝ่ายผลิต</span>
@@ -321,8 +321,8 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
       {/* ขาจับราง — ม่านแป๊บ/สอดราง (คงที่ 4 ขา/ชุด · รวมในต้นทุนแล้ว) */}
       {isRod && (
         <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
-          <div className="shrink-0 w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-            <Wrench className="w-4 h-4" />
+          <div className="shrink-0 w-9 h-9 rounded-lg bg-muted text-foreground flex items-center justify-center">
+            <Wrench className="w-4 h-4" strokeWidth={1.5} />
           </div>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-foreground">

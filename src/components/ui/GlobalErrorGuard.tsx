@@ -70,10 +70,10 @@ export class GlobalErrorGuard extends Component<Props, State> {
           <div className="flex flex-col gap-3 w-full max-w-xs">
             <Button 
               onClick={this.handleReload} 
-              className="w-full bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+              className="w-full bg-primary text-primary-foreground"
               size="lg"
             >
-              <RefreshCw className="w-4 h-4 mr-2" /> โหลดหน้าใหม่
+              <RefreshCw className="w-4 h-4 mr-2" strokeWidth={1.5} /> โหลดหน้าใหม่
             </Button>
             
             <Button 

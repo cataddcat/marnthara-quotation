@@ -97,9 +97,9 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
       footer={
         <Button
           onClick={handleCopy}
-          className="w-full h-12 gap-2 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:bg-primary/90"
+          className="w-full h-12 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          <Copy className="w-4 h-4" />
+          <Copy className="w-4 h-4" strokeWidth={1.5} />
           คัดลอกข้อความ
         </Button>
       }
@@ -117,11 +117,11 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 py-2.5 rounded-lg min-h-[56px] transition-all',
                   active
-                    ? 'bg-card shadow-sm text-primary border border-border/50'
+                    ? 'bg-card shadow-sm text-foreground border border-border/50'
                     : 'text-muted-foreground hover:bg-card/50'
                 )}
               >
-                <opt.icon className="w-4 h-4" />
+                <opt.icon className="w-4 h-4" strokeWidth={1.5} />
                 <span className="text-[11px] font-semibold leading-none text-center">
                   {opt.label}
                 </span>
@@ -147,7 +147,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
                   className={cn(
                     'px-3 py-1 text-[12px] font-semibold rounded-md transition-all',
                     railFormat === f
-                      ? 'bg-card shadow-sm text-primary'
+                      ? 'bg-card shadow-sm text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >

@@ -35,7 +35,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onDismiss: (id: string) => void
       {/* [UI] Capsule Design: Black bg, rounded-full, centered content */}
       <div
         className={cn(
-          'pointer-events-auto flex items-center gap-3 px-4 py-3 shadow-2xl mb-3 cursor-pointer select-none',
+          'pointer-events-auto flex items-center gap-3 px-4 py-3 shadow-lg mb-3 cursor-pointer select-none',
           // [THEME CHANGE] bg-[#1A1A1A]/95 -> bg-primary/95 (Uses theme color) | border-white/10 -> border-primary-foreground/10
           'bg-primary/95 backdrop-blur-md border border-primary-foreground/10', // Dark Glass via Semantic
           'rounded-full min-w-[200px] max-w-[90vw]', // Capsule Shape

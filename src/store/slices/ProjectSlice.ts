@@ -22,6 +22,12 @@ export interface ProjectSlice {
   removeItem: (roomId: string, itemId: string) => void;
   duplicateItem: (roomId: string, itemId: string) => void;
 
+  // จัดเรียงลำดับ (drag-reorder ใน Room Dashboard) — index-based, bounds-safe
+  reorderRooms: (fromIndex: number, toIndex: number) => void;
+  reorderItems: (roomId: string, fromIndex: number, toIndex: number) => void;
+  // ย้าย item ข้ามห้อง (drag ห้อง A → B)
+  moveItemToRoom: (fromRoomId: string, itemId: string, toRoomId: string, toIndex: number) => void;
+
   updatePriceByCode: (category: string, code: string, newPrice: number) => number;
 
   // Lifecycle Actions
@@ -30,6 +36,15 @@ export interface ProjectSlice {
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
+
+/** ย้ายสมาชิก array จาก index หนึ่งไปอีก index — คืน ref เดิมถ้า no-op (index เท่ากัน/นอกช่วง) */
+function arrayMove<T>(arr: T[], from: number, to: number): T[] {
+  if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return arr;
+  const next = arr.slice();
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
 
 export const createProjectSlice: StateCreator<
   AppState,
@@ -140,6 +155,46 @@ export const createProjectSlice: StateCreator<
         return { ...room, items: newItems };
       }),
     })),
+
+  reorderRooms: (fromIndex, toIndex) =>
+    set((state) => {
+      const rooms = arrayMove(state.rooms, fromIndex, toIndex);
+      return rooms === state.rooms ? state : { rooms };
+    }),
+
+  reorderItems: (roomId, fromIndex, toIndex) =>
+    set((state) => {
+      let changed = false;
+      const rooms = state.rooms.map((room) => {
+        if (room.id !== roomId) return room;
+        const items = arrayMove(room.items, fromIndex, toIndex);
+        if (items === room.items) return room;
+        changed = true;
+        return { ...room, items };
+      });
+      return changed ? { rooms } : state;
+    }),
+
+  moveItemToRoom: (fromRoomId, itemId, toRoomId, toIndex) =>
+    set((state) => {
+      if (fromRoomId === toRoomId) return state; // ห้องเดียวกัน → ใช้ reorderItems
+      const fromRoom = state.rooms.find((r) => r.id === fromRoomId);
+      const item = fromRoom?.items.find((i) => i.id === itemId);
+      if (!fromRoom || !item) return state;
+      return {
+        rooms: state.rooms.map((room) => {
+          if (room.id === fromRoomId) {
+            return { ...room, items: room.items.filter((i) => i.id !== itemId) };
+          }
+          if (room.id === toRoomId) {
+            const items = room.items.slice();
+            items.splice(Math.max(0, Math.min(toIndex, items.length)), 0, item);
+            return { ...room, items };
+          }
+          return room;
+        }),
+      };
+    }),
 
   updatePriceByCode: (category, code, newPrice) => {
     let updateCount = 0;

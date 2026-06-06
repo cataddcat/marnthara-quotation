@@ -101,8 +101,8 @@ export const OptionSheet = <T extends string | number>({
           >
             <DialogPanel
               className={cn(
-                'relative w-full bg-card shadow-2xl flex flex-col pointer-events-auto',
-                isMobile ? 'rounded-t-2xl' : 'rounded-2xl max-w-lg my-8'
+                'relative w-full bg-card shadow-lg flex flex-col pointer-events-auto',
+                isMobile ? 'rounded-t-2xl' : 'rounded-xl max-w-lg my-8'
               )}
               style={{ maxHeight }}
             >
@@ -125,7 +125,7 @@ export const OptionSheet = <T extends string | number>({
                   {showCloseButton && (
                     <button
                       onClick={handleClose}
-                      className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Close"
                     >
                       <X className="w-5 h-5 text-muted-foreground" />
@@ -150,9 +150,9 @@ export const OptionSheet = <T extends string | number>({
                         disabled={isDisabled}
                         className={cn(
                           'w-full flex items-center gap-3 p-4 rounded-xl transition-all duration-200',
-                          'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-card',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card',
                           isSelected
-                            ? 'bg-primary/10 border border-primary/20'
+                            ? 'bg-accent border border-border'
                             : 'bg-background border border-border hover:bg-muted/80',
                           isDisabled && 'opacity-50 cursor-not-allowed hover:bg-background'
                         )}
@@ -178,8 +178,7 @@ export const OptionSheet = <T extends string | number>({
                         <div className="flex-1 min-w-0 text-left">
                           <div
                             className={cn(
-                              'font-semibold text-base truncate',
-                              isSelected ? 'text-primary' : 'text-foreground',
+                              'font-semibold text-base truncate text-foreground',
                               isDisabled && 'text-muted-foreground'
                             )}
                           >

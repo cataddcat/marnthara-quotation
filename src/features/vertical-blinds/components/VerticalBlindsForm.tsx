@@ -106,7 +106,6 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       rows={[

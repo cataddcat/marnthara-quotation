@@ -60,16 +60,16 @@ export const LayerSelector: React.FC<LayerSelectorProps> = ({ value, onChange, a
             onClick={() => handleSelect(opt.id)}
             className={cn(
               "relative flex flex-col items-center justify-center py-3 rounded-lg transition-all duration-200",
-              isSelected 
-                ? "bg-white dark:bg-slate-800 shadow-sm text-primary border border-border/50" 
+              isSelected
+                ? "bg-white dark:bg-slate-800 shadow-sm text-foreground border border-border/50"
                 : "text-muted-foreground hover:bg-white/50 dark:hover:bg-slate-700/50"
             )}
           >
-            <opt.icon className={cn("w-5 h-5 mb-1.5", isSelected && "animate-pulse-once")} />
+            <opt.icon className={cn("w-5 h-5 mb-1.5", isSelected && "animate-pulse-once")} strokeWidth={1.5} />
             <span className="text-xs font-bold leading-none">{opt.label}</span>
             {/* Active Indicator Dot */}
             {isSelected && (
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-foreground rounded-full" />
             )}
           </button>
         );

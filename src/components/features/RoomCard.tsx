@@ -177,8 +177,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
   const roomMenu = (
     <Menu as="div" className="relative z-10 shrink-0">
-      <MenuButton aria-label="ตัวเลือกห้อง" className="p-3 rounded-xl text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 active:scale-90">
-        <MoreHorizontal className="w-4 h-4" />
+      <MenuButton aria-label="ตัวเลือกห้อง" className="p-3 rounded-xl text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90">
+        <MoreHorizontal className="w-4 h-4" strokeWidth={1.5} />
       </MenuButton>
       <Transition
         as={React.Fragment}
@@ -200,7 +200,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     active ? 'bg-accent' : 'text-foreground'
                   )}
                 >
-                  <Copy className="w-4 h-4" /> คัดลอกห้อง
+                  <Copy className="w-4 h-4" strokeWidth={1.5} /> คัดลอกห้อง
                 </button>
               )}
             </MenuItem>
@@ -214,9 +214,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   )}
                 >
                   {room.is_suspended ? (
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />
                   ) : (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-4 h-4" strokeWidth={1.5} />
                   )}
                   {room.is_suspended ? 'เปิดใช้งาน' : 'ซ่อนห้อง'}
                 </button>
@@ -233,7 +233,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     active ? 'bg-destructive/10' : ''
                   )}
                 >
-                  <Trash2 className="w-4 h-4" /> ลบห้อง
+                  <Trash2 className="w-4 h-4" strokeWidth={1.5} /> ลบห้อง
                 </button>
               )}
             </MenuItem>
@@ -252,7 +252,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           'rounded-xl border bg-card transition-all duration-200',
           room.is_suspended
             ? 'grayscale opacity-60 border-dashed border-border'
-            : 'border-border hover:border-primary/20 hover:shadow-sm',
+            : 'border-border hover:border-foreground/20',
           className
         )}
       >
@@ -306,13 +306,13 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               )}
               <span
                 className={cn(
-                  'text-sm font-semibold tabular-nums',
+                  'text-sm font-semibold font-mono tabular-nums',
                   room.is_suspended ? 'text-muted-foreground line-through' : 'text-muted-foreground'
                 )}
               >
                 {fmtTH(roomTotal)}
               </span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground/30 shrink-0" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground/30 shrink-0" strokeWidth={1.5} />
             </div>
           </button>
 
@@ -329,14 +329,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       {/* Room Header Card */}
       <div
         className={cn(
-          'rounded-2xl border bg-card transition-all duration-300',
+          'rounded-xl border bg-card transition-all duration-300',
           room.is_suspended
             ? 'grayscale opacity-60 border-dashed border-border'
-            : 'border-border/60 shadow-md'
+            : 'border-border/60'
         )}
       >
         {/* Top accent stripe */}
-        <div className={cn('h-1 rounded-t-2xl', accent.stripe)} />
+        <div className={cn('h-1 rounded-t-xl', accent.stripe)} />
 
         {/* Header body */}
         <div className="p-4 pb-3">
@@ -373,15 +373,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     />
                     <button
                       onClick={handleSaveName}
-                      className="p-0.5 text-primary hover:bg-primary/10 rounded"
+                      className="p-0.5 text-foreground hover:bg-muted rounded"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
                     </button>
                     <button
                       onClick={handleCancelName}
                       className="p-0.5 text-muted-foreground hover:bg-muted rounded"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3.5 h-3.5" strokeWidth={1.5} />
                     </button>
                   </div>
                 ) : (
@@ -396,9 +396,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     </h2>
                     <button
                       onClick={startEditingName}
-                      className="p-0.5 text-muted-foreground/30 hover:text-primary shrink-0 transition-colors"
+                      className="p-0.5 text-muted-foreground/30 hover:text-foreground shrink-0 transition-colors"
                     >
-                      <Pencil className="w-3 h-3" />
+                      <Pencil className="w-3 h-3" strokeWidth={1.5} />
                     </button>
                   </>
                 )}
@@ -447,7 +447,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 <>
                   <span className="text-muted-foreground/30">·</span>
                   <span className="inline-flex items-center gap-1 font-medium text-emerald-600/80 dark:text-emerald-400/80">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> ครบ
+                    <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ครบ
                   </span>
                 </>
               )
@@ -461,7 +461,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           </div>
           <span
             className={cn(
-              'text-sm font-semibold tabular-nums shrink-0',
+              'text-sm font-semibold font-mono tabular-nums shrink-0',
               room.is_suspended ? 'text-muted-foreground line-through' : 'text-foreground'
             )}
           >
@@ -495,10 +495,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           )}
           <button
             onClick={() => onAddItem(room.id)}
-            className="sm:col-span-2 w-full group flex items-center justify-center gap-2 h-10 rounded-xl border-2 border-dashed border-border/50 hover:border-primary/40 bg-muted/10 hover:bg-primary/5 transition-all active:scale-[0.99]"
+            className="sm:col-span-2 w-full group flex items-center justify-center gap-2 h-10 rounded-xl border-2 border-dashed border-border/50 hover:border-foreground/30 bg-muted/10 hover:bg-muted/30 transition-all active:scale-[0.99]"
           >
-            <Plus className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-xs font-medium text-muted-foreground group-hover:text-primary">
+            <Plus className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
               เพิ่มสินค้าใหม่
             </span>
           </button>
@@ -509,7 +509,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 };
 
 export const RoomCardSkeleton: React.FC = () => (
-  <div className="rounded-2xl border border-border bg-card overflow-hidden">
+  <div className="rounded-xl border border-border bg-card overflow-hidden">
     <div className="h-1 bg-muted animate-pulse" />
     <div className="p-4 pb-3">
       <div className="flex items-start gap-3">

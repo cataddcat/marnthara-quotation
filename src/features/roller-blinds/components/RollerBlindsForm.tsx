@@ -98,7 +98,6 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       rows={[

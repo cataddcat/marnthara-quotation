@@ -47,11 +47,11 @@ const SettingsRow: React.FC<SettingsRowProps> = ({
         className={cn(
           'shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
           checked
-            ? cn('bg-primary/10', iconClass ?? 'text-primary')
+            ? cn('bg-accent', iconClass ?? 'text-foreground')
             : 'bg-muted text-muted-foreground'
         )}
       >
-        <Icon className="w-4 h-4" />
+        <Icon className="w-4 h-4" strokeWidth={1.5} />
       </div>
       <div className="flex-1 min-w-0">
         <div
@@ -103,12 +103,12 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   return (
     <div className="space-y-3">
       {/* === Card 1: Price + Settings === */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm divide-y divide-border/60">
+      <div className="bg-card rounded-xl border border-border overflow-hidden divide-y divide-border/60">
         {/* Header — Net Price */}
-        <div className="px-4 py-4 flex items-center justify-between gap-3 bg-gradient-to-r from-primary/5 via-card to-card">
+        <div className="px-4 py-4 flex items-center justify-between gap-3 bg-muted/30">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              {isOverride ? <Lock className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
+            <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-foreground shrink-0">
+              {isOverride ? <Lock className="w-4 h-4" strokeWidth={1.5} /> : <Wallet className="w-4 h-4" strokeWidth={1.5} />}
             </div>
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -123,7 +123,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                'text-2xl font-bold tracking-tight tabular-nums transition-colors duration-300',
+                'text-2xl font-bold font-mono tracking-tight tabular-nums transition-colors duration-300',
                 isOverride
                   ? 'text-amber-500'
                   : 'text-emerald-600 dark:text-emerald-400',
@@ -176,14 +176,14 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             description="ดูต้นทุน กำไร และราคาแนะนำ"
             checked={isProMode}
             onToggle={() => onChange('_is_pro_mode', !isProMode)}
-            iconClass="text-primary"
+            iconClass="text-foreground"
           />
         )}
       </div>
 
       {/* === Card 2: Pro Mode Dashboard (separate card for clarity) === */}
       {showProMode && isProMode && (
-        <div className="rounded-2xl border border-border overflow-hidden shadow-sm bg-slate-900 text-slate-100 animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="rounded-xl border border-border overflow-hidden bg-slate-900 text-slate-100 animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="px-4 py-2.5 flex items-center justify-between border-b border-slate-800 bg-slate-950/50">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-3.5 h-3.5 text-emerald-400" />

@@ -143,7 +143,7 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
             <div className="flex flex-col items-center gap-4 py-4">
               {/* Logo Preview Area */}
               <div
-                className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors group"
+                className="relative w-24 h-24 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors group"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {shopData.logoUrl ? (
@@ -227,7 +227,7 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
                 <h3 className="font-bold text-foreground">ข้อความท้ายเอกสาร (Document Footer)</h3>
               </div>
 
-              <div className="space-y-4 bg-muted/30 p-4 rounded-2xl border border-border">
+              <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-border">
                 <Input
                   label="1. ระยะเวลายืนยันราคา"
                   placeholder="เช่น 30 วัน"

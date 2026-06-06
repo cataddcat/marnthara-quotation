@@ -66,7 +66,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
             leaveFrom="opacity-100 scale-100 translate-y-0"
             leaveTo="opacity-0 scale-95 translate-y-4"
           >
-            <DialogPanel className="w-full max-w-6xl h-[90vh] bg-slate-100 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <DialogPanel className="w-full max-w-6xl h-[90vh] bg-slate-100 rounded-xl shadow-2xl flex flex-col overflow-hidden">
               {/* Toolbar */}
               <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
                 <div className="flex p-1 bg-slate-100 rounded-xl w-full sm:w-auto overflow-x-auto">
@@ -97,9 +97,9 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                   </Button>
                   <Button
                     onClick={() => handlePrint()}
-                    className="flex-1 sm:flex-none bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
+                    className="flex-1 sm:flex-none bg-slate-900 text-white hover:bg-slate-800"
                   >
-                    <Printer className="w-4 h-4 mr-2" /> พิมพ์เอกสาร
+                    <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} /> พิมพ์เอกสาร
                   </Button>
                 </div>
               </div>

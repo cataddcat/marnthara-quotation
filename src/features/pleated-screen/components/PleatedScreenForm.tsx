@@ -92,7 +92,6 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       total={pricePreview.total}

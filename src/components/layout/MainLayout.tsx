@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
-import { Menu, LayoutDashboard, ChevronRight, Layers } from 'lucide-react';
+import { Menu, LayoutDashboard, ChevronRight, Layers, Home } from 'lucide-react';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { SmartNavigator } from '@/components/features/SmartNavigator';
 
 interface MainLayoutProps {
@@ -12,6 +13,7 @@ interface MainLayoutProps {
   onOpenMainMenu?: () => void;
   onOpenDiscount?: () => void;
   onOpenOverview?: () => void;
+  onGoHome?: () => void;
   activeRoomId: string | null;
   onNavigateRoom: (roomId: string) => void;
   viewMode: 'focus' | 'overview';
@@ -23,6 +25,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onOpenMainMenu,
   onOpenDiscount,
   onOpenOverview,
+  onGoHome,
   activeRoomId,
   onNavigateRoom,
   viewMode,
@@ -30,6 +33,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const shopConfig = useAppStore((state) => state.shopConfig);
   const discount = useAppStore((state) => state.discount);
+  const { isLite } = useExperienceMode();
+
+  // Full tier + overview → กว้างพอสำหรับแดชบอร์ดหลายคอลัมน์
+  const wideContent = !isLite && viewMode === 'overview';
 
   const { finalTotal } = useCalculations();
   const { trigger } = useHaptic();
@@ -68,10 +75,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               }}
             >
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors truncate max-w-[150px] sm:max-w-[220px]">
+                <h1 className="text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[150px] sm:max-w-[220px]">
                   {shopConfig.name || 'Marnthara'}
                 </h1>
-                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary/50 transition-colors shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
               </div>
               <span className="text-[11px] font-medium text-muted-foreground tracking-widest uppercase">
                 Quotation
@@ -101,8 +108,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </div>
               <div
                 className={cn(
-                  'text-sm tabular-nums font-bold leading-none transition-colors',
-                  hasDiscount || hasVat ? 'text-primary' : 'text-emerald-600 dark:text-emerald-400'
+                  'text-sm font-mono tabular-nums font-bold leading-none transition-colors',
+                  hasDiscount || hasVat ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'
                 )}
               >
                 {fmtTH(finalTotal)}
@@ -113,13 +120,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </header>
 
       {/* Main Content Area */}
-      <main className="pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] px-4 sm:px-6 space-y-4 max-w-3xl mx-auto overflow-x-hidden">
+      <main
+        className={cn(
+          'pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-hidden transition-[max-width] duration-300',
+          wideContent ? 'max-w-6xl' : 'max-w-3xl'
+        )}
+      >
         {children}
       </main>
 
       {/* Floating Dock — wide horizontal capsule */}
-      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 mb-safe-bottom w-full max-w-[360px] px-4">
-        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-lg border border-border/60">
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 mb-safe-bottom w-full max-w-[440px] px-4">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-md border border-border/60">
+          <DockPill
+            icon={Home}
+            label="หน้าหลัก"
+            hapticType="medium"
+            onClick={onGoHome}
+          />
           <DockPill
             icon={Layers}
             label="ห้อง"
@@ -130,6 +148,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             icon={LayoutDashboard}
             label="ภาพรวม"
             onClick={onOpenOverview}
+            active={wideContent}
           />
           <DockPill
             icon={Menu}
@@ -156,11 +175,13 @@ const DockPill = ({
   label,
   onClick,
   hapticType = 'light',
+  active = false,
 }: {
   icon: React.ElementType;
   label: string;
   onClick?: () => void;
   hapticType?: 'light' | 'medium' | 'selection';
+  active?: boolean;
 }) => {
   const { trigger } = useHaptic();
 
@@ -171,13 +192,25 @@ const DockPill = ({
         onClick?.();
       }}
       aria-label={label}
-      className="group flex flex-1 items-center justify-center gap-2 h-11 px-3 rounded-full transition-all duration-200 active:scale-[0.94] hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-inset"
+      aria-pressed={active}
+      className={cn(
+        'group flex flex-1 min-w-0 items-center justify-center gap-1.5 h-11 px-2 rounded-full transition-all duration-200 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+        active ? 'bg-muted' : 'hover:bg-muted'
+      )}
     >
       <Icon
-        className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors"
-        strokeWidth={2}
+        className={cn(
+          'w-4 h-4 shrink-0 transition-colors',
+          active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
+        )}
+        strokeWidth={1.5}
       />
-      <span className="text-[13px] font-semibold text-muted-foreground group-hover:text-primary tracking-tight">
+      <span
+        className={cn(
+          'text-[12px] font-semibold tracking-tight whitespace-nowrap transition-colors',
+          active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
+        )}
+      >
         {label}
       </span>
     </button>

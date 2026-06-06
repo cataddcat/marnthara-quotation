@@ -17,7 +17,6 @@ interface ItemSummaryCardProps {
   totalLabel?: string;
   totalClass?: string;
   /** chrome */
-  accentClass?: string;
   title?: string;
   titleIcon?: React.ElementType;
   titleClass?: string;
@@ -44,8 +43,7 @@ interface ItemSummaryCardProps {
 export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   total,
   totalLabel = 'ราคาสุทธิ',
-  totalClass = 'text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400',
-  accentClass = 'bg-emerald-500/5',
+  totalClass = 'text-2xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400',
   title,
   titleIcon: TitleIcon,
   titleClass = 'text-emerald-600 dark:text-emerald-400',
@@ -61,14 +59,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   const pulse = status === 'warning' || status === 'loss';
 
   return (
-    <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 relative overflow-hidden">
-      <div
-        className={cn(
-          'absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none',
-          accentClass
-        )}
-      />
-
+    <div className="bg-card border border-border p-5 rounded-xl space-y-4 relative overflow-hidden">
       {title && (
         <div className={cn('flex items-center gap-2 font-bold border-b border-border pb-3', titleClass)}>
           {TitleIcon && <TitleIcon className="w-5 h-5" />}
@@ -80,7 +71,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
         {rows.map((row, i) => (
           <div key={i} className="flex justify-between text-muted-foreground">
             <span>{row.label}</span>
-            <span className={cn('tabular-nums', row.valueClass)}>{row.value}</span>
+            <span className={cn('font-mono tabular-nums', row.valueClass)}>{row.value}</span>
           </div>
         ))}
 
@@ -123,7 +114,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
                 inputMode="decimal"
                 value={setPriceValue || ''}
                 onChange={(e) => onSetPriceChange(e.target.value)}
-                className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
               />
             </div>
           )}

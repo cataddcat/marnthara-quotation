@@ -30,7 +30,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   return (
     <div
       className={cn(
-        'bg-card rounded-2xl border border-border shadow-sm overflow-hidden',
+        'bg-card rounded-xl border border-border overflow-hidden',
         className
       )}
     >
@@ -47,6 +47,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
             'w-5 h-5 text-muted-foreground shrink-0 transition-transform duration-200',
             open && 'rotate-180'
           )}
+          strokeWidth={1.5}
         />
       </button>
 

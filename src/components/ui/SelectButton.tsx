@@ -21,7 +21,7 @@ export const SelectButton = React.forwardRef<HTMLButtonElement, SelectButtonProp
     const sizeClasses = {
       sm: { button: 'h-9 px-3 text-sm rounded-lg', label: 'text-sm' },
       md: { button: 'h-12 px-4 text-base rounded-xl', label: 'text-[15px]' },
-      lg: { button: 'h-14 px-4 text-lg rounded-2xl', label: 'text-base' },
+      lg: { button: 'h-14 px-4 text-lg rounded-xl', label: 'text-base' },
     }[size];
 
     return (

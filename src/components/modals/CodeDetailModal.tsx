@@ -128,11 +128,11 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
           {!isPlaceholder && (
             <button
               onClick={handleOpenCatalog}
-              className="w-full flex items-center justify-center gap-1.5 h-9 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors active:scale-95"
+              className="w-full flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors active:scale-95"
             >
               {entry || cost > 0 ? (
                 <>
-                  <BookOpen className="w-3.5 h-3.5" /> เปิดในคลังรหัส
+                  <BookOpen className="w-3.5 h-3.5" strokeWidth={1.5} /> เปิดในคลังรหัส
                 </>
               ) : (
                 <>
@@ -168,7 +168,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
                   )}
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                    <div className="text-sm font-medium text-foreground truncate group-hover:text-muted-foreground transition-colors">
                       {u.roomName}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{u.desc}</div>
@@ -178,7 +178,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
                       {fmtQty(u.qty, u.unit)} {u.unit}
                     </span>
                     {u.item && (
-                      <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="w-3.5 h-3.5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
                     )}
                   </div>
                 </button>

@@ -20,8 +20,8 @@ interface FormSectionProps {
 
 /**
  * การ์ด section มาตรฐานของฟอร์มสินค้า — single source ของ chrome + density
- * uniform: bg-card rounded-2xl border shadow-sm; padding/stack ปรับตาม tier (useTierSize)
- * แทนที่ inline `<div className="bg-card p-4 rounded-2xl border shadow-sm">…</div>` ทุกฟอร์ม
+ * uniform: bg-card rounded-xl border (Geist §1.7 — borders over shadows); padding/stack ปรับตาม tier (useTierSize)
+ * แทนที่ inline `<div className="bg-card p-4 rounded-xl border">…</div>` ทุกฟอร์ม
  */
 export const FormSection: React.FC<FormSectionProps> = ({
   icon: Icon,
@@ -38,7 +38,7 @@ export const FormSection: React.FC<FormSectionProps> = ({
   return (
     <div
       className={cn(
-        'bg-card rounded-2xl border border-border shadow-sm',
+        'bg-card rounded-xl border border-border',
         section.pad,
         stack ?? section.stack,
         className

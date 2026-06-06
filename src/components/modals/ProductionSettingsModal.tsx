@@ -706,8 +706,8 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
         <div className="flex-1 overflow-y-auto space-y-3 pr-0.5 rounded-xl border border-border p-2 bg-background/50">
           {totalItemCount === 0 && !isAdding && (
             <div className="flex flex-col items-center justify-center py-14 text-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
-                <Layers className="w-7 h-7 text-muted-foreground opacity-40" />
+              <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center">
+                <Layers className="w-7 h-7 text-muted-foreground opacity-40" strokeWidth={1.5} />
               </div>
               <div>
                 <p className="font-semibold text-foreground">ยังไม่มีข้อมูลต้นทุน</p>

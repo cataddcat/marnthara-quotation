@@ -461,7 +461,7 @@ export const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose })
               <ZoomIn className="w-4 h-4" />
             </button>
             {zoom !== 1 && (
-              <button onClick={() => setZoom(1)} className="ml-1 text-[11px] text-primary hover:underline">
+              <button onClick={() => setZoom(1)} className="ml-1 text-[11px] text-foreground hover:underline">
                 รีเซ็ต
               </button>
             )}
@@ -526,7 +526,7 @@ export const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose })
                   on && !allOn
                     ? 'bg-primary text-primary-foreground border-primary'
                     : on
-                      ? 'bg-primary/10 text-primary border-primary/30'
+                      ? 'bg-accent text-foreground border-border'
                       : 'bg-card text-muted-foreground border-border hover:text-foreground'
                 )}
               >

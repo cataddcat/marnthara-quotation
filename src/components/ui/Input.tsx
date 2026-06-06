@@ -132,7 +132,7 @@ export const Input = ({
   const sizeClasses = {
     sm: { input: 'h-9 px-3 text-sm rounded-lg', label: 'text-sm' },
     md: { input: 'h-12 px-4 text-base rounded-xl', label: 'text-[15px]' },
-    lg: { input: 'h-14 px-4 text-lg rounded-2xl', label: 'text-base' },
+    lg: { input: 'h-14 px-4 text-lg rounded-xl', label: 'text-base' },
   }[size];
 
   return (
@@ -214,7 +214,7 @@ export const Input = ({
           <button
             type="button"
             onClick={handleUndo}
-            className="text-xs font-semibold text-primary hover:underline shrink-0"
+            className="text-xs font-semibold text-foreground hover:underline shrink-0"
           >
             ใช้ {conversion.from} ม.
           </button>

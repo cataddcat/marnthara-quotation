@@ -58,7 +58,7 @@ const MenuGridItem = ({
   const { trigger } = useHaptic();
 
   const colors = {
-    primary: 'bg-primary/5 text-primary group-hover:bg-primary/10',
+    primary: 'bg-muted text-foreground group-hover:bg-muted/70',
     emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/20',
     orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 group-hover:bg-orange-500/20',
     rose: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 group-hover:bg-rose-500/20',
@@ -72,14 +72,14 @@ const MenuGridItem = ({
         onClick();
       }}
       className={cn(
-        'group relative flex items-center p-4 rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 active:scale-[0.98]',
+        'group relative flex items-center p-4 rounded-xl border border-border bg-card transition-all duration-200 active:scale-[0.98]',
         isWide
           ? 'col-span-2'
           : 'col-span-1 flex-col justify-center text-center gap-3 h-32 sm:h-auto sm:flex-row sm:justify-start sm:text-left'
       )}
     >
       <div className={cn('p-3 rounded-xl transition-colors', colors[accentColor])}>
-        <Icon className="w-6 h-6" strokeWidth={2} />
+        <Icon className="w-6 h-6" strokeWidth={1.5} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-foreground text-[15px] leading-tight">{label}</div>
@@ -169,7 +169,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 py-2.5 rounded-lg min-h-[56px] transition-all',
                   opt.active
-                    ? 'bg-card shadow-sm text-primary border border-border/50'
+                    ? 'bg-card shadow-sm text-foreground border border-border/50'
                     : 'text-muted-foreground hover:bg-card/50'
                 )}
               >

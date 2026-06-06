@@ -106,7 +106,6 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       total={pricePreview.total}

@@ -159,6 +159,108 @@ describe('ProjectSlice — updatePriceByCode', () => {
   });
 });
 
+describe('ProjectSlice — reorder', () => {
+  const codes = (items: { code?: string }[]) => items.map((i) => i.code);
+
+  it('reorderRooms ย้ายห้องไปตำแหน่งใหม่', () => {
+    store().addRoom('A');
+    store().addRoom('B');
+    store().addRoom('C');
+    store().reorderRooms(0, 2); // A → ท้ายสุด
+    expect(store().rooms.map((r) => r.name)).toEqual(['B', 'C', 'A']);
+  });
+
+  it('reorderRooms index เท่ากัน/นอกช่วง → no-op (ref เดิม)', () => {
+    store().addRoom('A');
+    store().addRoom('B');
+    const before = store().rooms;
+    store().reorderRooms(0, 0);
+    store().reorderRooms(0, 5);
+    store().reorderRooms(-1, 1);
+    expect(store().rooms).toBe(before);
+    expect(store().rooms.map((r) => r.name)).toEqual(['A', 'B']);
+  });
+
+  it('reorderItems ย้ายลำดับ item ภายในห้อง', () => {
+    store().addRoom('R');
+    const roomId = store().rooms[0].id;
+    store().addItem(roomId, asItemData(makeCurtain({ code: 'I0' })));
+    store().addItem(roomId, asItemData(makeCurtain({ code: 'I1' })));
+    store().addItem(roomId, asItemData(makeCurtain({ code: 'I2' })));
+    store().reorderItems(roomId, 2, 0); // I2 → หน้าสุด
+    expect(codes(store().rooms[0].items as { code?: string }[])).toEqual(['I2', 'I0', 'I1']);
+  });
+
+  it('reorderItems ไม่กระทบห้องอื่น (ref items ห้องอื่นคงเดิม)', () => {
+    store().addRoom('R1');
+    store().addRoom('R2');
+    const r1 = store().rooms[0].id;
+    const r2 = store().rooms[1].id;
+    store().addItem(r1, asItemData(makeCurtain({ code: 'A' })));
+    store().addItem(r1, asItemData(makeCurtain({ code: 'B' })));
+    store().addItem(r2, asItemData(makeCurtain({ code: 'X' })));
+    const r2ItemsBefore = store().rooms[1].items;
+    store().reorderItems(r1, 0, 1);
+    expect(codes(store().rooms[0].items as { code?: string }[])).toEqual(['B', 'A']);
+    expect(store().rooms[1].items).toBe(r2ItemsBefore);
+  });
+
+  it('reorderItems index นอกช่วง → no-op', () => {
+    store().addRoom('R');
+    const roomId = store().rooms[0].id;
+    store().addItem(roomId, asItemData(makeCurtain({ code: 'I0' })));
+    const before = store().rooms;
+    store().reorderItems(roomId, 0, 9);
+    expect(store().rooms).toBe(before);
+  });
+
+  it('reorderRooms → undo คืนลำดับเดิม', () => {
+    store().addRoom('A');
+    store().addRoom('B');
+    temporal().clear();
+    store().reorderRooms(0, 1);
+    expect(store().rooms.map((r) => r.name)).toEqual(['B', 'A']);
+    temporal().undo();
+    expect(store().rooms.map((r) => r.name)).toEqual(['A', 'B']);
+  });
+
+  it('moveItemToRoom ย้าย item ข้ามห้อง + ลบจากต้นทาง', () => {
+    store().addRoom('A');
+    store().addRoom('B');
+    const a = store().rooms[0].id;
+    const b = store().rooms[1].id;
+    store().addItem(a, asItemData(makeCurtain({ code: 'A0' })));
+    store().addItem(a, asItemData(makeCurtain({ code: 'A1' })));
+    store().addItem(b, asItemData(makeCurtain({ code: 'B0' })));
+    const movedId = store().rooms[0].items[1].id; // A1
+    store().moveItemToRoom(a, movedId, b, 0); // A1 → B ตำแหน่งหน้าสุด
+    expect(codes(store().rooms[0].items as { code?: string }[])).toEqual(['A0']);
+    expect(codes(store().rooms[1].items as { code?: string }[])).toEqual(['A1', 'B0']);
+  });
+
+  it('moveItemToRoom toIndex เกินความยาว → ต่อท้าย (clamp)', () => {
+    store().addRoom('A');
+    store().addRoom('B');
+    const a = store().rooms[0].id;
+    const b = store().rooms[1].id;
+    store().addItem(a, asItemData(makeCurtain({ code: 'A0' })));
+    store().addItem(b, asItemData(makeCurtain({ code: 'B0' })));
+    const movedId = store().rooms[0].items[0].id;
+    store().moveItemToRoom(a, movedId, b, 99);
+    expect(codes(store().rooms[1].items as { code?: string }[])).toEqual(['B0', 'A0']);
+  });
+
+  it('moveItemToRoom ห้องเดียวกัน / itemId ไม่มีจริง → no-op (ref เดิม)', () => {
+    store().addRoom('A');
+    const a = store().rooms[0].id;
+    store().addItem(a, asItemData(makeCurtain({ code: 'A0' })));
+    const before = store().rooms;
+    store().moveItemToRoom(a, store().rooms[0].items[0].id, a, 0);
+    store().moveItemToRoom(a, 'nope', a, 0);
+    expect(store().rooms).toBe(before);
+  });
+});
+
 describe('ProjectSlice — zundo undo/redo', () => {
   it('addRoom → undo คืนสภาพ → redo กลับมา (round-trip)', () => {
     expect(store().rooms).toHaveLength(0);

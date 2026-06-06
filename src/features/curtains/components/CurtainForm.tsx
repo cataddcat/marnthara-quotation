@@ -101,12 +101,12 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
       className={cn(
         'w-full flex items-center justify-between gap-2 min-h-[44px] px-3.5 rounded-xl border border-dashed transition-colors',
         showAdvancedLite
-          ? 'border-primary/40 bg-primary/5 text-primary'
+          ? 'border-foreground/30 bg-muted/40 text-foreground'
           : 'border-border text-muted-foreground hover:bg-muted/30'
       )}
     >
       <span className="flex items-center gap-2 text-sm font-medium text-left">
-        <SlidersHorizontal className="w-4 h-4 shrink-0" />
+        <SlidersHorizontal className="w-4 h-4 shrink-0" strokeWidth={1.5} />
         ตัวเลือกขั้นสูง (อุปกรณ์ผลิต · ทิศเปิด · ต้นทุน)
       </span>
       <span className="text-xs font-semibold shrink-0">{showAdvancedLite ? 'ซ่อน' : 'แสดง'}</span>

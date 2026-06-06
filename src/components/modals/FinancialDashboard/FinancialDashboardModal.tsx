@@ -119,7 +119,7 @@ export const FinancialDashboardModal: React.FC<{
     <Modal isOpen={isOpen} onClose={onClose} title="ภาพรวมกำไรขาดทุน" variant="fullscreen">
       <div className="flex flex-col h-full bg-background pb-safe-area overflow-hidden">
         {/* ── 1. Summary Ring + Target Control ── */}
-        <div className="bg-gradient-to-b from-muted/40 to-background border-b border-border/50 shrink-0">
+        <div className="bg-muted/30 border-b border-border/50 shrink-0">
           <FinancialRing
             revenue={totals.revenue}
             cost={totals.cost}
@@ -132,19 +132,19 @@ export const FinancialDashboardModal: React.FC<{
               onClick={() => handleTargetChange(-5)}
               className="w-9 h-9 rounded-full bg-muted hover:bg-muted/70 flex items-center justify-center active:scale-90 transition-all"
             >
-              <TrendingDown className="w-4 h-4 text-muted-foreground" />
+              <TrendingDown className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
             </button>
             <div className="text-center">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Target Margin
               </div>
-              <div className="text-xl font-bold tabular-nums">{targetMargin}%</div>
+              <div className="text-xl font-bold font-mono tabular-nums">{targetMargin}%</div>
             </div>
             <button
               onClick={() => handleTargetChange(5)}
               className="w-9 h-9 rounded-full bg-muted hover:bg-muted/70 flex items-center justify-center active:scale-90 transition-all"
             >
-              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+              <TrendingUp className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -167,7 +167,7 @@ export const FinancialDashboardModal: React.FC<{
               <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">
                 {label}
               </div>
-              <div className={cn('text-sm font-bold tabular-nums leading-tight', color)}>
+              <div className={cn('text-sm font-bold font-mono tabular-nums leading-tight', color)}>
                 {blind ? '••••' : fmtTH(value)}
               </div>
             </div>

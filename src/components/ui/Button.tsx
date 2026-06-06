@@ -31,7 +31,7 @@ export const Button = ({
 
   const variants = {
     primary:
-      'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 border border-transparent active:scale-[0.98]',
+      'bg-primary text-primary-foreground hover:bg-primary/90 border border-transparent active:scale-[0.98]',
     secondary:
       'bg-secondary text-secondary-foreground border border-transparent hover:bg-secondary/80 active:scale-[0.98]',
     outline:
@@ -46,7 +46,7 @@ export const Button = ({
     sm: 'h-9 px-3 text-xs rounded-lg',
     // [STANDARD 2025] 48px height, 16px font
     md: 'h-12 px-5 py-2 rounded-xl text-base font-medium',
-    lg: 'h-14 px-8 rounded-2xl text-lg font-bold',
+    lg: 'h-14 px-8 rounded-xl text-lg font-bold',
     icon: 'h-12 w-12 p-0 rounded-xl flex items-center justify-center', // Square-ish for icons
   };
 

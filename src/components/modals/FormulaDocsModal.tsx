@@ -30,9 +30,9 @@ const Section: React.FC<{
   iconColor: string;
   children: React.ReactNode;
 }> = ({ title, icon: Icon, iconColor, children }) => (
-  <section className="bg-card border border-border/60 rounded-2xl p-4 space-y-3">
+  <section className="bg-card border border-border/60 rounded-xl p-4 space-y-3">
     <div className="flex items-center gap-2">
-      <Icon className={`w-5 h-5 ${iconColor}`} />
+      <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={1.5} />
       <h2 className="font-bold text-foreground">{title}</h2>
     </div>
     <div className="space-y-3 text-sm text-foreground/80 leading-relaxed">{children}</div>
@@ -40,7 +40,7 @@ const Section: React.FC<{
 );
 
 const Code: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <code className="bg-muted px-1.5 py-0.5 rounded text-[12px] font-mono text-primary">
+  <code className="bg-muted px-1.5 py-0.5 rounded text-[12px] font-mono text-foreground">
     {children}
   </code>
 );
@@ -71,9 +71,9 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
       <div className="flex flex-col h-full bg-background overflow-y-auto pb-safe-area">
         <div className="p-4 space-y-4 max-w-3xl mx-auto">
           {/* Intro */}
-          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-sm text-foreground/80 space-y-1.5">
-            <div className="flex items-center gap-2 font-bold text-primary">
-              <BookOpen className="w-4 h-4" /> คู่มืออธิบายสูตรคำนวณ
+          <div className="bg-muted/40 border border-border rounded-xl p-4 text-sm text-foreground/80 space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-foreground">
+              <BookOpen className="w-4 h-4" strokeWidth={1.5} /> คู่มืออธิบายสูตรคำนวณ
             </div>
             <p>
               เอกสารนี้แสดงสูตรทั้งหมดที่ระบบใช้คำนวณราคาและวัสดุ ค่าทุกตัวมาจากไฟล์{' '}
@@ -271,8 +271,8 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
                     {RAIL_COLORS.map((rc) => (
                       <tr key={rc.value} className="border-b border-border/30">
                         <td className="py-1 pr-3 font-sans">{rc.label}</td>
-                        <td className="py-1 pr-3 text-primary">TES1{RAIL_COLOR_CODE[rc.value]}</td>
-                        <td className="py-1 text-primary">LTL1{RAIL_COLOR_CODE[rc.value]}</td>
+                        <td className="py-1 pr-3 text-foreground">TES1{RAIL_COLOR_CODE[rc.value]}</td>
+                        <td className="py-1 text-foreground">LTL1{RAIL_COLOR_CODE[rc.value]}</td>
                       </tr>
                     ))}
                   </tbody>

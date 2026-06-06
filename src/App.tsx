@@ -4,6 +4,7 @@ import { RoomSlider } from '@/components/features/RoomSlider';
 import { EmptyState } from '@/components/features/EmptyState';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +21,7 @@ function App() {
   const favorites = useAppStore((state) => state.favorites);
   const fabricCosts = useAppStore((state) => state.fabricCosts);
   const batchUpdateFabricCosts = useAppStore((state) => state.batchUpdateFabricCosts);
+  const { isLite } = useExperienceMode();
 
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     () => (rooms.length > 0 ? rooms[0].id : null)
@@ -89,13 +91,26 @@ function App() {
 
   const handleOpenMainMenu = () => openModal('mainMenu');
   const handleOpenDiscount = () => openModal('discount');
-  const handleOpenOverview = () =>
+  const handleOpenOverview = () => {
+    // Full: สลับเข้า/ออกแดชบอร์ดทุกห้อง (overview viewMode) · Lite: เปิดสรุปแบบ drawer
+    if (!isLite) {
+      setViewMode((m) => (m === 'overview' ? 'focus' : 'overview'));
+      return;
+    }
     openModal('projectOverview', {
       onNavigateToRoom: (roomId: string) => {
         setActiveRoomId(roomId);
         setViewMode('focus');
       },
     });
+  };
+
+  // หน้าหลัก — กลับไปจุดเริ่มต้นของใบเสนอราคา: โหมดโฟกัสห้องแรก + เลื่อนขึ้นบนสุด
+  const handleGoHome = () => {
+    setViewMode('focus');
+    if (rooms.length > 0) setActiveRoomId(rooms[0].id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleAddItem = (roomId: string) => {
     openModal('item', {
@@ -121,6 +136,7 @@ function App() {
         onOpenMainMenu={handleOpenMainMenu}
         onOpenDiscount={handleOpenDiscount}
         onOpenOverview={handleOpenOverview}
+        onGoHome={handleGoHome}
         activeRoomId={activeRoomId}
         onNavigateRoom={setActiveRoomId}
         viewMode={viewMode}

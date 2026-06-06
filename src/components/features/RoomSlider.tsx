@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Room, ItemData } from '@/types';
 import { RoomCard } from './RoomCard';
+import { RoomDashboard } from './RoomDashboard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { cn } from '@/lib/utils';
 
 interface RoomSliderProps {
@@ -28,6 +30,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   onEditItem,
 }) => {
   const { trigger } = useHaptic();
+  const { isLite } = useExperienceMode();
   const touchStartXRef = useRef<number | null>(null);
   // ทิศการสลับห้องล่าสุด — ใช้เลือกทิศ slide animation (state: อ่านตอน render ได้)
   const [direction, setDirection] = useState<'next' | 'prev'>('next');
@@ -158,6 +161,22 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
     );
   }
 
+  // Full tier: overview = แดชบอร์ดกริด (ทุกห้อง+item) + ลากเรียงลำดับ
+  if (!isLite) {
+    return (
+      <RoomDashboard
+        rooms={rooms}
+        onAddItem={onAddItem}
+        onEditItem={onEditItem}
+        onOpenRoom={(roomId) => {
+          onSetActiveRoom(roomId);
+          onSetViewMode('focus');
+        }}
+      />
+    );
+  }
+
+  // Lite tier: compact stack เดิม (มือถือ)
   return (
     <div className="flex flex-col gap-2.5 pb-6">
       {rooms.map((room) => (

@@ -28,7 +28,7 @@ export const CostRow = ({ label, value, sub, highlight, dotClass }: CostRowProps
     </div>
     <span
       className={cn(
-        'tabular-nums text-xs shrink-0 ml-2',
+        'font-mono tabular-nums text-xs shrink-0 ml-2',
         highlight ? 'text-foreground text-sm' : 'text-foreground/80'
       )}
     >

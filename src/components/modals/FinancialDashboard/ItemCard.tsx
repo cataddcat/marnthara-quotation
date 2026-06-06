@@ -89,6 +89,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
               'w-4 h-4 text-muted-foreground/60 transition-transform duration-200',
               expanded && 'rotate-180'
             )}
+            strokeWidth={1.5}
           />
         </div>
       </button>
@@ -98,7 +99,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
         <div className="border-t border-border/50 bg-muted/20 px-3 py-3 space-y-1.5 text-sm">
           {analysis.status === 'unknown' && (
             <div className="flex items-start gap-2 text-amber-700 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2 mb-2 border border-amber-200/50 dark:border-amber-800/50">
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.5} />
               <span>
                 ยังไม่มีราคาทุน{mainLabel} — กดรหัส (
                 <span className="font-mono font-bold">{mainCode || sheerCode || '?'}</span>)
@@ -130,7 +131,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
                 </div>
                 <span
                   className={cn(
-                    'tabular-nums text-xs shrink-0',
+                    'font-mono tabular-nums text-xs shrink-0',
                     (analysis.fabricCost ?? 0) > 0
                       ? 'text-foreground/80'
                       : 'text-muted-foreground/40'
@@ -159,7 +160,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
                   </div>
                   <span
                     className={cn(
-                      'tabular-nums text-xs shrink-0',
+                      'font-mono tabular-nums text-xs shrink-0',
                       (analysis.sheerCost ?? 0) > 0
                         ? 'text-foreground/80'
                         : 'text-muted-foreground/40'
@@ -189,7 +190,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
           {/* No cost data at all */}
           {analysis.totalCost === 0 && analysis.status !== 'unknown' && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Info className="w-3.5 h-3.5" /> ไม่มีต้นทุนที่บันทึกไว้
+              <Info className="w-3.5 h-3.5" strokeWidth={1.5} /> ไม่มีต้นทุนที่บันทึกไว้
             </div>
           )}
 
@@ -200,7 +201,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
               <span className="text-xs font-bold text-foreground">กำไรสุทธิ</span>
               <span
                 className={cn(
-                  'tabular-nums text-sm font-bold',
+                  'font-mono tabular-nums text-sm font-bold',
                   analysis.profitAmount >= 0 ? 'text-emerald-600' : 'text-rose-500'
                 )}
               >

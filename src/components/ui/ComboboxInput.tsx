@@ -62,7 +62,7 @@ export const ComboboxInput = <T = unknown,>({
   const sizeClasses = {
     sm: { input: 'h-9 text-sm rounded-lg', label: 'text-sm' },
     md: { input: 'h-12 text-base rounded-xl', label: 'text-[15px]' },
-    lg: { input: 'h-14 text-lg rounded-2xl', label: 'text-base' },
+    lg: { input: 'h-14 text-lg rounded-xl', label: 'text-base' },
   }[size];
 
   const filteredOptions =
@@ -141,7 +141,7 @@ export const ComboboxInput = <T = unknown,>({
                     className={({ active }) =>
                       cn(
                         'relative cursor-default select-none py-3 pl-10 pr-4 transition-colors',
-                        active ? 'bg-primary/10 text-primary' : 'text-foreground'
+                        active ? 'bg-accent text-foreground' : 'text-foreground'
                       )
                     }
                     value={item.label}
@@ -154,14 +154,14 @@ export const ComboboxInput = <T = unknown,>({
                             {item.label}
                           </span>
                           {item.desc && (
-                            <span className={cn('text-xs truncate', active ? 'text-primary/70' : 'text-muted-foreground')}>
+                            <span className={cn('text-xs truncate', active ? 'text-foreground/70' : 'text-muted-foreground')}>
                               {item.desc}
                             </span>
                           )}
                         </div>
                         {selected ? (
-                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                            <Check className="h-4 w-4" aria-hidden="true" />
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-foreground">
+                            <Check className="h-4 w-4" aria-hidden="true" strokeWidth={1.5} />
                           </span>
                         ) : null}
                       </>

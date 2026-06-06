@@ -88,7 +88,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
         {/* --- 1. Discount Section (Hero) --- */}
         <div
           className={cn(
-            'relative overflow-hidden rounded-2xl border transition-all duration-300',
+            'relative overflow-hidden rounded-xl border transition-all duration-300',
             isEnabled ? 'bg-success/10 border-success/30' : 'bg-muted/40 border-border'
           )}
         >
@@ -167,11 +167,11 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* --- 2. VAT Section (Fixed 7%) --- */}
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-info/10 text-info">
-                <Percent className="w-5 h-5" />
+                <Percent className="w-5 h-5" strokeWidth={1.5} />
               </div>
               <div>
                 <div className="font-semibold text-sm text-foreground">
@@ -192,27 +192,27 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* --- 3. Live Preview (The Invoice) --- */}
-        <div className="bg-primary text-primary-foreground/80 rounded-2xl p-5 space-y-3 shadow-xl shadow-primary/10">
+        <div className="bg-primary text-primary-foreground/80 rounded-xl p-5 space-y-3">
           <div className="flex justify-between text-sm">
             <span>ยอดรวมสินค้า</span>
-            <span className="tabular-nums text-primary-foreground">{fmtTH(grandTotal)}</span>
+            <span className="font-mono tabular-nums text-primary-foreground">{fmtTH(grandTotal)}</span>
           </div>
 
           {/* Dynamic Lines */}
           {isEnabled && preview.discountAmt > 0 && (
             <div className="flex justify-between text-sm text-success animate-fade-in font-medium">
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-3 h-3" /> ส่วนลด (
+                <CheckCircle2 className="w-3 h-3" strokeWidth={1.5} /> ส่วนลด (
                 {type === 'percent' ? `${valueStr}%` : 'ระบุเอง'})
               </span>
-              <span className="tabular-nums font-bold">-{fmtTH(preview.discountAmt)}</span>
+              <span className="font-mono tabular-nums font-bold">-{fmtTH(preview.discountAmt)}</span>
             </div>
           )}
 
           {preview.vatAmt > 0 && (
             <div className="flex justify-between text-sm text-info animate-fade-in font-medium">
               <span>VAT 7%</span>
-              <span className="tabular-nums font-bold">+{fmtTH(preview.vatAmt)}</span>
+              <span className="font-mono tabular-nums font-bold">+{fmtTH(preview.vatAmt)}</span>
             </div>
           )}
 
@@ -220,7 +220,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
 
           <div className="flex justify-between items-end">
             <span className="text-primary-foreground font-medium">ยอดสุทธิ (Net Total)</span>
-            <span className="text-2xl font-bold text-primary-foreground tracking-tight tabular-nums">
+            <span className="text-2xl font-bold font-mono text-primary-foreground tracking-tight tabular-nums">
               {fmtTH(preview.netTotal)}
             </span>
           </div>
@@ -233,7 +233,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
           </Button>
           <Button
             onClick={handleSave}
-            className="h-12 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:bg-primary/90"
+            className="h-12 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             บันทึกการตั้งค่า
           </Button>

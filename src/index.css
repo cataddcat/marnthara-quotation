@@ -140,11 +140,6 @@
     }
   }
 
-  /* --- 6. Custom Gradients (Subtle & Eye-Friendly) --- */
-  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(222 47% 20%) 100%);
-  --gradient-subtle: linear-gradient(135deg, hsl(var(--subtle)) 0%, hsl(var(--muted)) 100%);
-  --gradient-card: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)/0.98) 100%);
-
   /* --- 7. Typography Scale (Optimized for Readability) --- */
   --font-size-xs: 0.75rem; /* 12px */
   --font-size-sm: 0.875rem; /* 14px */
@@ -321,25 +316,6 @@
   }
 }
 
-/* --- 9. Component Extensions --- */
-@layer components {
-  .glass-card {
-    @apply backdrop-blur-sm bg-card/80 border border-border/50 shadow-lg;
-  }
-
-  .gradient-primary {
-    background: var(--gradient-primary);
-  }
-
-  .gradient-subtle {
-    background: var(--gradient-subtle);
-  }
-
-  .gradient-card {
-    background: var(--gradient-card);
-  }
-}
-
 /* --- 10. Utility Overrides & Enhancements --- */
 @layer utilities {
   /* Safe Area Utilities (iOS devices) */
@@ -402,15 +378,6 @@
   /* Enhanced focus styles */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
-  }
-
-  /* Hover effects */
-  .hover-lift {
-    @apply transition-transform duration-300 hover:-translate-y-1;
-  }
-
-  .hover-glow {
-    @apply transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/10;
   }
 
   /* Scrollbar Utilities */

@@ -142,10 +142,10 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
     >
       <div className="space-y-4 pb-safe-area">
         {/* Grand Total Card */}
-        <div className="bg-primary/5 rounded-2xl p-4 flex items-center justify-between border border-primary/10">
+        <div className="bg-muted/40 rounded-xl p-4 flex items-center justify-between border border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-full text-primary">
-              <TrendingUp className="w-5 h-5" />
+            <div className="p-2 bg-muted rounded-full text-foreground">
+              <TrendingUp className="w-5 h-5" strokeWidth={1.5} />
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
@@ -232,10 +232,10 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
 
         {/* Active filter summary bar */}
         {activeFilter && (
-          <div className="flex items-center justify-between px-1 py-1.5 rounded-xl bg-primary/5 border border-primary/10">
+          <div className="flex items-center justify-between px-1 py-1.5 rounded-xl bg-muted/40 border border-border">
             <span className="text-xs text-muted-foreground pl-2">
               แสดงเฉพาะ{' '}
-              <span className="font-bold text-primary">{ITEM_CONFIG[activeFilter].name}</span>
+              <span className="font-bold text-foreground">{ITEM_CONFIG[activeFilter].name}</span>
               {' · '}
               {typeSummary[activeFilter]} จุด
             </span>
@@ -259,13 +259,13 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                   {onNavigateToRoom ? (
                     <button
                       onClick={() => handleRoomClick(room.id)}
-                      className="flex items-center gap-2 group text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 transition-transform"
+                      className="flex items-center gap-2 group text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 transition-transform"
                     >
-                      <span className="w-1 h-4 bg-primary rounded-full group-hover:h-5 transition-all" />
-                      <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                      <span className="w-1 h-4 bg-foreground rounded-full group-hover:h-5 transition-all" />
+                      <span className="text-sm font-bold text-foreground group-hover:text-muted-foreground transition-colors">
                         {room.name}
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
+                      <ArrowRight className="w-3.5 h-3.5 text-foreground opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
                     </button>
                   ) : (
                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -287,14 +287,14 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(room.id, item)}
-                        className="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-muted/50 transition-colors group active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-inset"
+                        className="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-muted/50 transition-colors group active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                            <IconComp className="w-4 h-4" />
+                          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-accent group-hover:text-foreground transition-colors">
+                            <IconComp className="w-4 h-4" strokeWidth={1.5} />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                            <div className="text-sm font-medium text-foreground truncate group-hover:text-foreground transition-colors">
                               {config?.name}
                             </div>
                             <div className="text-xs text-muted-foreground truncate opacity-80">

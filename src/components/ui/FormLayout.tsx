@@ -35,7 +35,7 @@ export const FormLayout = ({
       {(icon || title) && (
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border/40 shrink-0 animate-in slide-in-from-left-2">
           {icon && (
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 text-primary shadow-sm">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-muted text-foreground">
               {icon}
             </div>
           )}
@@ -79,7 +79,7 @@ export const FormLayout = ({
               onClick={onSave}
               disabled={isSubmitting || saveDisabled}
               className={cn(
-                "flex-1 sm:flex-none min-w-[140px] shadow-lg shadow-primary/20",
+                "flex-1 sm:flex-none min-w-[140px]",
                 "bg-primary text-primary-foreground hover:bg-primary/90"
               )}
             >

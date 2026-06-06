@@ -199,10 +199,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   return (
     <div
       className={cn(
-        'rounded-2xl border bg-card transition-all duration-200',
+        'rounded-xl border bg-card transition-all duration-200',
         item.is_suspended
           ? 'opacity-60 grayscale border-dashed border-border'
-          : 'border-border shadow-sm hover:shadow-md hover:border-primary/20'
+          : 'border-border hover:border-foreground/20'
       )}
     >
       {/* Collapsed header — always visible, clickable */}
@@ -219,7 +219,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             <span className="font-semibold text-foreground truncate text-[15px]">{title}</span>
             {incomplete && (
               <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
-                <AlertTriangle className="w-3 h-3" />
+                <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
                 {incompleteLabel(item)}
               </span>
             )}
@@ -227,7 +227,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           <div className="flex items-center shrink-0">
             <span
               className={cn(
-                'text-base font-bold tabular-nums tracking-tight',
+                'text-base font-bold font-mono tabular-nums tracking-tight',
                 item.is_suspended
                   ? 'text-muted-foreground line-through'
                   : 'text-emerald-600 dark:text-emerald-400'
@@ -241,6 +241,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               'w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200',
               isExpanded && 'rotate-180'
             )}
+            strokeWidth={1.5}
           />
         </div>
 
@@ -249,11 +250,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           <div className="flex items-center gap-1.5 text-[15px] leading-snug">
             {item.type !== ITEM_TYPES.REMOVAL && (
               <>
-                <Ruler className="w-3.5 h-3.5 shrink-0 text-sky-600 dark:text-sky-400" />
+                <Ruler className="w-3.5 h-3.5 shrink-0 text-sky-600 dark:text-sky-400" strokeWidth={1.5} />
                 <span className="font-medium text-muted-foreground shrink-0">กว้าง/สูง :</span>
               </>
             )}
-            <span className="truncate font-bold text-sky-600 dark:text-sky-400">{dimLine}</span>
+            <span className="truncate font-bold font-mono text-sky-600 dark:text-sky-400">{dimLine}</span>
           </div>
         )}
 
@@ -288,7 +289,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {costAnalysis && (
               <div className="flex justify-between text-sm pb-2 mb-1 border-b border-border/40">
                 <span className="text-muted-foreground">ต้นทุน / กำไร</span>
-                <div className="flex items-center gap-2 tabular-nums font-medium">
+                <div className="flex items-center gap-2 font-mono tabular-nums font-medium">
                   <span className="text-rose-500 dark:text-rose-400">
                     {fmtTH(costAnalysis.totalCost)}
                   </span>
@@ -311,7 +312,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {hasSize && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">ขนาด</span>
-                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                <span className="font-semibold font-mono text-sky-600 dark:text-sky-400">
                   {width.toFixed(2)} × {height.toFixed(2)} ม.
                 </span>
               </div>
@@ -321,7 +322,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {item.type === ITEM_TYPES.CURTAIN && fabricYards > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">ผ้าทึบ</span>
-                <span className="font-semibold text-orange-500">{fabricYards.toFixed(2)} หลา</span>
+                <span className="font-semibold font-mono text-orange-500">{fabricYards.toFixed(2)} หลา</span>
               </div>
             )}
 
@@ -329,7 +330,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {item.type === ITEM_TYPES.CURTAIN && sheerYards > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">ผ้าโปร่ง</span>
-                <span className="font-semibold text-orange-400">{sheerYards.toFixed(2)} หลา</span>
+                <span className="font-semibold font-mono text-orange-400">{sheerYards.toFixed(2)} หลา</span>
               </div>
             )}
 
@@ -337,7 +338,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {item.type === ITEM_TYPES.WALLPAPER && rolls > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">จำนวนม้วน</span>
-                <span className="font-semibold text-orange-500">{Math.ceil(rolls)} ม้วน</span>
+                <span className="font-semibold font-mono text-orange-500">{Math.ceil(rolls)} ม้วน</span>
               </div>
             )}
 
@@ -345,7 +346,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {isAreaType && (areaSqm > 0 || areaSqyd > 0) && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">พื้นที่</span>
-                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                <span className="font-semibold font-mono text-sky-600 dark:text-sky-400">
                   {areaSqm > 0 && `${areaSqm.toFixed(2)} ตร.ม.`}
                   {areaSqm > 0 && areaSqyd > 0 && ' · '}
                   {areaSqyd > 0 && `${areaSqyd.toFixed(2)} ตร.ล.`}
@@ -362,11 +363,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                     <button
                       key={`${ref.category}-${ref.code}`}
                       onClick={(e) => handleOpenCodeDetail(e, ref.code, ref.category)}
-                      className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-primary hover:underline underline-offset-2 active:opacity-70"
+                      className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-foreground hover:underline underline-offset-2 active:opacity-70"
                       title={`ดูรายละเอียด/จุดที่ใช้รหัส ${ref.code}`}
                     >
                       {ref.code}
-                      <ExternalLink className="w-3 h-3 opacity-70" />
+                      <ExternalLink className="w-3 h-3 opacity-70" strokeWidth={1.5} />
                     </button>
                   ))}
                 </div>
@@ -388,9 +389,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           <div className="flex gap-2 pt-2 border-t border-border/40">
             <button
               onClick={handleEdit}
-              className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors active:scale-95"
+              className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors active:scale-95"
             >
-              <Edit2 className="w-3.5 h-3.5" />
+              <Edit2 className="w-3.5 h-3.5" strokeWidth={1.5} />
               แก้ไข
             </button>
             <button
@@ -398,7 +399,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:bg-muted transition-colors active:scale-90"
               title="คัดลอก"
             >
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
             <button
               onClick={handleToggleSuspension}
@@ -406,9 +407,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               title={item.is_suspended ? 'เปิดใช้งาน' : 'ซ่อนรายการ'}
             >
               {item.is_suspended ? (
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} />
               ) : (
-                <EyeOff className="w-3.5 h-3.5" />
+                <EyeOff className="w-3.5 h-3.5" strokeWidth={1.5} />
               )}
             </button>
             <button
@@ -416,7 +417,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               className="flex items-center justify-center h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10 transition-colors active:scale-90"
               title="ลบรายการ"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -426,7 +427,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
 };
 
 export const ItemCardSkeleton: React.FC = () => (
-  <div className="rounded-2xl border border-border bg-card p-3.5 space-y-2.5">
+  <div className="rounded-xl border border-border bg-card p-3.5 space-y-2.5">
     <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <Skeleton className="w-5 h-2.5 shrink-0" />

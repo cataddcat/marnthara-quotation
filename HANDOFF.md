@@ -96,6 +96,8 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
 
 **Rollout:** apply per screen when you touch it (don't sweep all 14 modals at once). Reference application = `ProductionSettingsModal` ("ตั้งค่าต้นทุน").
 
+**Rollout status (2026-06):** ✅ **full-app sweep done.** Foundation (control primitives drop `rounded-2xl`→`rounded-xl`; `Button` primary CTA flattened — no `shadow-primary`; dead `.glass-card`/`.gradient-*`/`.hover-glow`/`.hover-lift` + `--gradient-*` removed from `index.css`) + every screen: `ItemCard`, `RoomCard`, shared primitives (`ItemSummaryCard` — dropped the decorative blur glow + the now-dead `accentClass` prop across 8 callers; `FormSection`; `CollapsibleSection`), curtain sections (`Style`/`Hardware`/`Price`/`Fabric`/`CurtainForm` — selected pills now monochrome `border-foreground bg-accent`), `MaterialSummaryModal`, `FinancialDashboard` (+`FinancialRing`/`ItemCard`/`CostRow`/`CodeJumpButton`), and the remaining modals/chrome (`MainMenu`, `Discount`, `Data`, `ProjectOverview`, `ShopSettings`, `Customer`, `CodeDetail`, `FormulaDocs`, `Lookbook`, `CopySummary`, `Modal`, `OptionSheet`, `AlertDialog`, `Toast`, `FormLayout`, `GlobalErrorGuard`, `MainLayout` dock, `SmartNavigator`, `ComboboxInput`, `Input` undo). Recipe applied: borders-over-shadows · `font-mono` on scanned numbers · lucide `strokeWidth={1.5}` · decorative `text-primary`/`bg-primary/10`→neutral (`text-foreground`/`bg-muted`/`bg-accent`). **Kept (sanctioned):** status/brand/traffic-light colors, per-room accents, the dark Pro Mode + Discount invoice cards, `bg-primary text-primary-foreground` *fills* on true CTAs/selected states, neutral overlay shadows (modal `shadow-2xl`, menu/popover `shadow-md`, dock, PDF paper), `FinancialRing` conic chart. Verified: `lint` 0-warn · `test:run` 456 pass · `build` OK.
+
 ---
 
 ## 2. System Map
@@ -247,6 +249,14 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 - Replaced the old `react-to-print`-based `LookbookDocument` (deleted; `react-to-print` is still used by
   `PdfPreviewModal`).
 
+### Room Dashboard — Full-tier overview + drag-reorder (NEW, 2026-06)
+- `src/components/features/RoomDashboard.tsx` — the **Full**-tier rendering of `viewMode === 'overview'` (Lite keeps the compact `RoomCard` stack). Responsive grid (`sm:2 / xl:3`) of room cards, each = header (grip · name→focus · total · ⋯ menu) + its `ItemCard` list + add-item; trailing add-room cell; a project summary header on top (total points / ค้าง / grand total).
+- **Reorder via `@dnd-kit`** (dependency added: `@dnd-kit/core` + `/sortable` + `/utilities`) — mouse **+ touch + keyboard** (PointerSensor distance-8 so taps/clicks still work; KeyboardSensor). Grip (`GripVertical`) is the `setActivatorNodeRef` drag handle so `ItemCard` stays clickable.
+- **Three drag flows:** rooms reorder (grid `SortableContext`, `rectSortingStrategy`) · items reorder within a room (`verticalListSortingStrategy`) · **items move across rooms with live preview** (multi-container pattern: `onDragOver` mutates a local `localItems: Record<roomId, itemId[]>`, render reads from it; commit **once** in `onDragEnd`). Original room captured in `dragFromRoomRef` (the active sortable's `data.roomId` changes as it previews into other containers — don't rely on it for the source).
+- **Store is the source of truth; the drag commits one undoable step.** `onDragEnd` → `reorderRooms` / `reorderItems` / `moveItemToRoom` (see §8 ProjectSlice). Custom `collisionDetection` filters droppables by active type (`room` vs `item`/`roomdrop`) so the nested contexts don't fight.
+- **Discoverability:** in Full, the dock **"ภาพรวม"** (`MainLayout` `DockPill`, `active` state) **toggles** overview/focus instead of opening the summary drawer; `App.handleOpenOverview` branches on `useExperienceMode().isLite`. `MainLayout`'s `<main>` widens to `max-w-6xl` when Full+overview.
+- The ⋯ room menu also offers **เลื่อนก่อนหน้า/ถัดไป** (`reorderRooms ±1`) as a non-drag, keyboard/touch-friendly reorder fallback, plus คัดลอก/ซ่อน/ลบ (reuses store actions + `useConfirm`).
+
 ---
 
 ## 4. Critical Invariants (Do Not Break)
@@ -362,7 +372,7 @@ src/store/useAppStore.ts              — Root store (temporal + persist v3 + 6 
 src/store/migrations.ts               — persist migrate: v1→v2 legacy items + v2→v3 cost-vault split
 src/store/slices/
   UISlice.ts                          — Modals + toast queue
-  ProjectSlice.ts                     — rooms[] + CRUD + factoryReset
+  ProjectSlice.ts                     — rooms[] + CRUD + factoryReset + reorderRooms/reorderItems/moveItemToRoom (Room Dashboard §3)
   CustomerSlice.ts                    — Customer info
   ShopProfileSlice.ts                 — Shop config + discount
   InventorySlice.ts                   — code registry + importCatalog/exportCatalog (catalog contract)

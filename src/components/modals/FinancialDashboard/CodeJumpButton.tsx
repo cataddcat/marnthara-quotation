@@ -15,10 +15,10 @@ export const CodeJumpButton = ({ code, tab, onJump }: CodeJumpButtonProps) => (
       e.stopPropagation();
       onJump(code, tab);
     }}
-    className="inline-flex items-center gap-0.5 text-[10px] font-mono text-primary hover:underline underline-offset-2 active:opacity-70"
+    className="inline-flex items-center gap-0.5 text-[10px] font-mono text-foreground hover:underline underline-offset-2 active:opacity-70"
     title={`เปิดคลังผ้าสำหรับรหัส ${code}`}
   >
     ({code})
-    <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+    <ExternalLink className="w-2.5 h-2.5 opacity-70" strokeWidth={1.5} />
   </button>
 );

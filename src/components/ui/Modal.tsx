@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogPanel,
@@ -44,6 +44,14 @@ export const Modal: React.FC<ModalProps> = ({
   // แทนการอ่านความกว้างจอตรง ๆ (เดิม useIsMobile) ตาม HANDOFF §10
   const { isLite } = useExperienceMode();
 
+  // หัวเรื่องแบบ "รับรู้การเลื่อน" (Geist §1.7 borders-over-shadows): หัวเรื่องแบนสนิทเมื่ออยู่บนสุด
+  // และมีเส้นคั่นโผล่ขึ้นเมื่อเนื้อหาเลื่อน → บอกผู้ใช้ว่ายังมีต่อด้านบน (ใช้กับทุก modal ผ่าน chrome กลาง)
+  const [scrolled, setScrolled] = useState(false);
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const next = e.currentTarget.scrollTop > 4;
+    setScrolled((prev) => (prev === next ? prev : next));
+  };
+
   // 🧠 Smart Adaptive Logic:
   // Full tier (เดสก์ท็อป หรือ override=full บนมือถือ) → เปลี่ยน Fullscreen/Drawer เป็น Center ให้หมด
   const effectiveVariant = useMemo(() => {
@@ -61,7 +69,12 @@ export const Modal: React.FC<ModalProps> = ({
           <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-50" />
           <Drawer.Content className="bg-card flex flex-col rounded-t-[20px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[51] outline-none max-w-md mx-auto">
             {/* Handle Bar + Header */}
-            <div className="bg-card rounded-t-[20px] shrink-0 border-b border-border/50">
+            <div
+              className={cn(
+                'bg-card rounded-t-[20px] shrink-0 border-b transition-colors',
+                scrolled ? 'border-border/50' : 'border-transparent'
+              )}
+            >
               <div className="flex justify-center pt-3 pb-1">
                 <div className="w-12 h-1.5 rounded-full bg-muted" />
               </div>
@@ -90,7 +103,9 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">{children}</div>
+            <div className="flex-1 overflow-y-auto p-4" onScroll={handleScroll}>
+              {children}
+            </div>
             {footer && (
               <div className="p-4 border-t border-border mt-auto pb-safe-bottom bg-card">
                 {footer}
@@ -154,13 +169,14 @@ export const Modal: React.FC<ModalProps> = ({
                   // 📱 Mobile Fullscreen Logic
                   isFullscreen
                     ? 'w-full h-[100dvh] rounded-none'
-                    : `w-full ${maxWidthClass} rounded-2xl my-4 border border-border/50 max-h-[90vh]` // 🖥️ Desktop Card Logic
+                    : `w-full ${maxWidthClass} rounded-xl my-4 border border-border/50 max-h-[90vh]` // 🖥️ Desktop Card Logic
                 )}
               >
                 {/* Header — title 16px; ปุ่มมี hit area 44px (HIG) padding กระชับให้หัวเรื่องไม่สูงเกิน */}
                 <div
                   className={cn(
-                    'flex items-center justify-between gap-2 px-4 py-2 border-b border-border shrink-0 bg-card/95 backdrop-blur z-10',
+                    'flex items-center justify-between gap-2 px-4 py-2.5 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors',
+                    scrolled ? 'border-border' : 'border-transparent',
                     isFullscreen && 'pt-safe-top' // Safe Area for notch
                   )}
                 >
@@ -212,7 +228,10 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
 
                 {/* Content Container - Scrollable — padding กระชับ (p-4) สม่ำเสมอกับ ItemCard */}
-                <div className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4">
+                <div
+                  className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4"
+                  onScroll={handleScroll}
+                >
                   {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks */}
                   <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full')}>
                     {children}

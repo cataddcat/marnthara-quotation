@@ -95,7 +95,6 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       rows={[

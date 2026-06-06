@@ -39,9 +39,9 @@ const PriceStatusIndicator = ({ status, masterPrice, onSync }: PriceStatusIndica
       <button
         type="button"
         onClick={onSync}
-        className="text-[11px] font-bold flex items-center gap-1 text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 px-2.5 py-1 rounded-md transition-colors active:scale-95"
+        className="text-[11px] font-bold flex items-center gap-1 text-foreground bg-muted hover:bg-muted/70 border border-border px-2.5 py-1 rounded-md transition-colors active:scale-95"
       >
-        <RefreshCw className="w-3 h-3" /> ดึงราคา
+        <RefreshCw className="w-3 h-3" strokeWidth={1.5} /> ดึงราคา
       </button>
     </div>
   );
@@ -168,7 +168,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   return (
     <div className="space-y-4">
       {/* 1. ✅ Layer Mode Selector */}
-      <FormSection icon={Layers} iconClass="text-primary" title="เลือกประเภทม่าน">
+      <FormSection icon={Layers} iconClass="text-foreground" title="เลือกประเภทม่าน">
         {/* ✅ ใส่ Default Value กันตาย (Fallback) */}
         <LayerSelector
           value={layerMode}

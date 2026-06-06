@@ -31,8 +31,8 @@ import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@
 
 const EmptyHint = ({ message, sub }: { message: string; sub: string }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
-      <Package className="w-6 h-6 text-muted-foreground opacity-40" />
+    <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center">
+      <Package className="w-6 h-6 text-muted-foreground opacity-40" strokeWidth={1.5} />
     </div>
     <div>
       <p className="font-semibold text-foreground">{message}</p>
@@ -251,7 +251,7 @@ const InventoryItemRow = ({
         <button
           onClick={onOpenDetail}
           title="ดูจุดที่ใช้รหัสนี้"
-          className="p-1.5 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted/50 transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
         >
           <MapPin className="w-3.5 h-3.5" />
         </button>
@@ -538,7 +538,7 @@ const FabricCard = ({
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-muted-foreground truncate group-hover:text-primary">
+                  <span className="text-muted-foreground truncate group-hover:text-foreground">
                     {e.roomName}
                   </span>
                   <span className="text-muted-foreground/60 truncate">· {e.desc}</span>
@@ -547,7 +547,7 @@ const FabricCard = ({
                   <span className={cn('font-mono', accent, 'opacity-80')}>
                     {fmtTH(e.yards)} {unit}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
                 </span>
               </button>
             ))}
@@ -617,14 +617,14 @@ const WallpaperCostCard = ({
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-muted-foreground truncate group-hover:text-primary">
+                  <span className="text-muted-foreground truncate group-hover:text-foreground">
                     {e.roomName}
                   </span>
                   <span className="text-muted-foreground/60 truncate">· {e.desc}</span>
                 </div>
                 <span className="flex items-center gap-1 shrink-0 ml-2">
                   <span className="font-mono text-orange-500 opacity-80">{Math.ceil(e.rolls)} ม้วน</span>
-                  <ArrowRight className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
                 </span>
               </button>
             ))}
@@ -700,7 +700,7 @@ const AreaCostCard = ({
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                    <span className="text-muted-foreground truncate group-hover:text-primary">
+                    <span className="text-muted-foreground truncate group-hover:text-foreground">
                       {e.roomName}
                     </span>
                     <span className="text-muted-foreground/60 truncate">
@@ -711,7 +711,7 @@ const AreaCostCard = ({
                     <span className="font-mono text-teal-600 dark:text-teal-400 opacity-80">
                       {fmtTH(entryQty)} {group.unit}
                     </span>
-                    <ArrowRight className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
                   </span>
                 </button>
               );
@@ -758,7 +758,7 @@ const RailCard = ({
                 <div className="flex items-center gap-1.5">
                   <span className="text-muted-foreground">{item.roomName}</span>
                   {item.isDouble && (
-                    <span className="text-[9px] bg-primary/10 text-primary px-1 rounded font-bold">2 ชั้น</span>
+                    <span className="text-[9px] bg-muted text-foreground px-1 rounded font-bold">2 ชั้น</span>
                   )}
                   <span className="text-muted-foreground/60">· {item.opening}</span>
                 </div>
@@ -986,7 +986,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   className={cn(
                     'flex items-center gap-2 px-4 py-2 text-sm transition-colors text-left',
                     catalogCat === cat.id
-                      ? 'bg-primary/10 text-primary font-medium'
+                      ? 'bg-accent text-foreground font-medium'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                   )}
                 >
@@ -1003,16 +1003,16 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                 className={cn(
                   'flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors',
                   activeTab === tab.id
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-accent text-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                 )}
               >
-                <tab.icon className="w-4 h-4 shrink-0" />
+                <tab.icon className="w-4 h-4 shrink-0" strokeWidth={1.5} />
                 <span className="flex-1 text-left">{tab.label}</span>
                 {tab.badge !== undefined && tab.badge > 0 && (
                   <span className={cn(
                     'text-[9px] px-1.5 py-0.5 rounded-full font-bold',
-                    activeTab === tab.id ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+                    activeTab === tab.id ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
                   )}>
                     {tab.badge}
                   </span>
@@ -1261,13 +1261,13 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
                     'flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors',
-                    activeTab === tab.id ? 'text-primary' : 'text-muted-foreground'
+                    activeTab === tab.id ? 'text-foreground' : 'text-muted-foreground'
                   )}
                 >
                   <div className="relative">
                     <tab.icon className="w-5 h-5" />
                     {tab.badge !== undefined && tab.badge > 0 && (
-                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-foreground text-background text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
                         {tab.badge}
                       </span>
                     )}

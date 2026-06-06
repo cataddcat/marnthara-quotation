@@ -42,22 +42,22 @@ const OpeningButton = ({
       className={cn(
         'relative flex flex-col items-center justify-center h-20 rounded-xl border-2 transition-all active:scale-95',
         isSelected
-          ? 'border-primary bg-primary/10 text-primary shadow-md'
-          : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-primary/50'
+          ? 'border-foreground bg-accent text-foreground'
+          : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-foreground/40'
       )}
     >
       <Icon
         className={cn(
           'w-8 h-8 mb-1',
-          isSelected ? 'text-primary' : 'text-slate-400',
+          isSelected ? 'text-foreground' : 'text-slate-400',
           isSelected && 'animate-bounce-short'
         )}
         strokeWidth={1.5}
       />
       <span className="text-xs font-medium">{label}</span>
       {isSelected && (
-        <div className="absolute top-1 right-1 bg-primary text-white rounded-full p-0.5">
-          <Check className="w-2 h-2" />
+        <div className="absolute top-1 right-1 bg-foreground text-background rounded-full p-0.5">
+          <Check className="w-2 h-2" strokeWidth={1.5} />
         </div>
       )}
     </button>
@@ -80,7 +80,7 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
       {/* 1. Style Selection Card */}
       <FormSection
         icon={Settings2}
-        iconClass="text-primary"
+        iconClass="text-foreground"
         title="รูปแบบม่าน & การเก็บ"
         headerRight={
           errors?.style && (
@@ -104,7 +104,7 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
             )}
           >
             <span className="text-base font-medium">{getStyleLabel()}</span>
-            <span className="text-sm text-primary font-bold">เปลี่ยน {'>'}</span>
+            <span className="text-sm text-muted-foreground font-bold">เปลี่ยน {'>'}</span>
           </button>
         </div>
 

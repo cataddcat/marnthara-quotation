@@ -91,7 +91,6 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
 
   const summaryPanel = (
     <ItemSummaryCard
-      accentClass={theme.bgSoft}
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
       rows={[

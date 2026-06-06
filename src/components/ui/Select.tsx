@@ -28,7 +28,7 @@ export const Select = ({
   const sizeClasses = {
     sm: { select: 'h-9 px-3 text-sm rounded-lg', label: 'text-sm' },
     md: { select: 'h-12 px-4 text-[16px] rounded-xl', label: 'text-[15px]' },
-    lg: { select: 'h-14 px-4 text-lg rounded-2xl', label: 'text-base' },
+    lg: { select: 'h-14 px-4 text-lg rounded-xl', label: 'text-base' },
   }[size];
 
   return (

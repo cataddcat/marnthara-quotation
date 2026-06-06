@@ -226,10 +226,10 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
             <Button
               variant="outline"
               onClick={handleExport}
-              className="h-auto py-4 flex flex-col gap-2 border-border hover:bg-primary/5 hover:border-primary/20 hover:text-primary"
+              className="h-auto py-4 flex flex-col gap-2 border-border hover:bg-muted hover:border-foreground/20 hover:text-foreground"
             >
-              <div className="p-2 bg-primary/10 text-primary rounded-full">
-                <Download className="w-5 h-5" />
+              <div className="p-2 bg-muted text-foreground rounded-full">
+                <Download className="w-5 h-5" strokeWidth={1.5} />
               </div>
               <div className="text-left">
                 <div className="font-bold text-foreground">Backup</div>
@@ -244,7 +244,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
                 className="w-full h-full py-4 flex flex-col gap-2 border-border hover:bg-success/5 hover:border-success/20 hover:text-success"
               >
                 <div className="p-2 bg-success/10 text-success rounded-full">
-                  <Upload className="w-5 h-5" />
+                  <Upload className="w-5 h-5" strokeWidth={1.5} />
                 </div>
                 <div className="text-left">
                   <div className="font-bold text-foreground">Restore</div>
@@ -265,9 +265,9 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         <div className="h-px bg-border my-2" />
 
         {/* 🔵 ZONE 2: IMPORT JSON TEXT (NEW FEATURE) */}
-        <div className="bg-warning/5 border border-warning/20 rounded-2xl p-5 space-y-4">
+        <div className="bg-warning/5 border border-warning/20 rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <Upload className="w-5 h-5 text-warning" />
+            <Upload className="w-5 h-5 text-warning" strokeWidth={1.5} />
             <h4 className="font-bold text-foreground">นำเข้าข้อมูลเฉพาะส่วน (JSON)</h4>
           </div>
 
@@ -335,11 +335,10 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
 
           <Button
             onClick={handleImportJson}
-            className="w-full bg-warning hover:bg-warning/90 text-white 
-                     shadow-lg shadow-warning/20"
+            className="w-full bg-warning hover:bg-warning/90 text-white"
             disabled={!importInput.trim()}
           >
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-4 h-4 mr-2" strokeWidth={1.5} />
             นำเข้าข้อมูล {TAB_LABEL[activeImportTab]}
           </Button>
         </div>
@@ -347,10 +346,10 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         <div className="h-px bg-border my-2" />
 
         {/* 🔵 ZONE 3: NEW PROJECT (OPERATION) */}
-        <div className="bg-info/10 border border-info/20 rounded-2xl p-5 space-y-3">
+        <div className="bg-info/10 border border-info/20 rounded-xl p-5 space-y-3">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-card rounded-xl shadow-sm border border-info/20">
-              <FilePlus className="w-6 h-6 text-info" />
+            <div className="p-3 bg-card rounded-xl border border-info/20">
+              <FilePlus className="w-6 h-6 text-info" strokeWidth={1.5} />
             </div>
             <div className="flex-1">
               <h4 className="font-bold text-foreground">เริ่มโครงการใหม่ (New Project)</h4>
@@ -363,7 +362,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
               </p>
               <Button
                 onClick={handleNewProject}
-                className="mt-4 bg-info hover:bg-info/90 text-white shadow-lg shadow-info/20 w-full sm:w-auto"
+                className="mt-4 bg-info hover:bg-info/90 text-white w-full sm:w-auto"
               >
                 เริ่มงานใหม่ทันที
               </Button>
@@ -378,13 +377,13 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
               onClick={() => setShowDangerZone(true)}
               className="w-full py-3 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all border border-dashed border-border hover:border-destructive/30 flex items-center justify-center gap-2"
             >
-              <AlertTriangle className="w-3 h-3" />
+              <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
               แสดงเมนูขั้นสูง (ล้างเครื่อง)
             </button>
           ) : (
-            <div className="border border-destructive/30 bg-destructive/5 rounded-2xl p-5 animate-fade-in">
+            <div className="border border-destructive/30 bg-destructive/5 rounded-xl p-5 animate-fade-in">
               <div className="flex items-center gap-2 mb-3 text-destructive font-bold">
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-5 h-5" strokeWidth={1.5} />
                 พื้นที่อันตราย (Danger Zone)
               </div>
               <p className="text-sm text-muted-foreground mb-4">

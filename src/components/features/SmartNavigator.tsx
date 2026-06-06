@@ -124,25 +124,22 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                 aria-current={isActive ? 'true' : undefined}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-150 active:scale-[0.98]',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-inset',
-                  isActive ? 'bg-primary/10' : 'hover:bg-muted/50'
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+                  isActive ? 'bg-accent' : 'hover:bg-muted/50'
                 )}
               >
                 {/* จุดบอกห้องที่กำลังโฟกัส */}
                 <div
                   className={cn(
                     'h-2 w-2 shrink-0 rounded-full transition-colors',
-                    isActive
-                      ? 'bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]'
-                      : 'bg-border'
+                    isActive ? 'bg-foreground' : 'bg-border'
                   )}
                 />
 
                 <div className="min-w-0 flex-1">
                   <div
                     className={cn(
-                      'truncate text-sm font-semibold leading-tight',
-                      isActive ? 'text-primary' : 'text-foreground',
+                      'truncate text-sm font-semibold leading-tight text-foreground',
                       room.is_suspended && 'text-muted-foreground line-through'
                     )}
                   >
@@ -156,8 +153,8 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
 
                 <span
                   className={cn(
-                    'shrink-0 text-sm font-bold tabular-nums',
-                    isActive ? 'text-primary' : 'text-emerald-600 dark:text-emerald-400'
+                    'shrink-0 text-sm font-bold font-mono tabular-nums',
+                    isActive ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'
                   )}
                 >
                   {fmtTH(total)}
@@ -166,8 +163,9 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                 <ChevronRight
                   className={cn(
                     'h-3.5 w-3.5 shrink-0',
-                    isActive ? 'text-primary/50' : 'text-muted-foreground/25'
+                    isActive ? 'text-foreground/50' : 'text-muted-foreground/25'
                   )}
+                  strokeWidth={1.5}
                 />
               </button>
             );
