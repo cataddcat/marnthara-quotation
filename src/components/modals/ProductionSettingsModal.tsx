@@ -14,8 +14,6 @@ import {
   MoreHorizontal,
   Upload,
   Download,
-  Scissors,
-  Hammer,
   Layers,
   Lock,
   Unlock,
@@ -32,15 +30,9 @@ interface ProductionSettingsModalProps {
   onClose: () => void;
 }
 
-type TabId = 'labor' | 'accessories' | 'fabrics';
-// ชนิดของรายการต้นทุน — ใช้ route action/รูปแบบฟอร์ม (แท็บ "ค่าแรง" มี 2 kind: labor + service)
-type ItemKind = 'labor' | 'service' | 'accessory' | 'fabric';
-
-const TABS = [
-  { id: 'labor' as TabId, label: 'ค่าแรง', icon: Scissors },
-  { id: 'accessories' as TabId, label: 'อุปกรณ์', icon: Hammer },
-  { id: 'fabrics' as TabId, label: 'ผ้า/วัสดุ', icon: Layers },
-] as const;
+// ชนิดรายการต้นทุนที่แก้มือได้ (Vault = ของร้านเอง) — ค่าเย็บ + บริการ
+// ทุนสินค้า (ผ้า/ราง/ฮาร์ดแวร์) ย้ายไปจัดการที่ "คลังวัสดุ" (catalog) แล้ว
+type ItemKind = 'labor' | 'service';
 
 const LABOR_LABELS: Record<string, string> = {
   ลอน: 'ม่านลอน (Wave)',
@@ -67,18 +59,6 @@ const SERVICE_LABELS: Record<string, string> = {
   transport_upcountry: 'ค่าเดินทางต่างจังหวัด',
   fuel_diesel_liter: 'ราคาน้ำมันดีเซล (อ้างอิง/ลิตร)',
   removal_per_point: 'ค่ารื้อถอน (ต่อจุด)',
-};
-
-const ACCESSORY_LABELS: Record<string, string> = {
-  rail_wave: 'รางม่านลอน — TES (เทปลอน TW14.5)',
-  rail_pleated: 'รางม่านจีบ — LTL (ราง M)',
-  rail_eyelet: 'รางม่านตาไก่ (รางโชว์)',
-  rail_roman: 'ชุดรางม่านพับ (Roman System)',
-  rail_rod: 'ราวม่านแป๊บ (ราวสอด)',
-  rail_louis: 'ราง/กล่อง ม่านหลุยส์',
-  eyelet_ring: 'ห่วงตาไก่ (ต่อชิ้น)',
-  tape_wave: 'เทปหัวม่าน/โซ่ (ต่อเมตร)',
-  rod_bracket: 'ขาจับราง ม่านแป๊บ (ต่อขา)',
 };
 
 interface CurrentItem {
@@ -124,17 +104,10 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
   const {
     laborCosts,
     serviceCosts,
-    accessoryCosts,
-    fabricCosts,
-    favorites,
     updateLaborCost,
     removeLaborCost,
     updateServiceCost,
     removeServiceCost,
-    updateAccessoryCost,
-    updateFabricCost,
-    removeAccessoryCost,
-    removeFabricCost,
     loadDefaultCosts,
     exportSecrets,
     importSecrets,
@@ -145,7 +118,6 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
   const addToast = useUIStore((state) => state.addToast);
   const { confirm } = useConfirm();
 
-  const [activeTab, setActiveTab] = useState<TabId>('labor');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLocked, setIsLocked] = useState(true);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -168,59 +140,31 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
       [...items].sort((a, b) => a.name.localeCompare(b.name, 'th'));
     const prep = (items: CurrentItem[]) => sortByName(matchSearch(items));
 
-    if (activeTab === 'labor') {
-      const laborItems: CurrentItem[] = Object.entries(laborCosts).map(([k, v]) => ({
-        kind: 'labor',
-        key: k,
-        name: LABOR_LABELS[k] || k,
-        cost: v.rate,
-        unit: UNIT_LABELS[v.unit] || v.unit,
-        minPrice: v.min_price,
-      }));
-      const serviceItems: CurrentItem[] = Object.entries(serviceCosts).map(([k, v]) => ({
+    const laborItems: CurrentItem[] = Object.entries(laborCosts).map(([k, v]) => ({
+      kind: 'labor',
+      key: k,
+      name: LABOR_LABELS[k] || k,
+      cost: v.rate,
+      unit: UNIT_LABELS[v.unit] || v.unit,
+      minPrice: v.min_price,
+    }));
+    const serviceItems: CurrentItem[] = Object.entries(serviceCosts).map(([k, v]) => ({
+      kind: 'service',
+      key: k,
+      name: SERVICE_LABELS[k] || k,
+      cost: v,
+      note: SERVICE_LABELS[k] ? k : '',
+    }));
+    return [
+      { kind: 'labor', title: 'ค่าเย็บ', addLabel: 'เพิ่มค่าเย็บ', items: prep(laborItems) },
+      {
         kind: 'service',
-        key: k,
-        name: SERVICE_LABELS[k] || k,
-        cost: v,
-        note: SERVICE_LABELS[k] ? k : '',
-      }));
-      return [
-        { kind: 'labor', title: 'ค่าเย็บ', addLabel: 'เพิ่มค่าเย็บ', items: prep(laborItems) },
-        {
-          kind: 'service',
-          title: 'บริการ (ติดตั้ง / เดินทาง / รื้อถอน)',
-          addLabel: 'เพิ่มบริการ',
-          items: prep(serviceItems),
-        },
-      ];
-    }
-
-    if (activeTab === 'accessories') {
-      const items: CurrentItem[] = Object.entries(accessoryCosts).map(([k, v]) => ({
-        kind: 'accessory',
-        key: k,
-        name: ACCESSORY_LABELS[k] || k,
-        cost: v,
-        note: ACCESSORY_LABELS[k] ? k : '',
-      }));
-      return [{ kind: 'accessory', items: prep(items) }];
-    }
-
-    const items: CurrentItem[] = Object.entries(fabricCosts).map(([k, v]) => {
-      let refPrice = 0;
-      let refNote = '';
-      Object.values(favorites)
-        .flat()
-        .forEach((f) => {
-          if (f.code === k) {
-            refPrice = f.default_price_per_m;
-            refNote = f.note || '';
-          }
-        });
-      return { kind: 'fabric', key: k, name: k, cost: v, note: refNote, priceRef: refPrice };
-    });
-    return [{ kind: 'fabric', items: prep(items) }];
-  }, [activeTab, laborCosts, serviceCosts, accessoryCosts, fabricCosts, searchTerm, favorites]);
+        title: 'บริการ (ติดตั้ง / เดินทาง / รื้อถอน)',
+        addLabel: 'เพิ่มบริการ',
+        items: prep(serviceItems),
+      },
+    ];
+  }, [laborCosts, serviceCosts, searchTerm]);
 
   const totalItemCount = sections.reduce((sum, sec) => sum + sec.items.length, 0);
 
@@ -291,15 +235,9 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
         unit: validUnit,
         min_price: minPrice,
       });
-    } else if (formKind === 'service') {
+    } else {
       if (editingKey && form.code !== editingKey) removeServiceCost(editingKey);
       updateServiceCost(form.code, costVal);
-    } else if (formKind === 'accessory') {
-      if (editingKey && form.code !== editingKey) removeAccessoryCost(editingKey);
-      updateAccessoryCost(form.code, costVal);
-    } else {
-      if (editingKey && form.code !== editingKey) removeFabricCost(editingKey);
-      updateFabricCost(form.code, costVal);
     }
 
     resetForm();
@@ -307,15 +245,8 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
   };
 
   const handleDelete = (key: string, kind: ItemKind) => {
-    if (kind === 'labor') {
-      removeLaborCost(key);
-    } else if (kind === 'service') {
-      removeServiceCost(key);
-    } else if (kind === 'accessory') {
-      removeAccessoryCost(key);
-    } else {
-      removeFabricCost(key);
-    }
+    if (kind === 'labor') removeLaborCost(key);
+    else removeServiceCost(key);
     addToast('success', 'ลบรายการเรียบร้อย');
     resetForm();
   };
@@ -368,7 +299,6 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
 
   const renderFormCard = (isEditMode: boolean, kind: ItemKind) => {
     const isLaborKind = kind === 'labor';
-    const isFabricKind = kind === 'fabric';
     return (
       <div className="p-3 rounded-xl border bg-card border-primary shadow-md ring-1 ring-primary/20 animate-in fade-in zoom-in-95 duration-150 mb-2">
         <div className="space-y-3">
@@ -407,7 +337,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                   className="flex h-11 w-full rounded-xl border px-3 text-sm bg-background text-foreground border-input focus:outline-none disabled:opacity-60 disabled:bg-muted/30"
                   value={form.note}
                   onChange={(e) => setForm({ ...form, note: e.target.value })}
-                  disabled={isEditMode && !isFabricKind}
+                  disabled={isEditMode}
                   placeholder="-"
                 />
               )}
@@ -576,16 +506,6 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
             {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
           </Button>
 
-          {!isLocked && activeTab !== 'labor' && (
-            <Button
-              onClick={() => startAdd(activeTab === 'accessories' ? 'accessory' : 'fabric')}
-              className="h-10 shrink-0 bg-primary text-primary-foreground px-3 gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm font-medium">เพิ่ม</span>
-            </Button>
-          )}
-
           <Menu as="div" className="relative">
             <MenuButton as={Button} variant="ghost" size="icon" className="w-10 h-10">
               <MoreHorizontal className="w-5 h-5" />
@@ -665,29 +585,6 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               </MenuItems>
             </Transition>
           </Menu>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex p-1 bg-muted rounded-xl shrink-0">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                resetForm();
-                setSearchTerm('');
-              }}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all',
-                activeTab === tab.id
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <tab.icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-            </button>
-          ))}
         </div>
 
         {/* List */}

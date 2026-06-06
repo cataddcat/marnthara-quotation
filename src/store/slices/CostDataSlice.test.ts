@@ -69,6 +69,14 @@ describe('CostDataSlice — accessory', () => {
     store().removeAccessoryCost('rail_wave');
     expect(store().accessoryCosts).not.toHaveProperty('rail_wave');
   });
+
+  it('default = ราง legacy เท่านั้น (ไม่มี component ที่รวมในชุดราง)', () => {
+    // beforeEach reset แล้ว → accessoryCosts = DEFAULT_ACCESSORY_COSTS
+    expect(store().accessoryCosts).toHaveProperty('rail_wave');
+    expect(store().accessoryCosts).not.toHaveProperty('rod_bracket');
+    expect(store().accessoryCosts).not.toHaveProperty('eyelet_ring');
+    expect(store().accessoryCosts).not.toHaveProperty('tape_wave');
+  });
 });
 
 describe('CostDataSlice — fabric', () => {

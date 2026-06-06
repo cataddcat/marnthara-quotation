@@ -13,6 +13,7 @@ import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { ITEM_CONFIG, STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { fmtTH, toNum, fmtDate, fmtSize } from '@/utils/formatters';
 import { buildSummary, type RailItem } from '@/lib/materials/buildSummary';
+import { FORMULAS } from '@/config/formulas';
 import { isCurtainItem, isWallpaperItem, isRemovalItem, isAreaItem } from '@/lib/type-guards';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { railProductName } from '@/config/railProducts';
@@ -437,7 +438,7 @@ function railOrderSummary(input: SummaryInput, format: RailFormat): string {
         const fabric = isWave && it.fabricYards > 0 ? it.fabricYards.toFixed(2) : '';
         const layer = railLayer(it);
         const layers = it.isDouble ? 2 : 1; // ทึบ+โปร่ง = 2 เส้น/ชุด
-        const brackets = Math.ceil(it.width / 0.6); // ขาจับ 1 ตัว/~0.6 ม. (2ชั้น = จำนวนเท่าเดิม)
+        const brackets = Math.ceil(it.width / FORMULAS.materials.rail_bracket_spacing); // 1 ขา/0.6 ม. (2ชั้นเท่าเดิม) — ตรงกับ buildSummary
         const key = `${sizeCm}|${slide}|${unit}|${fabric}|${layer}`;
         const g = groups.get(key) ?? { sizeCm, qty: 0, layers, brackets, slide, unit, fabric, layer };
         g.qty += 1;

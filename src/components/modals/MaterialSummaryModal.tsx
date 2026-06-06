@@ -766,6 +766,13 @@ const RailCard = ({
                   {isRoman ? '1 ชุด' : `${item.width.toFixed(2)} ม.`}
                 </span>
               </div>
+              {(item.railCode || item.railColor) && (
+                <div className="pl-2 text-[10px] text-sky-600 dark:text-sky-400">
+                  {item.railCode ? `รุ่น ${item.railCode}` : ''}
+                  {item.railCode && item.railColor ? ' · ' : ''}
+                  {item.railColor ? `สี ${item.railColor}` : ''}
+                </div>
+              )}
               {!isRoman && (
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground/70 pl-2">
                   {item.brackets > 0 && <span>ขาจับ: ~{item.brackets} ชิ้น</span>}

@@ -21,6 +21,7 @@ const DEFAULT_DATA: CurtainFormValues = {
   price_per_m_raw: '',
   sheer_code: '',
   sheer_price_per_m: '',
+  rail_code: '',
   rail_color: '',
   bracket_color: '',
   hook_type: 'short',

@@ -76,6 +76,7 @@ export interface CurtainItemInput extends BaseItemInput {
   rail_price_per_m?: number | string;
 
   // Accessories & Options
+  rail_code?: string; // SKU รางจาก catalog (Phase C) → ทุน hardwareCosts[rail_code]
   rail_color?: string;
   bracket_color?: string;
   eyelet_color?: string;

@@ -31,7 +31,7 @@ export const CATALOG_CATEGORIES: CatalogCategoryDef[] = [
   { id: 'rail_wave', label: 'รางม่านลอน', costUnit: 'เมตร', vault: 'hardware' },
   { id: 'rail_pleated', label: 'รางม่านจีบ', costUnit: 'เมตร', vault: 'hardware' },
   { id: 'rail_eyelet', label: 'รางม่านตาไก่', costUnit: 'เมตร', vault: 'hardware' },
-  { id: 'rail_roman', label: 'ชุดรางม่านพับ', costUnit: 'ชุด', vault: 'hardware' },
+  { id: 'rail_roman', label: 'ชุดรางม่านพับ', costUnit: 'เมตร', vault: 'hardware' },
   { id: 'rail_rod', label: 'ราวม่านแป๊บ', costUnit: 'เมตร', vault: 'hardware' },
   { id: 'rail_louis', label: 'ราง/กล่องม่านหลุยส์', costUnit: 'เมตร', vault: 'hardware' },
 ];

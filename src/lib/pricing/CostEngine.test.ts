@@ -6,7 +6,6 @@ import { useAppStore } from '@/store/useAppStore';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import type { LaborCost } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';
-import { FORMULAS } from '@/config/formulas';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test fixtures — ใช้ค่าจริงจาก src/config/formulas.ts (FORMULAS เป็น compile-time const)
@@ -22,6 +21,7 @@ const setupStore = (overrides?: {
   wallpaperCosts?: Record<string, number>;
   areaCosts?: Record<string, number>;
   accessoryCosts?: Record<string, number>;
+  hardwareCosts?: Record<string, number>;
   laborCosts?: Record<string, LaborCost>;
 }) => {
   useAppStore.setState({
@@ -29,6 +29,7 @@ const setupStore = (overrides?: {
     wallpaperCosts: overrides?.wallpaperCosts ?? {},
     areaCosts: overrides?.areaCosts ?? {},
     accessoryCosts: overrides?.accessoryCosts ?? {},
+    hardwareCosts: overrides?.hardwareCosts ?? {},
     laborCosts: overrides?.laborCosts ?? {},
   });
 };
@@ -353,6 +354,29 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
   });
 
   // ───────────────────────────────────────────────────────────────────────
+  // กลุ่ม Rail: Priority chain (catalog SKU → legacy)
+  // ───────────────────────────────────────────────────────────────────────
+  describe('Rail cost priority (catalog SKU vs legacy)', () => {
+    it('rail_code + hardwareCosts → ใช้ทุน SKU (ไม่ใช่ legacy)', () => {
+      setupStore({ accessoryCosts: { rail_wave: 130 }, hardwareCosts: { 'RW-SKU': 300 } });
+      const item = makeCurtainItem({ style: 'ลอน', width_m: 2.0, rail_code: 'RW-SKU' });
+      expect(CostEngine.analyze(item).railCost).toBe(600); // 2.0 × 300
+    });
+
+    it('ไม่มี rail_code → legacy accessoryCosts[rail_wave]', () => {
+      setupStore({ accessoryCosts: { rail_wave: 130 }, hardwareCosts: { 'RW-SKU': 300 } });
+      const item = makeCurtainItem({ style: 'ลอน', width_m: 2.0 });
+      expect(CostEngine.analyze(item).railCost).toBe(260); // 2.0 × 130
+    });
+
+    it('rail_code แต่ SKU ไม่มีทุน (0) → fallback legacy', () => {
+      setupStore({ accessoryCosts: { rail_wave: 130 }, hardwareCosts: {} });
+      const item = makeCurtainItem({ style: 'ลอน', width_m: 2.0, rail_code: 'MISSING' });
+      expect(CostEngine.analyze(item).railCost).toBe(260); // 2.0 × 130
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
   // กลุ่ม E: Status flag transitions
   // ───────────────────────────────────────────────────────────────────────
   describe('Status flag transitions', () => {
@@ -437,13 +461,13 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
   });
 
   // ───────────────────────────────────────────────────────────────────────
-  // กลุ่ม F: ขาจับราง ม่านแป๊บ/สอดราง (accessory cost)
+  // กลุ่ม F: component (ขาจับ/ลูกล้อ/เทป) รวมในชุดราง → ไม่คิดทุนแยก
   // ───────────────────────────────────────────────────────────────────────
-  describe('Rod brackets (ม่านแป๊บ)', () => {
-    it('F19: แป๊บ → accCost = rod_brackets_per_set × rod_bracket และรวมใน totalCost', () => {
+  describe('Bundled rail components (ไม่คิดทุน component แยก)', () => {
+    it('F19: แป๊บ → accCost = 0 (ขาจับรวมในชุดราง) · totalCost ไม่บวกขาจับ', () => {
       setupStore({
         fabricCosts: { F001: 50 },
-        accessoryCosts: { rail_rod: 70, rod_bracket: 35 },
+        accessoryCosts: { rail_rod: 70 },
         laborCosts: { แป๊บ: { style: 'แป๊บ', rate: 100, unit: 'meter', min_price: 50 } },
       });
       const item = makeCurtainItem({
@@ -454,20 +478,15 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
       const result = CostEngine.analyze(item);
 
-      const expectedAcc = FORMULAS.materials.rod_brackets_per_set * 35; // 4 × 35 = 140
-      expect(result.accCost).toBe(expectedAcc);
+      expect(result.accCost).toBe(0);
       expect(result.railCost).toBeCloseTo(70, 2); // width 1.0 × rail_rod 70
-      // totalCost = fabric(2.89×50) + rail(70) + labor(1.0×100) + acc(140)
-      expect(result.totalCost).toBeCloseTo(
-        EXPECTED_FABRIC_YARDS * 50 + 70 + 100 + expectedAcc,
-        2
-      );
+      // totalCost = fabric(2.89×50) + rail(70) + labor(1.0×100) — ไม่มี acc แยก
+      expect(result.totalCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 50 + 70 + 100, 2);
     });
 
-    it('F20: style อื่น (จีบ) → accCost = 0 แม้มี rod_bracket ในคลัง', () => {
+    it('F20: style อื่น (จีบ) → accCost = 0', () => {
       setupStore({
         fabricCosts: { F001: 50 },
-        accessoryCosts: { rod_bracket: 35 },
         laborCosts: { จีบ: cheapLabor },
       });
       const item = makeCurtainItem({ code: 'F001' }); // style 'จีบ' (default)

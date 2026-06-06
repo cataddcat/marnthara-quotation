@@ -44,6 +44,7 @@ export const CurtainSchema = z.object({
     fabric_variant: z.string().optional(), // ทึบ / โปร่ง (Auto generated usually)
 
     // --- Accessories ---
+    rail_code: z.string().optional(), // SKU รางจาก catalog (Phase C) — optional, fallback legacy
     rail_color: z.string().optional(),
     bracket_color: z.string().optional(),
 

@@ -44,6 +44,7 @@ export interface FormulaConfig {
   materials: {
     bracket_spacing: number;
     bracket_double_multiplier: number;
+    rail_bracket_spacing: number;
     eyelet_spacing: number;
     pin_spacing: number;
     pin_extra: number;
@@ -141,7 +142,7 @@ export const FORMULAS: FormulaConfig = {
   // ─── 🔧 วัสดุ BOM (Material Bill of Materials) ───────────────────────────
   materials: {
     /**
-     * 🎯 ขาแขวน (Brackets)
+     * 🎯 ขาแขวน (Brackets) — ใช้กับทุก style ยกเว้น "ลอน"
      *   จำนวน = ceil(กว้าง / bracket_spacing) + 1
      *   DOUBLE (ทึบ+โปร่ง) → × bracket_double_multiplier (รับน้ำหนัก 2 ชั้น)
      *
@@ -150,6 +151,13 @@ export const FORMULAS: FormulaConfig = {
      */
     bracket_spacing: 1.2,
     bracket_double_multiplier: 1.3,
+
+    /**
+     * 🎯 ขาจับราง — สูตรใบสั่งราง (ผลิตจริง, มี test)
+     *   ม่านลอน: จำนวน = ceil(กว้าง / rail_bracket_spacing) — 2 ชั้นใช้เท่าเดิม (ขา 2 ชั้น)
+     *   ใช้ร่วมกันทั้ง buildSummary (ลอน) + ใบสั่งราง (summaryGenerator) → ตรงกันเสมอ
+     */
+    rail_bracket_spacing: 0.6,
 
     /**
      * 🎯 ห่วงตาไก่ (Eyelet Rings)
@@ -173,9 +181,9 @@ export const FORMULAS: FormulaConfig = {
     roman_sets_per_window: 1,
 
     /**
-     * 🎯 ขาจับราง ม่านแป๊บ/สอดราง (Rod Brackets)
+     * 🎯 ขาจับราง ม่านแป๊บ/สอดราง (Rod Brackets) — จำนวนสำหรับแสดง (informational)
      *   จำนวน = rod_brackets_per_set ขา/ชุด (คงที่)
-     *   ต้นทุน = จำนวน × ราคา/ขา (accessoryCosts.rod_bracket)
+     *   ทุน: รวมในชุดราง (rail SKU) แล้ว — ไม่คิดทุน component แยก
      */
     rod_brackets_per_set: 4,
   },

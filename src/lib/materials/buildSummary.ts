@@ -59,6 +59,8 @@ export interface RailItem {
   opening: string;
   /** สีราง (จาก item.rail_color) — ใช้แมปรหัสสินค้าในใบสั่งราง */
   railColor?: string;
+  /** รหัส SKU รางที่เลือกจาก catalog (item.rail_code) — โชว์ในใบสั่งราง */
+  railCode?: string;
   brackets: number;
   eyelets: number;
   pinHooks: number;
@@ -95,8 +97,10 @@ export interface AreaGroup {
 
 // Material formulas — อ่านค่าจาก src/config/formulas.ts (single source of truth)
 
-function calcBrackets(widthM: number, isDouble: boolean): number {
-  const { bracket_spacing, bracket_double_multiplier } = FORMULAS.materials;
+function calcBrackets(widthM: number, isDouble: boolean, style: string): number {
+  const { bracket_spacing, bracket_double_multiplier, rail_bracket_spacing } = FORMULAS.materials;
+  // ม่านลอน: สูตรใบสั่งราง (1 ขา/0.6 ม., 2 ชั้นใช้เท่าเดิม) — ตรงกับ summaryGenerator
+  if (style === 'ลอน') return Math.ceil(widthM / rail_bracket_spacing);
   const base = Math.ceil(widthM / bracket_spacing) + 1;
   return isDouble ? Math.ceil(base * bracket_double_multiplier) : base;
 }
@@ -200,7 +204,7 @@ export function buildSummary(rooms: Room[]) {
 
         const railKey = STYLE_TO_RAIL[style] || 'rail_wave';
         const isRoman = style === 'พับ';
-        const itemBrackets = isRoman ? 0 : calcBrackets(width, isDouble);
+        const itemBrackets = isRoman ? 0 : calcBrackets(width, isDouble, style);
         const itemEyelets = style === 'ตาไก่' ? calcEyelets(width) : 0;
         const itemPinHooks = style === 'จีบ' ? calcPinHooks(width) : 0;
         const itemWaveTape = style === 'ลอน' ? calcWaveTape(width) : 0;
@@ -227,6 +231,7 @@ export function buildSummary(rooms: Room[]) {
           style,
           opening,
           railColor: c.rail_color,
+          railCode: c.rail_code,
           brackets: itemBrackets,
           eyelets: itemEyelets,
           pinHooks: itemPinHooks,

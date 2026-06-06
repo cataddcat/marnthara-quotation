@@ -10,7 +10,6 @@ import {
   isRemovalItem
 } from '@/lib/type-guards';
 import { toNum } from '@/utils/formatters';
-import { FORMULAS } from '@/config/formulas';
 
 export interface CostBreakdown {
   totalCost: number;
@@ -38,7 +37,8 @@ export const CostEngine = {
     // ผ้า/ผ้าโปร่ง → fabricCosts, วอลเปเปอร์ → wallpaperCosts, มู่ลี่/ฉาก/มุ้ง → areaCosts
     // (ต้องตรงกับฝั่งบันทึก: routeCostToVault ใน InventorySlice + แค็ตตาล็อกใน MaterialSummaryModal)
     const state = useAppStore.getState();
-    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts, serviceCosts } = state;
+    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts } =
+      state;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
     // (รองรับ Manual Override ราคาขายมาแล้วจาก PricingEngine)
@@ -49,7 +49,7 @@ export const CostEngine = {
     let sheerCost = 0;
     let railCost = 0;
     let laborCost = 0;
-    let accCost = 0; // อุปกรณ์เสริม (เช่น ขาจับราง ม่านแป๊บ)
+    const accCost = 0; // component (ขาจับ/ลูกล้อ/เทป) รวมในชุดรางแล้ว — ไม่คิดแยก
     let isLaborMinApplied = false; // ✅ NEW: เก็บสถานะว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
     
     let usedQuantity = 0;
@@ -118,13 +118,13 @@ export const CostEngine = {
         else if (item.style === 'หลุยส์') railKey = 'rail_louis';
         else if (item.style === 'แป๊บ') railKey = 'rail_rod';
         
-        const costPerMeterRail = accessoryCosts[railKey] || 0;
+        // Priority chain: SKU ที่เลือก (catalog) → ค่า legacy คงที่ (accessoryCosts) → 0
+        const railSkuCost = item.rail_code ? hardwareCosts[item.rail_code] ?? 0 : 0;
+        const costPerMeterRail = railSkuCost > 0 ? railSkuCost : accessoryCosts[railKey] || 0;
         railCost = width * costPerMeterRail;
 
-        // C2. ขาจับราง ม่านแป๊บ/สอดราง — คงที่ 4 ขา/ชุด (ไม่ขึ้นกับความกว้าง)
-        if (item.style === 'แป๊บ') {
-          accCost = FORMULAS.materials.rod_brackets_per_set * (accessoryCosts['rod_bracket'] || 0);
-        }
+        // C2. ขาจับราง/ลูกล้อ/เทป — รวมในชุดรางแล้ว (ราคา SKU ราง = ชุดประกอบเสร็จ)
+        //     ไม่คิดทุน component แยก (accCost คง 0)
 
         // D. ต้นทุนค่าแรง (Labor)
         const laborKey = item.style;

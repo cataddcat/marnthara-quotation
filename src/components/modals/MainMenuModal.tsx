@@ -278,7 +278,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             <MenuGridItem
               icon={ShieldCheck}
               label="ตั้งค่าต้นทุน"
-              desc="ค่าแรง / อุปกรณ์"
+              desc="ค่าแรง / บริการ"
               onClick={onOpenProductionSettings}
               accentColor="primary"
             />

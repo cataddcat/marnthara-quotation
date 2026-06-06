@@ -6,6 +6,7 @@ import { RAIL_COLORS } from '@/config/railProducts';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { FormSection } from '@/components/ui/FormSection';
+import { useInventory } from '@/hooks/useInventory';
 import {
   Wrench,
   Palette,
@@ -21,6 +22,20 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// style → หมวดราง catalog (ตรงกับ CATALOG_CATEGORIES / STYLE_TO_RAIL)
+const STYLE_TO_RAIL: Record<string, string> = {
+  ลอน: 'rail_wave',
+  จีบ: 'rail_pleated',
+  ตาไก่: 'rail_eyelet',
+  พับ: 'rail_roman',
+  แป๊บ: 'rail_rod',
+  หลุยส์: 'rail_louis',
+};
+
+// ป้าย SKU ราง — ยี่ห้อ · รุ่น · สี (fallback รหัส)
+const railSkuLabel = (s: { brand?: string; model?: string; color?: string; code: string }): string =>
+  [s.brand, s.model, s.color].filter(Boolean).join(' · ') || s.code;
 
 // สีราง/อุปกรณ์ — 6 สีมาตรฐาน THONG DECOR (จาก config) + "กำหนดเอง" (พิมพ์ข้อความเอง)
 const RAIL_COLOR_CUSTOM = '__custom__';
@@ -127,6 +142,21 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
     }
   };
 
+  // ── rail SKU picker (catalog) — ดึง SKU ของหมวดรางตาม style จากคลังวัสดุ ──
+  const railCategory = STYLE_TO_RAIL[data.style] || '';
+  const { items: railSkus } = useInventory(railCategory);
+  // กัน rail_code ค้างข้ามสไตล์: ถ้า code ไม่อยู่ในหมวดปัจจุบัน → ถือว่ายังไม่เลือก
+  const railCodeValid = railSkus.some((s) => s.code === data.rail_code);
+
+  const handleRailSkuSelect = (code: string) => {
+    onChange('rail_code', code);
+    const sku = railSkus.find((s) => s.code === code);
+    if (sku?.color) {
+      onChange('rail_color', sku.color);
+      setRailColorCustom(!RAIL_COLOR_PRESETS.includes(sku.color));
+    }
+  };
+
   return (
     <FormSection
       icon={Wrench}
@@ -140,6 +170,23 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
         <div className="flex flex-col items-center justify-center py-6 text-muted-foreground gap-2">
           <CheckCircle2 className="w-10 h-10 text-emerald-500/40" />
           <p className="text-sm">ไม่มีอุปกรณ์เพิ่มเติมสำหรับรูปแบบนี้</p>
+        </div>
+      )}
+
+      {/* Rail SKU (catalog) — เลือกรุ่นรางจากคลังวัสดุ → ผูกทุนจริง (ว่าง = ใช้ค่าเริ่มต้น) */}
+      {features.hasRail && railSkus.length > 0 && (
+        <div className="space-y-2 animate-fade-in">
+          <label className="text-sm font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
+            <Wrench className="w-3.5 h-3.5" /> รุ่นราง (จากคลังวัสดุ)
+          </label>
+          <Select
+            options={[
+              { label: '— ไม่ระบุ (ใช้ค่าเริ่มต้น) —', value: '' },
+              ...railSkus.map((s) => ({ label: railSkuLabel(s), value: s.code })),
+            ]}
+            value={railCodeValid ? data.rail_code || '' : ''}
+            onChange={(e) => handleRailSkuSelect(e.target.value)}
+          />
         </div>
       )}
 
@@ -282,7 +329,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
               ขาจับราง {FORMULAS.materials.rod_brackets_per_set} ขา/ชุด
             </div>
             <div className="text-xs text-muted-foreground leading-tight">
-              คิดรวมในต้นทุนแล้ว — ปรับราคา/ขาได้ที่ “ตั้งค่าการผลิต”
+              รวมในชุดรางแล้ว — เลือกรุ่นราง/ปรับทุนได้ที่ “คลังวัสดุ”
             </div>
           </div>
         </div>

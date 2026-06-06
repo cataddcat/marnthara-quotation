@@ -27,6 +27,11 @@ describe('CurtainSchema', () => {
       expect(result.success).toBe(true);
     });
 
+    it('rail_code (SKU ราง catalog) → optional, valid', () => {
+      const result = CurtainSchema.safeParse(makeCurtain({ rail_code: 'TES-W145-WH' }));
+      expect(result.success).toBe(true);
+    });
+
     it('ใส่ default type/enable_set_price เมื่อไม่ระบุ', () => {
       const { type, enable_set_price, ...rest } = makeCurtain();
       void type;

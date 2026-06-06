@@ -25,12 +25,12 @@ npx playwright test  # E2E tests (Chrome, Firefox, Safari, iOS)
 
 ### State Management (Zustand)
 
-`useAppStore` composes 7 slices with three middleware layers in order:
+`useAppStore` composes 6 slices with three middleware layers in order:
 1. `temporal` (Zundo, limit 20) — undo/redo
-2. `persist` — localStorage under key `"marnthara.input.v6.4"`
+2. `persist` — localStorage under key `"marnthara.input.v6.4"` (**version 3**; see `migrations.ts`)
 3. `partialize` — excludes modal/UI state from persistence and undo history
 
-Slices: `ProjectSlice` (rooms + items), `CustomerSlice`, `ShopProfileSlice`, `InventorySlice`, `UISlice` (modal stack), `CostDataSlice` (labor/accessory/fabric cost vaults), `FormulaSlice` (custom pricing formulas).
+Slices: `ProjectSlice` (rooms + items), `CustomerSlice`, `ShopProfileSlice`, `InventorySlice` (code registry + catalog import/export), `UISlice` (modal stack), `CostDataSlice` (7 cost vaults: labor/service/accessory/hardware/fabric/wallpaper/area — see HANDOFF §11). Pricing formulas are compile-time constants in `src/config/formulas.ts` (the old `FormulaSlice` was removed).
 
 ### Feature Module Pattern
 

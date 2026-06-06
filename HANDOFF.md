@@ -57,12 +57,15 @@ Two-layer curtains are not single-layer curtains with a sheer add-on. They requi
 
 ### 1.5 Smart Defaults, User Override
 
-Thai market 2025 prices are baked into `DEFAULT_LABOR_COSTS` and `DEFAULT_ACCESSORY_COSTS`. Users can:
-- Override individual entries in ProductionSettingsModal
-- Reset everything to defaults with "โหลดค่ามาตรฐาน 2025"
+Thai market 2025 prices are baked into `DEFAULT_LABOR_COSTS`, `DEFAULT_SERVICE_COSTS`, and `DEFAULT_ACCESSORY_COSTS`. Users can:
+- Override **ค่าแรง + บริการ** in `ProductionSettingsModal` (the Vault = shop's own labor/service prices)
+- Override **product/rail costs** in `MaterialSummaryModal` ("คลังวัสดุ" / catalog — fabric/area/hardware SKUs)
+- Reset labor/service/accessory to defaults with "โหลดค่ามาตรฐาน 2025"
 - Use Pro Mode to override per-item
 
 **Why:** A brand-new install should give reasonable cost calculations immediately, not zeros.
+
+> ⚠️ **As of the 2026-06 cost split (§11):** `DEFAULT_ACCESSORY_COSTS` is now **rail-only** (`rail_*`) and serves purely as a *legacy fallback* when a curtain hasn't picked a rail SKU from the catalog. It is **not editable in `ProductionSettingsModal` anymore** — real rail costs live in the catalog (`hardwareCosts`). See §11.
 
 ### 1.6 UX Baseline — Apple HIG + NN/g (mandatory for every screen)
 
@@ -96,10 +99,9 @@ All modals are registered in `UISlice.ts` ModalType union. Render via `ModalMana
 | `lookbook` | Visual catalog | — |
 | `projectOverview` | Room list overview | — |
 | `mainMenu` | Main menu drawer | (many callbacks) |
-| `productionSettings` | **Cost Vault** — labor/accessory/fabric costs | — |
+| `productionSettings` | **Cost Vault** — ค่าแรง + บริการ only (labor/service) since §11 | — |
 | `costDashboard` | **Financial Health** — P&L overview | — |
-| `formulaStudio` | Multiplier/conversion config | — |
-| `materialSummary` | **Material Summary / BOM** (NEW) | — |
+| `materialSummary` | **คลังวัสดุ** — BOM + product/rail catalog cost editor (fabric/area/hardware SKUs) | — |
 
 ### 2.2 Pricing Pipeline
 
@@ -133,7 +135,8 @@ PricingEngine.calculateDetailedPrice(item)  → { total, breakdown }
 CostEngine.analyze(item)
   ├─ A. Main fabric cost (Priority chain)
   ├─ B. Sheer fabric cost (Priority chain) — DOUBLE mode only
-  ├─ C. Rail cost (accessoryCosts[railKey] × width)
+  ├─ C. Rail cost — width × (hardwareCosts[rail_code] SKU → accessoryCosts[railKey] legacy → 0)
+  │     (component costs ขาจับ/ลูกล้อ/เทป are bundled in the rail SKU; accCost is always 0 — see §11)
   ├─ D. Main labor (laborCosts[style])
   └─ D2. Sheer labor (laborCosts['ผ้าโปร่ง']) — DOUBLE mode only
   ↓
@@ -169,9 +172,9 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 ## 3. Feature Modules (Key Files)
 
 ### Cost Vault
-- `src/store/slices/CostDataSlice.ts` — state + DEFAULT_LABOR_COSTS + DEFAULT_ACCESSORY_COSTS
-- `src/components/modals/ProductionSettingsModal.tsx` — 3-tab CRUD UI
-- Actions: `updateLaborCost`, `removeLaborCost`, `updateAccessoryCost`, `removeAccessoryCost`, `updateFabricCost`, `removeFabricCost`, `loadDefaultCosts`, `resetProductionCosts`
+- `src/store/slices/CostDataSlice.ts` — **7 vaults** (`laborCosts`, `serviceCosts`, `accessoryCosts`, `hardwareCosts`, `fabricCosts`, `wallpaperCosts`, `areaCosts`) + `DEFAULT_LABOR_COSTS` / `DEFAULT_SERVICE_COSTS` / `DEFAULT_ACCESSORY_COSTS` (rail-only). See §11 for what each vault means + which UI edits it.
+- `src/components/modals/ProductionSettingsModal.tsx` — CRUD UI for **ค่าแรง + บริการ only** (tabs removed in §11). Product/rail costs moved to `MaterialSummaryModal`.
+- Actions: `updateLaborCost`, `removeLaborCost`, `updateServiceCost`, `removeServiceCost`, `updateHardwareCost`, `removeHardwareCost`, `updateFabricCost`, `updateWallpaperCost`, `updateAreaCost`, `loadDefaultCosts`, `resetProductionCosts`, `importCatalog`, `exportCatalog`
 
 ### Financial Dashboard
 - `src/components/modals/FinancialDashboardModal.tsx`
@@ -299,10 +302,13 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 - **Config files:** `vite.config.ts` / `vitest.config.ts` are the source of truth. `tsc -b` (via `tsconfig.node.json`) emits to `node_modules/.tmp/config` so it never drops `.js`/`.d.ts` into the project root — those would shadow the `.ts` because Vite/Vitest resolve `.js` first.
 
 ### Persistence
-- Zustand `persist` key: `marnthara.input.v6.4` (localStorage), **`version: 2`**
-- `migrate` (`src/store/migrations.ts`): v1→v2 normalizes legacy curtains (`type: 'set'` + old field names `fabric_code`/`sheer_fabric_code`/`track_color`, missing `layer_mode`) into the current curtain schema. Idempotent.
-- Zundo `temporal` limit: 20 undo states
+- Zustand `persist` key: `marnthara.input.v6.4` (localStorage), **`version: 3`**
+- `migrate` (`src/store/migrations.ts`), idempotent, all in `migrateLegacyState`:
+  - **v1→v2** `migrateLegacyItem` — normalizes legacy curtains (`type: 'set'` + old field names `fabric_code`/`sheer_fabric_code`/`track_color`, missing `layer_mode`) into the current curtain schema.
+  - **v2→v3** `migrateCostVaults` — moves service keys (`install_*`/`transport_*`/`fuel_*`/`removal_per_point`) out of `accessoryCosts` into `serviceCosts` (doesn't overwrite a key the user already set in `serviceCosts`).
+- Zundo `temporal` limit: 20 undo states; its `partialize` now also tracks `serviceCosts` + `hardwareCosts` (so undo/redo covers all 7 vaults).
 - `omitTransientState` excludes: `activeModal`, `modalProps`, `modalStack`
+- `factoryReset` (ProjectSlice) resets in-memory state clean **first**, then `localStorage.clear()` + reload — clears all 3 persist keys, avoids the persist-rewrites-just-cleared-key race (see §11 / commit a043368).
 
 ### When Adding a New Item Type
 1. Add to `ITEM_TYPES` in `src/config/enums.ts`
@@ -334,16 +340,18 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ### Core State
 ```
-src/store/useAppStore.ts              — Root store (temporal + persist v2 + 7 slices)
-src/store/migrations.ts               — persist migrate: legacy type:'set' + old field names → current schema
+src/store/useAppStore.ts              — Root store (temporal + persist v3 + 6 slices)
+src/store/migrations.ts               — persist migrate: v1→v2 legacy items + v2→v3 cost-vault split
 src/store/slices/
   UISlice.ts                          — Modals + toast queue
-  ProjectSlice.ts                     — rooms[] + CRUD
+  ProjectSlice.ts                     — rooms[] + CRUD + factoryReset
   CustomerSlice.ts                    — Customer info
   ShopProfileSlice.ts                 — Shop config + discount
-  InventorySlice.ts                   — Favorites / code registry
-  CostDataSlice.ts                    — laborCosts, accessoryCosts, fabricCosts + defaults
-  FormulaSlice.ts                     — FormulaConfig (multipliers, offsets)
+  InventorySlice.ts                   — code registry + importCatalog/exportCatalog (catalog contract)
+  CostDataSlice.ts                    — 7 cost vaults + DEFAULT_LABOR/SERVICE/ACCESSORY (§11)
+  (FormulaSlice removed — formulas are now compile-time FORMULAS in src/config/formulas.ts)
+src/lib/vault.ts                      — CATALOG_CATEGORIES: category id → {label, costUnit, vault} routing
+src/lib/catalog/contract.ts           — Zod catalog contract v2 (import/export schema, isCatalogContract)
 src/store/useThemeStore.ts            — Light/Dark theme
 src/store/useUIStore.ts               — addToast
 ```
@@ -451,6 +459,57 @@ Verified live (Playwright, Lite 390px + Full 1280px): single-row footer, Lite co
 
 ---
 
-**Last refactor:** 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
-**Persistence key:** `marnthara.input.v6.4` · tier override: `marnthara-experience`  
+## 11. Cost & Catalog Architecture (2026-06) — Quote-first / Cost-optional
+
+A multi-phase refactor that separated **costs** (volatile, optional, externally-sourced) from the **calculator** (the app). Read this before touching cost vaults, the catalog, `ProductionSettingsModal`, or `MaterialSummaryModal`.
+
+### 11.1 Guiding principle
+
+The app is a **pure quotation calculator**. Costs are an **optional overlay**:
+- A quote can be produced with **zero cost data** — the user enters a sell price directly, with or without a product code.
+- When a cost is missing, `CostEngine` returns `status: 'unknown'` (gray) — it **never fabricates a number or shows false profit**.
+- Costs are market-volatile, so they are not baked into quotes; they hydrate from defaults, manual entry, or an **external catalog** (the long-term plan is AI-extracted supplier prices → catalog JSON → import). Catalog generation lives **outside** the app.
+
+### 11.2 The 7 cost vaults (`CostDataSlice`) and who edits them
+
+| Vault | Holds | Edited in | Read by |
+|---|---|---|---|
+| `laborCosts` | ค่าเย็บ per style (`LaborCost{rate,unit,min_price}`) | ProductionSettings | CostEngine D/D2 |
+| `serviceCosts` | ค่าติดตั้ง/เดินทาง/รื้อถอน (flat) | ProductionSettings | CostEngine (removal); rest is reference |
+| `accessoryCosts` | **rail-only `rail_*`** legacy fallback (฿/m) | *(seed-only — not in any UI)* | CostEngine C fallback |
+| `hardwareCosts` | rail/hardware **catalog SKU** → ฿/unit | คลังวัสดุ (catalog) | CostEngine C primary |
+| `fabricCosts` | ผ้าทึบ/โปร่ง code → ฿/yard | คลังวัสดุ + InventoryManager | CostEngine A/B |
+| `wallpaperCosts` | wallpaper code → ฿/roll | คลังวัสดุ | CostEngine (wallpaper) |
+| `areaCosts` | blind/screen/partition code or type → ฿/sqyd | คลังวัสดุ | CostEngine (area) |
+
+**Mental model:** `ProductionSettings` = *the shop's own labor/service* (typed by hand, remembered). `คลังวัสดุ` (`MaterialSummaryModal`) = *products* (fabric/area/rail SKUs, ideally imported from a catalog). Don't merge these two UIs — the split is intentional.
+
+### 11.3 Rail cost = catalog SKU (Phase C), components bundled (Phase B)
+
+- A curtain carries an optional `rail_code` (`CurtainItemInput`). The form's rail picker (`HardwareSection`) lists hardware SKUs from `useInventory(STYLE_TO_RAIL[style])` and sets `rail_code` + syncs `rail_color`.
+- CostEngine C priority chain: `width × (hardwareCosts[rail_code] → accessoryCosts[railKey] legacy → 0)`.
+- **Rails are complete assembled sets** (rollers / brackets / tape included in the SKU price). The old per-component cost keys (`eyelet_ring`, `tape_wave`, `rod_bracket`) were **removed** — `accCost` is now always `0`. (`eyelet_ring`/`tape_wave` were already dead; `rod_bracket` previously added `4×` to rod-curtain cost — that's now assumed bundled.)
+- **Pricing unit:** all rails (incl. roman/พับ and louis/หลุยส์) are priced **per meter of track** ("ชุดต่อเมตร" = sold as a set, priced per metre), so `width × rate` is correct. `vault.ts` `costUnit` for every `rail_*` is `'เมตร'`.
+
+### 11.4 Wave-hardware COUNT system is independent of cost
+
+The roller/bracket/snap **counts** for ม่านลอน (shown in คัดลอกสรุป + lookbook) are computed by `calcWaveHardware` / `calcBrackets` and are **unaffected** by the cost-bundling above — they still work.
+- **Bracket formula (single source, tested):** ม่านลอน → `ceil(width / FORMULAS.materials.rail_bracket_spacing)` where `rail_bracket_spacing = 0.6`; 2-layer uses the same count. Used by both `buildSummary.calcBrackets` and `summaryGenerator` (rail order) → they always agree.
+- **Not yet reconciled:** ม่านตาไก่ (eyelet) brackets still use the generic `ceil(width/1.2)+1 ×1.3` path — deliberately deferred ("ม่านตาไก่ยังไม่ต้องนะ").
+
+### 11.5 Catalog contract (`src/lib/catalog/contract.ts`)
+
+Versioned Zod schema for import/export. `CATALOG_CONTRACT_MAGIC = 'marnthara.catalog'`, current `version: 2` (accepts v1|v2). Each entry: `code`, `category` (validated against `CATALOG_CATEGORIES`), `cost`, plus optional `sell_price`/`unit`/`brand`/`model`/`color`/`variant`/`supplier`/`note`/`captured_at`. `InventorySlice.importCatalog` validates → atomic upsert-by-code + routes cost to the right vault via `categoryVault()`; `exportCatalog` emits the same shape. Import surfaces in `DataModal` (paste tab) + `ProductionSettings`/`MaterialSummary` menus (auto-detect: catalog vs vault-dump).
+
+### 11.6 Open follow-ups (next session — excludes Phase D)
+
+- **Stale test fixtures:** `test-data/*.json` still carry retired keys (`eyelet_ring`/`tape_wave`/`install_*`) inside `accessoryCosts`. Harmless (nothing reads them; v2→v3 migrate relocates the service ones), but worth cleaning so the fixtures match reality.
+- **Eyelet bracket reconciliation** (§11.4) — when the user is ready.
+- **Provenance display** — `supplier`/`captured_at` are imported + stored on the inventory item but not yet surfaced in คลังวัสดุ ("จาก ABC · อัปเดต …").
+- **Phase D (out of scope here):** IndexedDB for 10k+ SKUs, external DB / AI ingestion pipeline, physical-store split.
+
+---
+
+**Last refactor:** 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
+**Persistence key:** `marnthara.input.v6.4` (persist **v3**) · tier override: `marnthara-experience`  
 **App version:** `vite-refactor/6.7.0-strict-mode`
