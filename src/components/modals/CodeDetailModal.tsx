@@ -12,6 +12,7 @@ import { useCodeUsage, type CodeUsage } from '@/hooks/useCodeUsage';
 import { categoryVault, categoryLabel, categoryCostUnit } from '@/lib/vault';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
+import { Metric } from '@/components/ui/Metric';
 import { ArrowRight, BookOpen, MapPin, Package, Plus } from 'lucide-react';
 
 interface CodeDetailModalProps {
@@ -75,7 +76,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
     >
       <div className="space-y-4">
         {/* ── คลังรหัส: ต้นทุน / ราคาขาย / หมายเหตุ ── */}
-        <div className="rounded-xl border border-border/60 bg-card p-3 space-y-2.5">
+        <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               คลังรหัส
@@ -108,19 +109,26 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
             )
           )}
 
-          {/* ปริมาณรวม + ทุนรวมทั้งโครงการ */}
+          {/* ปริมาณรวม + ทุนรวมทั้งโครงการ — KPI strip */}
           {totalQty > 0 && (
-            <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border/40 text-xs">
-              <span className="text-muted-foreground">
-                รวมใช้{' '}
-                <span className="font-mono font-semibold text-foreground">
-                  {fmtQty(totalQty, unit)} {unit}
-                </span>
-              </span>
+            <div
+              className={cn(
+                'pt-3 border-t border-border/40',
+                totalCost > 0 && 'grid grid-cols-2 gap-2'
+              )}
+            >
+              <Metric
+                label="รวมใช้ทั้งโครงการ"
+                value={`${fmtQty(totalQty, unit)} ${unit}`}
+                tone="neutral"
+              />
               {totalCost > 0 && (
-                <span className="font-mono text-emerald-600 dark:text-emerald-400">
-                  ทุนรวม ฿{fmtTH(totalCost)}
-                </span>
+                <Metric
+                  label="ทุนรวม"
+                  value={`฿${fmtTH(totalCost)}`}
+                  tone="money"
+                  align="right"
+                />
               )}
             </div>
           )}
@@ -156,7 +164,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
               <p className="text-sm">ยังไม่มีจุดที่ใช้รหัสนี้</p>
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-xl overflow-hidden divide-y divide-border/50">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border/50">
               {usages.map((u) => (
                 <button
                   key={`${u.roomId}-${u.itemId}`}

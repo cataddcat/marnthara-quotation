@@ -7,6 +7,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { isItemIncomplete } from '@/lib/item-status';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
+import { Metric } from '@/components/ui/Metric';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import {
   DndContext,
@@ -216,27 +217,34 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* สรุปโครงการ — ภาพรวมมูลค่า/จำนวน/ค้าง */}
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
-        <div className="flex items-center gap-2 text-sm min-w-0">
-          <span className="font-semibold text-foreground tabular-nums">{totalItems} จุด</span>
-          {incompleteCount > 0 && (
-            <>
-              <span className="text-muted-foreground/30">·</span>
-              <span className="font-semibold text-amber-600 dark:text-amber-400">
-                ค้าง {incompleteCount}
-              </span>
-            </>
-          )}
-        </div>
-        <div className="flex items-baseline gap-1.5 shrink-0">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">
-            มูลค่าโครงการ
+      {/* สรุปโครงการ — KPI bar: ภาพรวม (จำนวน/ค้าง) ซ้าย · มูลค่าโครงการ (emerald hero) ขวา */}
+      <div className="flex items-end justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4">
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="text-xs font-medium tracking-wide text-muted-foreground">
+            ภาพรวมโครงการ
           </span>
-          <span className="font-mono font-bold text-base tabular-nums text-emerald-600 dark:text-emerald-400">
-            {fmtTH(grandTotal)}
-          </span>
+          <div className="flex items-center gap-2 text-sm min-w-0">
+            <span className="font-semibold text-foreground tabular-nums shrink-0">
+              {totalItems} จุด
+            </span>
+            {incompleteCount > 0 && (
+              <>
+                <span className="text-muted-foreground/30">·</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400 shrink-0">
+                  ค้าง {incompleteCount}
+                </span>
+              </>
+            )}
+          </div>
         </div>
+        <Metric
+          label="มูลค่าโครงการ"
+          value={fmtTH(grandTotal)}
+          tone="money"
+          size="lg"
+          align="right"
+          className="shrink-0"
+        />
       </div>
 
       <DndContext
@@ -265,7 +273,7 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
             {/* เพิ่มห้องใหม่ */}
             <button
               onClick={() => addRoom()}
-              className="flex items-center justify-center gap-2 min-h-[4rem] rounded-xl border border-dashed border-border/60 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/20 transition-colors"
+              className="flex items-center justify-center gap-2 min-h-[4rem] rounded-2xl border border-dashed border-border/60 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/20 transition-colors"
             >
               <Plus className="w-4 h-4" strokeWidth={1.5} />
               เพิ่มห้อง
@@ -347,7 +355,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex flex-col rounded-xl border bg-card transition-colors',
+        'flex flex-col rounded-2xl border bg-card transition-colors',
         room.is_suspended && 'grayscale opacity-60 border-dashed',
         isDragging ? 'opacity-40 border-primary/50' : 'border-border'
       )}
@@ -387,7 +395,14 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
           <ChevronRight className="w-4 h-4 text-muted-foreground/30 shrink-0 transition-colors" strokeWidth={1.5} />
         </button>
 
-        <span className="shrink-0 font-mono font-semibold text-sm tabular-nums text-foreground">
+        <span
+          className={cn(
+            'shrink-0 font-mono font-semibold text-sm tabular-nums',
+            room.is_suspended
+              ? 'text-muted-foreground line-through'
+              : 'text-emerald-600 dark:text-emerald-400'
+          )}
+        >
           {fmtTH(roomTotal)}
         </span>
 
@@ -493,7 +508,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
         <div
           ref={setDropRef}
           className={cn(
-            'p-2 space-y-2 rounded-b-xl transition-colors',
+            'p-2 space-y-2 rounded-b-2xl transition-colors',
             isOver && 'bg-accent ring-1 ring-inset ring-foreground/20'
           )}
         >

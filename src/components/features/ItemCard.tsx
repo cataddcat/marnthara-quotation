@@ -9,6 +9,7 @@ import { CostEngine } from '@/lib/pricing/CostEngine';
 import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
+import { Metric } from '@/components/ui/Metric';
 import {
   ChevronDown,
   Edit2,
@@ -196,10 +197,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     item.type === ITEM_TYPES.PARTITION ||
     item.type === ITEM_TYPES.PLEATED_SCREEN;
 
+  // หน้างานต้องการ "ขนาด" เป็นเมตริกซ้าย, "ยอดสุทธิ" เป็นฮีโร่ขวา — เฉพาะสินค้าที่มีมิติตัวเลข
+  const showDim = item.type !== ITEM_TYPES.REMOVAL && !!dimNumbers;
+
   return (
     <div
       className={cn(
-        'rounded-xl border bg-card transition-all duration-200',
+        'rounded-2xl border bg-card transition-[border-color] duration-200',
         item.is_suspended
           ? 'opacity-60 grayscale border-dashed border-border'
           : 'border-border hover:border-foreground/20'
@@ -207,64 +211,65 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     >
       {/* Collapsed header — always visible, clickable */}
       <div
-        className="flex flex-col gap-1.5 p-3.5 cursor-pointer select-none"
+        className="flex flex-col gap-3 p-4 cursor-pointer select-none transition-transform duration-100 active:scale-[0.99]"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
-        {/* Row 1: Index + Title + Price + Chevron */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-sm font-bold text-muted-foreground tracking-wider uppercase shrink-0">
-              #{index + 1}
+        {/* Row 1: Index chip + Title + status + Chevron */}
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
+            ⌗{String(index + 1).padStart(2, '0')}
+          </span>
+          <span className="flex-1 min-w-0 font-semibold text-foreground truncate text-base">
+            {title}
+          </span>
+          {incomplete && (
+            <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+              <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
+              {incompleteLabel(item)}
             </span>
-            <span className="font-semibold text-foreground truncate text-[15px]">{title}</span>
-            {incomplete && (
-              <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
-                <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
-                {incompleteLabel(item)}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center shrink-0">
-            <span
-              className={cn(
-                'text-base font-bold font-mono tabular-nums tracking-tight',
-                item.is_suspended
-                  ? 'text-muted-foreground line-through'
-                  : 'text-emerald-600 dark:text-emerald-400'
-              )}
-            >
-              {fmtTH(priceResult.total)}
-            </span>
-          </div>
+          )}
           <ChevronDown
             className={cn(
-              'w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200',
+              'w-4 h-4 text-muted-foreground/60 shrink-0 transition-transform duration-200',
               isExpanded && 'rotate-180'
             )}
             strokeWidth={1.5}
           />
         </div>
 
-        {/* Row 2: Dimensions — hero ตัวเลขล้วน (priority #1 หน้างาน) */}
-        {dimLine && (
-          <div className="flex items-center gap-1.5 text-[15px] leading-snug">
-            {item.type !== ITEM_TYPES.REMOVAL && (
-              <>
-                <Ruler className="w-3.5 h-3.5 shrink-0 text-sky-600 dark:text-sky-400" strokeWidth={1.5} />
-                <span className="font-medium text-muted-foreground shrink-0">กว้าง/สูง :</span>
-              </>
-            )}
-            <span className="truncate font-bold font-mono text-sky-600 dark:text-sky-400">{dimLine}</span>
-          </div>
-        )}
+        {/* Row 2: Metric strip — ขนาด (sky) ซ้าย · ยอดสุทธิ (emerald hero) ขวา */}
+        <div className="flex items-end justify-between gap-3">
+          {showDim ? (
+            <Metric
+              label="กว้าง×สูง"
+              icon={<Ruler className="w-3.5 h-3.5" strokeWidth={1.5} />}
+              value={dimLine}
+              tone="dimension"
+            />
+          ) : (
+            // งานรื้อถอน/ไม่มีมิติ — ยังคงโชว์รายละเอียดสรุปไว้ฝั่งซ้ายแบบเงียบ
+            dimLine && (
+              <Metric label="รายละเอียด" value={dimLine} tone="muted" />
+            )
+          )}
+          <Metric
+            label="ยอดสุทธิ"
+            value={fmtTH(priceResult.total)}
+            tone="money"
+            size="lg"
+            align="right"
+            struck={item.is_suspended}
+            className="shrink-0"
+          />
+        </div>
 
         {/* Row 3: ชนิด + รูปแบบเก็บ — ชิป */}
         {typeChips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1.5">
             {typeChips.map((chip, i) => (
               <span
                 key={i}
-                className="text-xs leading-tight px-2 py-1 rounded-md bg-muted text-foreground/90 font-semibold border border-border/50"
+                className="text-xs leading-tight px-2.5 py-1 rounded-full bg-muted/60 text-foreground/80 font-medium"
               >
                 {chip}
               </span>
@@ -285,26 +290,21 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
           {/* Detail rows */}
           <div className="space-y-2 mb-4">
-            {/* ต้นทุน / กำไร */}
+            {/* ต้นทุน · กำไร · อัตรากำไร — 3-up KPI strip (สุขภาพการเงินอ่านได้ในแวบเดียว) */}
             {costAnalysis && (
-              <div className="flex justify-between text-sm pb-2 mb-1 border-b border-border/40">
-                <span className="text-muted-foreground">ต้นทุน / กำไร</span>
-                <div className="flex items-center gap-2 font-mono tabular-nums font-medium">
-                  <span className="text-rose-500 dark:text-rose-400">
-                    {fmtTH(costAnalysis.totalCost)}
-                  </span>
-                  <span className="text-muted-foreground/40">/</span>
-                  <span
-                    className={cn(
-                      costAnalysis.profitAmount >= 0
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-rose-500 dark:text-rose-400'
-                    )}
-                  >
-                    {costAnalysis.profitAmount >= 0 ? '+' : ''}
-                    {fmtTH(costAnalysis.profitAmount)}
-                  </span>
-                </div>
+              <div className="grid grid-cols-3 gap-2 pb-3 mb-1 border-b border-border/40">
+                <Metric label="ต้นทุน" value={fmtTH(costAnalysis.totalCost)} tone="cost" />
+                <Metric
+                  label="กำไร"
+                  value={`${costAnalysis.profitAmount >= 0 ? '+' : ''}${fmtTH(costAnalysis.profitAmount)}`}
+                  tone={costAnalysis.profitAmount >= 0 ? 'money' : 'cost'}
+                />
+                <Metric
+                  label="อัตรากำไร"
+                  value={`${(priceResult.total > 0 ? (costAnalysis.profitAmount / priceResult.total) * 100 : 0).toFixed(1)}%`}
+                  tone={costAnalysis.profitAmount >= 0 ? 'money' : 'cost'}
+                  align="right"
+                />
               </div>
             )}
 
@@ -385,39 +385,39 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex gap-2 pt-2 border-t border-border/40">
+          {/* Action buttons — touch targets ≥ 44px (HIG) */}
+          <div className="flex gap-2 pt-3 border-t border-border/40">
             <button
               onClick={handleEdit}
-              className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors active:scale-95"
+              className="flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-[background-color,transform] active:scale-[0.97]"
             >
-              <Edit2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <Edit2 className="w-4 h-4" strokeWidth={1.5} />
               แก้ไข
             </button>
             <button
               onClick={handleDuplicate}
-              className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:bg-muted transition-colors active:scale-90"
+              className="flex items-center justify-center h-11 w-11 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
               title="คัดลอก"
             >
-              <Copy className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <Copy className="w-4 h-4" strokeWidth={1.5} />
             </button>
             <button
               onClick={handleToggleSuspension}
-              className="flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:bg-muted transition-colors active:scale-90"
+              className="flex items-center justify-center h-11 w-11 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
               title={item.is_suspended ? 'เปิดใช้งาน' : 'ซ่อนรายการ'}
             >
               {item.is_suspended ? (
-                <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />
               ) : (
-                <EyeOff className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <EyeOff className="w-4 h-4" strokeWidth={1.5} />
               )}
             </button>
             <button
               onClick={handleDelete}
-              className="flex items-center justify-center h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10 transition-colors active:scale-90"
+              className="flex items-center justify-center h-11 w-11 rounded-xl text-destructive hover:bg-destructive/10 transition-[background-color,transform] active:scale-90"
               title="ลบรายการ"
             >
-              <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <Trash2 className="w-4 h-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { ItemData } from '@/types';
 import { ItemTypeKey } from '@/config/enums';
 import { cn } from '@/lib/utils';
 import { getRoomAccent } from '@/lib/room-accents';
+import { Metric } from '@/components/ui/Metric';
 import {
   Package,
   TrendingUp,
@@ -142,28 +143,27 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
       description={`มูลค่าโครงการ ${fmtTH(grandTotal)}`}
     >
       <div className="space-y-4 pb-safe-area">
-        {/* Grand Total Card */}
-        <div className="bg-muted/40 rounded-xl p-4 flex items-center justify-between border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-muted rounded-full text-foreground">
+        {/* Grand Total Card — project KPI (มูลค่า emerald hero · count neutral) */}
+        <div className="bg-card rounded-2xl p-5 flex items-end justify-between gap-4 border border-border">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 bg-muted rounded-xl text-foreground shrink-0">
               <TrendingUp className="w-5 h-5" strokeWidth={1.5} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                มูลค่าโครงการ
-              </span>
-              <span className="text-xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                {fmtTH(grandTotal)}
-              </span>
-            </div>
+            <Metric label="มูลค่าโครงการ" value={fmtTH(grandTotal)} tone="money" size="xl" />
           </div>
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground">รายการทั้งหมด</div>
-            <div className="text-lg font-bold text-foreground tabular-nums">
-              {totalItemCount}{' '}
-              <span className="text-sm font-normal text-muted-foreground">จุด</span>
-            </div>
-          </div>
+          <Metric
+            label="รายการทั้งหมด"
+            value={
+              <>
+                {totalItemCount}
+                <span className="ml-1 text-sm font-normal text-muted-foreground">จุด</span>
+              </>
+            }
+            tone="neutral"
+            size="md"
+            align="right"
+            className="shrink-0"
+          />
         </div>
 
         {/* Filter Chips */}
@@ -293,7 +293,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                 </div>
 
                 {/* Items */}
-                <div className="bg-card border border-border rounded-xl overflow-hidden divide-y divide-border/50 shadow-sm">
+                <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border/50 shadow-sm">
                   {room.items.map((item) => {
                     const config = ITEM_CONFIG[item.type as ItemTypeKey];
                     const IconComp = ICON_COMPONENTS[config?.icon ?? ''] ?? Package;

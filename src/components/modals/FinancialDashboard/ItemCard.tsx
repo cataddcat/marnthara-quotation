@@ -3,6 +3,7 @@
 import { AlertTriangle, ChevronDown, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fmtTH } from '@/utils/formatters';
+import { Metric } from '@/components/ui/Metric';
 import { FAVORITE_CATEGORIES } from '@/config/enums';
 import { CostRow } from './CostRow';
 import { CodeJumpButton } from './CodeJumpButton';
@@ -53,12 +54,12 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
 
   return (
     <div
-      className={cn('bg-card border border-border/60 border-l-[3px] rounded-xl overflow-hidden', st.accent)}
+      className={cn('bg-card border border-border/60 border-l-[3px] rounded-2xl overflow-hidden', st.accent)}
     >
       {/* ── Main row (always visible) ── */}
       <button
         onClick={onToggle}
-        className="w-full p-3 flex items-start gap-3 text-left active:bg-muted/40 transition-colors"
+        className="w-full p-3.5 flex items-start gap-3 text-left active:bg-muted/40 active:scale-[0.99] transition-[background-color,transform]"
       >
         {/* Status dot */}
         <div className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', st.dot)} />
@@ -194,20 +195,19 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
             </div>
           )}
 
-          {/* Divider + totals */}
-          <div className="pt-1 mt-1 border-t border-border/50 space-y-1">
-            <CostRow label="ต้นทุนรวม" value={analysis.totalCost} />
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-foreground">กำไรสุทธิ</span>
-              <span
-                className={cn(
-                  'font-mono tabular-nums text-sm font-bold',
-                  analysis.profitAmount >= 0 ? 'text-emerald-600' : 'text-rose-500'
-                )}
-              >
-                {analysis.profitAmount >= 0 ? '+' : ''}฿{fmtTH(analysis.profitAmount)}
-              </span>
-            </div>
+          {/* Divider + totals — 2-up KPI footer (ต้นทุน cost · กำไร money) */}
+          <div className="pt-3 mt-1 border-t border-border/50 grid grid-cols-2 gap-2">
+            <Metric
+              label="ต้นทุนรวม"
+              value={`฿${fmtTH(analysis.totalCost)}`}
+              tone="cost"
+            />
+            <Metric
+              label="กำไรสุทธิ"
+              value={`${analysis.profitAmount >= 0 ? '+' : ''}฿${fmtTH(analysis.profitAmount)}`}
+              tone={analysis.profitAmount >= 0 ? 'money' : 'cost'}
+              align="right"
+            />
           </div>
         </div>
       )}

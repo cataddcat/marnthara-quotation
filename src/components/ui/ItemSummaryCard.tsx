@@ -59,7 +59,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   const pulse = status === 'warning' || status === 'loss';
 
   return (
-    <div className="bg-card border border-border p-5 rounded-xl space-y-4 relative overflow-hidden">
+    <div className="bg-card border border-border p-5 rounded-2xl space-y-4 relative overflow-hidden">
       {title && (
         <div className={cn('flex items-center gap-2 font-bold border-b border-border pb-3', titleClass)}>
           {TitleIcon && <TitleIcon className="w-5 h-5" />}

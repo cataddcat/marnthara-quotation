@@ -8,6 +8,7 @@ import { CostEngine } from '@/lib/pricing/CostEngine';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_CONFIG } from '@/config/constants';
 import { cn } from '@/lib/utils';
+import { Metric } from '@/components/ui/Metric';
 import { useHaptic } from '@/hooks/useHaptic';
 import {
   TrendingUp,
@@ -149,27 +150,21 @@ export const FinancialDashboardModal: React.FC<{
           </div>
         </div>
 
-        {/* ── 2. Summary Cards ── */}
-        <div className="grid grid-cols-3 gap-2 px-4 pt-3 pb-1 shrink-0">
-          {[
-            { label: 'ยอดขายรวม', value: totals.revenue, color: 'text-emerald-600' },
-            { label: 'ต้นทุนรวม', value: totals.cost, color: 'text-rose-500' },
-            {
-              label: 'กำไรสุทธิ',
-              value: totals.profit,
-              color: totals.profit >= 0 ? 'text-emerald-600' : 'text-rose-500',
-            },
-          ].map(({ label, value, color }) => (
-            <div
-              key={label}
-              className="bg-card border border-border/50 rounded-xl p-2.5 text-center"
-            >
-              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                {label}
-              </div>
-              <div className={cn('text-sm font-bold font-mono tabular-nums leading-tight', color)}>
-                {blind ? '••••' : fmtTH(value)}
-              </div>
+        {/* ── 2. Summary KPI tiles ── */}
+        <div className="grid grid-cols-3 gap-2.5 px-4 pt-3 pb-1 shrink-0">
+          {(
+            [
+              { label: 'ยอดขายรวม', value: totals.revenue, tone: 'money' },
+              { label: 'ต้นทุนรวม', value: totals.cost, tone: 'cost' },
+              {
+                label: 'กำไรสุทธิ',
+                value: totals.profit,
+                tone: totals.profit >= 0 ? 'money' : 'cost',
+              },
+            ] as const
+          ).map(({ label, value, tone }) => (
+            <div key={label} className="bg-card border border-border/50 rounded-2xl p-3.5">
+              <Metric label={label} value={blind ? '••••' : fmtTH(value)} tone={tone} size="md" />
             </div>
           ))}
         </div>

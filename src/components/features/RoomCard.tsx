@@ -25,6 +25,7 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { getRoomAccent } from '@/lib/room-accents';
+import { Metric } from '@/components/ui/Metric';
 
 interface RoomCardProps {
   room: Room;
@@ -193,7 +194,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       <div
         id={`room-${room.id}`}
         className={cn(
-          'rounded-xl border bg-card transition-all duration-200',
+          'rounded-2xl border bg-card transition-[border-color] duration-200',
           room.is_suspended
             ? 'grayscale opacity-60 border-dashed border-border'
             : 'border-border hover:border-foreground/20',
@@ -201,8 +202,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         )}
       >
         <div className="flex items-stretch">
-          {/* Left accent stripe */}
-          <div className={cn('w-1 shrink-0 rounded-l-xl', accent.stripe)} />
+          {/* Left accent rail */}
+          <div className={cn('w-1.5 shrink-0 rounded-l-2xl', accent.stripe)} />
 
           {/* Clickable body */}
           <button
@@ -251,7 +252,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               <span
                 className={cn(
                   'text-sm font-semibold font-mono tabular-nums',
-                  room.is_suspended ? 'text-muted-foreground line-through' : 'text-muted-foreground'
+                  room.is_suspended
+                    ? 'text-muted-foreground line-through'
+                    : 'text-emerald-600 dark:text-emerald-400'
                 )}
               >
                 {fmtTH(roomTotal)}
@@ -273,17 +276,18 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       {/* Room Header Card */}
       <div
         className={cn(
-          'rounded-xl border bg-card transition-all duration-300',
+          'rounded-2xl border bg-card overflow-hidden transition-[border-color] duration-300 flex',
           room.is_suspended
             ? 'grayscale opacity-60 border-dashed border-border'
             : 'border-border/60'
         )}
       >
-        {/* Top accent stripe */}
-        <div className={cn('h-1 rounded-t-xl', accent.stripe)} />
+        {/* Left accent rail — full-height container edge (dashboard panel feel) */}
+        <div className={cn('w-1.5 shrink-0', accent.stripe)} />
 
+        <div className="flex-1 min-w-0">
         {/* Header body */}
-        <div className="p-4 pb-3">
+        <div className="p-5 pb-3">
           <div className="flex items-start gap-3">
             {/* Avatar */}
             <div
@@ -374,44 +378,50 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           </div>
         </div>
 
-        {/* Stats footer — เน้นรายละเอียด/ความครบ, ยอดรวมเป็นกลาง */}
-        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-xs min-w-0">
-            <span className="font-semibold text-foreground">{itemCount} รายการ</span>
-            {incompleteCount > 0 ? (
-              <>
-                <span className="text-muted-foreground/30">·</span>
-                <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                  ค้าง {incompleteCount} จุด
-                </span>
-              </>
-            ) : (
-              itemCount > 0 &&
-              !room.is_suspended && (
+        {/* Stats footer — KPI strip: สถานะ (count/ครบ) ซ้าย · ยอดรวมห้อง (emerald hero) ขวา */}
+        <div className="px-5 py-3 border-t border-border/30 bg-muted/20 flex items-end justify-between gap-3">
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground">สถานะ</span>
+            <div className="flex items-center gap-2 text-sm min-w-0">
+              <span className="font-semibold text-foreground shrink-0">{itemCount} รายการ</span>
+              {incompleteCount > 0 ? (
                 <>
                   <span className="text-muted-foreground/30">·</span>
-                  <span className="inline-flex items-center gap-1 font-medium text-emerald-600/80 dark:text-emerald-400/80">
-                    <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ครบ
+                  <span className="text-amber-600 dark:text-amber-400 font-semibold shrink-0">
+                    ค้าง {incompleteCount} จุด
                   </span>
                 </>
-              )
-            )}
-            {suspendedCount > 0 && (
-              <>
-                <span className="text-muted-foreground/30">·</span>
-                <span className="text-amber-500">{suspendedCount} ซ่อน</span>
-              </>
-            )}
+              ) : (
+                itemCount > 0 &&
+                !room.is_suspended && (
+                  <>
+                    <span className="text-muted-foreground/30">·</span>
+                    <span className="inline-flex items-center gap-1 font-medium text-emerald-600/80 dark:text-emerald-400/80 shrink-0">
+                      <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ครบ
+                    </span>
+                  </>
+                )
+              )}
+              {suspendedCount > 0 && (
+                <>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-amber-500 shrink-0">{suspendedCount} ซ่อน</span>
+                </>
+              )}
+            </div>
           </div>
-          <span
-            className={cn(
-              'text-sm font-semibold font-mono tabular-nums shrink-0',
-              room.is_suspended ? 'text-muted-foreground line-through' : 'text-foreground'
-            )}
-          >
-            {fmtTH(roomTotal)}
-          </span>
+          <Metric
+            label="ยอดรวมห้อง"
+            value={fmtTH(roomTotal)}
+            tone="money"
+            size="lg"
+            align="right"
+            struck={room.is_suspended}
+            className="shrink-0"
+          />
         </div>
+        </div>
+        {/* /flex-1 column */}
       </div>
 
       {/* Items List (only in non-suspended focus mode) */}
@@ -453,24 +463,26 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 };
 
 export const RoomCardSkeleton: React.FC = () => (
-  <div className="rounded-xl border border-border bg-card overflow-hidden">
-    <div className="h-1 bg-muted animate-pulse" />
-    <div className="p-4 pb-3">
-      <div className="flex items-start gap-3">
-        <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-5 w-32" />
-          <div className="flex gap-1.5">
-            <Skeleton className="h-5 w-16 rounded-full" />
-            <Skeleton className="h-5 w-20 rounded-full" />
+  <div className="rounded-2xl border border-border bg-card overflow-hidden flex">
+    <div className="w-1.5 shrink-0 bg-muted animate-pulse" />
+    <div className="flex-1 min-w-0">
+      <div className="p-5 pb-3">
+        <div className="flex items-start gap-3">
+          <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-5 w-32" />
+            <div className="flex gap-1.5">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
           </div>
+          <Skeleton className="w-7 h-7 rounded-lg shrink-0" />
         </div>
-        <Skeleton className="w-7 h-7 rounded-lg shrink-0" />
       </div>
-    </div>
-    <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-center justify-between">
-      <Skeleton className="h-3 w-16" />
-      <Skeleton className="h-4 w-20" />
+      <div className="px-5 py-3 border-t border-border/30 bg-muted/20 flex items-end justify-between">
+        <Skeleton className="h-7 w-20" />
+        <Skeleton className="h-7 w-24" />
+      </div>
     </div>
   </div>
 );

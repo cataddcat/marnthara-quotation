@@ -215,7 +215,7 @@ const InventoryItemRow = ({
     <div
       ref={rowRef}
       className={cn(
-        'flex items-start gap-2 px-3 py-2.5 bg-card border rounded-xl transition-colors',
+        'flex items-start gap-2 px-3 py-2.5 bg-card border rounded-2xl transition-colors',
         highlight
           ? 'border-primary ring-2 ring-primary/30'
           : 'border-border/50'
@@ -492,10 +492,10 @@ const FabricCard = ({
   const totalCost = cost > 0 ? cost * total : 0;
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl overflow-hidden mb-2">
+    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-2">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors"
+        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-muted/30 active:scale-[0.99] transition-[background-color,transform]"
       >
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -507,15 +507,17 @@ const FabricCard = ({
               {entries.length} รายการ
             </span>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-0.5 shrink-0">
+          <span className={cn('font-mono font-bold text-sm', accent)}>
+            {fmtTH(total)} {unit}
+          </span>
           {totalCost > 0 && (
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-              ทุนรวม ฿{fmtTH(totalCost)}
-            </div>
+            <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+              ทุน ฿{fmtTH(totalCost)}
+            </span>
           )}
         </div>
-        <span className={cn('font-mono font-bold text-sm shrink-0', accent)}>
-          {fmtTH(total)} {unit}
-        </span>
         <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
       </button>
 
@@ -576,10 +578,10 @@ const WallpaperCostCard = ({
   const totalCost = cost > 0 ? cost * total : 0;
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl overflow-hidden mb-2">
+    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-2">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors"
+        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-muted/30 active:scale-[0.99] transition-[background-color,transform]"
       >
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-1.5">
@@ -588,13 +590,15 @@ const WallpaperCostCard = ({
               {entries.length} รายการ
             </span>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-0.5 shrink-0">
+          <span className="font-mono font-bold text-sm text-orange-500">{Math.ceil(total)} ม้วน</span>
           {totalCost > 0 && (
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-              ทุนรวม ฿{fmtTH(totalCost)}
-            </div>
+            <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+              ทุน ฿{fmtTH(totalCost)}
+            </span>
           )}
         </div>
-        <span className="font-mono font-bold text-sm text-orange-500 shrink-0">{Math.ceil(total)} ม้วน</span>
         <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
       </button>
 
@@ -650,10 +654,10 @@ const AreaCostCard = ({
   const totalCost = cost > 0 ? cost * costQty : 0;
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl overflow-hidden mb-2">
+    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-2">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors"
+        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-muted/30 active:scale-[0.99] transition-[background-color,transform]"
       >
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -667,15 +671,17 @@ const AreaCostCard = ({
               {group.entries.length} รายการ
             </span>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-0.5 shrink-0">
+          <span className="font-mono font-bold text-sm text-teal-600 dark:text-teal-400">
+            {fmtTH(costQty)} {group.unit}
+          </span>
           {totalCost > 0 && (
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-              ทุนรวม ฿{fmtTH(totalCost)}
-            </div>
+            <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+              ทุน ฿{fmtTH(totalCost)}
+            </span>
           )}
         </div>
-        <span className="font-mono font-bold text-sm text-teal-600 dark:text-teal-400 shrink-0">
-          {fmtTH(costQty)} {group.unit}
-        </span>
         <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
       </button>
 
@@ -736,10 +742,10 @@ const RailCard = ({
   const isRoman = railKey === 'rail_roman';
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl overflow-hidden mb-2">
+    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-2">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-muted/30 transition-colors"
+        className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-muted/30 active:scale-[0.99] transition-[background-color,transform]"
       >
         <div className="flex-1 text-left min-w-0">
           <div className="font-semibold text-sm text-foreground truncate">{label}</div>
