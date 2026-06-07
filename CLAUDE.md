@@ -2,18 +2,35 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **📖 Start here:** Read [`HANDOFF.md`](./HANDOFF.md) for a full architectural handoff covering design philosophy, system map, critical invariants, and bug history from the 2026-04 refactor. This document is intentionally brief — HANDOFF.md has the deep context.
+> **📖 Required reading for any AI agent (in order):**
+> 1. **`CLAUDE.md`** (this file) — project instructions, rules, command index, architecture map. Auto-loaded.
+> 2. **[`HANDOFF.md`](./HANDOFF.md)** — deep architectural handoff: design philosophy, system map, critical
+>    invariants, cost/catalog model, bug history. The "why" behind the codebase shape.
+> 3. **[`DESIGN.md`](./DESIGN.md)** — the canonical **design system & UI requirements** ("the document is the
+>    designer"): typography standard (Body 14–16px · 12px Meta-only · <12px banned), color/contrast, the
+>    Design Probe, the `Text` primitive, enforcement. Read before any UI/UX change.
+> 4. **[`COMMANDS.md`](./COMMANDS.md)** — every project command + the verification gate.
+>
+> Cross-session memory (`MEMORY.md` + `memory/`) is loaded automatically and records standing preferences,
+> project state, and decisions. This file is intentionally brief — the docs above hold the depth.
+>
+> **✍️ Doc convention:** use the **emoji legend in [DESIGN.md §4.1](./DESIGN.md)** as consistent section
+> markers across all docs (✅ done · 🎨 design · 💻 dev · 🧪 test · 🎯 goal/gate · 📖 reading · 📐 spec …),
+> and sparingly in the app (accent only — never replacing lucide functional icons).
 
-## Project Overview
+## 📖 Project Overview
 
 **Marnthara Smart Quotation** — A React + TypeScript PWA for generating interior decoration quotations (curtains, wallpapers, blinds, partitions, etc.) for the Thai market. Mobile-first, offline-capable via service worker, deployed to Vercel at root domain (`base: '/'`).
 
-## Commands
+## 💻 Commands
+
+Full reference + expected output in **[`COMMANDS.md`](./COMMANDS.md)**. Quick list:
 
 ```bash
 npm run dev          # Dev server (port 3000)
 npm run build        # tsc -b && vite build
 npm run lint         # ESLint (max-warnings 0 — zero tolerance)
+npm run lint:design  # Design guard — lists <12px-text worklist (non-gating; see DESIGN.md)
 npm run format       # Prettier format all files
 npm run test         # Vitest watch mode
 npm run test:run     # Vitest single run (CI)
@@ -21,7 +38,9 @@ npm run test:ui      # Vitest with browser UI
 npx playwright test  # E2E tests (Chrome, Firefox, Safari, iOS)
 ```
 
-## Architecture
+**Verification gate (run before handoff):** `npm run lint` (0-warn) · `npm run test:run` (456 pass) · `npm run build`.
+
+## 🏗️ Architecture
 
 ### State Management (Zustand)
 
@@ -67,7 +86,12 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 
 `@/` maps to `src/` (configured in both `vite.config.ts` and `tsconfig.json`).
 
-## UX/UI Standards (Apple HIG + NN/g)
+## 🎨 UX/UI Standards (Apple HIG + NN/g)
+
+> **📐 Canonical spec: [`DESIGN.md`](./DESIGN.md)** — the design system & requirements is the source of
+> truth for look-and-feel ("the document is the designer"): the **typography standard** (Body 14–16px ·
+> 12px = Meta only · <12px banned), color/contrast, the **Design Probe** (measure before adjusting), the
+> `Text` primitive, and `npm run lint:design`. The 5 pillars below + HANDOFF §1.6/§1.7 are its foundation.
 
 All new or changed UI must satisfy the 5-pillar UX baseline before merge:
 
@@ -79,20 +103,20 @@ All new or changed UI must satisfy the 5-pillar UX baseline before merge:
 
 See **[`HANDOFF.md`](./HANDOFF.md) §1.6** for the full contract + reference implementation (`src/components/ui/Modal.tsx`).
 
-## TypeScript & Linting
+## ✅ TypeScript & Linting
 
 - Strict mode with `noUnusedLocals`, `noUnusedParameters`, `noUncheckedSideEffectImports`
 - ESLint flat config (`eslint.config.js`), zero warnings allowed
 - Husky pre-commit runs ESLint fix + Prettier on staged `.ts/.tsx` and `.json/.md` files
 
-## Testing
+## 🧪 Testing
 
 - **Unit**: Vitest with jsdom, setup in `src/test/setup.ts`
 - **E2E**: Playwright, test files in `/tests/`, runs on CI via `.github/workflows/playwright.yml`
 - Run a single Vitest test file: `npx vitest run src/path/to/file.test.ts`
 - Run a single Playwright test: `npx playwright test tests/specific.spec.ts`
 
-## Build Notes
+## ⚙️ Build Notes
 
 - Chunk split strategy: `vendor-react`, `vendor-ui`, `vendor-utils`, `vendor-print` (react-to-print is heavy)
 - Chunk size warning at 1000 KB

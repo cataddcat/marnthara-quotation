@@ -31,6 +31,9 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 }) => {
   const { trigger } = useHaptic();
   const { isLite } = useExperienceMode();
+  // overview เป็นของ Full เท่านั้น — Lite ใช้ "All Rooms Summary" (ProjectOverviewModal) ผ่าน dock "ภาพรวม"
+  // (Lite ไม่เข้าโหมด overview แล้วหลังตัด toggle "สรุปทุกห้อง" ออกจาก Room Navigator)
+  const effectiveViewMode = isLite ? 'focus' : viewMode;
   const touchStartXRef = useRef<number | null>(null);
   // ทิศการสลับห้องล่าสุด — ใช้เลือกทิศ slide animation (state: อ่านตอน render ได้)
   const [direction, setDirection] = useState<'next' | 'prev'>('next');
@@ -72,7 +75,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
     else navigatePrev();
   };
 
-  if (viewMode === 'focus') {
+  if (effectiveViewMode === 'focus') {
     const activeRoom = rooms.find((r) => r.id === activeRoomId);
     if (!activeRoom) return null;
 
@@ -161,37 +164,16 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
     );
   }
 
-  // Full tier: overview = แดชบอร์ดกริด (ทุกห้อง+item) + ลากเรียงลำดับ
-  if (!isLite) {
-    return (
-      <RoomDashboard
-        rooms={rooms}
-        onAddItem={onAddItem}
-        onEditItem={onEditItem}
-        onOpenRoom={(roomId) => {
-          onSetActiveRoom(roomId);
-          onSetViewMode('focus');
-        }}
-      />
-    );
-  }
-
-  // Lite tier: compact stack เดิม (มือถือ)
+  // overview (Full เท่านั้น) = แดชบอร์ดกริด (ทุกห้อง+item) + ลากเรียงลำดับ
   return (
-    <div className="flex flex-col gap-2.5 pb-6">
-      {rooms.map((room) => (
-        <RoomCard
-          key={room.id}
-          room={room}
-          isCompact
-          onSelect={() => {
-            onSetActiveRoom(room.id);
-            onSetViewMode('focus');
-          }}
-          onAddItem={onAddItem}
-          onEditItem={onEditItem}
-        />
-      ))}
-    </div>
+    <RoomDashboard
+      rooms={rooms}
+      onAddItem={onAddItem}
+      onEditItem={onEditItem}
+      onOpenRoom={(roomId) => {
+        onSetActiveRoom(roomId);
+        onSetViewMode('focus');
+      }}
+    />
   );
 };

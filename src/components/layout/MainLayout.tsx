@@ -163,7 +163,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onClose={() => setIsSmartNavOpen(false)}
         activeRoomId={activeRoomId}
         onNavigate={onNavigateRoom}
-        viewMode={viewMode}
         onSetViewMode={onSetViewMode}
       />
     </div>

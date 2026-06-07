@@ -24,63 +24,7 @@ import {
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
-
-// Deterministic accent per room — all classes must be static strings for Tailwind JIT
-const ROOM_ACCENTS = [
-  {
-    stripe: 'bg-violet-500',
-    avatar: 'bg-violet-500/15',
-    avatarText: 'text-violet-600 dark:text-violet-300',
-    tag: 'bg-violet-500/10 text-violet-700 dark:text-violet-300',
-  },
-  {
-    stripe: 'bg-sky-500',
-    avatar: 'bg-sky-500/15',
-    avatarText: 'text-sky-600 dark:text-sky-300',
-    tag: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  },
-  {
-    stripe: 'bg-teal-500',
-    avatar: 'bg-teal-500/15',
-    avatarText: 'text-teal-600 dark:text-teal-300',
-    tag: 'bg-teal-500/10 text-teal-700 dark:text-teal-300',
-  },
-  {
-    stripe: 'bg-emerald-500',
-    avatar: 'bg-emerald-500/15',
-    avatarText: 'text-emerald-600 dark:text-emerald-300',
-    tag: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  },
-  {
-    stripe: 'bg-amber-500',
-    avatar: 'bg-amber-500/15',
-    avatarText: 'text-amber-600 dark:text-amber-300',
-    tag: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  },
-  {
-    stripe: 'bg-orange-500',
-    avatar: 'bg-orange-500/15',
-    avatarText: 'text-orange-600 dark:text-orange-300',
-    tag: 'bg-orange-500/10 text-orange-700 dark:text-orange-300',
-  },
-  {
-    stripe: 'bg-rose-500',
-    avatar: 'bg-rose-500/15',
-    avatarText: 'text-rose-600 dark:text-rose-300',
-    tag: 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
-  },
-  {
-    stripe: 'bg-pink-500',
-    avatar: 'bg-pink-500/15',
-    avatarText: 'text-pink-600 dark:text-pink-300',
-    tag: 'bg-pink-500/10 text-pink-700 dark:text-pink-300',
-  },
-] as const;
-
-function getRoomAccent(id: string) {
-  const idx = [...id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % ROOM_ACCENTS.length;
-  return ROOM_ACCENTS[idx];
-}
+import { getRoomAccent } from '@/lib/room-accents';
 
 interface RoomCardProps {
   room: Room;

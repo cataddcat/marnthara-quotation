@@ -4,7 +4,7 @@ Comprehensive summary of architectural changes, design philosophy, and workflow 
 
 ---
 
-## 1. Design Philosophy (READ THIS FIRST)
+## 1. 🎯 Design Philosophy (READ THIS FIRST)
 
 These are the core principles that drive every design decision in this codebase. Violate them only with deliberate cause.
 
@@ -69,6 +69,8 @@ Thai market 2025 prices are baked into `DEFAULT_LABOR_COSTS`, `DEFAULT_SERVICE_C
 
 ### 1.6 UX Baseline — Apple HIG + NN/g (mandatory for every screen)
 
+> 📐 Now consolidated + made enforceable in **[`DESIGN.md`](./DESIGN.md)** (the canonical design spec). §1.6/§1.7 are its foundation.
+
 The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen Norman Group usability heuristics, mapped to this codebase's primitives. **New or changed UI must satisfy all five before merge.**
 
 1. **Visual hierarchy & clarity.** Drive the eye with typography (weight / size / line-height) and contrast. **Reserve the `primary` color exclusively for the primary CTA** — don't tint secondary affordances, nav chevrons, or decorative icons with `primary` where it competes with the real action.
@@ -80,6 +82,8 @@ The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen 
 **Reference implementation:** `src/components/ui/Modal.tsx` — 44px header close/back buttons via the reused `Button`, tier resolved from `useExperienceMode()` (respects the persisted override, not raw screen width — see §10), and a visible drawer close button.
 
 ### 1.7 Geist-aligned visual language (synthesized from §1.6 + Vercel Geist)
+
+> 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, `lint:design`). This section remains the visual-language rationale it cites.
 
 We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standing visual language, synthesized from §1.6 and Vercel's **Geist** design system, mapped to our tokens/primitives. It decides look-and-feel so we don't have to re-litigate per screen. **§1.7 layers on top of §1.6 — never overrides §1.6's ergonomics.**
 
@@ -98,9 +102,16 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
 
 **Rollout status (2026-06):** ✅ **full-app sweep done.** Foundation (control primitives drop `rounded-2xl`→`rounded-xl`; `Button` primary CTA flattened — no `shadow-primary`; dead `.glass-card`/`.gradient-*`/`.hover-glow`/`.hover-lift` + `--gradient-*` removed from `index.css`) + every screen: `ItemCard`, `RoomCard`, shared primitives (`ItemSummaryCard` — dropped the decorative blur glow + the now-dead `accentClass` prop across 8 callers; `FormSection`; `CollapsibleSection`), curtain sections (`Style`/`Hardware`/`Price`/`Fabric`/`CurtainForm` — selected pills now monochrome `border-foreground bg-accent`), `MaterialSummaryModal`, `FinancialDashboard` (+`FinancialRing`/`ItemCard`/`CostRow`/`CodeJumpButton`), and the remaining modals/chrome (`MainMenu`, `Discount`, `Data`, `ProjectOverview`, `ShopSettings`, `Customer`, `CodeDetail`, `FormulaDocs`, `Lookbook`, `CopySummary`, `Modal`, `OptionSheet`, `AlertDialog`, `Toast`, `FormLayout`, `GlobalErrorGuard`, `MainLayout` dock, `SmartNavigator`, `ComboboxInput`, `Input` undo). Recipe applied: borders-over-shadows · `font-mono` on scanned numbers · lucide `strokeWidth={1.5}` · decorative `text-primary`/`bg-primary/10`→neutral (`text-foreground`/`bg-muted`/`bg-accent`). **Kept (sanctioned):** status/brand/traffic-light colors, per-room accents, the dark Pro Mode + Discount invoice cards, `bg-primary text-primary-foreground` *fills* on true CTAs/selected states, neutral overlay shadows (modal `shadow-2xl`, menu/popover `shadow-md`, dock, PDF paper), `FinancialRing` conic chart. Verified: `lint` 0-warn · `test:run` 456 pass · `build` OK.
 
+**Post-sweep follow-ups (2026-06-07):**
+- **Dock HOME button** — the `MainLayout` floating dock is now **4 pills** (หน้าหลัก / ห้อง / ภาพรวม / เมนู). `App.handleGoHome` = focus mode + first room + smooth scroll-to-top; dock widened `max-w-[440px]`, pills tightened (`px-2 gap-1.5 text-[12px] whitespace-nowrap`, `focus-visible:ring-ring`).
+- **`Modal.tsx` scroll-aware header** — the header separator is **transparent until the content scrolls** (`scrolled` state via `onScroll`, applied to drawer + center/fullscreen; header padding `py-2`→`py-2.5`). A clean flat top that gains a divider only when there's more above — universal polish for *every* modal.
+- **⚠️ Overview ("ภาพรวม") readability — STILL OPEN.** The user flagged the overview as **รก / เล็ก / ตัวหนังสือเล็ก** (cluttered / cramped / tiny text). A plan to enlarge type + spacing + ≥44px taps and drop the Full dashboard from 3→2 columns (`RoomDashboard` · `ProjectOverviewModal` · compact `RoomCard` · `RoomSlider`) was implemented **then reverted at the user's request** — the blanket "bigger everywhere + fewer columns" approach didn't land. The underlying complaint **stands**; re-approach with a *different* strategy (reduce what's shown / sharpen hierarchy rather than uniformly scaling fonts; or confirm direction first). **Do not re-apply the reverted diff.**
+
+**▶ Next focus: UI.** The standing design philosophy is **§1.6 (HIG + NN/g ergonomics) + §1.7 (Geist visual language)** above — together they decide look-and-feel (there is no UI designer; the doc is the designer). Meta-lesson from the reverted overview pass: for **density / typography changes on shared screens**, prefer lighter, targeted touches and surface concrete options to the user before a blanket sweep — "make it bigger" is not automatically "make it better."
+
 ---
 
-## 2. System Map
+## 2. 🗺️ System Map
 
 ### 2.1 Modal System
 
@@ -188,7 +199,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 3. Feature Modules (Key Files)
+## 3. 🏗️ Feature Modules (Key Files)
 
 ### Cost Vault
 - `src/store/slices/CostDataSlice.ts` — **7 vaults** (`laborCosts`, `serviceCosts`, `accessoryCosts`, `hardwareCosts`, `fabricCosts`, `wallpaperCosts`, `areaCosts`) + `DEFAULT_LABOR_COSTS` / `DEFAULT_SERVICE_COSTS` / `DEFAULT_ACCESSORY_COSTS` (rail-only). Plus `userCostDefaults` (owner baseline snapshot — see §11.7). See §11 for what each vault means + which UI edits it.
@@ -259,7 +270,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 4. Critical Invariants (Do Not Break)
+## 4. ⚠️ Critical Invariants (Do Not Break)
 
 1. **Labor keys = item.style** — `laborCosts['ลอน']`, `laborCosts['จีบ']`, etc. If you add a new curtain style, add matching labor entry.
 2. **Sheer labor key = `'ผ้าโปร่ง'`** — single entry applies to all double-layer curtains regardless of main style.
@@ -273,7 +284,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 5. Bugs Fixed in This Session
+## 5. 🐛 Bugs Fixed in This Session
 
 | # | Bug | Root Cause | Fix |
 |---|---|---|---|
@@ -295,7 +306,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 6. Known Tech Debt (NOT addressed this session)
+## 6. 📌 Known Tech Debt (NOT addressed this session)
 
 > Updated 2026-05-29 after PRs #1–#8.
 > `npm run lint --max-warnings 0` ผ่าน. Bundle 998 KiB (เล็กลง 40+ KiB จาก initial baseline).
@@ -322,7 +333,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 7. Workflow & Dev Notes
+## 7. ⚙️ Workflow & Dev Notes
 
 ### Verification policy (updated 2026-06-03)
 - After changes, verify with `npm run lint` (zero-warnings is a hard gate), `npm run test:run`, and `npm run build`. Skipping tests previously let a regression slip through (the `ItemCard` title test), so verification is expected — not optional.
@@ -364,7 +375,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 8. File Reference Index
+## 8. 🗺️ File Reference Index
 
 ### Core State
 ```
@@ -447,7 +458,7 @@ src/types.ts                          — ItemData discriminated union + all inp
 
 ---
 
-## 9. Quick Reference: "Where do I…?"
+## 9. 🗺️ Quick Reference: "Where do I…?"
 
 | Task | Start here |
 |---|---|
@@ -466,7 +477,7 @@ src/types.ts                          — ItemData discriminated union + all inp
 
 ---
 
-## 10. Two-Tier Experience & 2026-06 Unification
+## 10. 📱 Two-Tier Experience & 2026-06 Unification
 
 The app forks into **Lite** (mobile / on-site measuring) and **Full** (desktop / office quoting) — see `useExperienceMode()` (resolves tier from device + persisted override) and `useTierSize()`. PR19–24 brought all 8 forms to a consistent Lite/Full baseline; the 2026-06 pass unified the shared chrome.
 
@@ -487,7 +498,7 @@ Verified live (Playwright, Lite 390px + Full 1280px): single-row footer, Lite co
 
 ---
 
-## 11. Cost & Catalog Architecture (2026-06) — Quote-first / Cost-optional
+## 11. 💰 Cost & Catalog Architecture (2026-06) — Quote-first / Cost-optional
 
 A multi-phase refactor that separated **costs** (volatile, optional, externally-sourced) from the **calculator** (the app). Read this before touching cost vaults, the catalog, `ProductionSettingsModal`, or `MaterialSummaryModal`.
 

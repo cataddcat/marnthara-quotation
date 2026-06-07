@@ -1,9 +1,8 @@
 import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { fmtTH } from '@/utils/formatters';
+import { isItemIncomplete } from '@/lib/item-status';
 import { cn } from '@/lib/utils';
-import { Plus, ChevronRight, LayoutList, Maximize2 } from 'lucide-react';
+import { Plus, ChevronRight } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -13,21 +12,20 @@ interface SmartNavigatorProps {
   onClose: () => void;
   activeRoomId: string | null;
   onNavigate: (roomId: string) => void;
-  viewMode: 'focus' | 'overview';
   onSetViewMode: (mode: 'focus' | 'overview') => void;
 }
 
 /**
- * ลิ้นชักนำทางห้อง — สร้างบน <Modal variant="drawer"> เพื่อได้ a11y ครบจาก vaul/headless:
- * ปิดด้วย Esc, focus-trap + คืน focus, body scroll-lock, ปุ่ม Back มือถือ, role="dialog".
- * Tier (Lite drawer / Full center) จัดการโดย Modal เอง — ไม่ต้องเช็คความกว้างจอที่นี่.
+ * Room Navigator — ลิ้นชักนำทาง/ตรวจสอบห้อง (strictly functional, ไม่มีราคา).
+ * โชว์เมตริกเพื่อ audit: จำนวนรายการ + "ค้าง N" (ยังไม่พร้อม) แล้ว deep-link กระโดดไปห้อง (focus).
+ * ภาพรวมเชิงนำเสนอ (สี/ราคา/รายการ) อยู่ที่ "All Rooms Summary" (dock "ภาพรวม") แยกกัน.
+ * สร้างบน <Modal variant="drawer"> เพื่อ a11y ครบจาก vaul/headless.
  */
 export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
   isOpen,
   onClose,
   activeRoomId,
   onNavigate,
-  viewMode,
   onSetViewMode,
 }) => {
   const rooms = useAppStore((s) => s.rooms);
@@ -48,49 +46,18 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
     onClose();
   };
 
-  const handleToggleViewMode = () => {
-    trigger('selection');
-    onSetViewMode(viewMode === 'focus' ? 'overview' : 'focus');
-    onClose();
-  };
-
-  // Footer — ปุ่มมาตรฐาน 48px (size="md") มี focus-visible/haptic ในตัว
-  // disableHaptic เพราะ handler ยิง haptic เฉพาะทาง (medium=สร้าง / selection=สลับ) อยู่แล้ว
+  // Footer — เพิ่มห้องใหม่ (primary CTA เดียว; สงวนสีหลักให้ปุ่มนี้)
   const footer = (
-    <div className="flex gap-2.5">
-      {/* สลับมุมมอง */}
-      <Button
-        variant="outline"
-        size="md"
-        onClick={handleToggleViewMode}
-        disableHaptic
-        className="shrink-0 gap-1.5 px-4 text-sm"
-      >
-        {viewMode === 'focus' ? (
-          <>
-            <LayoutList className="h-4 w-4" />
-            <span>สรุปทุกห้อง</span>
-          </>
-        ) : (
-          <>
-            <Maximize2 className="h-4 w-4" />
-            <span>โฟกัสห้อง</span>
-          </>
-        )}
-      </Button>
-
-      {/* เพิ่มห้องใหม่ — primary CTA (สงวนสีหลักให้ปุ่มนี้เท่านั้น) */}
-      <Button
-        variant="primary"
-        size="md"
-        onClick={handleAddRoom}
-        disableHaptic
-        className="flex-1 gap-2 text-sm font-bold"
-      >
-        <Plus className="h-4 w-4" />
-        เพิ่มห้องใหม่
-      </Button>
-    </div>
+    <Button
+      variant="primary"
+      size="md"
+      onClick={handleAddRoom}
+      disableHaptic
+      className="w-full gap-2 text-sm font-bold"
+    >
+      <Plus className="h-4 w-4" strokeWidth={1.5} />
+      เพิ่มห้องใหม่
+    </Button>
   );
 
   return (
@@ -110,12 +77,11 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
       ) : (
         <div className="space-y-1">
           {rooms.map((room) => {
-            const total = room.is_suspended
-              ? 0
-              : room.items
-                  .filter((i) => !i.is_suspended)
-                  .reduce((s, item) => s + PricingEngine.calculatePrice(item), 0);
             const isActive = room.id === activeRoomId;
+            const itemCount = room.items.length;
+            const incompleteCount = room.items.filter(
+              (i) => !i.is_suspended && isItemIncomplete(i)
+            ).length;
 
             return (
               <button
@@ -139,31 +105,36 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                 <div className="min-w-0 flex-1">
                   <div
                     className={cn(
-                      'truncate text-sm font-semibold leading-tight text-foreground',
+                      'truncate text-[15px] font-semibold leading-tight text-foreground',
                       room.is_suspended && 'text-muted-foreground line-through'
                     )}
                   >
                     {room.name}
                   </div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    {room.items.length} รายการ
-                    {room.is_suspended && <span className="ml-1.5 text-amber-500">· ซ่อน</span>}
+                  {/* เมตริกเพื่อ audit — จำนวนรายการ + ค้าง + ซ่อน (ไม่มีราคา) */}
+                  <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>{itemCount} รายการ</span>
+                    {incompleteCount > 0 && (
+                      <>
+                        <span className="text-muted-foreground/30">·</span>
+                        <span className="font-semibold text-amber-600 dark:text-amber-400">
+                          ค้าง {incompleteCount}
+                        </span>
+                      </>
+                    )}
+                    {room.is_suspended && (
+                      <>
+                        <span className="text-muted-foreground/30">·</span>
+                        <span className="text-amber-500">ซ่อน</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <span
-                  className={cn(
-                    'shrink-0 text-sm font-bold font-mono tabular-nums',
-                    isActive ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'
-                  )}
-                >
-                  {fmtTH(total)}
-                </span>
-
                 <ChevronRight
                   className={cn(
-                    'h-3.5 w-3.5 shrink-0',
-                    isActive ? 'text-foreground/50' : 'text-muted-foreground/25'
+                    'h-4 w-4 shrink-0',
+                    isActive ? 'text-foreground/50' : 'text-muted-foreground/30'
                   )}
                   strokeWidth={1.5}
                 />
