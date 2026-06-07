@@ -154,6 +154,16 @@
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
+
+  /* --- Elevation (soft, eye-care) — Geist-style subtle shadows for eye-guidance ---
+     Slate-tinted (cool, hsl 222 47% 11%) + low opacity so surfaces lift gently, never harshly.
+     Use DIFFERENTIALLY (DESIGN.md §2): ghost=flat → secondary/outline=xs → buttons/cards=sm → CTA/popover=md/lg.
+     Dark mode leans on borders — these read weakly on OLED, by design. */
+  --shadow-2xs: 0 1px 2px 0 hsl(222 47% 11% / 0.04);
+  --shadow-xs: 0 1px 2px 0 hsl(222 47% 11% / 0.05), 0 1px 1px -1px hsl(222 47% 11% / 0.04);
+  --shadow-sm: 0 1px 3px 0 hsl(222 47% 11% / 0.07), 0 1px 2px -1px hsl(222 47% 11% / 0.05);
+  --shadow-md: 0 4px 8px -2px hsl(222 47% 11% / 0.09), 0 2px 4px -2px hsl(222 47% 11% / 0.06);
+  --shadow-lg: 0 10px 20px -4px hsl(222 47% 11% / 0.1), 0 4px 8px -4px hsl(222 47% 11% / 0.06);
 }
 
 /* --- 8. Theming Layer (Eye-Care Optimized) --- */

@@ -29,17 +29,19 @@ export const Button = ({
     onClick?.(e);
   };
 
+  // Borders + soft, DIFFERENTIAL elevation (DESIGN.md §2): ghost stays flat so hierarchy reads;
+  // secondary/outline get a visible edge + faint lift; filled CTAs lift more and press down on :active.
   const variants = {
     primary:
-      'bg-primary text-primary-foreground hover:bg-primary/90 border border-transparent active:scale-[0.98]',
+      'bg-primary text-primary-foreground border border-transparent shadow-sm hover:bg-primary/90 hover:shadow-md active:scale-[0.98] active:shadow-sm',
     secondary:
-      'bg-secondary text-secondary-foreground border border-transparent hover:bg-secondary/80 active:scale-[0.98]',
+      'bg-secondary text-secondary-foreground border border-border shadow-xs hover:bg-secondary/80 hover:shadow-sm active:scale-[0.98] active:shadow-none',
     outline:
-      'border border-input bg-background hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
+      'border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:shadow-sm active:scale-[0.98] active:shadow-none',
     ghost:
       'hover:bg-accent hover:text-accent-foreground border border-transparent active:scale-[0.98]',
     destructive:
-      'bg-destructive text-destructive-foreground hover:bg-destructive/90 border border-transparent shadow-sm active:scale-[0.98]',
+      'bg-destructive text-destructive-foreground border border-transparent shadow-sm hover:bg-destructive/90 hover:shadow-md active:scale-[0.98] active:shadow-sm',
   };
 
   const sizes = {

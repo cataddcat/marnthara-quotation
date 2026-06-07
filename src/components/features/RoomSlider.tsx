@@ -95,7 +95,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
             className={cn(
               'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
               canNavigate
-                ? 'border-border bg-card text-foreground hover:bg-muted active:scale-95'
+                ? 'border-border bg-card text-foreground shadow-sm hover:bg-muted hover:shadow-md active:scale-95 active:shadow-sm'
                 : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
           >
@@ -138,7 +138,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
             className={cn(
               'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
               canNavigate
-                ? 'border-border bg-card text-foreground hover:bg-muted active:scale-95'
+                ? 'border-border bg-card text-foreground shadow-sm hover:bg-muted hover:shadow-md active:scale-95 active:shadow-sm'
                 : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
           >
