@@ -83,7 +83,7 @@ const InlineCostEditor = ({
           }}
           className="w-20 text-sm font-mono border-b border-primary bg-transparent focus:outline-none text-right"
         />
-        <span className="text-[10px] text-muted-foreground">/{unit}</span>
+        <span className="text-xs text-muted-foreground">/{unit}</span>
       </div>
     );
   }
@@ -101,7 +101,7 @@ const InlineCostEditor = ({
       {value > 0 ? (
         <>
           <span className="text-sm font-mono font-semibold">฿{fmtTH(value)}</span>
-          <span className="text-[10px] text-muted-foreground/70">/{unit}</span>
+          <span className="text-xs text-muted-foreground/70">/{unit}</span>
           <Pencil className="w-2.5 h-2.5 opacity-40" />
         </>
       ) : (
@@ -226,18 +226,18 @@ const InventoryItemRow = ({
           <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotClass)} />
           <span className={cn('font-mono font-bold text-sm', accentClass)}>{item.code}</span>
           {cost > 0 && (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
               ทุน ฿{fmtTH(cost)}/{costUnit}
             </span>
           )}
         </div>
         {item.default_price_per_m > 0 && (
-          <div className="text-[10px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             ราคา ฿{fmtTH(item.default_price_per_m)}/ม.
           </div>
         )}
         {item.note && (
-          <div className="text-[10px] text-muted-foreground/60 truncate">{item.note}</div>
+          <div className="text-xs text-muted-foreground/60 truncate">{item.note}</div>
         )}
         <div className="mt-1.5">
           <InlineCostEditor
@@ -264,7 +264,7 @@ const InventoryItemRow = ({
         {confirmDel ? (
           <button
             onClick={onRemove}
-            className="px-2 py-1 text-[10px] bg-destructive text-destructive-foreground rounded-lg font-medium"
+            className="px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded-lg font-medium"
           >
             ยืนยัน
           </button>
@@ -459,7 +459,7 @@ const SectionHeader = ({
         {fmtTH(count)} {unit}
       </span>
       {totalCost !== undefined && totalCost > 0 && (
-        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
           ทุน ฿{fmtTH(totalCost)}
         </span>
       )}
@@ -503,12 +503,12 @@ const FabricCard = ({
               {code}
             </span>
             {hasUnknownCode && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />}
-            <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
+            <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
               {entries.length} รายการ
             </span>
           </div>
           {totalCost > 0 && (
-            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
               ทุนรวม ฿{fmtTH(totalCost)}
             </div>
           )}
@@ -584,12 +584,12 @@ const WallpaperCostCard = ({
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="font-mono font-bold text-sm text-orange-500">{code}</span>
-            <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+            <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
               {entries.length} รายการ
             </span>
           </div>
           {totalCost > 0 && (
-            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
               ทุนรวม ฿{fmtTH(totalCost)}
             </div>
           )}
@@ -663,12 +663,12 @@ const AreaCostCard = ({
                 {group.code}
               </span>
             )}
-            <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
+            <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
               {group.entries.length} รายการ
             </span>
           </div>
           {totalCost > 0 && (
-            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
               ทุนรวม ฿{fmtTH(totalCost)}
             </div>
           )}
@@ -743,7 +743,7 @@ const RailCard = ({
       >
         <div className="flex-1 text-left min-w-0">
           <div className="font-semibold text-sm text-foreground truncate">{label}</div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">{items.length} ชุด/หน้าต่าง</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{items.length} ชุด/หน้าต่าง</div>
         </div>
         <div className={cn('font-mono font-bold text-sm shrink-0', isRoman ? 'text-foreground' : 'text-sky-600 dark:text-sky-400')}>
           {isRoman ? `${totalSets} ชุด` : `${fmtTH(totalLength)} ม.`}
@@ -758,7 +758,7 @@ const RailCard = ({
                 <div className="flex items-center gap-1.5">
                   <span className="text-muted-foreground">{item.roomName}</span>
                   {item.isDouble && (
-                    <span className="text-[9px] bg-muted text-foreground px-1 rounded font-bold">2 ชั้น</span>
+                    <span className="text-xs bg-muted text-foreground px-1 rounded font-bold">2 ชั้น</span>
                   )}
                   <span className="text-muted-foreground/60">· {item.opening}</span>
                 </div>
@@ -767,14 +767,14 @@ const RailCard = ({
                 </span>
               </div>
               {(item.railCode || item.railColor) && (
-                <div className="pl-2 text-[10px] text-sky-600 dark:text-sky-400">
+                <div className="pl-2 text-xs text-sky-600 dark:text-sky-400">
                   {item.railCode ? `รุ่น ${item.railCode}` : ''}
                   {item.railCode && item.railColor ? ' · ' : ''}
                   {item.railColor ? `สี ${item.railColor}` : ''}
                 </div>
               )}
               {!isRoman && (
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground/70 pl-2">
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground/70 pl-2">
                   {item.brackets > 0 && <span>ขาจับ: ~{item.brackets} ชิ้น</span>}
                   {item.eyelets > 0 && <span>ห่วงตาไก่: ~{item.eyelets} วง</span>}
                   {item.pinHooks > 0 && <span>ตะขอจีบ: ~{item.pinHooks} ตัว</span>}
@@ -805,7 +805,7 @@ const AccRow = ({ label, value, unit, note }: { label: string; value: number; un
     <div className="flex items-center justify-between py-2.5 border-b border-border/40 last:border-0">
       <div>
         <div className="text-sm font-medium text-foreground">{label}</div>
-        {note && <div className="text-[10px] text-muted-foreground mt-0.5">{note}</div>}
+        {note && <div className="text-xs text-muted-foreground mt-0.5">{note}</div>}
       </div>
       <div className="text-right">
         <span className="font-mono font-bold text-sm">~{fmtTH(value)}</span>
@@ -976,7 +976,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                 <ChevronLeft className="w-4 h-4" />
                 กลับ
               </button>
-              <div className="px-4 pt-2 pb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              <div className="px-4 pt-2 pb-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 หมวดสินค้า
               </div>
               {CATALOG_CATEGORIES.map((cat) => (
@@ -1011,7 +1011,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                 <span className="flex-1 text-left">{tab.label}</span>
                 {tab.badge !== undefined && tab.badge > 0 && (
                   <span className={cn(
-                    'text-[9px] px-1.5 py-0.5 rounded-full font-bold',
+                    'text-xs px-1.5 py-0.5 rounded-full font-bold',
                     activeTab === tab.id ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
                   )}>
                     {tab.badge}
@@ -1267,12 +1267,12 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   <div className="relative">
                     <tab.icon className="w-5 h-5" />
                     {tab.badge !== undefined && tab.badge > 0 && (
-                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-foreground text-background text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                      <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 bg-foreground text-background text-xs font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
                         {tab.badge}
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-medium">{tab.label}</span>
+                  <span className="text-xs font-medium">{tab.label}</span>
                 </button>
               ))}
             </div>

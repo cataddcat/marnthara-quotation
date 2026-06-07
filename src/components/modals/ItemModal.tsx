@@ -350,7 +350,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         <span
           key={autoSavedTick}
           className={cn(
-            'flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold',
+            'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold',
             'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
             'dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/40',
             'animate-in fade-in zoom-in-95 duration-300'
@@ -365,7 +365,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         onClick={toggleMode}
         title={isLite ? 'โหมดเร็ว (แตะเพื่อโหมดเต็ม)' : 'โหมดเต็ม (แตะเพื่อโหมดเร็ว)'}
         aria-label="สลับโหมดการแสดงผล"
-        className="flex items-center gap-1 px-2.5 h-9 rounded-full text-[11px] font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95 transition-all"
+        className="flex items-center gap-1 px-2.5 h-9 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95 transition-all"
       >
         {isLite ? <Smartphone className="w-3.5 h-3.5" /> : <Monitor className="w-3.5 h-3.5" />}
         {isLite ? 'เร็ว' : 'เต็ม'}
@@ -480,7 +480,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                     {TypeIcon && <TypeIcon className={cn('w-5 h-5', theme.icon)} />}
                   </span>
                   <span className="flex flex-col items-start min-w-0">
-                    <span className="text-[11px] text-muted-foreground leading-none">
+                    <span className="text-xs text-muted-foreground leading-none">
                       ประเภทสินค้า
                     </span>
                     <span className="font-bold text-foreground leading-tight truncate">

@@ -195,7 +195,7 @@ const LookbookCard: React.FC<{ item: ItemData }> = ({ item }) => {
           ))}
         </ul>
         {item.notes && (
-          <div className="mt-auto text-[11px] text-orange-600 line-clamp-2">⚠ {item.notes}</div>
+          <div className="mt-auto text-[12px] text-orange-600 line-clamp-2">⚠ {item.notes}</div>
         )}
       </div>
     </div>
@@ -227,10 +227,10 @@ const LookbookPageView = React.forwardRef<HTMLDivElement, PageViewProps>(
           {logoUrl && <img src={logoUrl} alt="" className="h-9 w-auto object-contain" />}
           <div className="min-w-0">
             <div className="text-lg font-bold leading-tight truncate">{shopName}</div>
-            <div className="text-[10px] text-slate-500">Lookbook / รายการสินค้า</div>
+            <div className="text-[12px] text-slate-500">Lookbook / รายการสินค้า</div>
           </div>
         </div>
-        <div className="text-[10px] text-slate-500 shrink-0">{dateStr}</div>
+        <div className="text-[12px] text-slate-500 shrink-0">{dateStr}</div>
       </div>
 
       {/* Room blocks */}
@@ -243,7 +243,7 @@ const LookbookPageView = React.forwardRef<HTMLDivElement, PageViewProps>(
             >
               <span>📍</span>
               <span className="truncate">{b.roomName}</span>
-              <span className="text-[10px] font-normal text-slate-400 shrink-0">
+              <span className="text-[12px] font-normal text-slate-400 shrink-0">
                 ({b.count} รายการ)
                 {b.continued ? ' (ต่อ)' : ''}
               </span>
@@ -264,7 +264,7 @@ const LookbookPageView = React.forwardRef<HTMLDivElement, PageViewProps>(
 
       {/* Footer (page number) */}
       <div
-        className="flex justify-between items-center text-[9px] text-slate-400 border-t border-slate-200 pt-1 shrink-0"
+        className="flex justify-between items-center text-[12px] text-slate-400 border-t border-slate-200 pt-1 shrink-0"
         style={{ height: `${DOC_FOOTER_MM}mm` }}
       >
         <span>สร้างโดยระบบ Marnthara QOL</span>
@@ -461,7 +461,7 @@ export const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose })
               <ZoomIn className="w-4 h-4" />
             </button>
             {zoom !== 1 && (
-              <button onClick={() => setZoom(1)} className="ml-1 text-[11px] text-foreground hover:underline">
+              <button onClick={() => setZoom(1)} className="ml-1 text-xs text-foreground hover:underline">
                 รีเซ็ต
               </button>
             )}

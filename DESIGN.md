@@ -116,27 +116,28 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
 2. **Size text via the `Text` primitive** (`src/components/ui/Text.tsx`):
    `<Text variant="title|body|label|meta|display" numeric muted>` resolves to the scale above (floor baked
    in). Prefer it over ad-hoc `text-*` classes for new/changed content.
-3. **Lint guard** — `npm run lint:design` flags every `< 12px` content size (the worklist). See §7.
+3. **Lint guard (gated)** — the `no-restricted-syntax` rule in [`eslint.config.js`](./eslint.config.js)
+   blocks every `< 12px` content size; `npm run lint` (the 0-warning gate) fails on regressions. Print
+   (`src/components/print/**`) is exempt. See §7.
 4. **Per-screen checklist before merge:** Body ≥ 14px · Meta(12px) only on dates/counts/units · no < 12px
    content · content = `text-foreground` (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
    icons stroke 1.5 · borders over shadows · `primary` only on CTA/selected · verified at 360–390px.
 
 ---
 
-## 7. ▶ Phase-2 readability pass — MANDATORY, immediate next
+## 7. ✅ Phase-2 readability pass — DONE
 
-Phase 1 (this) defined the standard + built the tooling (Probe, `typography.ts`, `Text`, `lint:design`) —
-**no rendered UI changed**. The migration is **not open-ended**; it is the **next phase, directly after**:
+Phase 1 defined the standard + tooling (Probe, `typography.ts`, `Text`, the lint guard) with **no
+rendered UI changed**. **Phase 2 is complete:**
 
-- **Clear the entire `lint:design` worklist** — currently **79 sites** across ~22 files. Migrate every
-  `< 12px` content size to the scale (Body→14–16, Meta-only→12) and fix `muted`-for-content contrast,
-  using the `Text` primitive where practical.
-- **Then promote the guard to gating:** move the `no-restricted-syntax` rule from
-  [`eslint.design.config.mjs`](./eslint.design.config.mjs) into the main flat config
-  ([`eslint.config.js`](./eslint.config.js)) at `error`, so `npm run lint` (the 0-warning gate) blocks any
-  future `< 12px` content. Then `lint:design` can be retired.
-- **Heaviest files** (start here): `MaterialSummaryModal`, `FinancialDashboard/*`, `LookbookModal`,
-  `ProjectOverviewModal`, `ProductionSettingsModal`, the curtain `sections/*`.
+- **Worklist cleared** — all sub-12px content sizes (was **79 sites / ~22 files**) migrated to the scale:
+  Meta (units · counts · codes · chips · eyebrow micro-labels) → `text-xs` (12px); genuine readable
+  sentences (helper / explanatory text) → `text-sm` (14px). The A4 **lookbook** preview keeps its print
+  sizing (`text-[12px]`, matching its siblings).
+- **Guard is gated** — the `no-restricted-syntax` rule now lives in [`eslint.config.js`](./eslint.config.js)
+  at `error`, so **`npm run lint`** (the 0-warning gate) blocks any future `< 12px` content. The standalone
+  `eslint.design.config.mjs` + `npm run lint:design` were retired.
+- **Exempt:** `src/components/print/**` (print medium has its own sizing).
 
-> This is a hard commitment, not a backlog item. The overview ("ภาพรวม") readability complaint
-> (HANDOFF §1.7 post-sweep) is folded into this pass — re-approach it here by *measuring with the Probe first*.
+> Ongoing discipline: keep new/changed UI on the scale (§1) and **measure with the Probe** (§6) before
+> adjusting — don't blanket-enlarge (the reverted "ภาพรวม" enlarge is the cautionary tale).

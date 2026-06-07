@@ -474,7 +474,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
             <div className="font-semibold text-sm text-foreground truncate leading-tight">
               {item.name}
             </div>
-            <div className="text-[11px] text-muted-foreground truncate mt-0.5 font-mono">
+            <div className="text-xs text-muted-foreground truncate mt-0.5 font-mono">
               {item.kind === 'labor'
                 ? `${item.unit}${(item.minPrice ?? 0) > 0 ? ` · ขั้นต่ำ ฿${fmtTH(item.minPrice ?? 0)}` : ''}`
                 : item.note || item.key}
@@ -487,7 +487,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               ฿{fmtTH(item.cost)}
             </div>
             {toNum(item.priceRef) > 0 && (
-              <div className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-mono">
+              <div className="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-mono">
                 ขาย ฿{fmtTH(item.priceRef ?? 0)}
               </div>
             )}
@@ -691,7 +691,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                 {label}
                 <span
                   className={cn(
-                    'min-w-[1.25rem] h-5 px-1 rounded text-[11px] font-mono inline-flex items-center justify-center',
+                    'min-w-[1.25rem] h-5 px-1 rounded text-xs font-mono inline-flex items-center justify-center',
                     active ? 'bg-muted text-foreground' : 'bg-muted/60 text-muted-foreground'
                   )}
                 >

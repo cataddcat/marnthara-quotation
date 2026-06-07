@@ -135,7 +135,7 @@ export const FinancialDashboardModal: React.FC<{
               <TrendingDown className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
             </button>
             <div className="text-center">
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider">
                 Target Margin
               </div>
               <div className="text-xl font-bold font-mono tabular-nums">{targetMargin}%</div>
@@ -164,7 +164,7 @@ export const FinancialDashboardModal: React.FC<{
               key={label}
               className="bg-card border border-border/50 rounded-xl p-2.5 text-center"
             >
-              <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
                 {label}
               </div>
               <div className={cn('text-sm font-bold font-mono tabular-nums leading-tight', color)}>

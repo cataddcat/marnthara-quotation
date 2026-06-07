@@ -155,7 +155,7 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
                 ) : (
                   <div className="flex flex-col items-center gap-1 text-muted-foreground">
                     <ImagePlus className="w-6 h-6" />
-                    <span className="text-[10px]">แตะเพื่อเพิ่ม</span>
+                    <span className="text-xs">แตะเพื่อเพิ่ม</span>
                   </div>
                 )}
 

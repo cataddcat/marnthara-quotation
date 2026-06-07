@@ -39,8 +39,9 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   const [direction, setDirection] = useState<'next' | 'prev'>('next');
 
   const activeIndex = rooms.findIndex((r) => r.id === activeRoomId);
-  const canPrev = activeIndex > 0;
-  const canNext = activeIndex < rooms.length - 1;
+  // วนรอบ (circular): "ถัดไป" จากห้องสุดท้าย → ห้องแรก, "ก่อนหน้า" จากห้องแรก → ห้องสุดท้าย
+  // เปิดใช้เมื่อมีมากกว่า 1 ห้องเท่านั้น (1 ห้อง = วนไปหาตัวเอง ไม่มีความหมาย)
+  const canNavigate = rooms.length > 1;
 
   useEffect(() => {
     if (viewMode === 'focus') {
@@ -49,17 +50,19 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   }, [activeRoomId, viewMode]);
 
   const navigatePrev = () => {
-    if (!canPrev) return;
+    if (!canNavigate) return;
     trigger('selection');
     setDirection('prev');
-    onSetActiveRoom(rooms[activeIndex - 1].id);
+    const prevIndex = (activeIndex - 1 + rooms.length) % rooms.length;
+    onSetActiveRoom(rooms[prevIndex].id);
   };
 
   const navigateNext = () => {
-    if (!canNext) return;
+    if (!canNavigate) return;
     trigger('selection');
     setDirection('next');
-    onSetActiveRoom(rooms[activeIndex + 1].id);
+    const nextIndex = (activeIndex + 1) % rooms.length;
+    onSetActiveRoom(rooms[nextIndex].id);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -87,11 +90,11 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
         <div className="flex items-center justify-between gap-2 mb-3 px-1">
           <button
             onClick={navigatePrev}
-            disabled={!canPrev}
+            disabled={!canNavigate}
             aria-label="ห้องก่อนหน้า"
             className={cn(
               'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
-              canPrev
+              canNavigate
                 ? 'border-border bg-card text-foreground hover:bg-muted active:scale-95'
                 : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
@@ -130,11 +133,11 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 
           <button
             onClick={navigateNext}
-            disabled={!canNext}
+            disabled={!canNavigate}
             aria-label="ห้องถัดไป"
             className={cn(
               'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
-              canNext
+              canNavigate
                 ? 'border-border bg-card text-foreground hover:bg-muted active:scale-95'
                 : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}

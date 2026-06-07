@@ -244,7 +244,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             {/* Price + Chevron */}
             <div className="flex items-center gap-1.5 shrink-0">
               {incompleteCount > 0 && !room.is_suspended && (
-                <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+                <span className="inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
                   ค้าง {incompleteCount}
                 </span>
               )}
@@ -355,7 +355,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     <span
                       key={label}
                       className={cn(
-                        'text-[11px] px-2 py-0.5 rounded-full font-medium',
+                        'text-xs px-2 py-0.5 rounded-full font-medium',
                         accent.tag
                       )}
                     >

@@ -29,6 +29,10 @@ const AXE_OPTS = {
   },
 };
 
+// axe-on-jsdom เป็น scan ที่ช้าโดยธรรมชาติ — modal ใหญ่ (เช่น MainMenu) เกิน default 5s ได้
+// บนเครื่องที่โหลดหนัก จึงตั้ง timeout ให้กว้างพอ (กัน flaky timeout — ไม่ใช่ assertion จริง)
+const AXE_TIMEOUT_MS = 20000;
+
 const checkNoViolations = async () => {
   const results = await axe(document.body, AXE_OPTS);
   // assert ตรงๆ บน violations (เลี่ยง custom matcher) — แสดง rule id ที่ fail ชัดเจน
@@ -53,15 +57,23 @@ const mainMenuProps = {
 };
 
 describe('a11y — DiscountModal', () => {
-  it('ไม่มี accessibility violation', async () => {
-    render(createElement(DiscountModal, { isOpen: true, onClose: vi.fn() }));
-    await checkNoViolations();
-  });
+  it(
+    'ไม่มี accessibility violation',
+    async () => {
+      render(createElement(DiscountModal, { isOpen: true, onClose: vi.fn() }));
+      await checkNoViolations();
+    },
+    AXE_TIMEOUT_MS
+  );
 });
 
 describe('a11y — MainMenuModal', () => {
-  it('ไม่มี accessibility violation', async () => {
-    render(createElement(MainMenuModal, mainMenuProps));
-    await checkNoViolations();
-  });
+  it(
+    'ไม่มี accessibility violation',
+    async () => {
+      render(createElement(MainMenuModal, mainMenuProps));
+      await checkNoViolations();
+    },
+    AXE_TIMEOUT_MS
+  );
 });

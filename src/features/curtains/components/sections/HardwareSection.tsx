@@ -88,7 +88,7 @@ const PillButton: React.FC<PillButtonProps> = ({
       />
       <span className="text-xs font-semibold leading-tight text-center">{label}</span>
       {description && (
-        <span className="text-[10px] text-muted-foreground/80 mt-0.5 text-center">
+        <span className="text-xs text-muted-foreground/80 mt-0.5 text-center">
           {description}
         </span>
       )}
@@ -272,7 +272,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
               />
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground/80 ml-1 mt-1">
+          <p className="text-sm text-muted-foreground/80 ml-1 mt-1">
             ลอนลึกใช้ผ้าเพิ่มขึ้นเล็กน้อย — เห็นใน <span className="font-semibold">Pro Mode</span>
           </p>
         </div>

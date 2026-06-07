@@ -67,7 +67,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-sm text-foreground leading-tight">{typeName}</span>
-            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full leading-tight">
+            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full leading-tight">
               {roomName}
             </span>
           </div>
@@ -119,12 +119,12 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
                   {mainCode ? (
                     <CodeJumpButton code={mainCode} tab={mainTab} onJump={onOpenCodeDetail} />
                   ) : (
-                    <span className="text-[10px] text-muted-foreground/40 italic">
+                    <span className="text-xs text-muted-foreground/40 italic">
                       ยังไม่ระบุรหัส
                     </span>
                   )}
                   {analysis.usedQuantity > 0 && (
-                    <span className="text-[10px] text-muted-foreground/50 font-mono">
+                    <span className="text-xs text-muted-foreground/50 font-mono">
                       {analysis.usedQuantity.toFixed(2)} {analysis.unit}
                     </span>
                   )}
@@ -153,7 +153,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
                       onJump={onOpenCodeDetail}
                     />
                     {(analysis.sheerQuantity ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground/50 font-mono">
+                      <span className="text-xs text-muted-foreground/50 font-mono">
                         {(analysis.sheerQuantity ?? 0).toFixed(2)} {analysis.unit}
                       </span>
                     )}

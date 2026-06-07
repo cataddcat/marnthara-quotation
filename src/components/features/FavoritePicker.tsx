@@ -65,7 +65,7 @@ export const FavoritePicker: React.FC<FavoritePickerProps> = ({
                   <div className="flex flex-col overflow-hidden">
                     <span className="font-medium text-foreground truncate">{fav.code}</span>
                     {fav.note && (
-                      <span className="text-[10px] text-muted-foreground truncate">{fav.note}</span>
+                      <span className="text-xs text-muted-foreground truncate">{fav.note}</span>
                     )}
                   </div>
                   {/* แสดงราคาขาย */}

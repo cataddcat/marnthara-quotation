@@ -174,7 +174,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
                     <div className="text-xs text-muted-foreground truncate">{u.desc}</div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-mono text-muted-foreground/70">
+                    <span className="text-xs font-mono text-muted-foreground/70">
                       {fmtQty(u.qty, u.unit)} {u.unit}
                     </span>
                     {u.item && (

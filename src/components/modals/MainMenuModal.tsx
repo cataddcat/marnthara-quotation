@@ -174,11 +174,11 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
                 )}
               >
                 <opt.icon className="w-4 h-4" />
-                <span className="text-[11px] font-semibold leading-none text-center">{opt.label}</span>
+                <span className="text-xs font-semibold leading-none text-center">{opt.label}</span>
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground/80 px-1">
+          <p className="text-sm text-muted-foreground/80 px-1">
             โหมดเร็วเหมาะกับงานหน้างาน (ลดรายละเอียด กดง่าย) · โหมดเต็มมีความสามารถครบ
           </p>
         </section>
@@ -294,7 +294,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 
         {/* ── Footer ── */}
         <div className="pt-2 text-center">
-          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-muted/50 text-[10px] text-muted-foreground font-mono">
+          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-muted/50 text-xs text-muted-foreground font-mono">
             Marnthara v6.7.0
           </div>
         </div>

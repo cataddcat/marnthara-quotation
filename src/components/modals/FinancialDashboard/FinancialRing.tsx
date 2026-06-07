@@ -26,7 +26,7 @@ export const FinancialRing = ({ revenue, cost, profit, targetMargin }: Financial
         }}
       >
         <div className="w-28 h-28 bg-card rounded-full flex flex-col items-center justify-center">
-          <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">
+          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
             Net Margin
           </span>
           <div
@@ -38,7 +38,7 @@ export const FinancialRing = ({ revenue, cost, profit, targetMargin }: Financial
             {margin.toFixed(1)}
             <span className="text-sm text-muted-foreground/60">%</span>
           </div>
-          <div className="text-[9px] text-muted-foreground flex items-center gap-1 mt-0.5">
+          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
             <Target className="w-2.5 h-2.5" strokeWidth={1.5} /> เป้า {targetMargin}%
           </div>
         </div>
@@ -46,11 +46,11 @@ export const FinancialRing = ({ revenue, cost, profit, targetMargin }: Financial
 
       <div className="absolute bottom-2 w-full flex justify-between px-6 opacity-90">
         <div className="flex flex-col items-start bg-card/80 backdrop-blur border border-border p-1.5 rounded-lg text-xs">
-          <span className="text-muted-foreground text-[11px]">ยอดขาย</span>
+          <span className="text-muted-foreground text-xs">ยอดขาย</span>
           <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{fmtTH(revenue)}</span>
         </div>
         <div className="flex flex-col items-end bg-card/80 backdrop-blur border border-border p-1.5 rounded-lg text-xs">
-          <span className="text-muted-foreground text-[11px]">ต้นทุนรวม</span>
+          <span className="text-muted-foreground text-xs">ต้นทุนรวม</span>
           <span className="font-bold font-mono text-rose-500">{fmtTH(cost)}</span>
         </div>
       </div>

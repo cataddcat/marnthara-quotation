@@ -23,7 +23,7 @@ export const CostRow = ({ label, value, sub, highlight, dotClass }: CostRowProps
         {label}
       </span>
       {sub && (
-        <span className="text-[10px] text-muted-foreground/60 font-mono shrink-0">{sub}</span>
+        <span className="text-xs text-muted-foreground/60 font-mono shrink-0">{sub}</span>
       )}
     </div>
     <span

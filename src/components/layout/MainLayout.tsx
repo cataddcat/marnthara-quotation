@@ -80,7 +80,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 </h1>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
               </div>
-              <span className="text-[11px] font-medium text-muted-foreground tracking-widest uppercase">
+              <span className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
                 Quotation
               </span>
             </button>
@@ -102,7 +102,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     <span className="w-1.5 h-1.5 rounded-full bg-info shadow-[0_0_6px_rgba(var(--color-info),0.5)]" />
                   )}
                 </div>
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Net
                 </span>
               </div>

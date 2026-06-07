@@ -31,11 +31,10 @@ npm run lint && npm run test:run && npm run build
 
 ## 🎨 Design system (UI work — see DESIGN.md)
 
-```bash
-npm run lint:design   # Design guard — lists every <12px text on content (the readability worklist)
-```
-- **Non-gating** in Phase 1: it is NOT part of `npm run lint` yet, so it WILL report findings
-  (currently **79**). That's its job — it's the Phase-2 input. (Phase 2 promotes it into the gated `lint`.)
+- **Typography guard is GATED** — the `<12px` content ban (DESIGN.md §1/§2) lives in `eslint.config.js`
+  as a `no-restricted-syntax` rule at `error`, so **`npm run lint`** blocks any `text-[9/10/11px]` on
+  content. Print medium (`src/components/print/**`) is exempt. (The Phase-1 `lint:design` /
+  `eslint.design.config.mjs` were retired once the worklist was cleared — see DESIGN.md §7.)
 - **Design Probe** (not a CLI — in-app dev tool): `npm run dev`, then press **Alt+L** (or click the
   "Probe" button, bottom-left) → hover/click any element to read its *text · file:line · font-size/
   line-height/weight · classes · DESIGN.md role · ⚠ if <12px*, and copy a paste-ready block.
@@ -73,8 +72,7 @@ npx playwright test tests/specific.spec.ts   # one E2E spec
 ## 🎯 Quality & formatting
 
 ```bash
-npm run lint          # ESLint, zero-warnings gate (eslint.config.js)
-npm run lint:design   # Design-system guard (eslint.design.config.mjs) — see above
+npm run lint          # ESLint, zero-warnings gate (eslint.config.js) — includes the <12px design guard
 npm run format        # Prettier — format all files
 ```
 

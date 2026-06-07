@@ -112,7 +112,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
                   >
                     เปิดใช้งานส่วนลด
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Apply Discount</span>
+                  <span className="text-xs text-muted-foreground">Apply Discount</span>
                 </div>
               </div>
               <Switch
@@ -177,7 +177,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
                 <div className="font-semibold text-sm text-foreground">
                   ภาษีมูลค่าเพิ่ม (VAT 7%)
                 </div>
-                <div className="text-[10px] text-muted-foreground">คำนวณจากยอดหลังหักส่วนลด</div>
+                <div className="text-sm text-muted-foreground">คำนวณจากยอดหลังหักส่วนลด</div>
               </div>
             </div>
             <Switch

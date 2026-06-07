@@ -43,7 +43,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
         <button
           type="button"
           onClick={() => onChange('_is_pro_mode', true)}
-          className="text-[10px] text-slate-300 flex items-center gap-1 hover:text-emerald-400 transition-colors"
+          className="text-xs text-slate-300 flex items-center gap-1 hover:text-emerald-400 transition-colors"
         >
           <Lock className="w-3 h-3" />
           เปิดโหมดคำนวณจากทุน
@@ -109,7 +109,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {analysis.isLaborMinApplied && (
-              <span className="text-[10px] bg-amber-900/30 text-amber-400 px-1.5 py-0.5 rounded border border-amber-700/50">
+              <span className="text-xs bg-amber-900/30 text-amber-400 px-1.5 py-0.5 rounded border border-amber-700/50">
                 ขั้นต่ำ
               </span>
             )}
@@ -133,7 +133,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
              <span>+{fmtTH(analysis.profitAmount)}</span>
           </div>
         </div>
-        <div className="text-[10px] text-slate-500 text-right mt-1 pt-1 border-t border-dashed border-slate-700">
+        <div className="text-xs text-slate-500 text-right mt-1 pt-1 border-t border-dashed border-slate-700">
           แนะนำขายต่อเมตร:{' '}
           <span className="text-emerald-300 font-mono text-sm">
             {Math.ceil(

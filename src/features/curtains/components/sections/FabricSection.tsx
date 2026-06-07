@@ -32,14 +32,14 @@ const PriceStatusIndicator = ({ status, masterPrice, onSync }: PriceStatusIndica
 
   return (
     <div className="mt-1.5 flex items-center justify-between gap-2 animate-fade-in">
-      <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-2 py-1 rounded-md border border-amber-200/60 flex items-center gap-1">
+      <span className="text-xs font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-2 py-1 rounded-md border border-amber-200/60 flex items-center gap-1">
         <AlertTriangle className="w-3 h-3" />
         คลัง: {fmtTH(masterPrice)}
       </span>
       <button
         type="button"
         onClick={onSync}
-        className="text-[11px] font-bold flex items-center gap-1 text-foreground bg-muted hover:bg-muted/70 border border-border px-2.5 py-1 rounded-md transition-colors active:scale-95"
+        className="text-xs font-bold flex items-center gap-1 text-foreground bg-muted hover:bg-muted/70 border border-border px-2.5 py-1 rounded-md transition-colors active:scale-95"
       >
         <RefreshCw className="w-3 h-3" strokeWidth={1.5} /> ดึงราคา
       </button>

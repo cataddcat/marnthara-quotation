@@ -122,7 +122,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
                 )}
               >
                 <opt.icon className="w-4 h-4" strokeWidth={1.5} />
-                <span className="text-[11px] font-semibold leading-none text-center">
+                <span className="text-xs font-semibold leading-none text-center">
                   {opt.label}
                 </span>
               </button>
@@ -133,7 +133,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
         {/* --- รูปแบบใบสั่งราง: ย่อ / ละเอียด (เฉพาะแท็บ "สั่งราง") --- */}
         {type === 'rail_order' && (
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] text-muted-foreground">รูปแบบ:</span>
+            <span className="text-xs text-muted-foreground">รูปแบบ:</span>
             <div
               role="group"
               aria-label="รูปแบบใบสั่งราง"
@@ -168,7 +168,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
           className="w-full flex-1 min-h-[55vh] rounded-xl border border-border bg-background p-3 text-[13px] leading-relaxed font-mono whitespace-pre-wrap resize-y focus:outline-none focus:ring-1 focus:ring-primary"
         />
 
-        <p className="text-[11px] text-muted-foreground/80 px-1 shrink-0">
+        <p className="text-sm text-muted-foreground/80 px-1 shrink-0">
           แก้ไขข้อความได้ก่อนคัดลอก · สลับแบบจะรีเซ็ตเป็นข้อความใหม่
         </p>
       </div>

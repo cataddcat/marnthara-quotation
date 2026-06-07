@@ -29,8 +29,7 @@ Full reference + expected output in **[`COMMANDS.md`](./COMMANDS.md)**. Quick li
 ```bash
 npm run dev          # Dev server (port 3000)
 npm run build        # tsc -b && vite build
-npm run lint         # ESLint (max-warnings 0 — zero tolerance)
-npm run lint:design  # Design guard — lists <12px-text worklist (non-gating; see DESIGN.md)
+npm run lint         # ESLint (max-warnings 0) — also gates the <12px design guard (DESIGN.md §1/§2)
 npm run format       # Prettier format all files
 npm run test         # Vitest watch mode
 npm run test:run     # Vitest single run (CI)
@@ -91,7 +90,8 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 > **📐 Canonical spec: [`DESIGN.md`](./DESIGN.md)** — the design system & requirements is the source of
 > truth for look-and-feel ("the document is the designer"): the **typography standard** (Body 14–16px ·
 > 12px = Meta only · <12px banned), color/contrast, the **Design Probe** (measure before adjusting), the
-> `Text` primitive, and `npm run lint:design`. The 5 pillars below + HANDOFF §1.6/§1.7 are its foundation.
+> `Text` primitive, and the **gated `<12px` lint guard** (in `eslint.config.js`). The 5 pillars below +
+> HANDOFF §1.6/§1.7 are its foundation.
 
 All new or changed UI must satisfy the 5-pillar UX baseline before merge:
 

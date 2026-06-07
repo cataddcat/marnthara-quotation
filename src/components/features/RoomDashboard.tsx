@@ -230,7 +230,7 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
           )}
         </div>
         <div className="flex items-baseline gap-1.5 shrink-0">
-          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">
             มูลค่าโครงการ
           </span>
           <span className="font-mono font-bold text-base tabular-nums text-emerald-600 dark:text-emerald-400">
@@ -380,7 +380,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
             >
               {room.name}
             </span>
-            <span className="block text-[11px] text-muted-foreground">
+            <span className="block text-xs text-muted-foreground">
               {activeItems.length} รายการ
             </span>
           </span>

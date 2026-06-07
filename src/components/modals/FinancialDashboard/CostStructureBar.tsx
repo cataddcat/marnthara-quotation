@@ -18,7 +18,7 @@ export const CostStructureBar = ({ fabric, labor, rail, total }: CostStructureBa
 
   return (
     <div className="px-4 pb-3 space-y-1.5">
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+      <div className="flex items-center justify-between text-xs text-muted-foreground font-medium uppercase tracking-wider">
         <span>สัดส่วนต้นทุน</span>
         <span className="tabular-nums normal-case">{fmtTH(total)}</span>
       </div>
@@ -27,7 +27,7 @@ export const CostStructureBar = ({ fabric, labor, rail, total }: CostStructureBa
         {lp > 0 && <div style={{ width: `${lp}%` }} className="bg-blue-500" />}
         {rp > 0 && <div style={{ width: `${rp}%` }} className="bg-orange-400 rounded-r-full" />}
       </div>
-      <div className="flex gap-4 text-[10px] text-muted-foreground">
+      <div className="flex gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
           ผ้า {fp}% · {fmtTH(fabric)}

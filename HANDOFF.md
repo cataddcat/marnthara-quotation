@@ -83,7 +83,7 @@ The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen 
 
 ### 1.7 Geist-aligned visual language (synthesized from §1.6 + Vercel Geist)
 
-> 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, `lint:design`). This section remains the visual-language rationale it cites.
+> 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, the gated `<12px` lint guard). This section remains the visual-language rationale it cites.
 
 We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standing visual language, synthesized from §1.6 and Vercel's **Geist** design system, mapped to our tokens/primitives. It decides look-and-feel so we don't have to re-litigate per screen. **§1.7 layers on top of §1.6 — never overrides §1.6's ergonomics.**
 
