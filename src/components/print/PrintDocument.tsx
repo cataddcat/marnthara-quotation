@@ -101,7 +101,8 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
       : customer.installationAddress || '-';
 
     return (
-      <div ref={ref} className="bg-white text-slate-900 font-sans leading-normal text-[12px]">
+      /* [CHANGED] ปรับเบสครอบทั้งหมดจาก text-[12px] เป็น text-[14px] */
+      <div ref={ref} className="bg-white text-slate-900 font-sans leading-normal text-[14px]">
         <style>{printStyles}</style>
 
         {/* A4 Wrapper */}
@@ -167,14 +168,16 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
             {/* Left: Customer Info */}
             <div className={cn('p-4', showSite ? 'flex-[1.2]' : 'flex-1')}>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">
+                {/* [CHANGED] ปรับ text-xs เป็น text-sm */}
+                <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">
                   ข้อมูลลูกค้า (Customer)
                 </h3>
               </div>
               <div className="space-y-1.5 text-sm">
                 <div className="grid grid-cols-[80px_1fr] gap-2">
                   <span className="text-slate-500 font-medium">ชื่อลูกค้า:</span>
-                  <span className="font-bold text-slate-900 text-[13px]">
+                  {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                  <span className="font-bold text-slate-900 text-sm">
                     {customer.name || '-'}
                   </span>
                 </div>
@@ -203,7 +206,8 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                 <div className="w-px bg-slate-200 my-3"></div>
                 <div className="flex-1 p-4 bg-slate-50/30">
                   <div className="flex items-center gap-2 mb-3">
-                    <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">
+                    {/* [CHANGED] ปรับ text-xs เป็น text-sm */}
+                    <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">
                       สถานที่ติดตั้ง (Site Location)
                     </h3>
                   </div>
@@ -224,7 +228,8 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
           <div className="flex-1">
             <table className="w-full border border-slate-300 border-collapse">
               <thead>
-                <tr className="bg-slate-100 text-slate-900 text-xs border-b border-slate-300">
+                {/* [CHANGED] ปรับ text-xs เป็น text-sm */}
+                <tr className="bg-slate-100 text-slate-900 text-sm border-b border-slate-300">
                   <th className="py-2 w-[45px] text-center font-bold border-r border-slate-300">
                     ลำดับ
                   </th>
@@ -236,7 +241,7 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                   </th>
                   {showPrices ? (
                     <>
-                      <th className="py-2 px-2 w-[110px] text-right font-bold border-r border-slate-300">
+                      <th className="py-2 px-2 w-[112px] text-right font-bold border-r border-slate-300">
                         ราคา/หน่วย
                       </th>
                       <th className="py-2 pr-2 w-[120px] text-right font-bold">จำนวนเงิน</th>
@@ -293,34 +298,41 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                       }
 
                       return (
+                        /* [CHANGED] ปรับจาก text-xs เป็น text-sm */
                         <tr
                           key={groupIndex}
-                          className="border-b border-slate-200 text-xs even:bg-slate-50 hover:bg-slate-100/50"
+                          className="border-b border-slate-200 text-sm even:bg-slate-50 hover:bg-slate-100/50"
                         >
                           <td className="py-2.5 px-1 text-center text-slate-500 align-top border-r border-slate-300">
                             {roomIndex + 1}.{groupIndex + 1}
                           </td>
                           <td className="py-2.5 px-2 align-top border-r border-slate-300">
-                            <div className="font-bold text-slate-800 text-[13px]">{itemName}</div>
+                            {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                            <div className="font-bold text-slate-800 text-sm">{itemName}</div>
                             <div className="text-slate-600">{details}</div>
                             {dimensions !== '-' && (
-                              <div className="text-slate-500 font-mono mt-0.5 text-[11px]">
+                              /* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */
+                              <div className="text-slate-500 font-mono mt-0.5 text-[14px]">
                                 {dimensions}
                               </div>
                             )}
                             {item.notes && (
-                              <div className="text-[10px] text-red-500 mt-0.5">* {item.notes}</div>
+                              /* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */
+                              <div className="text-[14px] text-red-500 mt-0.5">* {item.notes}</div>
                             )}
                           </td>
-                          <td className="py-2.5 px-2 text-center align-top font-mono text-slate-900 border-r border-slate-300 font-bold text-[13px]">
+                          {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                          <td className="py-2.5 px-2 text-center align-top font-mono text-slate-900 border-r border-slate-300 font-bold text-sm">
                             {count}
                           </td>
                           {showPrices ? (
                             <>
-                              <td className="py-2.5 px-2 text-right align-top font-mono text-slate-700 border-r border-slate-300 text-[13px]">
+                              {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                              <td className="py-2.5 px-2 text-right align-top font-mono text-slate-700 border-r border-slate-300 text-sm">
                                 {fmtNum(unitPrice)}
                               </td>
-                              <td className="py-2.5 pr-2 text-right align-top font-mono font-bold text-slate-900 text-[13px]">
+                              {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                              <td className="py-2.5 pr-2 text-right align-top font-mono font-bold text-slate-900 text-sm">
                                 {fmtNum(totalPrice)}
                               </td>
                             </>
@@ -342,14 +354,17 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
               <div className="flex-1">
                 {showPrices && (
                   <div className="bg-slate-100 p-2 rounded mb-3 text-center border border-slate-200">
-                    <span className="text-[10px] text-slate-500 block uppercase tracking-wider mb-1">
+                    {/* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */}
+                    <span className="text-[14px] text-slate-500 block uppercase tracking-wider mb-1">
                       จำนวนเงินตัวอักษร
                     </span>
                     <span className="font-bold text-slate-800 text-sm">{bahttext(finalTotal)}</span>
                   </div>
                 )}
-                <div className="text-[10px] text-slate-600 space-y-1">
-                  <div className="font-bold text-slate-800 text-xs">เงื่อนไข / หมายเหตุ:</div>
+                {/* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */}
+                <div className="text-[14px] text-slate-600 space-y-1">
+                  {/* [CHANGED] ปรับ text-xs เป็น text-sm */}
+                  <div className="font-bold text-slate-800 text-sm">เงื่อนไข / หมายเหตุ:</div>
                   <ul className="list-disc list-inside pl-1">
                     {shopConfig.pdf?.priceValidity && (
                       <li>ยืนยันราคาภายใน {shopConfig.pdf.priceValidity}</li>
@@ -374,7 +389,8 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                           <span className="text-slate-500">ชื่อบัญชี:</span>
                           <span>{shopConfig.bankAccount.accountName}</span>
                           <span className="text-slate-500">เลขที่:</span>
-                          <span className="font-mono font-bold text-slate-900 text-[13px]">
+                          {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                          <span className="font-mono font-bold text-slate-900 text-sm">
                             {shopConfig.bankAccount.accountNumber}
                           </span>
                           {shopConfig.bankAccount.branch && (
@@ -394,21 +410,23 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                   <div className="space-y-1 border-b border-slate-300 pb-2 mb-2">
                     <div className="flex justify-between text-slate-600">
                       <span>รวมเป็นเงิน</span>
-                      <span className="font-mono font-medium text-[13px]">
+                      {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                      <span className="font-mono font-medium text-sm">
                         {fmtNum(grandTotal)}
                       </span>
                     </div>
                     {discountAmount > 0 && (
                       <div className="flex justify-between text-green-700">
                         <span>ส่วนลด</span>
-                        <span className="font-mono font-medium text-[13px]">
+                        {/* [CHANGED] ปรับ text-[13px] เป็น text-sm */}
+                        <span className="font-mono font-medium text-sm">
                           -{fmtNum(discountAmount)}
                         </span>
                       </div>
                     )}
                     {shopConfig.baseVatRate > 0 && (
                       <>
-                        <div className="flex justify-between text-slate-600 text-xs">
+                        <div className="flex justify-between text-slate-600">
                           <span>หลังหักส่วนลด</span>
                           <span className="font-mono">{fmtNum(grandTotal - discountAmount)}</span>
                         </div>
@@ -419,7 +437,7 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                       </>
                     )}
                   </div>
-                  <div className="flex justify-between items-center bg-slate-900 text-white p-3 rounded shadow-sm">
+                  <div className="flex justify-between items-center text-black p-3 rounded shadow-sm">
                     <span className="font-bold">ยอดสุทธิ</span>
                     <span className="font-bold text-xl font-mono">{fmtNum(finalTotal)}</span>
                   </div>
@@ -429,20 +447,23 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
 
             <div className="grid grid-cols-2 gap-8 mt-10">
               <div className="border border-slate-300 rounded-xl p-4 flex flex-col items-center justify-between min-h-[180px]">
-                <div className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                {/* [CHANGED] ปรับ text-xs เป็น text-sm */}
+                <div className="text-sm font-bold text-slate-900 uppercase tracking-wide">
                   ผู้เสนอราคา / ผู้รับเงิน
                 </div>
                 <div className="w-full flex flex-col items-center mt-auto">
                   <div className="border-b border-slate-900 w-[160px] h-8 mb-6"></div>
-                  <div className="flex gap-1 text-slate-500 text-[11px]">
+                  {/* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */}
+                  <div className="flex gap-1 text-slate-500 text-[14px]">
                     (
-                    <div className="w-[140px] text-center relative top-[2px]">
-                      ..................................................
+                    <div className="w-[140px] text-center relative top-[1.5px]">
+                      ......................................
                     </div>
                     )
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 mt-4">
+                {/* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */}
+                <div className="flex items-center justify-center gap-2 text-[14px] text-slate-500 mt-4">
                   <span>วันที่:</span>
                   <div className="w-8 border-b border-slate-400 h-4"></div>
                   <span>/</span>
@@ -452,20 +473,23 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
                 </div>
               </div>
               <div className="border border-slate-300 rounded-xl p-4 flex flex-col items-center justify-between min-h-[180px]">
-                <div className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                {/* [CHANGED] ปรับ text-xs เป็น text-sm */}
+                <div className="text-sm font-bold text-slate-900 uppercase tracking-wide">
                   ผู้อนุมัติสั่งซื้อ / ผู้รับสินค้า
                 </div>
                 <div className="w-full flex flex-col items-center mt-auto">
                   <div className="border-b border-slate-900 w-[160px] h-8 mb-6"></div>
-                  <div className="flex gap-1 text-slate-500 text-[11px]">
+                  {/* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */}
+                  <div className="flex gap-1 text-slate-500 text-[14px]">
                     (
                     <div className="w-[140px] text-center relative top-[2px]">
-                      ..................................................
+                      ......................................
                     </div>
                     )
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 mt-4">
+                {/* [CHANGED] ปรับ text-[12px] เป็น text-[14px] */}
+                <div className="flex items-center justify-center gap-2 text-[14px] text-slate-500 mt-4">
                   <span>วันที่:</span>
                   <div className="w-8 border-b border-slate-400 h-4"></div>
                   <span>/</span>

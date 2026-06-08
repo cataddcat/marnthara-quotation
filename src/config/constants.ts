@@ -110,7 +110,7 @@ export const ITEM_CONFIG = {
 
 // --- DEFAULT SHOP CONFIG ---
 export const DEFAULT_SHOP_CONFIG = {
-  name: 'Marnthara Smart Quotation',
+  name: 'ม่านธารา',
   address: '123/45 ถนนตัวอย่าง ตำบลตัวอย่าง อำเภอเมือง จังหวัดกรุงเทพฯ 10110',
   phone: '081-234-5678',
   taxId: '',

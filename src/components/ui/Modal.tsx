@@ -26,6 +26,13 @@ interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
   variant?: ModalVariant;
   description?: string;
+  /**
+   * "Office app-shell" mode for dense desktop tools (เช่น ข้อมูลสินค้า & ราคา): render a
+   * STABLE fixed-height, full-bleed body so the frame doesn't resize when inner
+   * tabs swap content — the child owns its own layout + internal scroll.
+   * Opt-in; ordinary modals (forms, short dialogs) keep the content-sized body.
+   */
+  appShell?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -38,6 +45,7 @@ export const Modal: React.FC<ModalProps> = ({
   maxWidth = 'lg',
   variant = 'center',
   description,
+  appShell = false,
 }) => {
   useMobileBack(isOpen, onClose);
   // Tier มาจาก single source (device + persisted override) — เคารพ override ของผู้ใช้
@@ -169,7 +177,12 @@ export const Modal: React.FC<ModalProps> = ({
                   // 📱 Mobile Fullscreen Logic
                   isFullscreen
                     ? 'w-full h-[100dvh] rounded-none'
-                    : `w-full ${maxWidthClass} rounded-xl my-4 border border-border/50 max-h-[90vh]` // 🖥️ Desktop Card Logic
+                    : cn(
+                        `w-full ${maxWidthClass} rounded-xl my-4 border border-border/50`,
+                        // 🖥️ Desktop: office app-shell gets a STABLE fixed height (no resize when
+                        // switching inner tabs); ordinary dialogs size to content (capped 90vh).
+                        appShell ? 'h-[88vh]' : 'max-h-[90vh]'
+                      )
                 )}
               >
                 {/* Header — title 16px; ปุ่มมี hit area 44px (HIG) padding กระชับให้หัวเรื่องไม่สูงเกิน */}
@@ -227,16 +240,23 @@ export const Modal: React.FC<ModalProps> = ({
                   )}
                 </div>
 
-                {/* Content Container - Scrollable — padding กระชับ (p-4) สม่ำเสมอกับ ItemCard */}
-                <div
-                  className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4"
-                  onScroll={handleScroll}
-                >
-                  {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks */}
-                  <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full')}>
-                    {children}
+                {/* Content Container.
+                    • appShell → fixed-height, full-bleed, overflow-hidden frame; the child (เช่น
+                      ข้อมูลสินค้า & ราคา) owns its sidebar + internal scroll so tab swaps never resize the modal.
+                    • otherwise → standard scrollable, padded body (p-4) like ItemCard. */}
+                {appShell ? (
+                  <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
+                ) : (
+                  <div
+                    className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4"
+                    onScroll={handleScroll}
+                  >
+                    {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks */}
+                    <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full')}>
+                      {children}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Footer (Fixed at bottom logic) */}
                 {footer && (

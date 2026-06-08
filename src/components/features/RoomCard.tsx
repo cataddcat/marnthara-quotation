@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { Room, ItemData } from '@/types';
 import { ItemCard } from './ItemCard';
 import { EmptyState } from './EmptyState';
+import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
@@ -425,19 +426,29 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       </div>
 
       {/* Items List (only in non-suspended focus mode) */}
-      {!room.is_suspended && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fade-in pb-1">
-          {room.items.length === 0 ? (
-            <div className="sm:col-span-2">
-              <EmptyState
-                icon={Package}
-                title="ยังไม่มีสินค้าในห้องนี้"
-                description="เพิ่มสินค้าเพื่อเริ่มคำนวณราคา"
+      {!room.is_suspended &&
+        (room.items.length === 0 ? (
+          // ห้องว่าง — CTA เดียว (EmptyState + ปุ่มในตัว) ไม่ซ้ำกับแถบ dashed → ไม่เปลืองพื้นที่
+          <EmptyState
+            icon={Package}
+            title="ยังไม่มีรายการในห้องนี้"
+            description="เพิ่มรายการ วัดขนาด แล้วคำนวณผ้า/พื้นที่ และราคา"
+            size="sm"
+            className="animate-fade-in rounded-2xl border border-dashed border-border/60 bg-muted/10"
+            action={
+              <Button
                 size="sm"
-              />
-            </div>
-          ) : (
-            room.items.map((item, idx) => (
+                variant="outline"
+                onClick={() => onAddItem(room.id)}
+                className="gap-1.5"
+              >
+                <Plus className="w-4 h-4" strokeWidth={1.5} /> เพิ่มสินค้า
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fade-in pb-1">
+            {room.items.map((item, idx) => (
               <ItemCard
                 key={item.id}
                 item={item}
@@ -445,19 +456,19 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 roomId={room.id}
                 onEdit={() => onEditItem(room.id, item)}
               />
-            ))
-          )}
-          <button
-            onClick={() => onAddItem(room.id)}
-            className="sm:col-span-2 w-full group flex items-center justify-center gap-2 h-10 rounded-xl border-2 border-dashed border-border/50 hover:border-foreground/30 bg-muted/10 hover:bg-muted/30 transition-all active:scale-[0.99]"
-          >
-            <Plus className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
-              เพิ่มสินค้าใหม่
-            </span>
-          </button>
-        </div>
-      )}
+            ))}
+            {/* เพิ่มสินค้า — แถบบางกระชับ (h-9) ไม่กินพื้นที่เหมือนบล็อก dashed เดิม */}
+            <button
+              onClick={() => onAddItem(room.id)}
+              className="sm:col-span-2 group flex items-center justify-center gap-1.5 h-9 rounded-xl border border-dashed border-border/50 hover:border-foreground/30 hover:bg-muted/20 transition-[border-color,background-color,transform] active:scale-[0.99]"
+            >
+              <Plus className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
+                เพิ่มสินค้า
+              </span>
+            </button>
+          </div>
+        ))}
     </div>
   );
 };

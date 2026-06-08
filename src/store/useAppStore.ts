@@ -54,9 +54,10 @@ export const useAppStore = create<AppState>()(
       {
         name: STORAGE_KEY,
         storage: createJSONStorage(() => localStorage),
-        version: 3,
+        version: 4,
         // v1→v2: แปลงผ้าม่าน schema เก่า (type:'set' + ชื่อฟิลด์เดิม) → โครงสร้างปัจจุบัน
         // v2→v3: ย้ายค่าบริการ (install/transport/fuel) จาก accessoryCosts → serviceCosts
+        // v3→v4: ชื่อร้าน default เดิม "Marnthara Smart Quotation" → "ม่านธารา"
         migrate: (persisted) => migrateLegacyState(persisted) as AppState,
         partialize: (state) => omitTransientState(state),
       }

@@ -177,7 +177,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
       {features.hasRail && railSkus.length > 0 && (
         <div className="space-y-2 animate-fade-in">
           <label className="text-sm font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
-            <Wrench className="w-3.5 h-3.5" /> รุ่นราง (จากคลังวัสดุ)
+            <Wrench className="w-3.5 h-3.5" /> รุ่นราง (จากข้อมูลสินค้า & ราคา)
           </label>
           <Select
             options={[
@@ -329,7 +329,7 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
               ขาจับราง {FORMULAS.materials.rod_brackets_per_set} ขา/ชุด
             </div>
             <div className="text-xs text-muted-foreground leading-tight">
-              รวมในชุดรางแล้ว — เลือกรุ่นราง/ปรับทุนได้ที่ “คลังวัสดุ”
+              รวมในชุดรางแล้ว — เลือกรุ่นราง/ปรับทุนได้ที่ “ข้อมูลสินค้า & ราคา”
             </div>
           </div>
         </div>

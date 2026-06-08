@@ -87,11 +87,27 @@ const migrateCostVaults = (state: Record<string, unknown>): Record<string, unkno
   return { ...state, accessoryCosts: acc, serviceCosts: service };
 };
 
+/**
+ * v3→v4: ชื่อร้านเริ่มต้นเดิมพ่วงคำโฆษณาแอป ("Marnthara Smart Quotation") — แอปไม่ใช่
+ * "เครื่องทำใบเสนอราคา" จึงเปลี่ยนเป็นชื่อแบรนด์จริง "ม่านธารา" เฉพาะกรณีที่ยังเป็นค่า default
+ * เดิมเป๊ะ (ไม่แตะชื่อร้านที่ผู้ใช้ตั้งเอง) — idempotent
+ */
+const OLD_DEFAULT_SHOP_NAME = 'Marnthara Smart Quotation';
+const migrateShopName = (state: Record<string, unknown>): Record<string, unknown> => {
+  const sc = state.shopConfig;
+  if (!sc || typeof sc !== 'object') return state;
+  const conf = sc as Record<string, unknown>;
+  if (conf.name !== OLD_DEFAULT_SHOP_NAME) return state;
+  return { ...state, shopConfig: { ...conf, name: 'ม่านธารา' } };
+};
+
 /** แปลง persisted state ทั้งก้อน — เดินทุกห้อง/ทุกรายการ (ทนต่อรูปร่างที่ไม่คาดคิด) */
 export const migrateLegacyState = (persisted: unknown): unknown => {
   if (!persisted || typeof persisted !== 'object') return persisted;
   // v2→v3: จัดถังต้นทุนก่อน (รันแม้ rooms จะมีรูปร่างผิดคาด)
-  const state = migrateCostVaults(persisted as Record<string, unknown>);
+  let state = migrateCostVaults(persisted as Record<string, unknown>);
+  // v3→v4: ชื่อร้าน default เดิม → ชื่อแบรนด์จริง
+  state = migrateShopName(state);
 
   const rooms = state.rooms;
   if (!Array.isArray(rooms)) return state;

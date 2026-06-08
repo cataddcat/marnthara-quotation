@@ -80,8 +80,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 </h1>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
               </div>
-              <span className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
-                Quotation
+              <span className="text-xs font-medium text-muted-foreground tracking-wide">
+                ผ้าม่าน & ของตกแต่ง
               </span>
             </button>
 

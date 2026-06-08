@@ -359,7 +359,7 @@ const CatalogCategoryView = ({
   return (
     <div>
       {items.length === 0 && !adding && (
-        <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="เพิ่มรหัสสินค้าเพื่อบันทึกรายการ" />
+        <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="เพิ่มรหัสสินค้า + ราคาจากผู้ผลิต" />
       )}
 
       <div className="space-y-2">
@@ -896,7 +896,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
     acc.snaps > 0;
 
   const handleCopy = () => {
-    const lines: string[] = ['=== คลังวัสดุ ===', ''];
+    const lines: string[] = ['=== ข้อมูลสินค้า & ราคา ===', ''];
     if (fabricsByCode.size > 0) {
       lines.push('🧵 ผ้าทึบ');
       fabricsByCode.forEach((v, code) => lines.push(`  ${code}: ${fmtTH(v.total)} หลา`));
@@ -946,7 +946,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
       icon: Wrench,
       badge: [acc.brackets, acc.eyelets, acc.pinHooks, acc.waveTapeM, acc.romanSets, acc.rollers, acc.snaps].filter((v) => v > 0).length,
     },
-    { id: 'catalog', label: 'คลังรหัส', icon: BookOpen },
+    { id: 'catalog', label: 'ราคา & รหัส', icon: BookOpen },
   ];
 
   const activeCatalogDef = CATALOG_CATEGORIES.find((c) => c.id === catalogCat) ?? CATALOG_CATEGORIES[0];
@@ -955,9 +955,11 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="คลังวัสดุ"
+      title="ข้อมูลสินค้า & ราคา"
+      description="รหัส & ราคาจากผู้ผลิต · แก้ไข/เพิ่มได้ · ไม่ใช่สต๊อกสินค้า"
       variant="fullscreen"
       maxWidth="5xl"
+      appShell
       headerAction={
         <button
           onClick={handleCopy}
@@ -968,8 +970,9 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
         </button>
       }
     >
-      {/* -m-4 escapes Modal's p-4; min-height compensates the 2rem (top+bottom) */}
-      <div className="-m-4 flex flex-col sm:flex-row" style={{ minHeight: 'calc(100% + 2rem)' }}>
+      {/* appShell body is a fixed-height, padding-free frame → fill it exactly (h-full) so the
+          desktop sidebar stays put and only the content column scrolls (no resize on tab switch) */}
+      <div className="flex flex-col sm:flex-row h-full">
 
         {/* ── DESKTOP LEFT SIDEBAR ────────────────────────────────────────── */}
         <nav className="hidden sm:flex sm:flex-col sm:w-44 sm:shrink-0 sm:border-r sm:border-border/50 sm:bg-muted/5 sm:py-3">
@@ -1029,7 +1032,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
         </nav>
 
         {/* ── CONTENT + MOBILE BOTTOM NAV ─────────────────────────────────── */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 bg-background">
           <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
 
             {/* ── TAB: วัสดุ ── */}

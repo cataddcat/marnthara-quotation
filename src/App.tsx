@@ -156,7 +156,7 @@ function App() {
           <EmptyState
             icon={Home}
             title="เริ่มโครงการใหม่"
-            description="เพิ่มห้องแรกเพื่อเริ่มสร้างใบเสนอราคา"
+            description="เพิ่มห้องแรก แล้วลงรายการผ้าม่าน/ของตกแต่ง · วัดขนาด คำนวณราคา ทุน กำไร"
             action={
               <Button onClick={() => addRoom()} className="gap-2">
                 <Plus className="w-4 h-4" />

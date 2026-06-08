@@ -269,8 +269,8 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             />
             <MenuGridItem
               icon={Layers}
-              label="คลังวัสดุ"
-              desc="วัสดุ · ราง · อุปกรณ์ · คลังรหัส"
+              label="ข้อมูลสินค้า & ราคา"
+              desc="รหัส & ราคาจากผู้ผลิต · แก้ไข/เพิ่มได้"
               onClick={onOpenMaterialSummary}
               accentColor="indigo"
               isWide

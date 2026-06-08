@@ -79,7 +79,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
         <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              คลังรหัส
+              ราคา & รหัส
             </span>
             {cost > 0 ? (
               <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -104,7 +104,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
           ) : (
             !isPlaceholder && (
               <div className="text-xs text-amber-700 dark:text-amber-400">
-                ยังไม่อยู่ในคลังรหัส
+                ยังไม่อยู่ใน ราคา & รหัส
               </div>
             )
           )}
@@ -140,11 +140,11 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
             >
               {entry || cost > 0 ? (
                 <>
-                  <BookOpen className="w-3.5 h-3.5" strokeWidth={1.5} /> เปิดในคลังรหัส
+                  <BookOpen className="w-3.5 h-3.5" strokeWidth={1.5} /> เปิดใน ราคา & รหัส
                 </>
               ) : (
                 <>
-                  <Plus className="w-3.5 h-3.5" /> เพิ่มในคลังรหัส
+                  <Plus className="w-3.5 h-3.5" /> เพิ่มใน ราคา & รหัส
                 </>
               )}
             </button>

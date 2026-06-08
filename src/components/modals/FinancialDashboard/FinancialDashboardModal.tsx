@@ -194,8 +194,8 @@ export const FinancialDashboardModal: React.FC<{
               <div className="flex items-center gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 rounded-xl text-xs text-amber-700 dark:text-amber-400">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                 <span>
-                  มี <strong>{totals.unknownCount}</strong> รายการที่ต้องการต้นทุน — ตั้งค่าใน{' '}
-                  <strong>Vault</strong>
+                  มี <strong>{totals.unknownCount}</strong> รายการที่ต้องการต้นทุน — ตั้งราคาทุนใน{' '}
+                  <strong>{'ข้อมูลสินค้า & ราคา'}</strong>
                 </span>
               </div>
             )}

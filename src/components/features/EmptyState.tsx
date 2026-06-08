@@ -10,6 +10,12 @@ interface EmptyStateProps {
   size?: 'sm' | 'md';
 }
 
+/**
+ * EmptyState — utilitarian placeholder per the Marnthara Design System.
+ * Text-led + monochrome (no decorative grey icon "bubble" — that reads as bloat and
+ * off-brand): a subtle muted icon, a 16–18px Title, a 12–14px Meta description, and an
+ * optional action. Borders over shadows. Mirrors the DS empty pattern (clean centered text).
+ */
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon,
   title,
@@ -23,29 +29,35 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     <div
       className={cn(
         'flex flex-col items-center justify-center text-center',
-        compact ? 'py-6 px-3' : 'py-12 px-4',
+        compact ? 'py-8 px-4' : 'py-12 px-6',
         className
       )}
     >
       {Icon && (
-        <div
-          className={cn(
-            'rounded-full bg-muted flex items-center justify-center mb-3',
-            compact ? 'w-10 h-10' : 'w-16 h-16'
-          )}
-        >
-          <Icon className={cn('text-muted-foreground', compact ? 'w-5 h-5' : 'w-8 h-8')} />
-        </div>
+        <Icon
+          className={cn('text-muted-foreground/50', compact ? 'w-6 h-6 mb-2.5' : 'w-7 h-7 mb-3')}
+          strokeWidth={1.5}
+        />
       )}
-      <p className={cn('font-semibold text-foreground', compact ? 'text-sm' : 'text-lg')}>
+      <p
+        className={cn(
+          'font-semibold text-foreground tracking-tight',
+          compact ? 'text-base' : 'text-lg'
+        )}
+      >
         {title}
       </p>
       {description && (
-        <p className={cn('text-muted-foreground mt-1', compact ? 'text-xs' : 'text-sm max-w-xs')}>
+        <p
+          className={cn(
+            'text-muted-foreground leading-relaxed',
+            compact ? 'text-xs mt-1' : 'text-sm mt-1.5 max-w-xs'
+          )}
+        >
           {description}
         </p>
       )}
-      {action && <div className="mt-5">{action}</div>}
+      {action && <div className={compact ? 'mt-4' : 'mt-5'}>{action}</div>}
     </div>
   );
 };
