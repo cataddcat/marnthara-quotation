@@ -111,7 +111,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                   >
                     {room.name}
                   </div>
-                  {/* เมตริกเพื่อ audit — จำนวนรายการ + ค้าง + ซ่อน (ไม่มีราคา) */}
+                  {/* เมตริกเพื่อ audit — จำนวนรายการ + ค้าง + พัก/ไม่นับ (ไม่มีราคา) */}
                   <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span>{itemCount} รายการ</span>
                     {incompleteCount > 0 && (
@@ -125,7 +125,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                     {room.is_suspended && (
                       <>
                         <span className="text-muted-foreground/30">·</span>
-                        <span className="text-amber-500">ซ่อน</span>
+                        <span className="text-amber-500">พัก</span>
                       </>
                     )}
                   </div>

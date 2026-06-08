@@ -149,7 +149,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
             <div className="p-2.5 bg-muted rounded-xl text-foreground shrink-0">
               <TrendingUp className="w-5 h-5" strokeWidth={1.5} />
             </div>
-            <Metric label="มูลค่าโครงการ" value={fmtTH(grandTotal)} tone="money" size="xl" />
+            <Metric label="มูลค่าโครงการ" value={fmtTH(grandTotal)} tone="money" size="md" />
           </div>
           <Metric
             label="รายการทั้งหมด"
@@ -303,8 +303,8 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                         onClick={() => handleItemClick(room.id, item)}
                         className="w-full text-left px-4 py-3 flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors group active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                       >
-                        {/* Item Summary — รายละเอียด/ขนาด/จำนวน (ไม่มีราคาต่อชิ้น) */}
-                        <div className="flex items-center gap-3 overflow-hidden">
+                        {/* Item Summary — รายละเอียด/ขนาด + ราคาต่อชิ้น (ขนาดเท่าตัวหนังสือ) */}
+                        <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
                           <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-accent group-hover:text-foreground transition-colors">
                             <IconComp className="w-5 h-5" strokeWidth={1.5} />
                           </div>
@@ -319,7 +319,12 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                             )}
                           </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-base font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                            {fmtTH(PricingEngine.calculatePrice(item))}
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground/30" strokeWidth={1.5} />
+                        </div>
                       </button>
                     );
                   })}

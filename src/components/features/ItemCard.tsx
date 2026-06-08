@@ -15,7 +15,7 @@ import {
   Edit2,
   Copy,
   Trash2,
-  EyeOff,
+  PauseCircle,
   CheckCircle2,
   AlertTriangle,
   Ruler,
@@ -256,7 +256,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             label="ยอดสุทธิ"
             value={fmtTH(priceResult.total)}
             tone="money"
-            size="lg"
+            size="sm"
             align="right"
             struck={item.is_suspended}
             className="shrink-0"
@@ -404,12 +404,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             <button
               onClick={handleToggleSuspension}
               className="flex items-center justify-center h-11 w-11 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
-              title={item.is_suspended ? 'เปิดใช้งาน' : 'ซ่อนรายการ'}
+              title={item.is_suspended ? 'เปิดใช้งาน' : 'พักรายการ (ไม่นับยอด)'}
             >
               {item.is_suspended ? (
                 <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />
               ) : (
-                <EyeOff className="w-4 h-4" strokeWidth={1.5} />
+                <PauseCircle className="w-4 h-4" strokeWidth={1.5} />
               )}
             </button>
             <button

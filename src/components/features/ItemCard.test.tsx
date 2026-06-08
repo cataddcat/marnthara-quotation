@@ -56,10 +56,10 @@ describe('ItemCard — actions', () => {
     expect(store().rooms[0].items).toHaveLength(2);
   });
 
-  it('ปุ่มซ่อน → updateItem ตั้ง is_suspended = true', () => {
+  it('ปุ่มพัก → updateItem ตั้ง is_suspended = true', () => {
     renderCard();
     fireEvent.click(screen.getByText(TITLE));
-    fireEvent.click(screen.getByTitle('ซ่อนรายการ'));
+    fireEvent.click(screen.getByTitle('พักรายการ (ไม่นับยอด)'));
     expect(store().rooms[0].items[0].is_suspended).toBe(true);
   });
 });

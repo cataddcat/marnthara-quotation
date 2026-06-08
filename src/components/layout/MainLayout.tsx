@@ -109,7 +109,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <div
                 className={cn(
                   'text-sm font-mono tabular-nums font-bold leading-none transition-colors',
-                  hasDiscount || hasVat ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'
+                  hasDiscount || hasVat
+                    ? 'text-foreground'
+                    : 'text-emerald-700 dark:text-emerald-400'
                 )}
               >
                 {fmtTH(finalTotal)}

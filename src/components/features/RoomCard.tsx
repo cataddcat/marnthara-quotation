@@ -14,7 +14,7 @@ import {
   Plus,
   Trash2,
   Copy,
-  EyeOff,
+  PauseCircle,
   CheckCircle2,
   MoreHorizontal,
   Pencil,
@@ -135,7 +135,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <MenuItems className="absolute right-0 z-50 mt-2 w-48 origin-top-right divide-y divide-border rounded-xl bg-popover p-1 shadow-xl ring-1 ring-black/5 focus:outline-none border border-border/50">
+        <MenuItems anchor="bottom end" className="z-50 w-48 origin-top-right divide-y divide-border rounded-xl bg-popover p-1 shadow-xl ring-1 ring-black/5 focus:outline-none border border-border/50 [--anchor-gap:0.5rem]">
           <div className="p-1">
             <MenuItem>
               {({ active }) => (
@@ -162,9 +162,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   {room.is_suspended ? (
                     <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />
                   ) : (
-                    <EyeOff className="w-4 h-4" strokeWidth={1.5} />
+                    <PauseCircle className="w-4 h-4" strokeWidth={1.5} />
                   )}
-                  {room.is_suspended ? 'เปิดใช้งาน' : 'ซ่อนห้อง'}
+                  {room.is_suspended ? 'เปิดใช้งาน' : 'พักห้อง (ไม่นับยอด)'}
                 </button>
               )}
             </MenuItem>
@@ -398,7 +398,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 !room.is_suspended && (
                   <>
                     <span className="text-muted-foreground/30">·</span>
-                    <span className="inline-flex items-center gap-1 font-medium text-emerald-600/80 dark:text-emerald-400/80 shrink-0">
+                    <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400 shrink-0">
                       <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ครบ
                     </span>
                   </>
@@ -407,7 +407,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               {suspendedCount > 0 && (
                 <>
                   <span className="text-muted-foreground/30">·</span>
-                  <span className="text-amber-500 shrink-0">{suspendedCount} ซ่อน</span>
+                  <span className="text-amber-500 shrink-0">{suspendedCount} พัก</span>
                 </>
               )}
             </div>

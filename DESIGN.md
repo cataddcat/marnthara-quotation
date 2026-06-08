@@ -52,12 +52,21 @@ Machine-readable mirror: [`src/config/typography.ts`](./src/config/typography.ts
 
 ## 2. 🎨 Color & contrast
 
-- **Content text uses `text-foreground`.** `text-muted-foreground` is allowed **only** for genuinely
-  secondary text **and only at ≥ 14px** (muted at 12px fails comfortable contrast).
-- Target **WCAG AA** (4.5:1 for body text).
-- **Monochrome-first / `primary` = CTA only** (§1.7): decorative icons, chips, labels default to
-  `text-foreground` / `text-muted-foreground`. `bg-primary text-primary-foreground` *fills* are for the
-  real CTA and selected states only. Status / brand / traffic-light colors are the sanctioned exceptions.
+> **Evolved 2026-06 — "colourful data · monochrome chrome · high contrast".** This is a field tool for
+> **ageing eyes used outdoors**, so the palette is deliberately **vivid + high-contrast + clearly
+> separated** — *not* soft/minimal/near-white. (Supersedes the earlier "monochrome-first" framing.)
+
+- **Colour-code the DATA; keep the CHROME monochrome.** Meaning-bearing numbers/labels are **vividly
+  coloured by role** — money = **green**, dimension = **blue** (a true blue, *never* cyan/sky, so it never
+  reads as green), cost = **red** — plus per-category **brand** colours + per-room **accents**
+  ([`Metric.tsx`](./src/components/ui/Metric.tsx) · [`room-accents.ts`](./src/lib/room-accents.ts)).
+  Containers, nav and generic body text stay `text-foreground` / `text-muted-foreground`, so colour always
+  *carries meaning*, never decorates.
+- **Contrast: WCAG AA minimum, AAA where practical.** Surfaces must separate by a clear **lightness gap**
+  (grey page · white cards) **+ visible borders** — never near-white-on-white flatness.
+- **`primary` = CTA only.** `bg-primary text-primary-foreground` fills are for the real CTA / selected
+  states only; status / brand / traffic-light colours are the sanctioned data colours above.
+- **Content text uses `text-foreground`** (`text-muted-foreground` only for secondary text at ≥ 14px).
 - **Borders + soft elevation** (§1.7, evolved 2026-06-07 — was "borders over shadows"): define every
   surface with `border-border` + a bg shift, **and add soft, slate-tinted elevation to lift interactive
   surfaces and guide the eye.** Use it **differentially** so hierarchy stays legible: ghost = flat →

@@ -14,12 +14,13 @@ import { cn } from '@/lib/utils';
 export type MetricTone = 'money' | 'cost' | 'dimension' | 'neutral' | 'muted';
 export type MetricSize = 'sm' | 'md' | 'lg' | 'xl';
 
-// Light shades darkened to clear WCAG AA on white (v4 OKLCH *-600 sits ~3.5–4:1,
-// failing 14–16px); dark shades stay bright for contrast on dark surfaces.
+// Colourful + high-contrast meaning layer (DESIGN.md colour-coded data): vivid,
+// well-separated hues — money = green, dimension = BLUE (not cyan, so it's never
+// confused with green), cost = red. Dark variants stay bright on dark surfaces.
 const TONE: Record<MetricTone, string> = {
   money: 'text-emerald-700 dark:text-emerald-400',
   cost: 'text-rose-600 dark:text-rose-400',
-  dimension: 'text-sky-700 dark:text-sky-400',
+  dimension: 'text-blue-700 dark:text-blue-400',
   neutral: 'text-foreground',
   muted: 'text-muted-foreground',
 };

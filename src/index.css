@@ -7,6 +7,11 @@
    contrast). This aligns `dark:` with the HSL token scopes (:root / .dark / .signature). */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* `signature:` variant — targets the Signature theme class so it can override
+   meaning colours (Metric tones, money) to an AAA + colour-blind-safe palette
+   without touching Light/Dark. Mutually exclusive with `.dark`. */
+@custom-variant signature (&:where(.signature, .signature *));
+
 /* ── Geist Mono (Vercel) — เลเยอร์ตัวเลข/รหัส (HANDOFF §1.7) ──
    self-host เพื่อออฟไลน์ (PWA); variable woff2 (100–900).
    ถ้าไฟล์หาย → fallback ลง ui-monospace อัตโนมัติ (degrade ปลอดภัย) */
@@ -268,7 +273,7 @@
     /* === LIGHT MODE: Soft & Eye-Friendly === */
 
     /* 1. Core Surfaces - Reduced Contrast for Eye Strain */
-    --background: 210 40% 98%; /* Soft Slate 50 */
+    --background: 214 22% 92%; /* Clear cool-grey PAGE — white cards pop (was near-white 98%, too flat) */
     --foreground: 222 47% 11%; /* Slate 900 */
 
     /* 2. Elevation Layers */
@@ -295,8 +300,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 215 16% 72%; /* Clearly visible card/field edges (was faint 91%) */
+    --input: 215 16% 72%;
     --ring: 222.2 47.4% 11.2%;
 
     /* 5. Status Colors (Softer Tones) */
@@ -403,11 +408,11 @@
     --highlight-foreground: 48 96% 88%;
   }
 
-  /* === SIGNATURE THEME — "Eye-Care Complete" · field-legible ===
-     A light-based theme: inherits :root colors except the legibility push below.
-     Adds the IBM Plex Sans Thai UI font, the design-system radii, and a gold
-     focus ring. Tuned for elderly users + outdoor bright sunlight on small
-     screens — same calm slate hue family, contrast lifted toward AAA. */
+  /* === SIGNATURE THEME — "Clarity-first" · field-readable ===
+     NOT the soft/near-white Eye-Care look (that read as one flat white sheet —
+     cards invisible against the page for 40–50yr eyes). This theme maximises
+     SEPARATION: a tinted-grey page so white cards pop, dark visible borders,
+     real elevation, AAA text + colour-blind-safe accents, IBM Plex Sans Thai. */
   .signature {
     /* UI font — numbers stay Geist Mono via --font-mono */
     --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system,
@@ -420,19 +425,34 @@
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
 
-    /* Field legibility — max luminance contrast, slate hue retained (not harsh) */
-    --background: 210 33% 99%; /* near-pure white */
-    --foreground: 222 47% 9%; /* truer near-black, slate-tinted */
-    --card: 0 0% 100%;
+    /* Surface stack — page recedes (grey), cards pop (white). ~12% lightness gap. */
+    --background: 214 22% 88%; /* clear light blue-grey PAGE */
+    --foreground: 222 47% 9%; /* near-black ink */
+    --card: 0 0% 100%; /* white card — floats on the grey page */
     --card-foreground: 222 47% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 9%;
-    --muted-foreground: 215 22% 38%; /* darker secondary text (~7:1, AAA-ish) */
-    --border: 214 22% 84%; /* hairlines survive glare */
-    --input: 214 22% 84%;
+    --muted: 214 24% 93%; /* subtle fills sit between page and card */
+    --muted-foreground: 215 20% 35%; /* strong readable secondary (≥7:1 on card) */
+    --secondary: 214 22% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --accent: 214 30% 90%; /* hover wash, visible */
+    --accent-foreground: 222 47% 11%;
+    --subtle: 214 20% 84%; /* darker-than-page accents read correctly */
+
+    /* Borders — clearly visible edges that survive the /30–/60 opacities in cards */
+    --border: 215 16% 66%; /* ~slate-400 (was 84% ~slate-200) */
+    --input: 215 16% 66%;
 
     /* Brand gold accent — focus ring + default outline (no component edits) */
     --ring: 43 40% 52%;
+
+    /* Real elevation — replace the soft Eye-Care shadows so surfaces lift clearly */
+    --shadow-2xs: 0 1px 2px 0 hsl(215 28% 25% / 0.1);
+    --shadow-xs: 0 1px 2px 0 hsl(215 28% 25% / 0.12), 0 1px 1px -1px hsl(215 28% 25% / 0.1);
+    --shadow-sm: 0 1px 3px 0 hsl(215 28% 25% / 0.14), 0 1px 2px -1px hsl(215 28% 25% / 0.1);
+    --shadow-md: 0 4px 10px -2px hsl(215 28% 25% / 0.16), 0 2px 6px -2px hsl(215 28% 25% / 0.1);
+    --shadow-lg: 0 12px 24px -6px hsl(215 28% 25% / 0.2);
   }
 
   * {

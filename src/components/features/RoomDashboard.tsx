@@ -40,7 +40,7 @@ import {
   ChevronUp,
   ChevronDown,
   Copy,
-  EyeOff,
+  PauseCircle,
   CheckCircle2,
   Trash2,
 } from 'lucide-react';
@@ -422,7 +422,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <MenuItems className="absolute right-0 z-50 mt-1 w-44 origin-top-right rounded-xl border border-border bg-popover p-1 shadow-md focus:outline-none">
+            <MenuItems anchor="bottom end" className="z-50 w-44 origin-top-right rounded-xl border border-border bg-popover p-1 shadow-md focus:outline-none [--anchor-gap:0.25rem]">
               {index > 0 && (
                 <MenuItem>
                   {({ active }) => (
@@ -479,9 +479,9 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
                     {room.is_suspended ? (
                       <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />
                     ) : (
-                      <EyeOff className="w-4 h-4" strokeWidth={1.5} />
+                      <PauseCircle className="w-4 h-4" strokeWidth={1.5} />
                     )}
-                    {room.is_suspended ? 'เปิดใช้งาน' : 'ซ่อนห้อง'}
+                    {room.is_suspended ? 'เปิดใช้งาน' : 'พักห้อง (ไม่นับยอด)'}
                   </button>
                 )}
               </MenuItem>

@@ -8,7 +8,7 @@ const THEME_CLASSES: Theme[] = ['light', 'dark', 'signature'];
 
 // Mobile browser status-bar color per theme. Signature ≈ the light surface.
 const META_COLOR: Record<Theme, string> = {
-  light: '#FBFBFE',
+  light: '#E4E8EE',
   dark: '#0D0814',
   signature: '#FCFCFD',
 };
