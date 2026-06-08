@@ -110,7 +110,7 @@
   --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
     'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-  /* --- 1. Base Semantic Colors (Eye-Care Palette 2025) --- */
+  /* --- 1. Base Semantic Colors (high-contrast · clearly-separated palette) --- */
 
   /* Core Surfaces: Soft & Eye-Friendly */
   --color-background: hsl(var(--background));

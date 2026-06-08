@@ -83,7 +83,9 @@ The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen 
 
 ### 1.7 Geist-aligned visual language (synthesized from §1.6 + Vercel Geist)
 
-> 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, the gated `<12px` lint guard). This section remains the visual-language rationale it cites.
+> 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, the gated `<12px` lint guard).
+>
+> ⚠️ **Colour & contrast EVOLVED (2026-06) — DESIGN.md §2 supersedes the stance below.** The current law is **"colourful data · monochrome chrome · high contrast · clear surface separation"** (vivid colour-coded values; grey page + white cards + visible borders + real elevation). Read §1.7 below as **historical Geist rationale**: the *monochrome chrome*, numeric layer, radii, and icon discipline still hold — but its **"monochrome-first / Eye-Care-soft / flatness-is-the-gap / borders-over-shadows"** framing is **outdated**. When in doubt, DESIGN.md §2 wins.
 
 We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standing visual language, synthesized from §1.6 and Vercel's **Geist** design system, mapped to our tokens/primitives. It decides look-and-feel so we don't have to re-litigate per screen. **§1.7 layers on top of §1.6 — never overrides §1.6's ergonomics.**
 
@@ -105,7 +107,7 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
 **Post-sweep follow-ups (2026-06-07):**
 - **Dock HOME button** — the `MainLayout` floating dock is now **4 pills** (หน้าหลัก / ห้อง / ภาพรวม / เมนู). `App.handleGoHome` = focus mode + first room + smooth scroll-to-top; dock widened `max-w-[440px]`, pills tightened (`px-2 gap-1.5 text-[12px] whitespace-nowrap`, `focus-visible:ring-ring`).
 - **`Modal.tsx` scroll-aware header** — the header separator is **transparent until the content scrolls** (`scrolled` state via `onScroll`, applied to drawer + center/fullscreen; header padding `py-2`→`py-2.5`). A clean flat top that gains a divider only when there's more above — universal polish for *every* modal.
-- **⚠️ Overview ("ภาพรวม") readability — STILL OPEN.** The user flagged the overview as **รก / เล็ก / ตัวหนังสือเล็ก** (cluttered / cramped / tiny text). A plan to enlarge type + spacing + ≥44px taps and drop the Full dashboard from 3→2 columns (`RoomDashboard` · `ProjectOverviewModal` · compact `RoomCard` · `RoomSlider`) was implemented **then reverted at the user's request** — the blanket "bigger everywhere + fewer columns" approach didn't land. The underlying complaint **stands**; re-approach with a *different* strategy (reduce what's shown / sharpen hierarchy rather than uniformly scaling fonts; or confirm direction first). **Do not re-apply the reverted diff.**
+- **✅ Overview ("ภาพรวม") readability — RESOLVED (2026-06).** Original complaint: รก / เล็ก / ตัวหนังสือเล็ก (cluttered / cramped / tiny). The reverted "bigger everywhere + fewer columns" pass was the wrong lever; what landed was **clarity-first, not uniform scaling** — grey-page → white-card **surface separation** (Light + the Signature theme), **colour-coded data** (DESIGN.md §2), sharpened hierarchy (**ขนาด > ราคา** — dimension is the hero, price secondary), and per-item prices in the summary. *(The old reverted diff stays dead — don't re-apply it.)*
 
 **▶ Next focus: UI.** The standing design philosophy is **§1.6 (HIG + NN/g ergonomics) + §1.7 (Geist visual language)** above — together they decide look-and-feel (there is no UI designer; the doc is the designer). Meta-lesson from the reverted overview pass: for **density / typography changes on shared screens**, prefer lighter, targeted touches and surface concrete options to the user before a blanket sweep — "make it bigger" is not automatically "make it better."
 

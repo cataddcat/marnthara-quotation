@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **🗺️ Full documentation map → [`DOCS.md`](./DOCS.md)** — the single index of every doc (incl.
+> `PRINCIPLES.md` · `CONTEXT.md`) + when to read each.
+>
 > **📖 Required reading for any AI agent (in order):**
 > 1. **`CLAUDE.md`** (this file) — project instructions, rules, command index, architecture map. Auto-loaded.
 > 2. **[`HANDOFF.md`](./HANDOFF.md)** — deep architectural handoff: design philosophy, system map, critical
@@ -24,20 +27,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 💻 Commands
 
-Full reference + expected output in **[`COMMANDS.md`](./COMMANDS.md)**. Quick list:
+All commands + expected output → **[`COMMANDS.md`](./COMMANDS.md)** (the single source). Dev server: `npm run dev` (port 3000).
 
-```bash
-npm run dev          # Dev server (port 3000)
-npm run build        # tsc -b && vite build
-npm run lint         # ESLint (max-warnings 0) — also gates the <12px design guard (DESIGN.md §1/§2)
-npm run format       # Prettier format all files
-npm run test         # Vitest watch mode
-npm run test:run     # Vitest single run (CI)
-npm run test:ui      # Vitest with browser UI
-npx playwright test  # E2E tests (Chrome, Firefox, Safari, iOS)
-```
-
-**Verification gate (run before handoff):** `npm run lint` (0-warn) · `npm run test:run` (456 pass) · `npm run build`.
+**Verification gate (before handoff):** `npm run lint && npm run test:run && npm run build` — all must pass.
 
 ## 🏗️ Architecture
 
@@ -78,30 +70,18 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 
 ### Key Constants
 
-- `src/config/constants.ts` — app version (currently `v6.7.0`), localStorage key, default shop config, pricing surcharge tables
+- `src/config/constants.ts` — app version (read the constant; not duplicated in docs), localStorage key, default shop config, pricing surcharge tables
 - `src/config/enums.ts` — `ITEM_TYPES`, `FAVORITE_CATEGORIES`, `LAYER_MODES`, `HOOK_TYPES`, etc.
 
 ### Path Alias
 
 `@/` maps to `src/` (configured in both `vite.config.ts` and `tsconfig.json`).
 
-## 🎨 UX/UI Standards (Apple HIG + NN/g)
+## 🎨 UX/UI Standards
 
-> **📐 Canonical spec: [`DESIGN.md`](./DESIGN.md)** — the design system & requirements is the source of
-> truth for look-and-feel ("the document is the designer"): the **typography standard** (Body 14–16px ·
-> 12px = Meta only · <12px banned), color/contrast, the **Design Probe** (measure before adjusting), the
-> `Text` primitive, and the **gated `<12px` lint guard** (in `eslint.config.js`). The 5 pillars below +
-> HANDOFF §1.6/§1.7 are its foundation.
+**Canonical → [`DESIGN.md`](./DESIGN.md)** (owns typography · colour · spacing · the Design Probe · the gated `<12px` lint guard) + **[`HANDOFF.md`](./HANDOFF.md) §1.6** (HIG + NN/g ergonomics contract; ref impl `src/components/ui/Modal.tsx`). **Read DESIGN.md before any UI change.**
 
-All new or changed UI must satisfy the 5-pillar UX baseline before merge:
-
-1. **Visual hierarchy** — typography + contrast drive the eye; reserve the `primary` color **exclusively** for the primary CTA (don't tint secondary affordances/icons with it).
-2. **Touch targets ≥ 44×44 (HIG)** — reuse the `Button` primitive (`size="icon"`/`"md"` = 48px) or `h-11 w-11` + centered icon; size controls by tier via `useTierSize().control`, never hardcode heights.
-3. **Minimize cognitive load (NN/g)** — Law of Proximity grouping, universal `lucide` icons, progressive disclosure via `AdvancedSection`.
-4. **System status & feedback** — every control ships `hover`/`active`/`focus-visible` (NOT `focus`)/`loading`/`disabled`.
-5. **Error prevention & forgiveness (NN/g)** — smart constraints + input formatting; `destructive` variant + explicit confirm for irreversible actions only (autosave already makes closing a form non-destructive — see HANDOFF §1.1).
-
-See **[`HANDOFF.md`](./HANDOFF.md) §1.6** for the full contract + reference implementation (`src/components/ui/Modal.tsx`).
+The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load · status/feedback on every control · error-prevention**. Current law (DESIGN.md §2): typography Body 14–16 / Meta-12 / **<12px banned** · **colourful data on monochrome chrome · high contrast · clear surface separation** · `primary` colour = CTA only · measure with the **Design Probe** first.
 
 ## ✅ TypeScript & Linting
 

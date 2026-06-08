@@ -76,7 +76,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             >
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[150px] sm:max-w-[220px]">
-                  {shopConfig.name || 'Marnthara'}
+                  {shopConfig.name || 'ม่านธารา'}
                 </h1>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
               </div>

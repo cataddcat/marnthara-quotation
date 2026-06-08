@@ -4,7 +4,12 @@
  */
 import { ITEM_TYPES } from './enums';
 
-export const APP_VERSION = 'vite-refactor/6.7.0-strict-mode';
+// Single source of truth for the displayed app version (menu footer). Bump here only.
+export const APP_VERSION = '6.7.0';
+// Year of the bundled "standard market costs" (DEFAULT_*_COSTS in CostDataSlice).
+// Single source — shown in the "โหลดค่ามาตรฐาน <year>" UI; bump when the defaults are refreshed.
+export const COST_DATA_YEAR = 2025;
+
 export const STORAGE_KEY = 'marnthara.input.v6.4';
 export const SHOP_CONFIG_KEY = 'marnthara.shop.config.v1';
 

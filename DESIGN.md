@@ -14,7 +14,11 @@
 
 - **Mobile / on-site first.** The primary user is a technician measuring windows on a phone, then an
   office user quoting on desktop. Design and verify at **360–390px first**.
-- **Legible & premium, never cramped.** Readability and a calm, confident feel beat information density.
+- **High-contrast · colour-coded · clearly separated — the readability law.** The owner has **ageing eyes
+  and works outdoors on a small screen**, so **clarity beats soft/minimal**: surfaces separate by a clear
+  lightness gap + visible borders (never near-white flatness), text clears WCAG **AA→AAA**, and
+  meaning-bearing data is **vividly colour-coded** (§2 · §5). When "calm & soft" fights "readable", readable wins.
+- **Legible & premium, never cramped.** Readability and a confident, uncluttered feel beat information density.
   If a screen feels busy or the text feels small, it is **wrong** — fix it.
 - **Measure, don't guess.** Never adjust by vibe ("make that smaller"). Use the **Design Probe** (§6) to
   read an element's *what / where / exact size* first, then change the exact line. "Bigger" is not
@@ -135,7 +139,8 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
    (`src/components/print/**`) is exempt. See §7.
 4. **Per-screen checklist before merge:** Body ≥ 14px · Meta(12px) only on dates/counts/units · no < 12px
    content · content = `text-foreground` (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
-   icons stroke 1.5 · borders over shadows · `primary` only on CTA/selected · verified at 360–390px.
+   icons stroke 1.5 · borders + soft elevation (cards clearly separate from the page) · vivid colour-coded
+   data · `primary` only on CTA/selected · verified at 360–390px.
 
 ---
 

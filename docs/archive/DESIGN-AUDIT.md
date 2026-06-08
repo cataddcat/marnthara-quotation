@@ -1,8 +1,12 @@
 # DESIGN-AUDIT.md — "Marnthara Design System" bundle vs. this repo
 
+> 🗄️ **ARCHIVED 2026-06-08 — historical, not a living doc.** Kept for the record only; nothing here is
+> an active standard. Bottom line: the external bundle is a reverse-generated mirror of this repo →
+> **0 code changes**. Doc index: [DOCS.md](/DOCS.md). (Links below are relative to the repo root.)
+
 > 📖 One-time audit (2026-06-08) of a design bundle fetched from **claude.ai/design**. Records the
 > finding that the bundle is a **reverse-generated mirror of this repo**, so the next agent does not
-> waste effort trying to "implement" it. Uses the [DESIGN.md](./DESIGN.md) emoji legend.
+> waste effort trying to "implement" it. Uses the [DESIGN.md](/DESIGN.md) emoji legend.
 
 ## 🎯 TL;DR
 
@@ -26,7 +30,7 @@ specimen cards, self-hosted Geist Mono, gold logo PNGs, `SKILL.md`, and compiler
 
 ## 🎨 Tokens — identical core + unused scaffolding
 
-- The design's `tokens/colors.css` is **byte-identical** to [src/index.css](src/index.css): same
+- The design's `tokens/colors.css` is **byte-identical** to [src/index.css](/src/index.css): same
   Eye-Care 2025 palette, same `--brand-*` product categories, same `.dark` scope, same Geist Mono
   `@font-face`. Verified value-by-value against the bundle's `_ds_manifest.json`.
 - The design adds convenience tokens we do **not** define: `--text-display|title|body|label|meta`,
@@ -43,9 +47,9 @@ The bundle ships 9 prototype components; this repo ships **22** richer primitive
 
 | Design (prototype) | Repo (production) | Verdict |
 |---|---|---|
-| `Button.jsx` (inline styles) | [Button.tsx](src/components/ui/Button.tsx) — haptics, differential shadows, `focus-visible` ring, Tailwind | repo ahead |
+| `Button.jsx` (inline styles) | [Button.tsx](/src/components/ui/Button.tsx) — haptics, differential shadows, `focus-visible` ring, Tailwind | repo ahead |
 | `Badge` / `Card` / `Input` / `Select` / `Switch` / `Toast` | repo equivalents in `src/components/ui/` | repo ahead |
-| `ItemCard` / `RoomCard` | [ItemCard.tsx](src/components/features/ItemCard.tsx) · [RoomCard.tsx](src/components/features/RoomCard.tsx) | repo ahead |
+| `ItemCard` / `RoomCard` | [ItemCard.tsx](/src/components/features/ItemCard.tsx) · [RoomCard.tsx](/src/components/features/RoomCard.tsx) | repo ahead |
 | — (not in bundle) | Modal, AlertDialog, Text, ComboboxInput, OptionSheet, AdvancedSection, FormLayout, … | repo-only |
 
 - **Verdict: no component changes.** Adopting any prototype would be a regression.
@@ -78,7 +82,7 @@ The kit's 5 "surfaces" already ship in-app, and the prototypes are static/fixed-
   woff2 + flash risk.
 - **Recommendation: do not auto-apply.** Opt-in recipe if ever wanted:
   1. Self-host the IBM Plex Sans Thai subset woff2 in `public/fonts/` (parity with Geist Mono).
-  2. Add an `@font-face` block in [src/index.css](src/index.css) beside the Geist Mono one.
+  2. Add an `@font-face` block in [src/index.css](/src/index.css) beside the Geist Mono one.
   3. Add `--font-sans: 'IBM Plex Sans Thai', system-ui, …` to the `@theme` block.
   4. Verify Thai rendering + bundle size; confirm the PWA precache covers the new woff2.
 

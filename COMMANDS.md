@@ -13,13 +13,13 @@ These are the three that must pass. Per HANDOFF §7, running them is **expected*
 
 ```bash
 npm run lint          # ESLint — must be 0 warnings (hard gate)
-npm run test:run      # Vitest single run — must be 456/456 passing
+npm run test:run      # Vitest single run — all tests pass, 0 failures
 npm run build         # tsc -b && vite build — must succeed
 ```
 
 Expected green output:
 - `lint` → no errors/warnings (a `baseline-browser-mapping` info line is harmless).
-- `test:run` → `Test Files 43 passed · Tests 456 passed`.
+- `test:run` → all test files pass · **0 failures** (counts grow as tests are added — match the latest run; don't hardcode a number).
 - `build` → `✓ built` (the chunk-size warning + empty `vendor-react` chunk are pre-existing, ignore).
 
 One-liner (bash):

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
+import { COST_DATA_YEAR } from '@/config/constants';
 import {
   Search,
   Plus,
@@ -252,7 +253,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
 
   const handleLoadDefaults = async () => {
     const isConfirmed = await confirm({
-      title: 'โหลดค่ามาตรฐาน 2025?',
+      title: `โหลดค่ามาตรฐาน ${COST_DATA_YEAR}?`,
       description:
         'ระบบจะโหลดค่าเย็บ + บริการ มาตรฐานตลาดไทย (ทับค่าเย็บ/บริการปัจจุบัน — ไม่กระทบต้นทุนผ้า/ราง)',
       confirmLabel: 'โหลดค่ามาตรฐาน',
@@ -565,7 +566,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                     >
                       <RotateCcw className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                       <div className="text-left">
-                        <div className="font-medium">โหลดค่ามาตรฐาน 2025</div>
+                        <div className="font-medium">โหลดค่ามาตรฐาน {COST_DATA_YEAR}</div>
                         <div className="text-xs text-muted-foreground">ค่าเย็บ + บริการ (ราคาตลาดไทย)</div>
                       </div>
                     </button>
@@ -719,7 +720,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               </div>
               <Button variant="outline" onClick={handleLoadDefaults} className="gap-2 mt-1">
                 <RotateCcw className="w-4 h-4" />
-                โหลดค่ามาตรฐาน 2025
+                โหลดค่ามาตรฐาน {COST_DATA_YEAR}
               </Button>
             </div>
           )}

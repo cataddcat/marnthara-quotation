@@ -124,7 +124,7 @@ export const printLookBook = (state: AppState) => {
       <head><title>Lookbook</title>${styles}</head>
       <body>
         <div class="header">
-          <div class="shop-name">${shopConfig.name || 'Marnthara'}</div>
+          <div class="shop-name">${shopConfig.name || 'ม่านธารา'}</div>
           <div class="doc-title">LOOKBOOK / รายการสินค้า</div>
         </div>
         <div style="margin-bottom: 20px;">

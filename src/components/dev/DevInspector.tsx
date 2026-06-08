@@ -142,15 +142,29 @@ export const DevInspector = () => {
       if (!el) return;
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
       const p = buildProbe(el);
       setPinned(p);
       copy(p);
     };
 
+    // ตรึงแอปไว้ขณะ probe: กัน pointer/mouse-down ไม่ให้ไปถึง UI ข้างล่าง
+    // → bottom sheet/drawer (vaul/headless) ที่ปิดตัวเมื่อกด/ลาก/แตะนอก จะไม่หาย
+    //   ทำให้ชี้/คลิกตรวจสอบองค์ประกอบในชีตได้ (ยกเว้น UI ของ probe เอง)
+    const freeze = (e: Event) => {
+      if (isOwn(e.target as Element | null)) return;
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    };
+
+    document.addEventListener('pointerdown', freeze, true);
+    document.addEventListener('mousedown', freeze, true);
     document.addEventListener('mousemove', onMove, true);
     document.addEventListener('click', onClick, true);
     return () => {
       document.body.style.cursor = '';
+      document.removeEventListener('pointerdown', freeze, true);
+      document.removeEventListener('mousedown', freeze, true);
       document.removeEventListener('mousemove', onMove, true);
       document.removeEventListener('click', onClick, true);
     };
@@ -178,6 +192,7 @@ export const DevInspector = () => {
       <button
         type="button"
         onClick={() => setActive((v) => !v)}
+        onPointerDown={(e) => e.stopPropagation()}
         title="Design Probe (Alt+L) — คลิกองค์ประกอบเพื่อดู อะไร/ที่ไหน/ขนาด แล้วคัดลอก"
         style={{
           position: 'fixed',

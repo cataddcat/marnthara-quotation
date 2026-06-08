@@ -21,6 +21,8 @@ import {
   Gem,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { APP_VERSION } from '@/config/constants';
+import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
@@ -111,6 +113,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   onOpenMaterialSummary,
 }) => {
   const { theme, setTheme } = useThemeStore();
+  const shopName = useAppStore((s) => s.shopConfig.name);
   const { trigger } = useHaptic();
   const { mode, isAuto, setMode } = useExperienceMode();
 
@@ -140,7 +143,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
         {/* ── Greeting ── */}
         <div className="flex flex-col px-1">
           <span className="text-sm text-muted-foreground font-medium">ยินดีต้อนรับ,</span>
-          <span className="text-lg font-bold text-foreground">Marnthara User</span>
+          <span className="text-lg font-bold text-foreground">{shopName || 'ม่านธารา'}</span>
         </div>
 
         {/* ── ธีม (Theme) ── */}
@@ -314,7 +317,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
         {/* ── Footer ── */}
         <div className="pt-2 text-center">
           <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-muted/50 text-xs text-muted-foreground font-mono">
-            Marnthara v6.7.0
+            Marnthara v{APP_VERSION}
           </div>
         </div>
 
