@@ -27,7 +27,7 @@ const seed = async (page: Page) => {
 
 // เปิด add → เลือกประเภท "ผ้าม่าน" (flow ใหม่: เลือกประเภทก่อนจึงมีฟอร์ม)
 const openAddCurtain = async (page: Page) => {
-  await page.getByRole('button', { name: 'เพิ่มสินค้าใหม่' }).click();
+  await page.getByRole('button', { name: 'เพิ่มสินค้า' }).first().click();
   // หน้าเลือกประเภทต้องขึ้นก่อน (pill ประเภทสินค้า) — ยังไม่มีช่องกรอกขนาด
   const curtainPill = page.getByRole('button', { name: 'ผ้าม่าน', exact: true });
   await expect(curtainPill).toBeVisible();
