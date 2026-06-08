@@ -1,7 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'signature';
+
+// Order also defines the toggle cycle (light → dark → signature → light).
+const THEME_CLASSES: Theme[] = ['light', 'dark', 'signature'];
+
+// Mobile browser status-bar color per theme. Signature ≈ the light surface.
+const META_COLOR: Record<Theme, string> = {
+  light: '#FBFBFE',
+  dark: '#0D0814',
+  signature: '#FCFCFD',
+};
 
 interface ThemeState {
   theme: Theme;
@@ -15,7 +25,8 @@ export const useThemeStore = create<ThemeState>()(
       theme: 'light',
       toggleTheme: () =>
         set((state) => {
-          const newTheme = state.theme === 'light' ? 'dark' : 'light';
+          const idx = THEME_CLASSES.indexOf(state.theme);
+          const newTheme = THEME_CLASSES[(idx + 1) % THEME_CLASSES.length];
           updateDomClass(newTheme);
           return { theme: newTheme };
         }),
@@ -36,14 +47,12 @@ export const useThemeStore = create<ThemeState>()(
 
 const updateDomClass = (theme: Theme) => {
   const root = window.document.documentElement;
-  root.classList.remove('light', 'dark');
+  root.classList.remove(...THEME_CLASSES);
   root.classList.add(theme);
 
   // Update Mobile Browser Status Bar
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  // Dark: Deep Violet Black (#0D0814) matches --bg-main
-  // Light: Soft Lavender (#FBFBFE)
   if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', theme === 'dark' ? '#0D0814' : '#FBFBFE');
+    metaThemeColor.setAttribute('content', META_COLOR[theme]);
   }
 };

@@ -15,8 +15,8 @@ import {
   Square,
   Wrench,
   DollarSign,
-  AlertTriangle,
 } from 'lucide-react';
+import { Alert } from '@/components/ui/Alert';
 
 interface FormulaDocsModalProps {
   isOpen: boolean;
@@ -52,10 +52,9 @@ const Formula: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 const Note: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 rounded-lg p-2.5 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400">
-    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-    <div>{children}</div>
-  </div>
+  <Alert variant="warning" className="my-1">
+    {children}
+  </Alert>
 );
 
 export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onClose }) => {

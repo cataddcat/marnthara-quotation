@@ -228,7 +228,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
 
         {/* --- Actions --- */}
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="ghost" onClick={onClose} className="h-12">
+          <Button variant="outline" onClick={onClose} className="h-12">
             ยกเลิก
           </Button>
           <Button

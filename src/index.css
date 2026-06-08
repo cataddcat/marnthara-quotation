@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+/* Dark mode follows the manual `.dark` class on <html> (set by useThemeStore),
+   NOT the OS `prefers-color-scheme`. Without this, Tailwind v4 resolves every
+   `dark:` utility from the OS preference — decoupled from the theme toggle — so
+   an OS-dark device leaks dark-mode text/badges onto the light themes (broken
+   contrast). This aligns `dark:` with the HSL token scopes (:root / .dark / .signature). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Geist Mono (Vercel) — เลเยอร์ตัวเลข/รหัส (HANDOFF §1.7) ──
    self-host เพื่อออฟไลน์ (PWA); variable woff2 (100–900).
    ถ้าไฟล์หาย → fallback ลง ui-monospace อัตโนมัติ (degrade ปลอดภัย) */
@@ -11,9 +18,92 @@
   font-display: swap;
 }
 
+/* ── IBM Plex Sans Thai — UI font for the "Signature" theme + the LOCKED print
+   font (always available offline; numbers stay Geist Mono). Self-hosted woff2
+   (Thai + Latin subsets, weights 400/500/600/700) → precached by the PWA glob.
+   Loads only when actually used (Signature active or printing). ── */
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-thai-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-thai-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-thai-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-thai-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-latin-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-latin-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai';
+  src: url('/fonts/ibm-plex-sans-thai-latin-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @theme {
   /* ฟอนต์ตัวเลข/รหัส (font-mono ทุกจุดในแอป) = Geist Mono → monospace เรียงตรงคอลัมน์ */
   --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
+  /* UI font — Tailwind v4's default stack (Light/Dark render identically to before).
+     Defined here so it is THEMEABLE: the `.signature` scope overrides it to IBM
+     Plex Sans Thai (see @layer base). */
+  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
   /* --- 1. Base Semantic Colors (Eye-Care Palette 2025) --- */
 
@@ -63,6 +153,12 @@
   --color-brand-partition: hsl(var(--brand-partition));
   --color-brand-screen: hsl(var(--brand-screen));
   --color-brand-removal: hsl(var(--brand-removal));
+
+  /* Brand gold (logo/wordmark ink) + money/profit accent — from the design-system
+     bundle. Additive utilities (text-brand-gold / bg-brand-gold / text-money); the
+     Signature theme uses gold for its focus ring. */
+  --color-brand-gold: #bfa76a;
+  --color-money: #059669;
 
   /* --- 4. Extended Color Palette (Eye-Friendly Subtle Tones) --- */
   --color-subtle: hsl(var(--subtle));
@@ -226,6 +322,27 @@
     --highlight-foreground: 32 95% 44%;
 
     --radius: 0.75rem;
+
+    /* 8. Design-system token vocabulary — formalized from the Marnthara bundle
+       (DESIGN.md §1/§3). Additive: not consumed by Tailwind utilities, so no
+       visual change — documents the standard + available for ad-hoc use. */
+    --control-sm: 36px; /* dense / secondary control */
+    --control-md: 48px; /* STANDARD control height */
+    --control-lg: 56px; /* Lite tier / hero */
+    --control-icon: 48px; /* square icon button */
+    --touch-min: 44px; /* HIG minimum hit area */
+    --press-scale: 0.98; /* :active press feedback */
+    --duration-fast: 0.2s;
+    --duration-base: 0.3s;
+    --duration-slow: 0.5s;
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* signature easing */
+    --text-display: 1.5rem; /* 24px — section hero */
+    --text-title: 1rem; /* 16px — card/room/item titles */
+    --text-body: 1rem; /* 16px — primary text (dense floor 14px) */
+    --text-label: 0.875rem; /* 14px — secondary labels */
+    --text-meta: 0.75rem; /* 12px — META ONLY (dates/counts/units) */
+    --content-min-px: 12px; /* nothing readable below this */
+    --body-min-px: 14px; /* body never below */
   }
 
   .dark {
@@ -284,6 +401,38 @@
     --subtle-foreground: 215 20.2% 65.1%;
     --highlight: 38 92% 50% / 0.15;
     --highlight-foreground: 48 96% 88%;
+  }
+
+  /* === SIGNATURE THEME — "Eye-Care Complete" · field-legible ===
+     A light-based theme: inherits :root colors except the legibility push below.
+     Adds the IBM Plex Sans Thai UI font, the design-system radii, and a gold
+     focus ring. Tuned for elderly users + outdoor bright sunlight on small
+     screens — same calm slate hue family, contrast lifted toward AAA. */
+  .signature {
+    /* UI font — numbers stay Geist Mono via --font-mono */
+    --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system,
+      'Segoe UI', Roboto, sans-serif;
+
+    /* Design-system radii — controls 12px (rounded-lg) / cards 16px (rounded-xl) */
+    --radius: 1rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.625rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Field legibility — max luminance contrast, slate hue retained (not harsh) */
+    --background: 210 33% 99%; /* near-pure white */
+    --foreground: 222 47% 9%; /* truer near-black, slate-tinted */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 9%;
+    --muted-foreground: 215 22% 38%; /* darker secondary text (~7:1, AAA-ish) */
+    --border: 214 22% 84%; /* hairlines survive glare */
+    --input: 214 22% 84%;
+
+    /* Brand gold accent — focus ring + default outline (no component edits) */
+    --ring: 43 40% 52%;
   }
 
   * {
@@ -434,6 +583,20 @@
 @media print {
   * {
     @apply !bg-white !text-black;
+  }
+
+  /* Locked, theme-INDEPENDENT document font — official documents render
+     identically across Light/Dark/Signature and across OS (screen `system-ui`
+     resolves to a different Thai face per platform: Leelawadee / Thonburi / Noto).
+     Self-hosted IBM Plex Sans Thai is always available + precached. Numbers keep
+     Geist Mono via their own `.font-mono` rule. */
+  body,
+  .print-doc,
+  .print-page {
+    /* !important so it beats the `font-sans` utility on .print-page (which would
+       otherwise resolve to the active theme's --font-sans). Mono numbers set
+       their own family on each element, so they stay Geist Mono. */
+    font-family: 'IBM Plex Sans Thai', system-ui, sans-serif !important;
   }
 
   .no-print {

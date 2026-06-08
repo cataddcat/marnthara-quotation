@@ -314,7 +314,7 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
           ล้างระบบ
         </Button>
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={onClose}>
+          <Button variant="outline" onClick={onClose}>
             ยกเลิก
           </Button>
           <Button onClick={handleSave} className="bg-primary text-primary-foreground w-32">

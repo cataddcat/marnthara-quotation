@@ -9,6 +9,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_CONFIG } from '@/config/constants';
 import { cn } from '@/lib/utils';
 import { Metric } from '@/components/ui/Metric';
+import { Alert } from '@/components/ui/Alert';
 import { useHaptic } from '@/hooks/useHaptic';
 import {
   TrendingUp,
@@ -183,21 +184,19 @@ export const FinancialDashboardModal: React.FC<{
         {(totals.lossCount > 0 || totals.unknownCount > 0) && (
           <div className="px-4 pb-2 space-y-1.5 shrink-0">
             {totals.lossCount > 0 && (
-              <div className="flex items-center gap-2 p-2.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200/50 rounded-xl text-xs text-rose-700 dark:text-rose-400">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <Alert variant="destructive">
                 <span>
                   มี <strong>{totals.lossCount}</strong> รายการขาดทุน — ราคาขายต่ำกว่าต้นทุน
                 </span>
-              </div>
+              </Alert>
             )}
             {totals.unknownCount > 0 && (
-              <div className="flex items-center gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 rounded-xl text-xs text-amber-700 dark:text-amber-400">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <Alert variant="warning">
                 <span>
                   มี <strong>{totals.unknownCount}</strong> รายการที่ต้องการต้นทุน — ตั้งราคาทุนใน{' '}
                   <strong>{'ข้อมูลสินค้า & ราคา'}</strong>
                 </span>
-              </div>
+              </Alert>
             )}
           </div>
         )}

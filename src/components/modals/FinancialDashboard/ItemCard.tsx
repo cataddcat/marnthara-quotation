@@ -1,7 +1,8 @@
 // src/components/modals/FinancialDashboard/ItemCard.tsx
 
-import { AlertTriangle, ChevronDown, Info } from 'lucide-react';
+import { ChevronDown, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Alert } from '@/components/ui/Alert';
 import { fmtTH } from '@/utils/formatters';
 import { Metric } from '@/components/ui/Metric';
 import { FAVORITE_CATEGORIES } from '@/config/enums';
@@ -99,14 +100,13 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
       {expanded && (
         <div className="border-t border-border/50 bg-muted/20 px-3 py-3 space-y-1.5 text-sm">
           {analysis.status === 'unknown' && (
-            <div className="flex items-start gap-2 text-amber-700 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2 mb-2 border border-amber-200/50 dark:border-amber-800/50">
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.5} />
+            <Alert variant="warning" className="mb-2">
               <span>
                 ยังไม่มีราคาทุน{mainLabel} — กดรหัส (
                 <span className="font-mono font-bold">{mainCode || sheerCode || '?'}</span>)
                 ด้านล่างเพื่อเพิ่มทุนได้เลย
               </span>
-            </div>
+            </Alert>
           )}
 
           {/* ── Fabric codes + cost — แสดงเสมอถ้ามีรหัส ── */}

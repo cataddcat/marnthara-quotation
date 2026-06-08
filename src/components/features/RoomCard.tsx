@@ -345,6 +345,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     </h2>
                     <button
                       onClick={startEditingName}
+                      aria-label="แก้ไขชื่อห้อง"
                       className="p-0.5 text-muted-foreground/30 hover:text-foreground shrink-0 transition-colors"
                     >
                       <Pencil className="w-3 h-3" strokeWidth={1.5} />

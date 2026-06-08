@@ -3,6 +3,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Button } from '@/components/ui/Button';
 import { PrintDocument, DocumentType } from '@/components/print/PrintDocument';
+import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { Printer, FileText, Truck, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -13,10 +14,14 @@ interface PdfPreviewModalProps {
 
 export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClose }) => {
   const componentRef = useRef<HTMLDivElement>(null);
+  const { isFull } = useExperienceMode();
 
   // [UPDATED] Default to Quotation
   const [docType, setDocType] = useState<DocumentType>('quotation');
   const [isPrinting, setIsPrinting] = useState(false);
+  // PrintDocument re-measures on every docType change and reports the page count
+  // back via onPageCount, so this stays in sync without a manual reset.
+  const [pageCount, setPageCount] = useState(0);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -91,8 +96,15 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                   })}
                 </div>
 
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <Button variant="ghost" onClick={onClose} className="flex-1 sm:flex-none">
+                <div className="flex gap-3 w-full sm:w-auto items-center">
+                  {/* Full/desktop: show the computed page count before handing off to the browser. */}
+                  {isFull && pageCount > 0 && (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-slate-500 font-mono whitespace-nowrap">
+                      <FileText className="w-4 h-4" strokeWidth={1.5} />
+                      {pageCount} หน้า
+                    </span>
+                  )}
+                  <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
                     ปิด
                   </Button>
                   <Button
@@ -104,16 +116,20 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                 </div>
               </div>
 
-              {/* Preview Area */}
+              {/* Preview Area — paginated stack of A4 sheets (each sheet carries its
+                  own shadow); scaled down for on-screen visibility. */}
               <div className="flex-1 overflow-y-auto bg-slate-500/10 p-4 sm:p-8 flex justify-center items-start">
-                {/* Scale container for better preview visibility on small screens */}
                 <div
                   className={cn(
-                    'shadow-2xl origin-top transition-all duration-300 bg-white',
+                    'origin-top transition-all duration-300',
                     isPrinting ? 'scale-100' : 'scale-[0.6] sm:scale-[0.75] lg:scale-[0.85]'
                   )}
                 >
-                  <PrintDocument ref={componentRef} docType={docType} />
+                  <PrintDocument
+                    ref={componentRef}
+                    docType={docType}
+                    onPageCount={setPageCount}
+                  />
                 </div>
               </div>
             </DialogPanel>

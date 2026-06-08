@@ -64,7 +64,7 @@ export const AlertDialog = () => {
                 </div>
 
                 <div className="mt-6 flex gap-3 justify-end">
-                  <Button variant="ghost" onClick={() => handleClose(false)}>
+                  <Button variant="outline" onClick={() => handleClose(false)}>
                     {cancelLabel}
                   </Button>
                   <Button

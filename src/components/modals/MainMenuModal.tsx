@@ -18,6 +18,7 @@ import {
   Smartphone,
   Monitor,
   Sparkles,
+  Gem,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -109,9 +110,15 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   onOpenFormulaDocs,
   onOpenMaterialSummary,
 }) => {
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme, setTheme } = useThemeStore();
   const { trigger } = useHaptic();
   const { mode, isAuto, setMode } = useExperienceMode();
+
+  const themes = [
+    { id: 'light' as const, label: 'สว่าง', icon: Sun, active: theme === 'light' },
+    { id: 'dark' as const, label: 'มืด', icon: Moon, active: theme === 'dark' },
+    { id: 'signature' as const, label: 'Signature', icon: Gem, active: theme === 'signature' },
+  ];
 
   const displayModes = [
     { id: 'auto' as const, label: 'อัตโนมัติ', icon: Sparkles, active: isAuto },
@@ -130,27 +137,39 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
     >
       <div className="space-y-6 pb-safe-area">
 
-        {/* ── Greeting + Theme ── */}
-        <div className="flex items-center justify-between px-1">
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground font-medium">ยินดีต้อนรับ,</span>
-            <span className="text-lg font-bold text-foreground">Marnthara User</span>
-          </div>
-          <button
-            onClick={() => { trigger('medium'); toggleTheme(); }}
-            aria-label={theme === 'dark' ? 'สลับเป็นธีมสว่าง' : 'สลับเป็นธีมมืด'}
-            className={cn(
-              'relative p-2 rounded-full transition-all duration-500 border overflow-hidden w-12 h-12 flex items-center justify-center',
-              theme === 'dark'
-                ? 'bg-slate-800 border-slate-700 text-yellow-400'
-                : 'bg-amber-100 border-amber-200 text-amber-600'
-            )}
-          >
-            <div className={cn('transition-transform duration-500', theme === 'dark' ? 'rotate-0' : 'rotate-180')}>
-              {theme === 'dark' ? <Moon className="w-6 h-6" /> : <Sun className="w-6 h-6" />}
-            </div>
-          </button>
+        {/* ── Greeting ── */}
+        <div className="flex flex-col px-1">
+          <span className="text-sm text-muted-foreground font-medium">ยินดีต้อนรับ,</span>
+          <span className="text-lg font-bold text-foreground">Marnthara User</span>
         </div>
+
+        {/* ── ธีม (Theme) ── */}
+        <section className="space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+            ธีม
+          </h3>
+          <div className="grid grid-cols-3 gap-2 p-1 bg-muted/40 rounded-xl border border-border/50">
+            {themes.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => {
+                  trigger('selection');
+                  setTheme(opt.id);
+                }}
+                aria-pressed={opt.active}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-1 py-2.5 rounded-lg min-h-[56px] transition-all',
+                  opt.active
+                    ? 'bg-card shadow-sm text-foreground border border-border/50'
+                    : 'text-muted-foreground hover:bg-card/50'
+                )}
+              >
+                <opt.icon className="w-4 h-4" />
+                <span className="text-xs font-semibold leading-none text-center">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
 
         {/* ── โหมดการแสดงผล (Two-Tier Experience) ── */}
         <section className="space-y-2">

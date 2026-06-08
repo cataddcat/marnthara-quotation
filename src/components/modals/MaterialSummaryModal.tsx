@@ -14,7 +14,6 @@ import {
   ChevronDown,
   ChevronLeft,
   AlertTriangle,
-  Info,
   Pencil,
   Plus,
   BookOpen,
@@ -22,6 +21,7 @@ import {
   ArrowRight,
   MapPin,
 } from 'lucide-react';
+import { Alert } from '@/components/ui/Alert';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { FORMULAS } from '@/config/formulas';
@@ -1156,12 +1156,11 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         items={v.items}
                       />
                     ))}
-                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200/50 dark:border-blue-900/50 text-xs text-blue-800 dark:text-blue-300 flex gap-2">
-                      <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <Alert variant="info" className="mt-4">
                       <span>
                         ความยาวรางคือความกว้างหน้าต่าง เพิ่มระยะซ้ายขวา 5-10 ซม./ข้าง ตามหน้างานจริง
                       </span>
-                    </div>
+                    </Alert>
                   </>
                 )}
               </div>
@@ -1187,15 +1186,13 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       <AccRow label="กระดุม/สแน็ป (ม่านลอน)" value={acc.snaps} unit="เม็ด" note="1:1 กับลูกล้อ (เฉพาะม่านลอน)" />
                       <AccRow label="ชุดรางม่านพับ" value={acc.romanSets} unit="ชุด" note="1 ชุด/หน้าต่าง รวมเกียร์ + เส้นดึง" />
                     </div>
-                    <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/50 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-300 flex gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <Alert variant="warning" className="mt-4">
                       <span>
                         ตัวเลขเป็น <strong>ประมาณการ (~)</strong> คำนวณจากขนาดและ style ม่าน
                       </span>
-                    </div>
+                    </Alert>
                     {acc.oversizeWave.length > 0 && (
-                      <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-300/60 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex gap-2">
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <Alert variant="warning" className="mt-3">
                         <div>
                           <strong>ม่านลอนรางยาวเกิน {FORMULAS.wave.max_track_cm / 100} ม.</strong> —
                           แนะนำเพิ่มขาค้ำกลางหรือแยกราง:
@@ -1207,7 +1204,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                             ))}
                           </ul>
                         </div>
-                      </div>
+                      </Alert>
                     )}
                   </>
                 )}

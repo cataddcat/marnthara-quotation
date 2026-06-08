@@ -14,10 +14,12 @@ import { cn } from '@/lib/utils';
 export type MetricTone = 'money' | 'cost' | 'dimension' | 'neutral' | 'muted';
 export type MetricSize = 'sm' | 'md' | 'lg' | 'xl';
 
+// Light shades darkened to clear WCAG AA on white (v4 OKLCH *-600 sits ~3.5–4:1,
+// failing 14–16px); dark shades stay bright for contrast on dark surfaces.
 const TONE: Record<MetricTone, string> = {
-  money: 'text-emerald-600 dark:text-emerald-400',
-  cost: 'text-rose-500 dark:text-rose-400',
-  dimension: 'text-sky-600 dark:text-sky-400',
+  money: 'text-emerald-700 dark:text-emerald-400',
+  cost: 'text-rose-600 dark:text-rose-400',
+  dimension: 'text-sky-700 dark:text-sky-400',
   neutral: 'text-foreground',
   muted: 'text-muted-foreground',
 };
