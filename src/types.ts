@@ -33,6 +33,14 @@ export interface Customer {
   installationAddress?: string;
   useSameAddress?: boolean;
   showInstallationAddress?: boolean;
+
+  // --- Document identity (มาตรฐานชื่อเอกสาร export — see src/lib/docName.ts) ---
+  /** UUID — กุญแจเชื่อมตัวจริง (canonical join key), เติม lazy + persist, ฝังในไฟล์ backup เสมอ */
+  id?: string;
+  /** รหัสลูกค้าที่พิมพ์เอง (จากทะเบียนภายนอก เช่น "C0007"); เว้นว่าง → fallback เป็น C{4hex} จาก id */
+  code?: string;
+  /** เลขรันเอกสารต่อลูกค้า (ส่วน NNN ของรหัส), persist, default 1 */
+  docSeq?: number;
 }
 
 export interface Discount {

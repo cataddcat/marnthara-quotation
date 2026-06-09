@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { useAppStore } from '@/store/useAppStore';
-import { User, MapPin, Phone, FileText, Truck } from 'lucide-react';
+import { User, MapPin, Phone, FileText, Truck, Hash } from 'lucide-react';
 
 interface CustomerModalProps {
   isOpen: boolean;
@@ -48,6 +48,14 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose })
             placeholder="ถ้ามี..."
             value={customer.taxId || ''}
             onChange={(e) => handleChange('taxId', e.target.value)}
+          />
+          {/* รหัสลูกค้าจากทะเบียนภายนอก (ถ้ามี) — เว้นว่าง ระบบจะ fallback เป็น C{4hex} จาก id */}
+          <Input
+            prefix={<Hash className="w-4 h-4 text-muted-foreground" />}
+            label="รหัสลูกค้า (Customer Code)"
+            placeholder="C0007 — เว้นว่างได้ถ้ายังไม่มีทะเบียน"
+            value={customer.code || ''}
+            onChange={(e) => handleChange('code', e.target.value)}
           />
 
           <div className="space-y-1.5">

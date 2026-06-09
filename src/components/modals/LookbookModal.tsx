@@ -1,5 +1,5 @@
 // src/components/modals/LookbookModal.tsx
-import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import jsPDF from 'jspdf';
 // html2canvas-pro: drop-in fork that supports modern CSS color functions (oklch/lab/color()).
 // Required because Tailwind v4's palette compiles to oklch(), which html2canvas@1 can't parse.
@@ -15,6 +15,7 @@ import { fmtDimension, toNum } from '@/utils/formatters';
 import { generateItemVisualSvg } from '@/lib/svgGenerator';
 import { calcWaveHardware, waveSplitFromOpening } from '@/lib/materials/waveHardware';
 import { cn } from '@/lib/utils';
+import { buildDocFileBase, formatDocCode } from '@/lib/docName';
 import type {
   ItemData,
   CurtainItemInput,
@@ -286,6 +287,8 @@ interface LookbookModalProps {
 export const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose }) => {
   const rooms = useAppStore((s) => s.rooms);
   const shopConfig = useAppStore((s) => s.shopConfig);
+  const customer = useAppStore((s) => s.customer);
+  const ensureCustomerIdentity = useAppStore((s) => s.ensureCustomerIdentity);
   const addToast = useUIStore((s) => s.addToast);
 
   // Item types present in the project (non-suspended), ordered by ITEM_CONFIG
@@ -349,7 +352,21 @@ export const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose })
   const adjustZoom = (delta: number) =>
     setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
 
-  const fileBase = useMemo(() => `Lookbook_${new Date().toISOString().slice(0, 10)}`, []);
+  // backfill id แบบ lazy ตอนเปิด → ชื่อไฟล์ export มี customer.id พร้อมใช้
+  useEffect(() => {
+    if (isOpen) ensureCustomerIdentity();
+  }, [isOpen, ensureCustomerIdentity]);
+
+  // มาตรฐานชื่อเอกสาร: lookbook_<ลูกค้า>_<รหัส>_<YYYYMMDD>
+  const fileBase = useMemo(
+    () =>
+      buildDocFileBase(
+        'lookbook',
+        customer.name,
+        formatDocCode({ id: customer.id, code: customer.code, seq: customer.docSeq ?? 1 })
+      ),
+    [customer.name, customer.id, customer.code, customer.docSeq]
+  );
 
   const captureCanvases = useCallback(async (): Promise<HTMLCanvasElement[]> => {
     const nodes = pageRefs.current.filter((n): n is HTMLDivElement => Boolean(n));

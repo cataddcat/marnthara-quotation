@@ -19,6 +19,7 @@ import {
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { buildDocFileBase, formatDocCode } from '@/lib/docName';
 
 interface DataModalProps {
   isOpen: boolean;
@@ -45,6 +46,8 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
 
   const handleExport = () => {
     try {
+      // เติม identity ก่อน เพื่อให้ customer.id (UUID) ติดไปใน JSON ด้วย (กุญแจเชื่อมนอกแอพ)
+      const { id, code, seq } = useAppStore.getState().ensureCustomerIdentity();
       const state = useAppStore.getState();
       const dataToExport = {
         customer: state.customer,
@@ -72,16 +75,9 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
       const a = document.createElement('a');
       a.href = url;
 
-      // ✅ [World Class Optimization] ใช้ Native Date เพื่อประหยัด 20KB
-      const now = new Date();
-      // สร้าง format: yyyy-MM-dd-HHmm (เช่น 2023-12-01-1430)
-      const dateStr =
-        now.toISOString().slice(0, 10) +
-        '-' +
-        now.getHours().toString().padStart(2, '0') +
-        now.getMinutes().toString().padStart(2, '0');
-
-      a.download = `mtr-backup-${dateStr}.json`;
+      // มาตรฐานชื่อเอกสาร: <ประเภท>_<ลูกค้า>_<รหัส>_<YYYYMMDD> (สืบย้อนได้ + ไม่ซ้ำ)
+      const docCode = formatDocCode({ id, code, seq });
+      a.download = `${buildDocFileBase('mtr-backup', state.customer.name, docCode)}.json`;
 
       document.body.appendChild(a);
       a.click();

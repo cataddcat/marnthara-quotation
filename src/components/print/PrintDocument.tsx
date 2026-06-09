@@ -8,6 +8,7 @@ import { PrintDocContext } from './parts/types';
 import { PrintPage } from './parts/PrintPage';
 import { PrintMeasureLayer, PrintMetrics } from './PrintMeasureLayer';
 import { CONTENT_H_PX, SLACK_PX } from './parts/geometry';
+import { formatDocCode } from '@/lib/docName';
 
 // Re-export so existing importers (PdfPreviewModal) keep working.
 export type { DocumentType } from './docTypes';
@@ -17,16 +18,6 @@ interface PrintDocumentProps {
   /** Reports the computed page count so the preview chrome can show "หน้า X/Y". */
   onPageCount?: (count: number) => void;
 }
-
-const generateDocId = () => {
-  const now = new Date();
-  const yy = now.getFullYear().toString().slice(-2);
-  const mm = (now.getMonth() + 1).toString().padStart(2, '0');
-  const rand = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(4, '0');
-  return `QT-${yy}${mm}-${rand}`;
-};
 
 /** Translate measured chrome heights into the paginator's per-page px budgets. */
 const buildBudgets = (m: PrintMetrics): PaginateBudgets => {
@@ -57,9 +48,20 @@ const printStyles = `
 export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps>(
   ({ docType, onPageCount }, ref) => {
     const { shopConfig, customer, rooms } = useAppStore((state) => state);
+    const ensureCustomerIdentity = useAppStore((state) => state.ensureCustomerIdentity);
     const { grandTotal, discountAmount, vatAmount, finalTotal } = useCalculations();
 
-    const [docId] = useState(generateDocId);
+    // "เลขที่" บนเอกสาร = รหัสเอกสารจาก identity ลูกค้า (คงที่/สืบกลับลูกค้าได้,
+    // ไม่ใช่เลขสุ่มที่ regenerate ทุก render แบบเดิม). backfill id แบบ lazy ตอน mount
+    useEffect(() => {
+      ensureCustomerIdentity();
+    }, [ensureCustomerIdentity]);
+    const docId = formatDocCode({
+      id: customer.id,
+      code: customer.code,
+      seq: customer.docSeq ?? 1,
+    });
+
     const [metrics, setMetrics] = useState<PrintMetrics | null>(null);
 
     const showPrices = docType !== 'delivery';

@@ -1,9 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Button } from '@/components/ui/Button';
 import { PrintDocument, DocumentType } from '@/components/print/PrintDocument';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useAppStore } from '@/store/useAppStore';
+import { buildDocFileBase, formatDocCode } from '@/lib/docName';
 import { Printer, FileText, Truck, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +17,8 @@ interface PdfPreviewModalProps {
 export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClose }) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { isFull } = useExperienceMode();
+  const customer = useAppStore((s) => s.customer);
+  const ensureCustomerIdentity = useAppStore((s) => s.ensureCustomerIdentity);
 
   // [UPDATED] Default to Quotation
   const [docType, setDocType] = useState<DocumentType>('quotation');
@@ -23,9 +27,19 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
   // back via onPageCount, so this stays in sync without a manual reset.
   const [pageCount, setPageCount] = useState(0);
 
+  // backfill id แบบ lazy ตอนเปิด preview → ชื่อไฟล์ PDF มี customer.id พร้อมใช้
+  useEffect(() => {
+    if (isOpen) ensureCustomerIdentity();
+  }, [isOpen, ensureCustomerIdentity]);
+
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: `Marnthara_${docType}_${new Date().toISOString().split('T')[0]}`,
+    // มาตรฐานชื่อเอกสาร: <ประเภท>_<ลูกค้า>_<รหัส>_<YYYYMMDD>
+    documentTitle: buildDocFileBase(
+      docType,
+      customer.name,
+      formatDocCode({ id: customer.id, code: customer.code, seq: customer.docSeq ?? 1 })
+    ),
     onBeforeGetContent: () => {
       return new Promise<void>((resolve) => {
         setIsPrinting(true);
