@@ -41,8 +41,10 @@ stryker.log
 # Vercel
 .vercel
 
-# Claude Code local settings (per-user)
-.claude/
+# Claude Code: ignore per-user local files, but track shared commands & agents
+.claude/*
+!.claude/commands/
+!.claude/agents/
 
 # TypeScript compile output for config files (source of truth is the .ts)
 vite.config.d.ts
