@@ -20,7 +20,8 @@ The single entry point to every doc in this repo. Read the 🔴 tier always; dro
 ## 🟢 Reference — situational (not normally read)
 | Doc | Role |
 |---|---|
-| **[docs/AI-WORKFLOW.md](docs/AI-WORKFLOW.md)** | 🤖 How the owner drives AI agents efficiently — the **กวาด→เลือก→ยิง** combo (`design-reviewer` subagent + `/probe-fix` command), token-saving habits, copy-paste templates. |
+| **[docs/AI-PLAYBOOK.md](docs/AI-PLAYBOOK.md)** | 📘 **Portable** principles for using any AI coding agent efficiently — token economics, the "พูดครั้งเดียว ใช้ตลอด" pattern (instructions/memory/commands/subagents), the กวาด→เลือก→ยิง combo, a new-project starter kit. **Shareable** (Marnthara = labelled examples only). |
+| **[docs/AI-WORKFLOW.md](docs/AI-WORKFLOW.md)** | 🤖 The **applied** version of AI-PLAYBOOK for *this* project — the actual `/probe-fix`, `/doc-name` slash commands + `design-reviewer` subagent + Design Probe, with a command registry & copy-paste templates. |
 | **[MUTATION_TESTING.md](MUTATION_TESTING.md)** | How/why to run Stryker mutation testing on the pricing core (on-demand, not in CI). |
 | **[docs/archive/DESIGN-AUDIT.md](docs/archive/DESIGN-AUDIT.md)** | 🗄️ Archived one-time audit of the external "Marnthara Design System" bundle (→ 0 code changes). History only. |
 | **[docs/report/lighthouse.md](docs/report/lighthouse.md)** | Latest raw Lighthouse run (perf / a11y / SEO). Regenerated ad-hoc. |
