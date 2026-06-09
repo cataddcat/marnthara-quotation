@@ -2,22 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
-import {
-  AlignLeft,
-  ScrollText,
-  Scissors,
-  Grid3X3,
-  Blinds,
-  Columns,
-  Minimize2,
-  Save,
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Smartphone,
-  Monitor,
-} from 'lucide-react';
+import { Save, CheckCircle2, ChevronDown, Plus, Smartphone, Monitor } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useAppStore } from '@/store/useAppStore';
@@ -52,7 +37,6 @@ import { hasMinimumItemData } from '@/lib/item-status';
 import { normalizeDimensionFields } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 // [ARCHITECT] Import Unified Theme System
-import { getItemTheme } from '@/lib/theme-utils';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -76,17 +60,6 @@ const MENU_ITEMS = [
   { id: ITEM_TYPES.REMOVAL },
 ] as const;
 
-const TYPE_ICON_MAP: Record<string, React.ElementType> = {
-  [ITEM_TYPES.CURTAIN]: AlignLeft,
-  [ITEM_TYPES.WALLPAPER]: ScrollText,
-  [ITEM_TYPES.WOODEN_BLIND]: Blinds,
-  [ITEM_TYPES.ROLLER_BLIND]: Minimize2,
-  [ITEM_TYPES.VERTICAL_BLIND]: Columns,
-  [ITEM_TYPES.ALUMINUM_BLIND]: Blinds,
-  [ITEM_TYPES.PARTITION]: Grid3X3,
-  [ITEM_TYPES.PLEATED_SCREEN]: Grid3X3,
-  [ITEM_TYPES.REMOVAL]: Scissors,
-};
 
 // แต่ละประเภท → id ของ <form> เพื่อให้ปุ่มใน sticky footer สั่ง submit ได้
 const FORM_ID_BY_TYPE: Partial<Record<ItemTypeKey, string>> = {
@@ -340,7 +313,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const typeOptions = MENU_ITEMS.map((item) => ({
     label: ITEM_CONFIG[item.id]?.name || item.id,
     value: item.id as ItemTypeKey,
-    icon: TYPE_ICON_MAP[item.id],
   }));
 
   // ── Header: auto-saved badge + mode toggle ─────────────────────────────────
@@ -415,9 +387,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       )
     ) : undefined;
 
-  const theme = getItemTheme(activeType);
-  const TypeIcon = TYPE_ICON_MAP[activeType];
-
   return (
     <Modal
       isOpen={isOpen}
@@ -431,35 +400,19 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     >
       <div className="animate-fade-in">
         {mode === 'add' && !typeConfirmed ? (
-          // iOS HIG grouped inset list — แถวสูง ≥44pt (นิ้วกดง่าย), ไอคอนสีตามชนิด (สีสัน),
-          // เส้นคั่นบาง + เส้นขอบกลุ่ม + chevron ตามมาตรฐาน Apple HIG
-          <div className="overflow-hidden rounded-xl border border-border bg-card divide-y divide-border/60">
-            {typeOptions.map((opt) => {
-              const OptIcon = opt.icon;
-              const optTheme = getItemTheme(opt.value);
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => handleSelectType(opt.value)}
-                  className="flex w-full items-center gap-3 min-h-[54px] px-3.5 text-left transition-colors hover:bg-muted/30 active:bg-muted/60"
-                >
-                  <span
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] border',
-                      optTheme.bgSoft,
-                      optTheme.border
-                    )}
-                  >
-                    {OptIcon && <OptIcon className={cn('h-4 w-4', optTheme.icon)} strokeWidth={1.5} />}
-                  </span>
-                  <span className="flex-1 text-[15px] font-semibold leading-tight text-foreground">
-                    {opt.label}
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40" strokeWidth={1.5} />
-                </button>
-              );
-            })}
+          // เลือกประเภท — กริด 2 คอลัมน์ ตัวอักษรล้วน (ไม่ใช้ไอคอน: ไอคอนทั่วไปไม่ตรงกับสินค้าจริง),
+          // ปุ่มขอบชัด สูง ≥44pt กดง่าย และใช้ความกว้างคุ้มกว่ารายการเต็มแถว
+          <div className="mx-auto grid max-w-md grid-cols-2 gap-2.5">
+            {typeOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleSelectType(opt.value)}
+                className="flex min-h-[56px] items-center justify-center rounded-xl border border-border bg-card px-3 text-center text-base font-semibold text-foreground transition-all hover:border-foreground/40 hover:bg-muted/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         ) : (
           <>
@@ -470,23 +423,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 onClick={() => setTypeSheetOpen(true)}
                 className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-xl border border-border bg-card active:scale-[0.99] transition-transform"
               >
-                <span className="flex items-center gap-2.5 min-w-0">
-                  <span
-                    className={cn(
-                      'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
-                      theme.iconWrapper
-                    )}
-                  >
-                    {TypeIcon && <TypeIcon className={cn('w-5 h-5', theme.icon)} />}
-                  </span>
-                  <span className="flex flex-col items-start min-w-0">
-                    <span className="text-xs text-muted-foreground leading-none">
-                      ประเภทสินค้า
-                    </span>
-                    <span className="font-bold text-foreground leading-tight truncate">
-                      {itemName}
-                    </span>
-                  </span>
+                <span className="flex flex-col items-start min-w-0">
+                  <span className="text-xs text-muted-foreground leading-none">ประเภทสินค้า</span>
+                  <span className="font-bold text-foreground leading-tight truncate">{itemName}</span>
                 </span>
                 <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground shrink-0">
                   เปลี่ยน
