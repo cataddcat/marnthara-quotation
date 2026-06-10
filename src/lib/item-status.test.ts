@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { isItemIncomplete, hasMinimumItemData, incompleteLabel } from './item-status';
+import {
+  isItemIncomplete,
+  hasMinimumItemData,
+  incompleteLabel,
+  isItemEmpty,
+  isItemReady,
+} from './item-status';
 import { ItemData } from '@/types';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 
@@ -171,5 +177,29 @@ describe('incompleteLabel', () => {
   });
   it('ประเภทอื่น → "ยังไม่ใส่ราคา"', () => {
     expect(incompleteLabel(area({}))).toBe('ยังไม่ใส่ราคา');
+  });
+});
+
+describe('isItemEmpty', () => {
+  it('ไม่มีความกว้าง → ว่าง', () => {
+    expect(isItemEmpty(curtain({ width_m: '', height_m: '' }))).toBe(true);
+  });
+  it('มีความกว้างแล้ว → ไม่ว่าง', () => {
+    expect(isItemEmpty(curtain({}))).toBe(false);
+  });
+});
+
+describe('isItemReady (ใช้ตัดสินป้าย "ครบ")', () => {
+  it('มีกว้างแต่ยังไม่ใส่สูง → ไม่พร้อม (กัน false "ครบ")', () => {
+    expect(isItemReady(curtain({ height_m: '', code: 'CT-001' }))).toBe(false);
+  });
+  it('ขนาดครบ + ใส่ผ้าแล้ว → พร้อม', () => {
+    expect(isItemReady(curtain({ code: 'CT-001' }))).toBe(true);
+  });
+  it('ขนาดครบแต่ยังไม่ใส่ผ้า → ไม่พร้อม', () => {
+    expect(isItemReady(curtain({}))).toBe(false);
+  });
+  it('รายการว่าง → ไม่พร้อม', () => {
+    expect(isItemReady(curtain({ width_m: '', height_m: '' }))).toBe(false);
   });
 });

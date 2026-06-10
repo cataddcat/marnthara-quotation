@@ -125,7 +125,7 @@ describe('calcWaveHardware — guard ค่าผิดปกติ', () => {
 });
 
 describe('waveSplitFromOpening — รองรับทั้งค่าฟอร์มไทย และ legacy side/center', () => {
-  it.each(['เก็บซ้าย', 'เก็บขวา', 'side'])('"%s" → one-way', (v) => {
+  it.each(['เก็บข้างเดียว', 'เก็บซ้าย', 'เก็บขวา', 'side'])('"%s" → one-way', (v) => {
     expect(waveSplitFromOpening(v)).toBe('one-way');
   });
 

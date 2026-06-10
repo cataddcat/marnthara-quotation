@@ -12,7 +12,7 @@ const DEFAULT_DATA: CurtainFormValues = {
   width_m: '',
   height_m: '',
   style: 'ลอน',
-  opening_style: 'แยกกลาง',
+  opening_style: '', // ไม่มีค่าตั้งต้น — ผู้ใช้ต้องเลือกเอง (การ์ดจะเตือนถ้ายังไม่เลือก)
   layer_mode: LAYER_MODES.MAIN,
   fabric_variant: 'ทึบ',
   

@@ -48,12 +48,17 @@ const EMPTY: WaveHardware = {
 /**
  * แปลง opening_style ของม่าน → การแยกตับ (split) สำหรับม่านลอน
  *
- * ⚠️ ฟอร์มม่านจริง (StyleSection) บันทึกค่าเป็นภาษาไทย: 'เก็บซ้าย' / 'แยกกลาง' / 'เก็บขวา'
- *    ส่วนค่า 'side' / 'center' เป็น convention ของ OPENING_STYLES (ฉากกั้น) + ข้อมูล import เก่า
- *    จึงรองรับทั้งสองแบบ — one-way คือ "เก็บข้างเดียว", อย่างอื่น (รวม default) = two-way
+ * ⚠️ ฟอร์มม่านจริง (StyleSection) บันทึกค่าเป็นภาษาไทย: 'เก็บข้างเดียว' / 'แยกกลาง'
+ *    (ค่าเก่า 'เก็บซ้าย' / 'เก็บขวา' ยังรองรับเป็น legacy) ส่วน 'side' / 'center' เป็น convention
+ *    ของ OPENING_STYLES (ฉากกั้น) + ข้อมูล import เก่า — one-way คือ "เก็บข้างเดียว", อย่างอื่น (รวม default) = two-way
  */
 export function waveSplitFromOpening(openingStyle?: string): WaveSplit {
-  if (openingStyle === 'side' || openingStyle === 'เก็บซ้าย' || openingStyle === 'เก็บขวา') {
+  if (
+    openingStyle === 'side' ||
+    openingStyle === 'เก็บข้างเดียว' ||
+    openingStyle === 'เก็บซ้าย' ||
+    openingStyle === 'เก็บขวา'
+  ) {
     return 'one-way';
   }
   return 'two-way';

@@ -5,8 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { CostEngine } from '@/lib/pricing/CostEngine';
-import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
+import { ITEM_CONFIG, CURTAIN_STYLES, STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
 import { Metric } from '@/components/ui/Metric';
@@ -46,12 +45,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const [isExpanded, setIsExpanded] = useState(false);
 
   const priceResult = useMemo(() => PricingEngine.calculateDetailedPrice(item), [item]);
-
-  const costAnalysis = useMemo(() => {
-    if (item.is_suspended) return null;
-    const result = CostEngine.analyze(item);
-    return result.status !== 'unknown' ? result : null;
-  }, [item]);
 
   // "ยังไม่เสร็จ" — มีขนาดแล้วแต่ยังไม่ได้ใส่ผ้า/รายละเอียดที่จำเป็น
   const incomplete = useMemo(() => !item.is_suspended && isItemIncomplete(item), [item]);
@@ -189,6 +182,20 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     openModal('codeDetail', { code, category });
   };
 
+  // ปุ่มรหัส (กดดูรายละเอียด/จุดที่ใช้รหัสนี้ทั้งโครงการ)
+  // ใช้ร่วมทั้งแถวผ้าทึบ/ผ้าโปร่ง (ผ้าม่าน) + แถว "รหัส" ของ non-curtain
+  const renderCodeButton = (code: string, category: string) => (
+    <button
+      key={`${category}-${code}`}
+      onClick={(e) => handleOpenCodeDetail(e, code, category)}
+      className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-foreground hover:underline underline-offset-2 active:opacity-70"
+      title={`ดูรายละเอียด/จุดที่ใช้รหัส ${code}`}
+    >
+      {code}
+      <ExternalLink className="w-3 h-3 opacity-70" strokeWidth={1.5} />
+    </button>
+  );
+
   const isAreaType =
     item.type === ITEM_TYPES.WOODEN_BLIND ||
     item.type === ITEM_TYPES.ROLLER_BLIND ||
@@ -199,6 +206,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
 
   // หน้างานต้องการ "ขนาด" เป็นเมตริกซ้าย, "ยอดสุทธิ" เป็นฮีโร่ขวา — เฉพาะสินค้าที่มีมิติตัวเลข
   const showDim = item.type !== ITEM_TYPES.REMOVAL && !!dimNumbers;
+
+  // แจ้งเตือนบนการ์ด: ม่านที่เริ่มแล้ว (มีขนาด) + สไตล์ต้องมีทิศเปิด + ยังไม่ได้เลือกทิศ (ไม่มีค่าตั้งต้นแล้ว)
+  const needsOpening =
+    item.type === ITEM_TYPES.CURTAIN &&
+    hasSize &&
+    !STYLES_WITHOUT_OPENING.includes(item.style) &&
+    !item.opening_style;
 
   return (
     <div
@@ -216,18 +230,26 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
       >
         {/* Row 1: Index chip + Title + status + Chevron */}
         <div className="flex items-center gap-2">
-          <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
-            ⌗{String(index + 1).padStart(2, '0')}
-          </span>
+          {/* รายการว่าง (index = -1) ไม่ให้เลขลำดับ */}
+          {index >= 0 && (
+            <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
+              ⌗{String(index + 1).padStart(2, '0')}
+            </span>
+          )}
           <span className="flex-1 min-w-0 font-semibold text-foreground truncate text-base">
             {title}
           </span>
-          {incomplete && (
+          {incomplete ? (
             <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
               <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
               {incompleteLabel(item)}
             </span>
-          )}
+          ) : needsOpening ? (
+            <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+              <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
+              เลือกทิศเปิด
+            </span>
+          ) : null}
           <ChevronDown
             className={cn(
               'w-4 h-4 text-muted-foreground/60 shrink-0 transition-transform duration-200',
@@ -290,24 +312,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
           {/* Detail rows */}
           <div className="space-y-2 mb-4">
-            {/* ต้นทุน · กำไร · อัตรากำไร — 3-up KPI strip (สุขภาพการเงินอ่านได้ในแวบเดียว) */}
-            {costAnalysis && (
-              <div className="grid grid-cols-3 gap-2 pb-3 mb-1 border-b border-border/40">
-                <Metric label="ต้นทุน" value={fmtTH(costAnalysis.totalCost)} tone="cost" />
-                <Metric
-                  label="กำไร"
-                  value={`${costAnalysis.profitAmount >= 0 ? '+' : ''}${fmtTH(costAnalysis.profitAmount)}`}
-                  tone={costAnalysis.profitAmount >= 0 ? 'money' : 'cost'}
-                />
-                <Metric
-                  label="อัตรากำไร"
-                  value={`${(priceResult.total > 0 ? (costAnalysis.profitAmount / priceResult.total) * 100 : 0).toFixed(1)}%`}
-                  tone={costAnalysis.profitAmount >= 0 ? 'money' : 'cost'}
-                  align="right"
-                />
-              </div>
-            )}
-
             {/* ขนาด */}
             {hasSize && (
               <div className="flex justify-between text-sm">
@@ -318,19 +322,30 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               </div>
             )}
 
-            {/* ผ้าม่าน: ผ้าหลัก */}
+            {/* ผ้าม่าน: ผ้าหลัก — รหัสเกาะข้าง label */}
             {item.type === ITEM_TYPES.CURTAIN && fabricYards > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">ผ้าทึบ</span>
-                <span className="font-semibold font-mono text-orange-500">{fabricYards.toFixed(2)} หลา</span>
+              <div className="flex justify-between items-center text-sm gap-3">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5 min-w-0">
+                  ผ้าทึบ
+                  {item.code && renderCodeButton(item.code, FAVORITE_CATEGORIES.CURTAIN_MAIN)}
+                </span>
+                <span className="font-semibold font-mono text-orange-500 shrink-0">
+                  {fabricYards.toFixed(2)}
+                </span>
               </div>
             )}
 
-            {/* ผ้าม่าน: ผ้าโปร่ง (ทึบ+โปร่ง) */}
+            {/* ผ้าม่าน: ผ้าโปร่ง (ทึบ+โปร่ง) — รหัสเกาะข้าง label */}
             {item.type === ITEM_TYPES.CURTAIN && sheerYards > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">ผ้าโปร่ง</span>
-                <span className="font-semibold font-mono text-orange-400">{sheerYards.toFixed(2)} หลา</span>
+              <div className="flex justify-between items-center text-sm gap-3">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5 min-w-0">
+                  ผ้าโปร่ง
+                  {item.sheer_code &&
+                    renderCodeButton(item.sheer_code, FAVORITE_CATEGORIES.CURTAIN_SHEER)}
+                </span>
+                <span className="font-semibold font-mono text-orange-400 shrink-0">
+                  {sheerYards.toFixed(2)}
+                </span>
               </div>
             )}
 
@@ -354,22 +369,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               </div>
             )}
 
-            {/* รหัสสินค้า — กดเพื่อดูรายละเอียด/จุดที่ใช้รหัสนี้ทั้งโครงการ */}
-            {codeRefs.length > 0 && (
+            {/* รหัสสินค้า (non-curtain) — กดเพื่อดูรายละเอียด/จุดที่ใช้รหัสนี้ทั้งโครงการ
+                ผ้าม่านย้ายรหัสไปเกาะข้างผ้าทึบ/ผ้าโปร่งแล้ว */}
+            {item.type !== ITEM_TYPES.CURTAIN && codeRefs.length > 0 && (
               <div className="flex justify-between items-center text-sm gap-3">
                 <span className="text-muted-foreground shrink-0">รหัส</span>
                 <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-0">
-                  {codeRefs.map((ref) => (
-                    <button
-                      key={`${ref.category}-${ref.code}`}
-                      onClick={(e) => handleOpenCodeDetail(e, ref.code, ref.category)}
-                      className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-foreground hover:underline underline-offset-2 active:opacity-70"
-                      title={`ดูรายละเอียด/จุดที่ใช้รหัส ${ref.code}`}
-                    >
-                      {ref.code}
-                      <ExternalLink className="w-3 h-3 opacity-70" strokeWidth={1.5} />
-                    </button>
-                  ))}
+                  {codeRefs.map((ref) => renderCodeButton(ref.code, ref.category))}
                 </div>
               </div>
             )}

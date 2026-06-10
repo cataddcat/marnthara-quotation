@@ -77,3 +77,26 @@ export const isItemIncomplete = (item: ItemData): boolean => {
 /** ป้ายบอกสิ่งที่ยังขาด (ใช้กับ chip บน ItemCard) */
 export const incompleteLabel = (item: ItemData): string =>
   item.type === ITEM_TYPES.CURTAIN ? 'ยังไม่ใส่ผ้า' : 'ยังไม่ใส่ราคา';
+
+/** "ว่างเปล่า" = ยังไม่มีข้อมูลขั้นต่ำ (ตรงข้ามกับ hasMinimumItemData) — ไม่ควรนับ/ไม่ควรให้เลขลำดับ */
+export const isItemEmpty = (item: ItemData): boolean =>
+  !hasMinimumItemData(item.type, item as unknown as Record<string, unknown>);
+
+/**
+ * "พร้อม" (ครบจริง) = ไม่ว่าง + ไม่ incomplete + ขนาดครบ — ใช้ตัดสินป้าย "ครบ" ของห้อง
+ * กันเคสที่ `isItemIncomplete` คืน false ตอนขนาดยังไม่ครบ (เช่น มีกว้างแต่ยังไม่ใส่สูง)
+ * ทำให้ห้องขึ้น "ครบ" ทั้งที่รายการยังกรอกไม่จบ
+ */
+export const isItemReady = (item: ItemData): boolean => {
+  if (isItemEmpty(item) || isItemIncomplete(item)) return false;
+  if (item.type === ITEM_TYPES.WALLPAPER)
+    return toNum(item.widths?.[0]) > 0 && toNum(item.height_m) > 0;
+  if (item.type === ITEM_TYPES.REMOVAL) return !!(item.description && item.description.trim());
+  return toNum(item.width_m) > 0 && toNum(item.height_m) > 0;
+};
+
+/** ลำดับแสดง (0-based) เฉพาะรายการที่ "ไม่ว่าง"; รายการว่าง = -1 (ItemCard จะไม่โชว์เลข ⌗) */
+export const displayIndexes = (items: ItemData[]): number[] => {
+  let n = 0;
+  return items.map((it) => (isItemEmpty(it) ? -1 : n++));
+};

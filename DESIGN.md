@@ -93,6 +93,8 @@ Machine-readable mirror: [`src/config/typography.ts`](./src/config/typography.ts
 - **Touch targets ≥ 44×44** (HIG). Reuse `Button` (`size="icon"`/`"md"` = 48px) or `h-11 w-11` + centered icon.
 - **Control size by tier** via `useTierSize().control` (Lite = lg/56px) — never hardcode per-tier heights.
 - **Radii:** controls `rounded-lg`/`rounded-xl`; cards/containers `rounded-xl`. Avoid `rounded-2xl`+ on controls.
+  **Exception (2026-06-10):** modal/dialog **footer action buttons** (e.g. `ItemModal` ยกเลิก / บันทึก / ปิด)
+  use **`rounded-full` capsules** — a deliberate standard footer-CTA look; keep `size="md"` (≥44px) + right-aligned, not full-width.
 - **Density by tier:** `useTierSize().section` (Lite roomier, Full denser). Don't let cards feel cramped on mobile.
 
 ---

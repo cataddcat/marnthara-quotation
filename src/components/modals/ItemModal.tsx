@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
-import { Save, CheckCircle2, ChevronDown, Plus, Smartphone, Monitor } from 'lucide-react';
+import { Save, CheckCircle2, ChevronDown, ArrowRight, Smartphone, Monitor } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useAppStore } from '@/store/useAppStore';
@@ -110,6 +110,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const [savedCount, setSavedCount] = useState(0);
   // Remount key — bumping it resets the form (blank + autofocus) for "save & add next"
   const [formKey, setFormKey] = useState(0);
+  // ฟอร์มยังว่าง (ไม่มีข้อมูลขั้นต่ำ) → footer แสดงปุ่ม "ปิด" แทน "บันทึก" (กันสร้างรายการเปล่า)
+  const [isFormEmpty, setIsFormEmpty] = useState(true);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ค่าฟอร์มล่าสุดที่ค้างใน debounce — เก็บไว้เพื่อ flush ตอนปิด/unmount (กันค่าช่องสุดท้าย เช่น "ความสูง" หาย)
   const pendingDataRef = useRef<Partial<ItemData> | null>(null);
@@ -132,6 +134,15 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       } else if (mode === 'edit' && initialData) {
         setActiveType(normalizeType(initialData.type || initialItemType));
       }
+      // ฟอร์มเริ่ม: add = ว่าง; edit = ดูจากข้อมูลเดิม
+      setIsFormEmpty(
+        mode === 'edit' && initialData
+          ? !hasMinimumItemData(
+              normalizeType(initialData.type || initialItemType),
+              initialData as Record<string, unknown>
+            )
+          : true
+      );
     }
   }, [isOpen, mode, initialItemType, initialData]);
   /* eslint-enable */
@@ -160,6 +171,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     setActiveType(typeId);
     setTypeConfirmed(true);
     setFormKey((k) => k + 1);
+    setIsFormEmpty(true); // ฟอร์มประเภทใหม่ว่าง → footer เป็น "ปิด" จนกว่าจะกรอก
   };
 
   const toggleMode = () => {
@@ -207,6 +219,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const handleAutoSave = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
+      // ติดตามสถานะ "ฟอร์มว่าง" ทันที (ไม่รอ debounce) เพื่อสลับปุ่ม footer บันทึก ↔ ปิด
+      const empty = !hasMinimumItemData(activeType, data as Record<string, unknown>);
+      setIsFormEmpty((prev) => (prev === empty ? prev : empty));
       pendingDataRef.current = data;
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
       autoSaveTimerRef.current = setTimeout(() => {
@@ -216,7 +231,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         if (pending) persistDraft(pending);
       }, 400);
     },
-    [roomId, persistDraft]
+    [roomId, persistDraft, activeType]
   );
 
   // ── Flush ค่าที่ค้างทันที (ตอนปิด/unmount) — กัน debounce ที่ยังไม่ยิงหาย ─────
@@ -270,6 +285,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         return;
       }
 
+      // ADD + ปิด ทั้งที่ยังว่าง → ปิดเฉย ๆ ไม่สร้างรายการเปล่า (กันทั้งปุ่มและ Enter-submit)
+      if (intent === 'close' && !hasMinimumItemData(activeType, data as Record<string, unknown>)) {
+        onClose();
+        return;
+      }
+
       // ADD mode — create or update the draft item
       if (autoCreatedIdRef.current) {
         updateItem(roomId, autoCreatedIdRef.current, {
@@ -288,6 +309,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         addToast('success', `บันทึกจุดที่ ${n} — กรอกจุดถัดไป`);
         autoCreatedIdRef.current = null; // ครั้งถัดไปสร้างรายการใหม่
         setFormKey((k) => k + 1); // remount → เคลียร์ฟอร์ม + โฟกัสช่องกว้าง
+        setIsFormEmpty(true); // ฟอร์มใหม่ว่าง → footer กลับเป็น "ปิด" จนกว่าจะกรอก
         return; // คงเปิด modal ไว้
       }
 
@@ -345,45 +367,63 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     </div>
   );
 
-  // ── Footer: sticky actions (เฉพาะเมื่อฟอร์มแสดงแล้ว — หน้าเลือกประเภทไม่มีปุ่มบันทึก) ──
+  // ── Footer: ปุ่มแคปซูล — ฟอร์มยังว่าง = ปุ่ม "ปิด" เดียว (กันสร้างรายการเปล่า). พอกรอกขั้นต่ำแล้ว →
+  //    ล่าง-ซ้าย "บันทึก → ถัดไป" (เพิ่มหลายจุดรวดหน้างาน, เฉพาะ add) · ล่าง-ขวา ยกเลิก + บันทึก.
+  //    ยกเลิก/ปิด = ปิด (Save-First: draft ที่ autosave ไว้ยังอยู่); ถัดไป = submit + เคลียร์ฟอร์ม ──
   const footer =
     showForm && activeFormId ? (
-      mode === 'edit' ? (
-        <Button
-          type="submit"
-          form={activeFormId}
-          size="md"
-          className="w-full"
-          onClick={() => (submitIntentRef.current = 'close')}
-        >
-          <Save className="w-4 h-4 mr-2" />
-          บันทึกการแก้ไข
-        </Button>
-      ) : (
-        // จัดข้างกันในแถวเดียวทุกอุปกรณ์ + ขอบบาง (md = 48px, px แคบ) ให้กิน footer น้อยลง
-        <div className="flex gap-2">
+      isFormEmpty ? (
+        <div className="flex items-center justify-end">
           <Button
-            type="submit"
-            form={activeFormId}
-            size="md"
-            className="flex-[1.4] min-w-0 px-3 text-sm whitespace-normal leading-tight"
-            onClick={() => (submitIntentRef.current = 'next')}
-          >
-            <Plus className="w-4 h-4 mr-1.5 shrink-0" />
-            บันทึก &amp; เพิ่มจุดถัดไป
-          </Button>
-          <Button
-            type="submit"
-            form={activeFormId}
+            type="button"
             variant="outline"
             size="md"
-            className="flex-1 min-w-0 px-3 text-sm whitespace-normal leading-tight"
-            onClick={() => (submitIntentRef.current = 'close')}
+            className="rounded-full px-6"
+            onClick={handleClose}
           >
-            <Save className="w-4 h-4 mr-1.5 shrink-0" />
-            บันทึก &amp; ปิด
+            ปิด
           </Button>
         </div>
+      ) : (
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        {mode === 'add' ? (
+          <Button
+            type="submit"
+            form={activeFormId}
+            variant="secondary"
+            size="md"
+            className="rounded-full px-5"
+            onClick={() => (submitIntentRef.current = 'next')}
+          >
+            บันทึก
+            <ArrowRight className="w-4 h-4 mx-1.5 shrink-0" strokeWidth={1.5} />
+            ถัดไป
+          </Button>
+        ) : (
+          <span />
+        )}
+        <div className="flex items-center gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            className="rounded-full px-6"
+            onClick={handleClose}
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            type="submit"
+            form={activeFormId}
+            size="md"
+            className="rounded-full px-6"
+            onClick={() => (submitIntentRef.current = 'close')}
+          >
+            <Save className="w-4 h-4 mr-2" />
+            บันทึก
+          </Button>
+        </div>
+      </div>
       )
     ) : undefined;
 

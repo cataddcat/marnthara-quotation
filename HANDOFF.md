@@ -255,7 +255,9 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
   empty rooms vanish after filtering.
 - **Proportional, semantic drawings:** `src/lib/svgGenerator.ts` (`generateItemVisualSvg`) — aspect-correct
   per item + W×H labels; communicates **style** (ลอน/จีบ/ตาไก่/พับ/แป๊บ/หลุยส์, wallpaper, each blind type),
-  **opening direction** (curtain `opening_style` is Thai `แยกกลาง`→🡄🡆 / `เก็บซ้าย`→🡄 / `เก็บขวา`→🡆;
+  **opening direction** (curtain `opening_style` Thai values: `แยกกลาง`→🡄🡆 / `เก็บข้างเดียว`→single arrow;
+  **default `''` = "ยังไม่เลือก"** — no default since 2026-06, ItemCard shows a "เลือกทิศเปิด" warning until set.
+  Legacy `เก็บซ้าย`→🡄 / `เก็บขวา`→🡆 are still read by `svgGenerator` + `waveSplitFromOpening` (one-way);
   partition/pleated use `'center'`/`'side'` codes + `adjustment_side`), and **cord/chain side**
   (blinds `adjustment_side` ซ้าย/ขวา). All styling INLINE (survives html2canvas). Roller count
   ("ลูกล้อ N+N") for ลอน via `calcWaveHardware`. Covered by `svgGenerator.test.ts`.
@@ -430,7 +432,7 @@ src/components/ui/AdvancedSection.tsx  — disclosure: Full inline / Lite collap
 src/components/ui/ItemSummaryCard.tsx  — unified summary (breakdown+ราคาสุทธิ+override+dot+proSlot)
 src/components/ui/CostReadout.tsx      — read-only cost/profit panel (proSlot for area/wallpaper)
 src/hooks/useCostStatus.ts             — generic CostEngine.analyze for any ItemData
-src/lib/item-status.ts                 — isItemIncomplete() / "ค้าง N จุด" (all types)
+src/lib/item-status.ts                 — isItemIncomplete()/"ค้าง N จุด" · isItemEmpty (ยังไม่กรอกขั้นต่ำ) · isItemReady (ครบจริง → ป้าย "ครบ" ของห้อง) · displayIndexes (เลข ⌗ ข้ามรายการว่าง)
 ```
 
 ### Modals
@@ -493,7 +495,7 @@ The app forks into **Lite** (mobile / on-site measuring) and **Full** (desktop /
 1. **Disclosure split by intent, not by "advanced".** Installation-spec fields (ฝั่งดึง / เก็บใบ / รูปแบบการเปิด / ตำแหน่งดึง) → wrap in `AdvancedSection`. Catalog/cost tooling (จัดการรายการ, save-to-catalog ⭐, Pro Mode) → stay `{isFull && ...}` (office-only, no escape hatch).
 2. **Honest profit signal.** Traffic-light dot + `CostReadout` render only when `isFull && analysis.totalCost > 0`. Removal (cost always 0) never shows a dot; area/wallpaper need a vault-cost code. Don't show a green dot when cost is unknown.
 3. **Curtains keep their richer `PriceSummary`** (editable Pro Mode via `_cost_*`) as the Tier-1 reference. Only the cost hook was converged to `useCostStatus`. Do **not** downgrade it into `ItemSummaryCard`.
-4. **ItemModal footer is a single row of `size="md"` (48px) buttons.** Add mode: "บันทึก & เพิ่มจุดถัดไป" (primary, `flex-[1.4]`) + "บันทึก & ปิด" (outline). Don't revert to stacked `lg` buttons.
+4. **ItemModal footer = capsule (`rounded-full`) `size="md"` (48px) buttons, never full-width.** *(Redesigned 2026-06-10; supersedes the old full-width "บันทึก & เพิ่มจุดถัดไป / บันทึก & ปิด" row.)* When the form has no minimum data yet (`isFormEmpty`, tracked from `hasMinimumItemData`) the footer is a **single "ปิด"** (close-only) button — and `handleSubmit`'s add+close path bails on empty — so an **empty item is never created** (this was the root cause of phantom items + false room "ครบ"). Once started: right side = **ยกเลิก** (`outline`) + **บันทึก** (primary, close intent); add mode also gets a left **"บันทึก → ถัดไป"** (`secondary`, rapid multi-point flow, `submitIntentRef='next'`). Container `flex flex-wrap justify-between`. Don't revert to stacked/full-width, and don't drop the empty→"ปิด" guard.
 5. **Touch ergonomics via `useTierSize().control`** → passed to `<Input size>` (Lite = lg/56px). Don't hardcode input heights per tier.
 
 Verified live (Playwright, Lite 390px + Full 1280px): single-row footer, Lite collapsible disclosure + Full inline, and green traffic-light + CostReadout with a seeded vault cost (60% margin). `npm run lint` 0-warn, `npm run test:run` 295 passing.

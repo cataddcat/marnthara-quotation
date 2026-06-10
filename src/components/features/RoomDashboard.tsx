@@ -4,7 +4,7 @@ import { ItemCard } from './ItemCard';
 import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { isItemIncomplete } from '@/lib/item-status';
+import { isItemIncomplete, displayIndexes } from '@/lib/item-status';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { Metric } from '@/components/ui/Metric';
@@ -339,6 +339,8 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
     ? 0
     : activeItems.reduce((s, i) => s + PricingEngine.calculatePrice(i), 0);
   const itemIds = items.map((i) => i.id);
+  // เลขลำดับ ⌗NN — รายการว่าง = -1 (ItemCard ไม่โชว์เลข)
+  const itemDisplayIdx = displayIndexes(items);
 
   const handleDeleteRoom = async () => {
     const ok = await confirm({
@@ -520,7 +522,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
                 <SortableItemRow
                   key={item.id}
                   item={item}
-                  index={iIdx}
+                  index={itemDisplayIdx[iIdx]}
                   roomId={room.id}
                   onEdit={() => onEditItem(room.id, item)}
                 />

@@ -5,7 +5,8 @@ import { useZodForm } from '@/hooks/useZodForm';
 import { WoodenBlindsSchema, WoodenBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
-import { Tag, ArrowLeftToLine, ArrowRightToLine, Blinds } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Tag, ArrowLeftToLine, ArrowRightToLine, Blinds, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
@@ -59,7 +60,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData as unknown as AreaItemInput, onAutoSave);
 
-  const { favorites } = useAppStore();
+  const { favorites, openModal } = useAppStore();
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(itemType);
@@ -155,7 +156,30 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
       </FormSection>
 
       {/* 2. Options */}
-      <FormSection icon={Tag} iconClass={theme.icon} title="รุ่น / ราคา">
+      <FormSection
+        icon={Tag}
+        iconClass={theme.icon}
+        title="รุ่น / ราคา"
+        headerRight={
+          isFull && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
+              onClick={() =>
+                openModal('materialSummary', {
+                  initialTab: 'catalog',
+                  initialCategory: favCategory,
+                })
+              }
+            >
+              <Book className="w-3.5 h-3.5" />
+              <span className="text-xs">จัดการรายการ</span>
+            </Button>
+          )
+        }
+      >
         {/* Tape Type Selector */}
         <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
           {['รุ่นเชือก', 'รุ่นโซ่'].map((type) => (

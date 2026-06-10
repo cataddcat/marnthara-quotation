@@ -5,9 +5,9 @@ import { OptionSheet } from '@/components/ui/OptionSheet';
 import { FormSection } from '@/components/ui/FormSection';
 import {
   Settings2,
-  ArrowLeftToLine,
   ArrowRightToLine,
   SplitSquareHorizontal,
+  Minus,
   Check,
   AlertCircle,
 } from 'lucide-react';
@@ -75,6 +75,16 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
   const getStyleLabel = () =>
     CURTAIN_STYLES.find((s) => s.value === data.style)?.label || 'เลือกรูปแบบ...';
 
+  // ทิศทางการเปิด — normalize legacy (เก็บซ้าย/เก็บขวา/side → เก็บข้างเดียว · center → แยกกลาง) ให้ปุ่ม active ถูก
+  const currentOpening =
+    data.opening_style === 'เก็บซ้าย' ||
+    data.opening_style === 'เก็บขวา' ||
+    data.opening_style === 'side'
+      ? 'เก็บข้างเดียว'
+      : data.opening_style === 'center'
+        ? 'แยกกลาง'
+        : data.opening_style || '';
+
   return (
     <div className="space-y-4">
       {/* 1. Style Selection Card */}
@@ -114,24 +124,24 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
           <label className="text-sm font-medium text-muted-foreground ml-1">ทิศทางการเปิด</label>
           <div className="grid grid-cols-3 gap-3">
             <OpeningButton
-              value="เก็บซ้าย"
-              label="เก็บซ้าย"
-              icon={ArrowLeftToLine}
-              currentValue={data.opening_style}
+              value=""
+              label="ยังไม่เลือก"
+              icon={Minus}
+              currentValue={currentOpening}
               onChange={(v) => onChange('opening_style', v)}
             />
             <OpeningButton
               value="แยกกลาง"
               label="แยกกลาง"
               icon={SplitSquareHorizontal}
-              currentValue={data.opening_style}
+              currentValue={currentOpening}
               onChange={(v) => onChange('opening_style', v)}
             />
             <OpeningButton
-              value="เก็บขวา"
-              label="เก็บขวา"
+              value="เก็บข้างเดียว"
+              label="เก็บข้างเดียว"
               icon={ArrowRightToLine}
-              currentValue={data.opening_style}
+              currentValue={currentOpening}
               onChange={(v) => onChange('opening_style', v)}
             />
           </div>

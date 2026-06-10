@@ -4,8 +4,10 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { PleatedScreenSchema, PleatedScreenFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { Tag, Grid3X3 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Tag, Grid3X3, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
@@ -15,7 +17,7 @@ import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
-import { ITEM_TYPES, OPENING_STYLES } from '@/config/enums';
+import { ITEM_TYPES, OPENING_STYLES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const PLEATED_SCREEN_FORM_ID = 'pleated-screen-edit-form';
 
@@ -54,6 +56,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData, onAutoSave);
 
+  const { openModal } = useAppStore();
   const { isFull } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.PLEATED_SCREEN);
@@ -136,7 +139,30 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         </div>
       </FormSection>
 
-      <FormSection icon={Tag} iconClass={theme.icon} title="สเปค / ราคา">
+      <FormSection
+        icon={Tag}
+        iconClass={theme.icon}
+        title="สเปค / ราคา"
+        headerRight={
+          isFull && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 gap-1 text-muted-foreground hover:text-foreground"
+              onClick={() =>
+                openModal('materialSummary', {
+                  initialTab: 'catalog',
+                  initialCategory: FAVORITE_CATEGORIES.PLEATED_SCREEN,
+                })
+              }
+            >
+              <Book className="w-3.5 h-3.5" />
+              <span className="text-xs">จัดการรายการ</span>
+            </Button>
+          )
+        }
+      >
         {/* one field per line in Lite + on mobile; side-by-side only on desktop Full */}
         <div className={cn('grid gap-3 grid-cols-1', isFull && 'sm:grid-cols-2')}>
           <Input
