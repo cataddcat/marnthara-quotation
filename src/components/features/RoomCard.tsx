@@ -461,13 +461,13 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 onEdit={() => onEditItem(room.id, item)}
               />
             ))}
-            {/* เพิ่มสินค้า — แถบบางกระชับ (h-9) ไม่กินพื้นที่เหมือนบล็อก dashed เดิม */}
+            {/* เพิ่มสินค้า — action ที่กดบ่อยที่สุดหน้างาน: แตะ ≥44px (h-11) + ป้าย 14px */}
             <button
               onClick={() => onAddItem(room.id)}
-              className="sm:col-span-2 group flex items-center justify-center gap-1.5 h-9 rounded-xl border border-dashed border-border/50 hover:border-foreground/30 hover:bg-muted/20 transition-[border-color,background-color,transform] active:scale-[0.99]"
+              className="sm:col-span-2 group flex items-center justify-center gap-1.5 h-11 rounded-xl border border-dashed border-border/50 hover:border-foreground/30 hover:bg-muted/20 transition-[border-color,background-color,transform] active:scale-[0.99]"
             >
-              <Plus className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
+              <Plus className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
                 เพิ่มสินค้า
               </span>
             </button>

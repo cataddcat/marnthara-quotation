@@ -495,37 +495,85 @@
   }
 }
 
+/* --- 9.5 Safe-area variables + dev notch simulation --- */
+/* single source ของ safe-area — utilities ด้านล่าง + arbitrary calc ใน TSX
+   (MainLayout/RoomDashboard/OverviewSidebar) อ่านผ่าน var นี้ทั้งหมด
+   → จุดเดียวที่ override ได้ตอนจำลองจอมือถือบนเดสก์ท็อป */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* dev-only: ปุ่ม 📱 Notch ใน DevInspector ใส่ class นี้บน <html> เพื่อจำลองระยะ iPhone จริง
+   (status bar ~59px / home indicator ~34px) บน Brave/Chromium ที่ env() = 0 เสมอ
+   — ไม่มีโค้ด production ใส่ class นี้ กฎทั้งกลุ่มจึง inert ใน prod */
+html.sim-notch {
+  --safe-top: 59px;
+  --safe-bottom: 34px;
+}
+html.sim-notch body::before {
+  /* Dynamic Island (จำลอง — แค่ภาพ ไม่กิน event) */
+  content: '';
+  position: fixed;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 125px;
+  height: 37px;
+  border-radius: 20px;
+  background: #000;
+  z-index: 2147482000;
+  pointer-events: none;
+}
+html.sim-notch body::after {
+  /* Home indicator */
+  content: '';
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  border-radius: 9999px;
+  background: rgb(0 0 0 / 0.75);
+  z-index: 2147482000;
+  pointer-events: none;
+}
+html.sim-notch.dark body::after {
+  background: rgb(255 255 255 / 0.8);
+}
+
 /* --- 10. Utility Overrides & Enhancements --- */
 @layer utilities {
-  /* Safe Area Utilities (iOS devices) */
+  /* Safe Area Utilities (iOS devices) — อ่านผ่าน --safe-top/--safe-bottom (ดู §9.5) */
   .pb-safe-area {
-    padding-bottom: env(safe-area-inset-bottom, 24px);
+    padding-bottom: var(--safe-bottom);
   }
 
   .pt-safe-area {
-    padding-top: env(safe-area-inset-top, 24px);
+    padding-top: var(--safe-top);
   }
 
   /* Top safe area (Notch/Dynamic Island) */
   .pt-safe-top {
-    padding-top: env(safe-area-inset-top, 20px);
+    padding-top: var(--safe-top);
   }
   .mt-safe-top {
-    margin-top: env(safe-area-inset-top);
+    margin-top: var(--safe-top);
   }
   .top-safe-top {
-    top: env(safe-area-inset-top);
+    top: var(--safe-top);
   }
   .h-safe-top {
-    height: env(safe-area-inset-top);
+    height: var(--safe-top);
   }
 
   /* Bottom safe area (Home Indicator) */
   .pb-safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 20px);
+    padding-bottom: var(--safe-bottom);
   }
   .mb-safe-bottom {
-    margin-bottom: env(safe-area-inset-bottom);
+    margin-bottom: var(--safe-bottom);
   }
 
   /* Animation Utilities */

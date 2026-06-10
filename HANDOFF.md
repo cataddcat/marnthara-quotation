@@ -422,10 +422,10 @@ src/features/*/components/*Form.tsx   — 8 feature forms (all call useFormAutoS
 src/features/*/hooks/use*FormLogic.ts — Feature-specific form logic
 ```
 
-### Two-Tier UI (Lite/Full)
+### Two-Mode UI (field/detail — แกน "งาน" ไม่ใช่อุปกรณ์, ดู §10)
 ```
-src/hooks/useExperienceMode.ts        — single source of tier (device + override) + useTierSize
-src/store/useExperienceStore.ts       — persisted override (key marnthara-experience)
+src/hooks/useExperienceMode.ts        — single source of mode (mobile=persisted, desktop=detail) + useTierSize
+src/store/useExperienceStore.ts       — persisted mode (key marnthara-experience)
 src/components/ui/ModeGate.tsx         — declarative show-by-tier primitive
 src/components/ui/FormTwoColumn.tsx    — Full+lg → input/summary 2-col; else stack
 src/components/ui/AdvancedSection.tsx  — disclosure: Full inline / Lite collapsible (escape hatch)
@@ -481,9 +481,24 @@ src/types.ts                          — ItemData discriminated union + all inp
 
 ---
 
-## 10. 📱 Two-Tier Experience & 2026-06 Unification
+## 10. 📱 Two-Mode Experience (หน้างาน/ละเอียด) & 2026-06 Unification
 
-The app forks into **Lite** (mobile / on-site measuring) and **Full** (desktop / office quoting) — see `useExperienceMode()` (resolves tier from device + persisted override) and `useTierSize()`. PR19–24 brought all 8 forms to a consistent Lite/Full baseline; the 2026-06 pass unified the shared chrome.
+> ⚠️ **EVOLVED 2026-06-10 — แกนโหมดเปลี่ยนจาก "อุปกรณ์" เป็น "งาน".** เดิม Lite/Full ตัดสินจากขนาดจอ
+> (mobile→Lite, desktop→Full + override) ทำให้ "งานละเอียดบนมือถือ" ไม่มีบ้าน. ปัจจุบัน:
+> - **`mode: 'field' | 'detail'`** (`useExperienceStore`, persisted; default `field`) — **field/หน้างาน** =
+>   วัดไว จดให้ครบ ซ่อนทุน/กำไร/เครื่องมือละเอียด; **detail/ละเอียด** = ราคา · ทุน/กำไร · Pro Mode ·
+>   catalog · ภาพรวมแบบทำงานได้ (ลากเรียง/ย้ายข้ามห้อง — ใช้ได้บนมือถือด้วย).
+> - **Desktop = detail เสมอ** (`useExperienceMode`: จอกว้างเป็น responsive enhancement ไม่ใช่โหมด);
+>   สวิตช์โหมด (`canSwitch`) มีเฉพาะจอแคบ — **chip ใน header** (amber=หน้างาน / indigo=ละเอียด, 1 แตะ,
+>   toast ยืนยัน) + segmented ใน MainMenu. Header KPI สลับตามโหมด: field = "จุดวัด · ค้าง N" (แตะ→ลิ้นชักห้อง),
+>   detail = Net (แตะ→ส่วนลด).
+> - **กฎจำแนก 2 ถัง:** เรื่อง*พื้นที่จอจริง* (Modal drawer→center, `ItemModal.wideTwoCol`) ใช้ `useIsMobile()`;
+>   เรื่อง*ลักษณะงาน* (cost chrome, `AdvancedSection expanded`, overview gate, `useTierSize` density) ใช้
+>   `isField`/`isDetail`. **อย่าใช้โหมดตัดสิน layout จอ และอย่าใช้ความกว้างจอตัดสินฟีเจอร์งาน.**
+> - การอ่านย่อหน้าด้านล่างของ §10: map **Lite → field (หน้างาน)** · **Full → detail (ละเอียด)** —
+>   หลักการ disclosure/ergonomics เดิมยังถูกต้องทั้งหมด.
+
+The app forks into **field/หน้างาน** (on-site measuring) and **detail/ละเอียด** (office-grade quoting — desktop *or* mobile) — see `useExperienceMode()` and `useTierSize()`. PR19–24 brought all 8 forms to a consistent baseline; the 2026-06 pass unified the shared chrome.
 
 ### Shared primitives (one source each)
 - **`AdvancedSection`** — the single disclosure model. `expanded={isFull}` → Full renders children inline; Lite wraps them in a collapsible that is *always expandable* (the escape hatch). Replaces the old per-form `showAdvancedLite` toggle.

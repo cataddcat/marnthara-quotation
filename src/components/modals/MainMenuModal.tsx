@@ -14,9 +14,8 @@ import {
   Database,
   Calculator,
   Layers,
-  Smartphone,
-  Monitor,
-  Sparkles,
+  HardHat,
+  ClipboardList,
   Gem,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -106,7 +105,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   const { theme, setTheme } = useThemeStore();
   const shopName = useAppStore((s) => s.shopConfig.name);
   const { trigger } = useHaptic();
-  const { mode, isAuto, setMode } = useExperienceMode();
+  const { mode, canSwitch, setMode } = useExperienceMode();
 
   const themes = [
     { id: 'light' as const, label: 'สว่าง', icon: Sun, active: theme === 'light' },
@@ -114,10 +113,10 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
     { id: 'signature' as const, label: 'Signature', icon: Gem, active: theme === 'signature' },
   ];
 
+  // โหมดงาน (ไม่ใช่อุปกรณ์): หน้างาน = วัด/จดให้ครบ · ละเอียด = ราคา/ทุน/กำไร/จัดเรียง
   const displayModes = [
-    { id: 'auto' as const, label: 'Auto', icon: Sparkles, active: isAuto },
-    { id: 'lite' as const, label: 'เร็ว', icon: Smartphone, active: !isAuto && mode === 'lite' },
-    { id: 'full' as const, label: 'เต็ม', icon: Monitor, active: !isAuto && mode === 'full' },
+    { id: 'field' as const, label: 'หน้างาน', icon: HardHat, active: mode === 'field' },
+    { id: 'detail' as const, label: 'ละเอียด', icon: ClipboardList, active: mode === 'detail' },
   ];
 
   return (
@@ -160,22 +159,24 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
               ))}
             </div>
             
-            {/* Mode Toggle */}
-            <div className="flex items-center justify-between bg-card border border-border/50 p-1 rounded-lg">
-              {displayModes.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => { trigger('selection'); setMode(opt.id); }}
-                  className={cn(
-                    'flex items-center justify-center gap-1.5 flex-1 min-h-[44px] rounded-md transition-all text-xs font-semibold',
-                    opt.active ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <opt.icon className="w-3.5 h-3.5" strokeWidth={1.5} />
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            {/* Mode Toggle — โหมดงาน (เฉพาะจอมือถือ; desktop = ละเอียดเสมอ) */}
+            {canSwitch && (
+              <div className="flex items-center justify-between bg-card border border-border/50 p-1 rounded-lg">
+                {displayModes.map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => { trigger('selection'); setMode(opt.id); }}
+                    className={cn(
+                      'flex items-center justify-center gap-1.5 flex-1 min-h-[44px] rounded-md transition-all text-xs font-semibold',
+                      opt.active ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <opt.icon className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

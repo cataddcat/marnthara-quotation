@@ -50,10 +50,10 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData, onAutoSave);
 
-  const { isLite } = useExperienceMode();
-  const [showAdvancedLite, setShowAdvancedLite] = useState(false);
-  // Full = แสดงทุกอย่าง; Lite = เฉพาะที่จำเป็น เว้นแต่กด "ตัวเลือกทั้งหมด"
-  const showAdvanced = !isLite || showAdvancedLite;
+  const { isField } = useExperienceMode();
+  const [showAdvancedField, setShowAdvancedLite] = useState(false);
+  // Detail = แสดงทุกอย่าง; Field (หน้างาน) = เฉพาะที่จำเป็น เว้นแต่กด "ตัวเลือกขั้นสูง"
+  const showAdvanced = !isField || showAdvancedField;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeHandleChange = handleChange as any;
@@ -93,14 +93,14 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     />
   );
 
-  const advancedToggle = isLite && (
+  const advancedToggle = isField && (
     <button
       type="button"
       onClick={() => setShowAdvancedLite((v) => !v)}
-      aria-expanded={showAdvancedLite}
+      aria-expanded={showAdvancedField}
       className={cn(
         'w-full flex items-center justify-between gap-2 min-h-[44px] px-3.5 rounded-xl border border-dashed transition-colors',
-        showAdvancedLite
+        showAdvancedField
           ? 'border-foreground/30 bg-muted/40 text-foreground'
           : 'border-border text-muted-foreground hover:bg-muted/30'
       )}
@@ -109,7 +109,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         <SlidersHorizontal className="w-4 h-4 shrink-0" strokeWidth={1.5} />
         ตัวเลือกขั้นสูง (อุปกรณ์ผลิต · ทิศเปิด · ต้นทุน)
       </span>
-      <span className="text-xs font-semibold shrink-0">{showAdvancedLite ? 'ซ่อน' : 'แสดง'}</span>
+      <span className="text-xs font-semibold shrink-0">{showAdvancedField ? 'ซ่อน' : 'แสดง'}</span>
     </button>
   );
 
@@ -127,7 +127,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     />
   );
 
-  // กลุ่ม input (ผ้า/อุปกรณ์) — ใช้ร่วมทั้ง Lite (ใน collapsible) และ Full (คอลัมน์ซ้าย)
+  // กลุ่ม input (ผ้า/อุปกรณ์) — ใช้ร่วมทั้ง Field (ใน collapsible) และ Detail (คอลัมน์ซ้าย)
   const inputSections = (
     <>
       <FabricSection
@@ -139,7 +139,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         errors={errors}
         warnings={warnings}
         showCatalogTools={showAdvanced}
-        stack={isLite}
+        stack={isField}
       />
 
       {showAdvanced && (
@@ -168,7 +168,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
       onSubmit={handleSubmit}
       className="space-y-3"
     >
-      {isLite ? (
+      {isField ? (
         <>
           {dimensionSection}
           {styleSection}
@@ -189,7 +189,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
           </CollapsibleSection>
         </>
       ) : (
-        // Full (เดสก์ท็อป): 2 คอลัมน์ — input ซ้าย / สรุปราคา+ต้นทุน sticky ขวา
+        // Detail: 2 คอลัมน์เมื่อจอกว้างพอ (lg) — input ซ้าย / สรุปราคา+ต้นทุน sticky ขวา; จอแคบ = stack
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
           <div className="space-y-4">
             {dimensionSection}

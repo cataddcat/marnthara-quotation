@@ -77,7 +77,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
     );
   }, [formData]);
 
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
 
   const summaryPanel = (
@@ -97,7 +97,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
 
   return (
     <form id={REMOVAL_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       <FormSection icon={Scissors} iconClass="text-destructive" title="รายละเอียดงานรื้อถอน">
         <div className="space-y-3">
           <Input

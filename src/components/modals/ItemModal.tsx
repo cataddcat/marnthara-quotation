@@ -4,7 +4,7 @@ import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
 import { Save, CheckCircle2, ChevronDown, ArrowRight } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
-import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 
@@ -87,7 +87,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const { trigger } = useHaptic();
   const { addItem, updateItem } = useAppStore();
   const addToast = useUIStore((s) => s.addToast);
-  const { isLite } = useExperienceMode();
+  const isMobile = useIsMobile();
   // ชื่อห้องปัจจุบัน — แสดงด้านบน Modal กันผู้ใช้สับสนว่ากำลังเพิ่ม/แก้ไขในห้องไหน
   const roomName = useAppStore((s) => s.rooms.find((r) => r.id === roomId)?.name);
 
@@ -324,8 +324,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         : 'เลือกประเภทสินค้า'
       : `แก้ไข${itemName}`;
   const activeFormId = FORM_ID_BY_TYPE[activeType];
-  // โหมด Full ทุกประเภทใช้ layout 2 คอลัมน์ → ต้องการ modal กว้างบนเดสก์ท็อป
-  const wideTwoCol = !isLite;
+  // จอกว้าง (desktop) ทุกประเภทใช้ layout 2 คอลัมน์ → ต้องการ modal กว้าง (ถัง Layout — ไม่ใช่โหมดงาน)
+  const wideTwoCol = !isMobile;
 
   const typeOptions = MENU_ITEMS.map((item) => ({
     label: ITEM_CONFIG[item.id]?.name || item.id,

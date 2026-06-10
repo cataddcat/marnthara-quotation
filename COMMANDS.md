@@ -48,6 +48,27 @@ npm run dev           # Vite dev server on http://localhost:3000 (opens browser;
 npm run preview       # Serve the production build locally (after `npm run build`)
 ```
 
+### 📱 ทดสอบจอมือถือบน Brave (ไม่ต้อง F12)
+
+`useIsMobile` ตัดสินจากความกว้าง viewport (<768px) อย่างเดียว → หน้าต่างแคบ = โหมดมือถือแท้ 100%.
+
+**ทางหลัก (1 คลิก):** `npm run dev` → กดปุ่ม **"จอมือถือ"** (DevInspector, มุมล่างซ้าย) →
+เปิด popup หน้าต่างจริงขนาด 393×852 — แอปในนั้นเข้าโหมดมือถือแท้. ปุ่ม **"Notch"** = จำลองระยะ
+safe-area iPhone (บน 59px / ล่าง 34px) — *เว้นระยะอย่างเดียว ไม่บีบจอ* ใช้คู่กับปุ่มจอมือถือ.
+
+**ทางเลือก (หน้าต่างไร้ chrome / ทำ Desktop shortcut):** Brave app window:
+
+```
+"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe" --app=http://localhost:3000 --window-size=393,880
+```
+
+- **Swipe/gesture:** เมาส์ไม่สร้าง touch event — ทดสอบ swipe ผ่าน DevTools Device Toolbar
+  (**Ctrl+Shift+M**, จำลอง touch จากเมาส์ได้) เป็นครั้งคราว
+- **Safe-area:** Chromium ให้ `env(safe-area-inset-*)` = 0 เสมอ → กดปุ่ม **"Notch"** (DevInspector,
+  มุมล่างซ้าย ข้างปุ่ม Probe) เพื่อจำลองระยะ iPhone จริง (บน 59px / ล่าง 34px + home indicator)
+- **เครื่องจริงเป็นระยะ:** `npm run dev -- --host` → เปิด `http://<IP เครื่อง>:3000` จากมือถือใน LAN
+  (touch จริง + safe-area จริง)
+
 ---
 
 ## 🧪 Test

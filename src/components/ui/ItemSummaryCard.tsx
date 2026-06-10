@@ -27,11 +27,11 @@ interface ItemSummaryCardProps {
   onToggleSetPrice: (v: boolean) => void;
   setPriceValue: string | number | undefined;
   onSetPriceChange: (v: string) => void;
-  /** Tier-1 (Full) — ไฟจราจรกำไร */
+  /** โหมดละเอียด (Detail) — ไฟจราจรกำไร */
   status?: CostBreakdown['status'];
-  /** โชว์ไฟเฉพาะตอนรู้ต้นทุนจริง (= isFull && totalCost > 0) */
+  /** โชว์ไฟเฉพาะตอนรู้ต้นทุนจริง (= isDetail && totalCost > 0) */
   showStatus?: boolean;
-  /** Tier-1 (Full) — ส่วนวิเคราะห์ต้นทุนเชิงลึก (ผ้าม่าน=แก้ได้ / area-wallpaper=อ่านอย่างเดียว) */
+  /** โหมดละเอียด (Detail) — ส่วนวิเคราะห์ต้นทุนเชิงลึก (ผ้าม่าน=แก้ได้ / area-wallpaper=อ่านอย่างเดียว) */
   proSlot?: React.ReactNode;
 }
 

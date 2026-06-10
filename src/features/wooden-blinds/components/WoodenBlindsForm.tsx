@@ -61,7 +61,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   useFormAutoSave(formData as unknown as AreaItemInput, onAutoSave);
 
   const { favorites, openModal } = useAppStore();
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(itemType);
 
@@ -115,9 +115,9 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
       setPriceValue={formData.set_price_override}
       onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
       status={analysis?.status}
-      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
       proSlot={
-        isFull && analysis && analysis.totalCost > 0 ? (
+        isDetail && analysis && analysis.totalCost > 0 ? (
           <CostReadout analysis={analysis} />
         ) : null
       }
@@ -126,7 +126,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
 
   return (
     <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
       <FormSection icon={Blinds} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
@@ -161,7 +161,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
         iconClass={theme.icon}
         title="รุ่น / ราคา"
         headerRight={
-          isFull && (
+          isDetail && (
             <Button
               type="button"
               variant="ghost"
@@ -195,7 +195,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
         </div>
 
         {/* Code & Price — one field per line in Lite + on mobile; side-by-side only on desktop Full */}
-        <div className={cn('grid gap-3 grid-cols-1', isFull && 'sm:grid-cols-2')}>
+        <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           {/* [FIX] Keep Combobox ONLY for Code/Color */}
           <ComboboxInput
             label="รุ่น/รหัส/สี"
@@ -219,7 +219,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
       </FormSection>
 
       {/* Control Side (installation spec — collapsible escape hatch in Lite) */}
-      <AdvancedSection expanded={isFull} hint="ตำแหน่งดึง — ใส่ทีหลังได้">
+      <AdvancedSection expanded={isDetail} hint="ตำแหน่งดึง — ใส่ทีหลังได้">
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">ตำแหน่งดึง (Side)</label>
           <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>

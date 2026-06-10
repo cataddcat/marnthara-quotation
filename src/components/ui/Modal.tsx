@@ -12,7 +12,7 @@ import { X, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { useMobileBack } from '@/hooks/useMobileBack';
-import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 export type ModalVariant = 'center' | 'fullscreen' | 'drawer';
 
@@ -48,9 +48,9 @@ export const Modal: React.FC<ModalProps> = ({
   appShell = false,
 }) => {
   useMobileBack(isOpen, onClose);
-  // Tier มาจาก single source (device + persisted override) — เคารพ override ของผู้ใช้
-  // แทนการอ่านความกว้างจอตรง ๆ (เดิม useIsMobile) ตาม HANDOFF §10
-  const { isLite } = useExperienceMode();
+  // Drawer/fullscreen vs center เป็นเรื่อง "พื้นที่จอจริง" (ถัง Layout) ไม่ใช่โหมดงาน —
+  // มือถือโหมดละเอียดก็ยังต้องได้ bottom sheet → อ่านความกว้างจอตรง ๆ
+  const isMobile = useIsMobile();
 
   // หัวเรื่องแบบ "รับรู้การเลื่อน" (Geist §1.7 borders-over-shadows): หัวเรื่องแบนสนิทเมื่ออยู่บนสุด
   // และมีเส้นคั่นโผล่ขึ้นเมื่อเนื้อหาเลื่อน → บอกผู้ใช้ว่ายังมีต่อด้านบน (ใช้กับทุก modal ผ่าน chrome กลาง)
@@ -61,13 +61,13 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   // 🧠 Smart Adaptive Logic:
-  // Full tier (เดสก์ท็อป หรือ override=full บนมือถือ) → เปลี่ยน Fullscreen/Drawer เป็น Center ให้หมด
+  // จอกว้าง (desktop) → เปลี่ยน Fullscreen/Drawer เป็น Center ให้หมด
   const effectiveVariant = useMemo(() => {
-    if (!isLite && (variant === 'fullscreen' || variant === 'drawer')) {
+    if (!isMobile && (variant === 'fullscreen' || variant === 'drawer')) {
       return 'center';
     }
     return variant;
-  }, [isLite, variant]);
+  }, [isMobile, variant]);
 
   // --- 1. DRAWER (Mobile Bottom Sheet) ---
   if (effectiveVariant === 'drawer') {
@@ -201,8 +201,8 @@ export const Modal: React.FC<ModalProps> = ({
                     )}
                   >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    {/* ปุ่ม Back สำหรับ Fullscreen (Lite tier) — hit area ≥44px + hover/active/focus-visible */}
-                    {isFullscreen && isLite && (
+                    {/* ปุ่ม Back สำหรับ Fullscreen (จอมือถือ) — hit area ≥44px + hover/active/focus-visible */}
+                    {isFullscreen && isMobile && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -233,8 +233,8 @@ export const Modal: React.FC<ModalProps> = ({
 
                   {headerAction && <div className="flex items-center shrink-0">{headerAction}</div>}
 
-                  {/* ปุ่ม X — แสดงเมื่อไม่ใช่ Fullscreen แบบ Lite (กรณีนั้นใช้ปุ่ม Back แทน) */}
-                  {(!isFullscreen || !isLite) && (
+                  {/* ปุ่ม X — แสดงเมื่อไม่ใช่ Fullscreen บนจอมือถือ (กรณีนั้นใช้ปุ่ม Back แทน) */}
+                  {(!isFullscreen || !isMobile) && (
                     <Button
                       variant="ghost"
                       size="icon"

@@ -4,9 +4,9 @@ import { CollapsibleSection } from './CollapsibleSection';
 
 interface AdvancedSectionProps {
   /**
-   * ส่ง isFull เข้ามา —
-   * true (Full): แสดง children ตรงๆ ไม่มี chrome ครอบ (เหมือนเดิมก่อน refactor)
-   * false (Lite): ห่อด้วย CollapsibleSection ที่ยุบอยู่ แต่ "กางได้เสมอ" = escape hatch ในตัว
+   * ส่ง isDetail เข้ามา —
+   * true (Detail/ละเอียด): แสดง children ตรงๆ ไม่มี chrome ครอบ
+   * false (Field/หน้างาน): ห่อด้วย CollapsibleSection ที่ยุบอยู่ แต่ "กางได้เสมอ" = escape hatch ในตัว
    */
   expanded: boolean;
   /** หัวข้อกลุ่มตัวเลือก */
@@ -17,10 +17,10 @@ interface AdvancedSectionProps {
 }
 
 /**
- * โมเดล disclosure เดียวของ Two-Tier — tier เป็นแค่ "ค่าเริ่มต้น" ไม่ใช่ "กรง"
- * แทนที่ pattern เดิมที่ปนกันระหว่าง `{isFull && ...}` (ซ่อนสนิท) กับปุ่ม toggle เฉพาะผ้าม่าน
+ * โมเดล disclosure เดียวของ Two-Mode (หน้างาน/ละเอียด) — โหมดเป็นแค่ "ค่าเริ่มต้น" ไม่ใช่ "กรง"
+ * แทนที่ pattern เดิมที่ปนกันระหว่าง `{isDetail && ...}` (ซ่อนสนิท) กับปุ่ม toggle เฉพาะผ้าม่าน
  *
- * @example <AdvancedSection expanded={isFull}>{installationControls}</AdvancedSection>
+ * @example <AdvancedSection expanded={isDetail}>{installationControls}</AdvancedSection>
  */
 export const AdvancedSection: React.FC<AdvancedSectionProps> = ({
   expanded,

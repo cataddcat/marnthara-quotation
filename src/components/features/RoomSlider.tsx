@@ -35,10 +35,10 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   onEditItem,
 }) => {
   const { trigger } = useHaptic();
-  const { isLite } = useExperienceMode();
-  // overview เป็นของ Full เท่านั้น — Lite ใช้ "All Rooms Summary" (ProjectOverviewModal) ผ่าน dock "ภาพรวม"
-  // (Lite ไม่เข้าโหมด overview แล้วหลังตัด toggle "สรุปทุกห้อง" ออกจาก Room Navigator)
-  const effectiveViewMode = isLite ? 'focus' : viewMode;
+  const { isField } = useExperienceMode();
+  // overview เป็นของโหมดละเอียด (detail — รวมมือถือ) — โหมดหน้างาน (field) ใช้ focus ทีละห้อง
+  // และดูสรุปผ่าน "All Rooms Summary" (ProjectOverviewModal) จาก dock "ภาพรวม" แทน
+  const effectiveViewMode = isField ? 'focus' : viewMode;
   const touchStartXRef = useRef<number | null>(null);
   // ทิศการสลับห้องล่าสุด — ใช้เลือกทิศ slide animation (state: อ่านตอน render ได้)
   const [direction, setDirection] = useState<'next' | 'prev'>('next');
@@ -109,7 +109,8 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
           </button>
 
           {useDots ? (
-            <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center min-w-0">
+              {/* จุด visual เล็กเท่าเดิม แต่ hit area สูง 44px (h-11) — แตะง่ายขึ้นโดยไม่บวมสายตา */}
               {rooms.map((room, i) => (
                 <button
                   key={room.id}
@@ -121,13 +122,17 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
                     }
                   }}
                   aria-label={room.name}
-                  className={cn(
-                    'rounded-full transition-all duration-200 outline-none',
-                    i === activeIndex
-                      ? 'w-5 h-2 bg-primary'
-                      : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/60 active:scale-90'
-                  )}
-                />
+                  className="group flex h-11 w-6 items-center justify-center outline-none"
+                >
+                  <span
+                    className={cn(
+                      'rounded-full transition-all duration-200',
+                      i === activeIndex
+                        ? 'w-5 h-2 bg-primary'
+                        : 'w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60 group-active:scale-90'
+                    )}
+                  />
+                </button>
               ))}
             </div>
           ) : (
@@ -172,7 +177,8 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
     );
   }
 
-  // overview (Full เท่านั้น) = sidebar ดัชนีห้อง (≥lg, sticky ซ้าย) + แดชบอร์ดกริด + ลากเรียงลำดับ
+  // overview (โหมดละเอียด) = sidebar ดัชนีห้อง (≥lg, sticky ซ้าย) + แดชบอร์ดกริด + ลากเรียงลำดับ
+  // (จอแคบ: sidebar ซ่อน, กริดยุบเหลือ 1 คอลัมน์ — ยังลากเรียง/ย้ายข้ามห้องด้วยนิ้วได้)
   return (
     <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-4 lg:items-start">
       <OverviewSidebar rooms={rooms} layoutKey={dashboardDensity} className="hidden lg:flex" />

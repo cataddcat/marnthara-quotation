@@ -65,7 +65,7 @@ const gripCls =
   'shrink-0 flex items-center justify-center w-7 h-9 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-muted cursor-grab active:cursor-grabbing transition-colors touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 // anchor ให้ OverviewSidebar เลื่อนมาหา — กันการ์ดมุดใต้ fixed header (3.5rem + safe-area)
-const roomAnchorCls = 'scroll-mt-[calc(3.5rem+env(safe-area-inset-top)+0.75rem)]';
+const roomAnchorCls = 'scroll-mt-[calc(3.5rem+var(--safe-top)+0.75rem)]';
 
 /** หา roomId ที่ array ของ item ids มี id นี้อยู่ (ใช้กับ local container map) */
 const findContainer = (map: Record<string, string[]>, id: string): string | undefined =>

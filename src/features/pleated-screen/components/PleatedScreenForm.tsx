@@ -58,7 +58,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   useFormAutoSave(formData, onAutoSave);
 
   const { openModal } = useAppStore();
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.PLEATED_SCREEN);
 
@@ -104,9 +104,9 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
       setPriceValue={formData.set_price_override}
       onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
       status={analysis?.status}
-      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
       proSlot={
-        isFull && analysis && analysis.totalCost > 0 ? (
+        isDetail && analysis && analysis.totalCost > 0 ? (
           <CostReadout analysis={analysis} />
         ) : null
       }
@@ -115,7 +115,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
 
   return (
     <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
@@ -145,7 +145,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         iconClass={theme.icon}
         title="สเปค / ราคา"
         headerRight={
-          isFull && (
+          isDetail && (
             <Button
               type="button"
               variant="ghost"
@@ -165,7 +165,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         }
       >
         {/* one field per line in Lite + on mobile; side-by-side only on desktop Full */}
-        <div className={cn('grid gap-3 grid-cols-1', isFull && 'sm:grid-cols-2')}>
+        <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           <Input
             label="สีเฟรม"
             value={formData.code || ''}
@@ -185,7 +185,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
 
       {/* Opening Style (installation spec — collapsible escape hatch in Lite)
           ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — ปุ่มเดิมโชว์ค่า enum ดิบ 'center'/'side' เป็นป้าย */}
-      <AdvancedSection expanded={isFull} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
+      <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
         <OpeningStyleSelector
           label="รูปแบบการเปิด"
           value={formData.opening_style}

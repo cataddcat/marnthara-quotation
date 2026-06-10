@@ -3,16 +3,16 @@ import { useExperienceMode } from '@/hooks/useExperienceMode';
 import type { ExperienceMode } from '@/store/useExperienceStore';
 
 interface ModeGateProps {
-  /** แสดง children เฉพาะเมื่อ tier ปัจจุบันตรงกับค่านี้ */
+  /** แสดง children เฉพาะเมื่อโหมดงานปัจจุบันตรงกับค่านี้ */
   show: ExperienceMode;
-  /** escape hatch — ถ้า true จะแสดงเสมอ ไม่สนใจ tier (เช่น ปุ่ม "ตัวเลือกทั้งหมด" ใน Lite) */
+  /** escape hatch — ถ้า true จะแสดงเสมอ ไม่สนใจโหมด (เช่น ปุ่ม "ตัวเลือกทั้งหมด" ในโหมดหน้างาน) */
   force?: boolean;
   children: React.ReactNode;
 }
 
 /**
- * Primitive ประกาศเชิงโครงสร้างสำหรับ Two-Tier Experience
- * @example <ModeGate show="full">...โหมดเต็มเท่านั้น...</ModeGate>
+ * Primitive ประกาศเชิงโครงสร้างสำหรับ Two-Mode Experience (หน้างาน/ละเอียด)
+ * @example <ModeGate show="detail">...โหมดละเอียดเท่านั้น...</ModeGate>
  */
 export const ModeGate: React.FC<ModeGateProps> = ({ show, force = false, children }) => {
   const { mode } = useExperienceMode();

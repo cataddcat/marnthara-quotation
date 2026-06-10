@@ -16,7 +16,7 @@ interface PdfPreviewModalProps {
 
 export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClose }) => {
   const componentRef = useRef<HTMLDivElement>(null);
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const customer = useAppStore((s) => s.customer);
   const ensureCustomerIdentity = useAppStore((s) => s.ensureCustomerIdentity);
 
@@ -112,7 +112,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
 
                 <div className="flex gap-3 w-full sm:w-auto items-center">
                   {/* Full/desktop: show the computed page count before handing off to the browser. */}
-                  {isFull && pageCount > 0 && (
+                  {isDetail && pageCount > 0 && (
                     <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-slate-500 font-mono whitespace-nowrap">
                       <FileText className="w-4 h-4" strokeWidth={1.5} />
                       {pageCount} หน้า

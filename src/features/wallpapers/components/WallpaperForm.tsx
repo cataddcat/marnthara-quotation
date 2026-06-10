@@ -52,7 +52,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.WALLPAPER);
 
@@ -106,9 +106,9 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
       setPriceValue={formData.set_price_override}
       onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
       status={analysis?.status}
-      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
       proSlot={
-        isFull && analysis && analysis.totalCost > 0 ? (
+        isDetail && analysis && analysis.totalCost > 0 ? (
           <CostReadout analysis={analysis} />
         ) : null
       }
@@ -117,7 +117,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
 
   return (
     <form id={WALLPAPER_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
       <FormSection icon={Ruler} title="ขนาดพื้นที่">
         <div className="space-y-3">
@@ -174,7 +174,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
         iconClass={theme.icon}
         title="รหัสวอลเปเปอร์"
         headerRight={
-          isFull && (
+          isDetail && (
             <Button
               type="button"
               variant="ghost"
@@ -205,7 +205,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             onChange={(e) => handleNumberChange('price_per_roll', e.target.value)}
             prefix={<Tag className="w-4 h-4 text-muted-foreground" />}
           />
-          {isFull && formData.wallpaper_code && toNum(formData.price_per_roll) > 0 && (
+          {isDetail && formData.wallpaper_code && toNum(formData.price_per_roll) > 0 && (
             <button
               type="button"
               onClick={() =>

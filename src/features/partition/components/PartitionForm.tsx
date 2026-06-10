@@ -62,7 +62,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.PARTITION);
 
@@ -111,9 +111,9 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
       setPriceValue={formData.set_price_override}
       onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
       status={analysis?.status}
-      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
       proSlot={
-        isFull && analysis && analysis.totalCost > 0 ? (
+        isDetail && analysis && analysis.totalCost > 0 ? (
           <CostReadout analysis={analysis} />
         ) : null
       }
@@ -122,7 +122,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
 
   return (
     <form id={PARTITION_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimension Section */}
       <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
@@ -156,7 +156,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
         iconClass={theme.icon}
         title="รุ่น/สเปค"
         headerRight={
-          isFull && (
+          isDetail && (
             <Button
               type="button"
               variant="ghost"
@@ -187,7 +187,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             warning={warnings.price_sqyd}
             className="bg-muted/50"
           />
-          {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
+          {isDetail && formData.code && toNum(formData.price_sqyd) > 0 && (
             <button
               type="button"
               onClick={() =>
@@ -214,7 +214,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
 
       {/* รูปแบบการเปิด (installation spec — collapsible escape hatch in Lite)
           ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — เก็บค่า canonical ไทย, รองรับค่าเก่า 'side'/'center' */}
-      <AdvancedSection expanded={isFull} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
+      <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
         <OpeningStyleSelector
           label="รูปแบบการเปิด"
           value={formData.opening_style}

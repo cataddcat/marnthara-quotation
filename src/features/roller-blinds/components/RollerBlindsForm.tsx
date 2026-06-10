@@ -61,7 +61,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.ROLLER_BLIND);
 
@@ -113,9 +113,9 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
       setPriceValue={formData.set_price_override}
       onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
       status={analysis?.status}
-      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
       proSlot={
-        isFull && analysis && analysis.totalCost > 0 ? (
+        isDetail && analysis && analysis.totalCost > 0 ? (
           <CostReadout analysis={analysis} />
         ) : null
       }
@@ -124,7 +124,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
   return (
     <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
       <FormSection icon={Minimize2} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
@@ -158,7 +158,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
         iconClass={theme.icon}
         title="รหัส/รุ่น"
         headerRight={
-          isFull && (
+          isDetail && (
             <Button
               type="button"
               variant="ghost"
@@ -189,7 +189,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}
           />
-          {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
+          {isDetail && formData.code && toNum(formData.price_sqyd) > 0 && (
             <button
               type="button"
               onClick={() =>
@@ -232,7 +232,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
       </FormSection>
 
       {/* Controls: Pull Side (installation spec — collapsible escape hatch in Lite) */}
-      <AdvancedSection expanded={isFull} hint="ฝั่งดึง — ใส่ทีหลังได้">
+      <AdvancedSection expanded={isDetail} hint="ฝั่งดึง — ใส่ทีหลังได้">
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
           <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>

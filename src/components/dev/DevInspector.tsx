@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { Crosshair, Copy, X } from 'lucide-react';
+import { Crosshair, Copy, X, Smartphone, MoveVertical } from 'lucide-react';
 import { classifySizePx, type SizeStatus } from '@/config/typography';
 
 /**
@@ -87,6 +87,25 @@ export const DevInspector = () => {
   const [pinned, setPinned] = useState<Probe | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // จำลอง safe-area iPhone (notch 59px / home bar 34px) บนจอจำลอง Brave/Chromium ที่ env()=0
+  // → toggle class `sim-notch` บน <html> (กฎ CSS อยู่ index.css §9.5) + จำสถานะข้าม reload
+  // หมายเหตุ: ปุ่มนี้ "เว้นระยะ" อย่างเดียว — การบีบจอเป็นหน้าที่ปุ่ม "จอมือถือ" ด้านล่าง
+  const [simNotch, setSimNotch] = useState(
+    () => localStorage.getItem('mtr.sim-notch') === '1'
+  );
+  useEffect(() => {
+    document.documentElement.classList.toggle('sim-notch', simNotch);
+    localStorage.setItem('mtr.sim-notch', simNotch ? '1' : '0');
+  }, [simNotch]);
+
+  // "จอมือถือ" — เปิดแอปใน popup window ขนาดโทรศัพท์ (หน้าต่างจริงแยกต่างหาก →
+  // useIsMobile เห็น innerWidth ~393 → แอปเข้าโหมดมือถือแท้ 100%) ใช้คู่กับ Notch ได้
+  // (sim-notch แชร์ผ่าน localStorage เดียวกัน). ในตัว popup เองซ่อนปุ่มนี้ (กัน popup ซ้อน popup)
+  const isPopup = !!window.opener;
+  const openPhoneWindow = () => {
+    window.open(window.location.href, 'mtr-phone', 'width=393,height=852,resizable=yes');
+  };
 
   const showFlash = useCallback((msg: string) => {
     setFlash(msg);
@@ -188,33 +207,54 @@ export const DevInspector = () => {
 
   return createPortal(
     <div data-devinspector="">
-      {/* ปุ่มลอย toggle */}
-      <button
-        type="button"
-        onClick={() => setActive((v) => !v)}
-        onPointerDown={(e) => e.stopPropagation()}
-        title="Design Probe (Alt+L) — คลิกองค์ประกอบเพื่อดู อะไร/ที่ไหน/ขนาด แล้วคัดลอก"
+      {/* คอลัมน์ปุ่ม dev (ไอคอนล้วน 36px) — ยกพ้น dock ล่าง (dock สูงถึง ~72px จากขอบ) */}
+      <div
         style={{
           position: 'fixed',
-          left: 12,
-          bottom: 12,
+          left: 10,
+          bottom: 84,
           zIndex: Z,
           display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '8px 12px',
-          borderRadius: 9999,
-          border: '1px solid rgba(0,0,0,0.12)',
-          background: active ? '#0ea5e9' : '#1e293b',
-          color: '#fff',
-          font: '600 12px/1 system-ui, sans-serif',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          flexDirection: 'column',
+          gap: 8,
         }}
       >
-        <Crosshair size={14} />
-        {active ? 'Probe: เปิด (Esc ปิด)' : 'Probe'}
-      </button>
+        <button
+          type="button"
+          onClick={() => setActive((v) => !v)}
+          onPointerDown={(e) => e.stopPropagation()}
+          title={
+            active
+              ? 'Design Probe: เปิดอยู่ (Esc ปิด) — คลิกองค์ประกอบเพื่อดู อะไร/ที่ไหน/ขนาด แล้วคัดลอก'
+              : 'Design Probe (Alt+L) — คลิกองค์ประกอบเพื่อดู อะไร/ที่ไหน/ขนาด แล้วคัดลอก'
+          }
+          style={devCircleBtn(active)}
+        >
+          <Crosshair size={16} />
+        </button>
+
+        {!isPopup && (
+          <button
+            type="button"
+            onClick={openPhoneWindow}
+            onPointerDown={(e) => e.stopPropagation()}
+            title="จอมือถือ — เปิดแอปในหน้าต่างขนาดโทรศัพท์ (393×852) viewport แคบจริง แอปเข้าโหมดมือถือแท้"
+            style={devCircleBtn(false)}
+          >
+            <Smartphone size={16} />
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setSimNotch((v) => !v)}
+          onPointerDown={(e) => e.stopPropagation()}
+          title="Notch — จำลองระยะ safe-area iPhone (บน 59px / ล่าง 34px) เว้นระยะ header/dock เหมือนเครื่องจริง (ไม่บีบจอ — ใช้คู่ปุ่มจอมือถือ)"
+          style={devCircleBtn(simNotch)}
+        >
+          <MoveVertical size={16} />
+        </button>
+      </div>
 
       {/* กรอบไฮไลต์ + tooltip (ขนาด/role/ที่อยู่) */}
       {active && hover && (
@@ -256,13 +296,13 @@ export const DevInspector = () => {
         </>
       )}
 
-      {/* พาเนลรายละเอียด (ปักหมุดหลังคลิก) */}
+      {/* พาเนลรายละเอียด (ปักหมุดหลังคลิก) — ชิดขวาของคอลัมน์ปุ่ม dev */}
       {active && pinned && (
         <div
           style={{
             position: 'fixed',
-            left: 12,
-            bottom: 56,
+            left: 56,
+            bottom: 84,
             zIndex: Z,
             width: 360,
             maxWidth: '92vw',
@@ -361,6 +401,21 @@ export const DevInspector = () => {
     document.body
   );
 };
+
+// ปุ่มกลม dev (ไอคอนล้วน) — active = sky
+const devCircleBtn = (on: boolean): CSSProperties => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 36,
+  height: 36,
+  borderRadius: 9999,
+  border: '1px solid rgba(0,0,0,0.12)',
+  background: on ? '#0ea5e9' : '#1e293b',
+  color: '#fff',
+  cursor: 'pointer',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+});
 
 const iconBtn: CSSProperties = {
   display: 'inline-flex',

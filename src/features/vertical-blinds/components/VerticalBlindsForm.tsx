@@ -63,7 +63,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
 
   const { favorites, openModal } = useAppStore();
   const { saveToCatalog, isInCatalog } = useSaveToCatalog();
-  const { isFull } = useExperienceMode();
+  const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.VERTICAL_BLIND);
 
@@ -113,9 +113,9 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
       setPriceValue={formData.set_price_override}
       onSetPriceChange={(v) => handleNumberChange('set_price_override', v)}
       status={analysis?.status}
-      showStatus={isFull && (analysis?.totalCost ?? 0) > 0}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
       proSlot={
-        isFull && analysis && analysis.totalCost > 0 ? (
+        isDetail && analysis && analysis.totalCost > 0 ? (
           <CostReadout analysis={analysis} />
         ) : null
       }
@@ -124,7 +124,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
 
   return (
     <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit}>
-      <FormTwoColumn full={isFull} right={summaryPanel}>
+      <FormTwoColumn full={isDetail} right={summaryPanel}>
       <FormSection icon={Columns} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
@@ -154,7 +154,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
         iconClass={theme.icon}
         title="รหัส/รุ่น"
         headerRight={
-          isFull && (
+          isDetail && (
             <Button
               type="button"
               variant="ghost"
@@ -184,7 +184,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}
           />
-          {isFull && formData.code && toNum(formData.price_sqyd) > 0 && (
+          {isDetail && formData.code && toNum(formData.price_sqyd) > 0 && (
             <button
               type="button"
               onClick={() =>
@@ -210,7 +210,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
       </FormSection>
 
       {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch in Lite) */}
-      <AdvancedSection expanded={isFull} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
+      <AdvancedSection expanded={isDetail} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
         <div className="space-y-3">
           {/* เก็บใบ — ตัวเลือกทิศทางการเปิดมาตรฐาน (ยังไม่เลือก/แยกกลาง/เก็บข้างเดียว) */}
           <OpeningStyleSelector

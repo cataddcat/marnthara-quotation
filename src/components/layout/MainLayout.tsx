@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { useUIStore } from '@/store/useUIStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
-import { Menu, LayoutDashboard, ChevronRight, Layers, Home } from 'lucide-react';
+import {
+  Menu,
+  LayoutDashboard,
+  ChevronRight,
+  Layers,
+  Home,
+  HardHat,
+  ClipboardList,
+} from 'lucide-react';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { isItemIncomplete } from '@/lib/item-status';
 import { SmartNavigator } from '@/components/features/SmartNavigator';
 
 interface MainLayoutProps {
@@ -33,10 +43,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const shopConfig = useAppStore((state) => state.shopConfig);
   const discount = useAppStore((state) => state.discount);
-  const { isLite } = useExperienceMode();
+  const rooms = useAppStore((state) => state.rooms);
+  const addToast = useUIStore((s) => s.addToast);
+  const { isField, isDetail, canSwitch, setMode } = useExperienceMode();
 
-  // Full tier + overview → กว้างพอสำหรับ sidebar ดัชนีห้อง (240px) + แดชบอร์ดหลายคอลัมน์
-  const wideContent = !isLite && viewMode === 'overview';
+  // โหมดละเอียด + overview → กว้างพอสำหรับ sidebar ดัชนีห้อง (240px) + แดชบอร์ดหลายคอลัมน์
+  const wideContent = isDetail && viewMode === 'overview';
 
   const { finalTotal } = useCalculations();
   const { trigger } = useHaptic();
@@ -45,6 +57,33 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const hasDiscount = discount.is_enabled && discount.value > 0;
   const hasVat = shopConfig.baseVatRate > 0;
+
+  // KPI หน้างาน — จุดวัดทั้งหมด + ค้าง (แทน Net ซึ่งเป็น KPI ของโหมดละเอียด)
+  const fieldStatus = useMemo(() => {
+    let total = 0;
+    let incomplete = 0;
+    rooms.forEach((room) => {
+      if (room.is_suspended) return;
+      room.items.forEach((item) => {
+        if (item.is_suspended) return;
+        total += 1;
+        if (isItemIncomplete(item)) incomplete += 1;
+      });
+    });
+    return { total, incomplete };
+  }, [rooms]);
+
+  // สลับโหมดงาน 1 แตะ — haptic + toast ยืนยันโหมดใหม่
+  const handleToggleMode = () => {
+    const next = isField ? 'detail' : 'field';
+    trigger('medium');
+    setMode(next);
+    addToast(
+      'info',
+      next === 'field' ? 'โหมดหน้างาน' : 'โหมดละเอียด',
+      next === 'field' ? 'วัดไว จดให้ครบ — ซ่อนทุน/กำไร' : 'ราคา · ทุน/กำไร · จัดเรียงห้อง'
+    );
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -75,48 +114,129 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               }}
             >
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[150px] sm:max-w-[220px]">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[110px] sm:max-w-[220px]">
                   {shopConfig.name || 'ม่านธารา'}
                 </h1>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
               </div>
-              <span className="text-xs font-medium text-muted-foreground tracking-wide">
+              {/* subtitle ตกแต่ง — ซ่อนบนจอแคบ ให้ header เหลือบรรทัดเดียว (ลดความรก) */}
+              <span className="hidden sm:block text-xs font-medium text-muted-foreground tracking-wide">
                 ผ้าม่าน & ของตกแต่ง
               </span>
             </button>
 
-            {/* Right: Price Badge */}
-            <div
-              className="flex flex-col items-end justify-center cursor-pointer active:scale-95 transition-transform outline-none min-h-[44px]"
-              onClick={() => {
-                trigger('selection');
-                onOpenDiscount?.();
-              }}
-            >
-              <div className="flex items-center gap-1.5">
-                <div className="flex gap-0.5">
-                  {hasDiscount && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_6px_rgba(var(--color-success),0.5)] animate-pulse" />
+            {/* Right: จอแคบ = แคปซูลสถานะรวม (โหมด | KPI ของโหมด — หน่วยเดียว ลด 3 ก้อนเหลือ 2)
+                · Desktop = Net badge 2 บรรทัดเดิม */}
+            {canSwitch ? (
+              <div className="flex items-stretch h-11 rounded-full border border-border/70 bg-card/60 overflow-hidden shrink-0">
+                {/* ช่องซ้าย: สวิตช์โหมด (tint = สถานะ) */}
+                <button
+                  onClick={handleToggleMode}
+                  aria-label={isField ? 'สลับเป็นโหมดละเอียด' : 'สลับเป็นโหมดหน้างาน'}
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 min-w-11 pl-3 pr-2.5 transition-colors active:opacity-80',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+                    isField
+                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+                      : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400'
                   )}
-                  {hasVat && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-info shadow-[0_0_6px_rgba(var(--color-info),0.5)]" />
+                >
+                  {isField ? (
+                    <HardHat className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                  ) : (
+                    <ClipboardList className="w-4 h-4 shrink-0" strokeWidth={1.5} />
                   )}
-                </div>
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Net
-                </span>
+                  {/* จอแคบมาก (<380px) เหลือไอคอน+สีบอกโหมด — toast ยืนยันตอนสลับ */}
+                  <span className="hidden min-[380px]:inline whitespace-nowrap text-xs font-bold">
+                    {isField ? 'หน้างาน' : 'ละเอียด'}
+                  </span>
+                </button>
+
+                {/* ช่องขวา: KPI ของโหมด — บรรทัดเดียว (field: จุดวัด→ลิ้นชักห้อง · detail: Net→ส่วนลด) */}
+                <button
+                  onClick={() => {
+                    trigger('selection');
+                    if (isField) setIsSmartNavOpen(true);
+                    else onOpenDiscount?.();
+                  }}
+                  aria-label={isField ? 'ดูห้องทั้งหมด / จุดที่ค้าง' : 'ส่วนลดท้ายบิล'}
+                  className="flex items-center gap-1.5 border-l border-border/70 pl-2.5 pr-3 transition-colors hover:bg-muted/50 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                >
+                  {isField ? (
+                    <span className="text-sm font-bold leading-none whitespace-nowrap">
+                      <span className="font-mono tabular-nums text-foreground">
+                        {fieldStatus.total}
+                      </span>
+                      <span className="text-foreground"> จุด</span>
+                      {fieldStatus.incomplete > 0 ? (
+                        <span className="text-amber-600 dark:text-amber-400">
+                          {' '}
+                          · ค้าง{' '}
+                          <span className="font-mono tabular-nums">{fieldStatus.incomplete}</span>
+                        </span>
+                      ) : fieldStatus.total > 0 ? (
+                        <span className="text-emerald-600 dark:text-emerald-400"> · ครบ</span>
+                      ) : null}
+                    </span>
+                  ) : (
+                    <>
+                      {(hasDiscount || hasVat) && (
+                        <span className="flex gap-0.5">
+                          {hasDiscount && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                          )}
+                          {hasVat && <span className="w-1.5 h-1.5 rounded-full bg-info" />}
+                        </span>
+                      )}
+                      <span className="text-xs font-bold text-muted-foreground">Net</span>
+                      <span
+                        className={cn(
+                          'font-mono tabular-nums text-sm font-bold leading-none whitespace-nowrap',
+                          hasDiscount || hasVat
+                            ? 'text-foreground'
+                            : 'text-emerald-700 dark:text-emerald-400'
+                        )}
+                      >
+                        {fmtTH(finalTotal)}
+                      </span>
+                    </>
+                  )}
+                </button>
               </div>
+            ) : (
+              /* Desktop: Net badge เดิม — แตะเปิดส่วนลด */
               <div
-                className={cn(
-                  'text-sm font-mono tabular-nums font-bold leading-none transition-colors',
-                  hasDiscount || hasVat
-                    ? 'text-foreground'
-                    : 'text-emerald-700 dark:text-emerald-400'
-                )}
+                className="flex flex-col items-end justify-center cursor-pointer active:scale-95 transition-transform outline-none min-h-[44px]"
+                onClick={() => {
+                  trigger('selection');
+                  onOpenDiscount?.();
+                }}
               >
-                {fmtTH(finalTotal)}
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5">
+                    {hasDiscount && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_6px_rgba(var(--color-success),0.5)] animate-pulse" />
+                    )}
+                    {hasVat && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-info shadow-[0_0_6px_rgba(var(--color-info),0.5)]" />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Net
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    'text-sm font-mono tabular-nums font-bold leading-none transition-colors',
+                    hasDiscount || hasVat
+                      ? 'text-foreground'
+                      : 'text-emerald-700 dark:text-emerald-400'
+                  )}
+                >
+                  {fmtTH(finalTotal)}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </header>
@@ -126,7 +246,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         className={cn(
           // overflow-x-clip (ไม่ใช่ hidden) — ตัด slide-in animation ที่ล้นจอเหมือนกัน แต่ไม่สร้าง
           // scroll container ที่ทำให้ position:sticky ของ OverviewSidebar ตาย
-          'pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-clip transition-[max-width] duration-300',
+          'pt-[calc(3.5rem+var(--safe-top))] pb-[calc(5rem+var(--safe-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-clip transition-[max-width] duration-300',
           wideContent ? 'max-w-7xl' : 'max-w-3xl'
         )}
       >

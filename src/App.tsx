@@ -22,7 +22,7 @@ function App() {
   const favorites = useAppStore((state) => state.favorites);
   const fabricCosts = useAppStore((state) => state.fabricCosts);
   const batchUpdateFabricCosts = useAppStore((state) => state.batchUpdateFabricCosts);
-  const { isLite } = useExperienceMode();
+  const { isField } = useExperienceMode();
 
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     () => (rooms.length > 0 ? rooms[0].id : null)
@@ -95,8 +95,9 @@ function App() {
   const handleOpenMainMenu = () => openModal('mainMenu');
   const handleOpenDiscount = () => openModal('discount');
   const handleOpenOverview = () => {
-    // Full: สลับเข้า/ออกแดชบอร์ดทุกห้อง (overview viewMode) · Lite: เปิดสรุปแบบ drawer
-    if (!isLite) {
+    // ละเอียด (detail): สลับเข้า/ออกแดชบอร์ดทุกห้อง (overview viewMode — รวมมือถือโหมดละเอียด)
+    // หน้างาน (field): เปิดสรุปแบบ drawer (ใช้คุยราคากับลูกค้าหน้างาน)
+    if (!isField) {
       setViewMode((m) => (m === 'overview' ? 'focus' : 'overview'));
       return;
     }
