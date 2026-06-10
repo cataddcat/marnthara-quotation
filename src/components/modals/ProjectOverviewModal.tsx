@@ -13,26 +13,12 @@ import {
   Package,
   TrendingUp,
   ChevronRight,
-  AlignLeft,
-  ScrollText,
-  Blinds,
-  Minimize2,
-  Columns,
-  Grid3X3,
-  Scissors,
   LayoutList,
   ArrowRight,
 } from 'lucide-react';
 
-const ICON_COMPONENTS: Record<string, React.ElementType> = {
-  AlignLeft,
-  ScrollText,
-  Blinds,
-  Minimize2,
-  Columns,
-  Grid3X3,
-  Scissors,
-};
+// ไม่ใช้ไอคอนประจำชนิดสินค้า — lucide ไม่มีเซ็ตที่สื่อครบทั้ง 9 ชนิด (ไอคอนยืมความหมาย
+// เช่น Scissors/Grid3X3 อ่านแล้วไม่ตรงสินค้าจริง) → ระบุชนิดด้วย "ชื่อ" อย่างเดียวชัดกว่า
 
 interface ProjectOverviewModalProps {
   isOpen: boolean;
@@ -198,7 +184,6 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
             {/* Per-type chips */}
             {presentTypes.map((type) => {
               const config = ITEM_CONFIG[type];
-              const IconComp = ICON_COMPONENTS[config.icon] ?? Package;
               const count = typeSummary[type] ?? 0;
               const isActive = activeFilter === type;
 
@@ -213,7 +198,6 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                       : 'bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground'
                   )}
                 >
-                  <IconComp className="w-4 h-4" strokeWidth={1.5} />
                   {config.name}
                   <span
                     className={cn(
@@ -254,16 +238,19 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
               0
             );
             const accent = getRoomAccent(room.id);
+            // ลำดับอิง rooms ทั้งโครงการ (filter อยู่เลขเดิมไม่เลื่อน) — filteredRooms เป็น object ใหม่ จึงหาเทียบด้วย id
+            const roomIndex = rooms.findIndex((r) => r.id === room.id);
             // color-coded room avatar (room identity) — sanctioned colour use (DESIGN §2)
+            // แสดง "ลำดับ/ทั้งหมด" แทนอักษรแรก (มาตรฐานเดียวกับ RoomCard focus header)
             const roomAvatar = (
               <span
                 className={cn(
-                  'w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold shrink-0',
+                  'h-7 min-w-7 px-1 rounded-lg flex items-center justify-center font-mono text-sm font-bold tabular-nums leading-none shrink-0',
                   accent.avatar,
                   accent.avatarText
                 )}
               >
-                {room.name.charAt(0)}
+                {roomIndex + 1}/{rooms.length}
               </span>
             );
             return (
@@ -296,18 +283,14 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                 <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border/50 shadow-sm">
                   {room.items.map((item) => {
                     const config = ITEM_CONFIG[item.type as ItemTypeKey];
-                    const IconComp = ICON_COMPONENTS[config?.icon ?? ''] ?? Package;
                     return (
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(room.id, item)}
                         className="w-full text-left px-4 py-3 flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors group active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                       >
-                        {/* Item Summary — รายละเอียด/ขนาด + ราคาต่อชิ้น (ขนาดเท่าตัวหนังสือ) */}
+                        {/* Item Summary — ชื่อชนิด + รายละเอียด/ขนาด + ราคาต่อชิ้น (ไม่มีไอคอนชนิด — ดูคอมเมนต์บนสุด) */}
                         <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
-                          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-accent group-hover:text-foreground transition-colors">
-                            <IconComp className="w-5 h-5" strokeWidth={1.5} />
-                          </div>
                           <div className="min-w-0">
                             <div className="text-[15px] font-medium text-foreground truncate">
                               {config?.name}

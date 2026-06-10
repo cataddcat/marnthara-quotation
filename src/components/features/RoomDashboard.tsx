@@ -334,7 +334,11 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
 
         <DragOverlay dropAnimation={null}>
           {activeRoom ? (
-            <RoomOverlay room={activeRoom} />
+            <RoomOverlay
+              room={activeRoom}
+              index={rooms.findIndex((r) => r.id === activeRoom.id)}
+              total={rooms.length}
+            />
           ) : activeItem ? (
             <div className="w-[340px] max-w-[85vw] opacity-95 rotate-1">
               <ItemCard item={activeItem} index={0} roomId="" onEdit={() => {}} />
@@ -665,6 +669,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
     transition,
   };
 
+  const accent = getRoomAccent(room.id);
   const activeItems = items.filter((i) => !i.is_suspended);
   const roomTotal = room.is_suspended
     ? 0
@@ -701,8 +706,14 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
           onClick={() => onOpenRoom(room.id)}
           className="group flex items-center gap-2 flex-1 min-w-0 text-left rounded-md px-1 py-1 hover:bg-muted/50 transition-colors"
         >
-          <span className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">
-            {room.name.charAt(0)}
+          <span
+            className={cn(
+              'h-7 min-w-7 px-1.5 rounded-lg flex items-center justify-center font-mono text-sm font-bold tabular-nums leading-none shrink-0',
+              accent.avatar,
+              accent.avatarText
+            )}
+          >
+            {index + 1}/{totalRooms}
           </span>
           <span className="min-w-0 flex-1">
             <span
@@ -810,11 +821,15 @@ const SortableItemRow: React.FC<SortableItemRowProps> = ({ item, index, roomId, 
 
 // ─── overlay ขณะลากห้อง (item ใช้ ItemCard ตรงๆ) ──────────────────────────────
 
-const RoomOverlay: React.FC<{ room: Room }> = ({ room }) => (
+const RoomOverlay: React.FC<{ room: Room; index: number; total: number }> = ({
+  room,
+  index,
+  total,
+}) => (
   <div className="flex items-center gap-2 rounded-xl border border-primary/40 bg-card px-3 py-2 shadow-md">
     <GripVertical className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-    <span className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-sm font-bold text-foreground">
-      {room.name.charAt(0)}
+    <span className="h-7 min-w-7 px-1 rounded-lg bg-muted flex items-center justify-center font-mono text-sm font-bold tabular-nums leading-none text-foreground">
+      {index + 1}/{total}
     </span>
     <span className="font-semibold text-sm text-foreground">{room.name}</span>
   </div>
