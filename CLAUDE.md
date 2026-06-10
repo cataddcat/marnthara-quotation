@@ -81,7 +81,7 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 
 **Canonical → [`DESIGN.md`](./DESIGN.md)** (owns typography · colour · spacing · the Design Probe · the gated `<12px` lint guard) + **[`HANDOFF.md`](./HANDOFF.md) §1.6** (HIG + NN/g ergonomics contract; ref impl `src/components/ui/Modal.tsx`). **Read DESIGN.md before any UI change.**
 
-The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load · status/feedback on every control · error-prevention**. Current law (DESIGN.md §2): typography Body 14–16 / Meta-12 / **<12px banned** · **colourful data on monochrome chrome · high contrast · clear surface separation** · `primary` colour = CTA only · measure with the **Design Probe** first.
+The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load (chunk to ≤ ~7 — Miller's Law, DESIGN.md §0) · status/feedback on every control · error-prevention**. Current law (DESIGN.md §2): typography Body 14–16 / Meta-12 / **<12px banned** · **colourful data on monochrome chrome · high contrast · clear surface separation** · `primary` colour = CTA only · measure with the **Design Probe** first.
 
 ## ✅ TypeScript & Linting
 
