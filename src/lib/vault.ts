@@ -47,6 +47,14 @@ export const categoryLabel = (category: string): string => BY_ID.get(category)?.
 
 export const categoryCostUnit = (category: string): string => BY_ID.get(category)?.costUnit ?? 'หน่วย';
 
+/**
+ * สินค้าพื้นที่ที่ "คิดราคา/ทุนต่อ ตร.ม." (ปัจจุบัน: มุ้งจีบ) — ที่เหลือคิดต่อ ตร.ล.
+ * single source ของหน่วยพื้นที่ต่อประเภท: AreaStrategy (ราคาขาย), CostEngine (ทุน),
+ * MaterialSummaryModal/buildSummary (สรุปวัสดุ) ต้องตัดสินใจตรงกันเสมอ
+ */
+export const isSqmPriced = (typeOrCategory: string): boolean =>
+  BY_ID.get(typeOrCategory)?.costUnit === 'ตร.ม.';
+
 // ── สีประจำหมวด (color-coding) — จัดกลุ่มตาม vault ให้สอดคล้องทั้งแอป ──
 //   ผ้าทึบ = violet-500, ผ้าโปร่ง = violet-400, วอลเปเปอร์ = orange-500, พื้นที่ = teal
 /** text color ของหมวด — ใช้กับรหัส/ป้ายในคลังรหัส */

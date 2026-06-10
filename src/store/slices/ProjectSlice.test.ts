@@ -149,7 +149,8 @@ describe('ProjectSlice — updatePriceByCode', () => {
     );
     const count = store().updatePriceByCode(ITEM_TYPES.WOODEN_BLIND, 'WB1', 800);
     expect(count).toBe(1);
-    expect(store().rooms[0].items[0]).toMatchObject({ price_sqyd: 800 });
+    // เก็บเป็น string เหมือนฟิลด์ราคาอื่นในฟอร์ม (เดิมปนกัน: curtain=string, area=number)
+    expect(store().rooms[0].items[0]).toMatchObject({ price_sqyd: '800' });
   });
 
   it('ไม่มี code ตรง → คืน 0 + ไม่แก้อะไร', () => {

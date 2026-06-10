@@ -104,4 +104,30 @@ describe('InventorySlice — importFavorites', () => {
   it('import ขยะที่ไม่ใช่ JSON/base64 → false', () => {
     expect(store().importFavorites('@@@ not valid @@@')).toBe(false);
   });
+
+  it('JSON ถูกไวยากรณ์แต่รูปร่างผิด (item ไม่มี code / ราคาเป็น string) → false ไม่แตะ state', () => {
+    expect(store().importFavorites(JSON.stringify({ [CAT]: [{ id: 'a' }] }))).toBe(false);
+    expect(
+      store().importFavorites(
+        JSON.stringify({ [CAT]: [{ code: 'F001', default_price_per_m: 'แพง' }] })
+      )
+    ).toBe(false);
+    expect(store().favorites[CAT] ?? []).toHaveLength(0);
+  });
+
+  it('รายการที่ไม่มี id → เติม id ให้อัตโนมัติ', () => {
+    const ok = store().importFavorites(
+      JSON.stringify({ [CAT]: [{ code: 'F009', default_price_per_m: 100 }] })
+    );
+    expect(ok).toBe(true);
+    expect(store().favorites[CAT][0].id).toBeTruthy();
+  });
+
+  it('cost_per_yard ที่พิมพ์เล็ก → เขียน vault ด้วยรหัส normalize, CostEngine อ่านเจอผ่าน vaultLookup', () => {
+    const payload = JSON.stringify({
+      [CAT]: [{ id: 'a', code: 'f777', default_price_per_m: 350, cost_per_yard: 60 }],
+    });
+    expect(store().importFavorites(payload)).toBe(true);
+    expect(store().fabricCosts.F777).toBe(60); // เขียนเป็น UPPERCASE เสมอ
+  });
 });

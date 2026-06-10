@@ -44,10 +44,8 @@ export const HOOK_TYPES = {
   LONG: 'long', // ตะขอยาว (โชว์ราง)
 } as const;
 
-export const OPENING_STYLES = {
-  CENTER: 'center', // แยกกลาง
-  SIDE: 'side', // เก็บข้างเดียว
-} as const;
+// หมายเหตุ: OPENING_STYLES ('center'/'side') ถูกถอดออกแล้ว — ทุกฟอร์มเก็บค่า canonical ไทย
+// ผ่าน OpeningStyleSelector; ค่าเก่าในข้อมูลยังถูกอ่านได้ผ่าน openingBucket (src/lib/opening-style.ts)
 
 export const CHAIN_POSITIONS = {
   LEFT: 'left',

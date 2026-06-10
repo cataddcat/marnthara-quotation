@@ -20,6 +20,7 @@ import {
 // import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { buildDocFileBase, formatDocCode } from '@/lib/docName';
+import { parseBackup } from '@/lib/backup';
 
 interface DataModalProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         discount: state.discount,
         favorites: state.favorites,
         // ⚠️ ให้ครบทุก cost vault ใน CostDataSlice (กัน backup ตกข้อมูล) —
-        // ปัจจุบัน 6 ถัง: labor / service / accessory / fabric / wallpaper / area
+        // ปัจจุบัน 7 ถัง: labor / service / accessory / hardware / fabric / wallpaper / area
         production: {
           laborCosts: state.laborCosts,
           serviceCosts: state.serviceCosts,
@@ -96,18 +97,29 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const json = JSON.parse(e.target?.result as string);
+        const raw = JSON.parse(e.target?.result as string);
+
+        // validate ขั้นต่ำ + migrate schema เก่า (type:'set' ฯลฯ) ผ่านเส้นทางเดียวกับ persist
+        // — กันไฟล์ผิดรูปทำแอป crash และกัน backup เก่ากลายเป็น "Unknown item type"
+        const result = parseBackup(raw);
+        if (!result.ok || !result.data) {
+          addToast('error', `ไฟล์ Backup ไม่ถูกต้อง: ${result.error ?? ''}`);
+          return;
+        }
+        const json = result.data;
         const s = useAppStore.getState();
 
         // Restore only known fields — prevents polluting store with exportDate/version/etc.
+        // cast ผ่าน unknown: schema ใน parseBackup ตรวจแบบ "หลวม" (เฉพาะ field ที่พังแอปได้)
+        // โครงเต็มมาจากไฟล์ที่แอป export เอง — ไม่ re-declare ทุก field ซ้ำที่นี่
         useAppStore.setState({
-          customer:       json.customer        ?? s.customer,
-          rooms:          json.rooms           ?? s.rooms,
-          shopConfig:     json.shopConfig      ?? s.shopConfig,
-          discount:       json.discount        ?? s.discount,
-          favorites:      json.favorites       ?? s.favorites,
+          customer:       (json.customer as unknown as typeof s.customer)     ?? s.customer,
+          rooms:          (json.rooms as unknown as typeof s.rooms)           ?? s.rooms,
+          shopConfig:     (json.shopConfig as unknown as typeof s.shopConfig) ?? s.shopConfig,
+          discount:       (json.discount as unknown as typeof s.discount)     ?? s.discount,
+          favorites:      (json.favorites as unknown as typeof s.favorites)   ?? s.favorites,
           // ให้ครบทุก vault เท่ากับฝั่ง handleExport (replace ต่อ vault — ไม่ merge)
-          laborCosts:     json.production?.laborCosts      ?? s.laborCosts,
+          laborCosts:     (json.production?.laborCosts as unknown as typeof s.laborCosts) ?? s.laborCosts,
           serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
           accessoryCosts: json.production?.accessoryCosts  ?? s.accessoryCosts,
           hardwareCosts:  json.production?.hardwareCosts   ?? s.hardwareCosts,

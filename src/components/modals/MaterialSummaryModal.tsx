@@ -26,6 +26,7 @@ import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { FORMULAS } from '@/config/formulas';
 import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@/lib/materials/buildSummary';
+import { missingOpeningItems } from '@/lib/item-status';
 
 // ─── Shared empty state ───────────────────────────────────────────────────────
 
@@ -896,6 +897,20 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
     acc.snaps > 0;
 
   const handleCopy = () => {
+    // ✅ เจ้าของร้านยืนยัน (มิ.ย. 2026): ต้องใส่ทิศเปิดครบก่อนออกเอกสารสั่งของ —
+    // ค่าว่างถูกตีความเป็น "แยกกลาง" เงียบ ๆ → ลูกล้อ/ตับผ้าในรายการสั่งผิด
+    const missing = missingOpeningItems(rooms);
+    if (missing.length > 0) {
+      addToast(
+        'warning',
+        `เลือกทิศเปิดให้ครบก่อนคัดลอกรายการสั่งของ (ค้าง ${missing.length} รายการ: ${missing
+          .slice(0, 2)
+          .map((m) => `${m.roomName} ${m.label}`)
+          .join(', ')}${missing.length > 2 ? ' …' : ''})`
+      );
+      return;
+    }
+
     const lines: string[] = ['=== ข้อมูลสินค้า & ราคา ===', ''];
     if (fabricsByCode.size > 0) {
       lines.push('🧵 ผ้าทึบ');

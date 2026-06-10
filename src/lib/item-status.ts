@@ -1,5 +1,6 @@
-import { ItemData } from '@/types';
+import { ItemData, Room } from '@/types';
 import { ITEM_TYPES, LAYER_MODES, ItemTypeKey } from '@/config/enums';
+import { ITEM_CONFIG, STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { toNum } from '@/utils/formatters';
 
 /**
@@ -99,4 +100,47 @@ export const isItemReady = (item: ItemData): boolean => {
 export const displayIndexes = (items: ItemData[]): number[] => {
   let n = 0;
   return items.map((it) => (isItemEmpty(it) ? -1 : n++));
+};
+
+// ── ทิศทางการเปิด (opening_style) ───────────────────────────────────────────
+
+// ประเภทที่ "ต้องเลือกทิศเปิด" นอกเหนือจากผ้าม่าน (ม่านปรับแสง=เก็บใบ, ฉากกั้น/มุ้งจีบ=รูปแบบเปิด)
+const TYPES_NEED_OPENING: readonly string[] = [
+  ITEM_TYPES.VERTICAL_BLIND,
+  ITEM_TYPES.PARTITION,
+  ITEM_TYPES.PLEATED_SCREEN,
+];
+
+/**
+ * ประเภท/สไตล์นี้ต้องระบุทิศเปิดไหม (ไม่สนว่าระบุแล้วหรือยัง) —
+ * ผ้าม่าน: ทุกสไตล์ยกเว้น พับ/แป๊บ (STYLES_WITHOUT_OPENING) · ม่านปรับแสง/ฉากกั้น/มุ้งจีบ: ต้องเสมอ
+ */
+export const requiresOpeningStyle = (item: ItemData): boolean => {
+  if (item.type === ITEM_TYPES.CURTAIN) return !STYLES_WITHOUT_OPENING.includes(item.style);
+  return TYPES_NEED_OPENING.includes(item.type);
+};
+
+/**
+ * รายการที่ "เริ่มแล้ว" (active, มีความกว้าง) แต่ยังไม่เลือกทิศเปิด — ใช้ gate การออกเอกสารผลิต
+ * (ใบสั่งราง/สั่งของ/ช่างเย็บ): ✅ เจ้าของร้านยืนยัน (มิ.ย. 2026) ว่า "ต้องใส่ทิศเปิดก่อนออกเอกสาร"
+ * เพราะค่าว่างจะถูกตีความเป็น "แยกกลาง" เงียบ ๆ → ลูกล้อ/สไลด์ผิด
+ */
+export const missingOpeningItems = (
+  rooms: Room[]
+): { roomName: string; label: string }[] => {
+  const out: { roomName: string; label: string }[] = [];
+  rooms.forEach((room) => {
+    if (room.is_suspended) return;
+    room.items.forEach((item) => {
+      if (item.is_suspended) return;
+      if (!requiresOpeningStyle(item)) return;
+      if ('opening_style' in item && item.opening_style) return;
+      const width = toNum((item as { width_m?: number | string }).width_m);
+      if (width <= 0) return; // ยังไม่เริ่ม — เอกสารไม่นับรายการนี้อยู่แล้ว
+      const name = ITEM_CONFIG[item.type]?.name ?? 'สินค้า';
+      const style = item.type === ITEM_TYPES.CURTAIN && item.style ? ` ${item.style}` : '';
+      out.push({ roomName: room.name, label: `${name}${style}` });
+    });
+  });
+  return out;
 };

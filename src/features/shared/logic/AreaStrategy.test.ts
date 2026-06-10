@@ -48,6 +48,34 @@ describe('AreaStrategy.calculate', () => {
   });
 });
 
+describe('AreaStrategy.calculate — pricePerSqm (มุ้งจีบ คิดต่อ ตร.ม.)', () => {
+  const sqmStrategy = createAreaStrategy({ name: 'มุ้งจีบ', pricePerSqm: true });
+
+  it('2×2 = 4 ตร.ม. ×100 = 400 (ไม่คูณ 1.2 เป็น ตร.ล.)', () => {
+    const r = sqmStrategy.calculate(asArea({ width_m: 2.0, height_m: 2.0, price_sqyd: 100 }));
+    expect(r.total).toBe(400);
+    expect(r.breakdown?.pricedArea).toBe(4);
+    expect(r.breakdown?.areaSqyd).toBeCloseTo(4.8, 4); // ยังรายงาน ตร.ล. เพื่อแสดงผล
+  });
+
+  it('ต่ำกว่าขั้นต่ำ: 0.5×0.5 = 0.25 ตร.ม. < 1.0 → คิด 1.0 ×500 = 500', () => {
+    const r = sqmStrategy.calculate(asArea({ width_m: 0.5, height_m: 0.5, price_sqyd: 500 }));
+    expect(r.total).toBe(500);
+    expect(r.breakdown?.pricedArea).toBe(1.0);
+  });
+
+  it('validate: ข้อความหน่วยเป็น ตร.ม.', () => {
+    const errors = sqmStrategy.validate(asArea({ width_m: 2, height_m: 2, price_sqyd: 0 }));
+    expect(errors).toContain('ระบุราคาต่อ ตร.ม.');
+  });
+
+  it('strategy ปกติ (ตร.ล.) ยังมี pricedArea = areaSqyd', () => {
+    const r = strategy.calculate(asArea({ width_m: 2.0, height_m: 2.0, price_sqyd: 1000 }));
+    expect(r.breakdown?.pricedArea).toBeCloseTo(4.8, 4);
+    expect(r.total).toBe(4800);
+  });
+});
+
 describe('AreaStrategy.validate / getSpecs', () => {
   it('validate: ไม่เหมา + ไม่มีราคา → error ราคาต่อ ตร.ล.', () => {
     const errors = strategy.validate(asArea({ width_m: 2, height_m: 2, price_sqyd: 0 }));

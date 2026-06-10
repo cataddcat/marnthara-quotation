@@ -4,6 +4,7 @@ import { Room, ItemData } from '@/types';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { isAreaItem } from '@/lib/type-guards';
+import { newUuid } from '@/lib/id';
 
 // [REFACTOR] Renamed from RoomSlice to ProjectSlice to reflect broader scope
 export interface ProjectSlice {
@@ -35,7 +36,7 @@ export interface ProjectSlice {
   factoryReset: () => void; // Level 3
 }
 
-const generateId = () => Math.random().toString(36).substring(2, 9);
+const generateId = () => newUuid();
 
 /** ย้ายสมาชิก array จาก index หนึ่งไปอีก index — คืน ref เดิมถ้า no-op (index เท่ากัน/นอกช่วง) */
 function arrayMove<T>(arr: T[], from: number, to: number): T[] {
@@ -225,10 +226,10 @@ export const createProjectSlice: StateCreator<
             item.wallpaper_code === code
           ) {
             updateCount++;
-            return { ...item, price_per_roll: newPrice };
+            return { ...item, price_per_roll: priceStr }; // string เหมือนทุกฟิลด์ราคาในฟอร์ม
           } else if (category === item.type && isAreaItem(item) && item.code === code) {
             updateCount++;
-            return { ...item, price_sqyd: newPrice };
+            return { ...item, price_sqyd: priceStr };
           }
           return item;
         }),

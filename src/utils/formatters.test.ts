@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseDimension, normalizeDimension } from './formatters';
+import { parseDimension, normalizeDimension, bahttext } from './formatters';
 
 describe('parseDimension — กฎ: ทศนิยม=เมตร · จำนวนเต็ม<10=เมตร · จำนวนเต็ม≥10=ซม.', () => {
   it('จำนวนเต็ม ≥10 = เซนติเมตร → หาร 100', () => {
@@ -66,5 +66,36 @@ describe('normalizeDimension — wrapper คืนเฉพาะค่าเม
     expect(normalizeDimension('12.5')).toBe('12.50');
     expect(normalizeDimension('6')).toBe('6.00');
     expect(normalizeDimension('')).toBe('');
+  });
+});
+
+describe('bahttext — อ่านจำนวนเงินเป็นภาษาไทย', () => {
+  it('เลขพื้นฐาน + เอ็ด/ยี่', () => {
+    expect(bahttext(0)).toBe('ศูนย์บาทถ้วน');
+    expect(bahttext(11)).toBe('สิบเอ็ดบาทถ้วน');
+    expect(bahttext(21)).toBe('ยี่สิบเอ็ดบาทถ้วน');
+    expect(bahttext(101)).toBe('หนึ่งร้อยเอ็ดบาทถ้วน');
+    expect(bahttext(999999)).toBe('เก้าแสนเก้าหมื่นเก้าพันเก้าร้อยเก้าสิบเก้าบาทถ้วน');
+  });
+
+  it('สตางค์', () => {
+    expect(bahttext(1.5)).toBe('หนึ่งบาทห้าสิบสตางค์');
+    expect(bahttext(0.25)).toBe('ยี่สิบห้าสตางค์');
+  });
+
+  it('หลักล้าน', () => {
+    expect(bahttext(1_000_000)).toBe('หนึ่งล้านบาทถ้วน');
+    expect(bahttext(1_000_001)).toBe('หนึ่งล้านหนึ่งบาทถ้วน');
+    expect(bahttext(2_500_000)).toBe('สองล้านห้าแสนบาทถ้วน');
+  });
+
+  it('≥ 10 ล้าน — เดิมพ่น "undefined" ในเอกสาร (recursive ล้าน)', () => {
+    expect(bahttext(10_000_000)).toBe('สิบล้านบาทถ้วน');
+    expect(bahttext(12_345_678)).toBe(
+      'สิบสองล้านสามแสนสี่หมื่นห้าพันหกร้อยเจ็ดสิบแปดบาทถ้วน'
+    );
+    expect(bahttext(100_000_000)).toBe('หนึ่งร้อยล้านบาทถ้วน');
+    expect(bahttext(1_000_000_000_000)).toBe('หนึ่งล้านล้านบาทถ้วน');
+    expect(bahttext(25_000_000)).not.toContain('undefined');
   });
 });

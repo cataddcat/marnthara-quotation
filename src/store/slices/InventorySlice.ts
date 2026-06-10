@@ -1,6 +1,9 @@
 import { StateCreator } from 'zustand';
+import { z } from 'zod';
 import { AppState } from '../useAppStore';
 import { categoryVault, CATALOG_CATEGORIES } from '@/lib/vault';
+import { normalizeCode } from '@/lib/codes';
+import { newUuid } from '@/lib/id';
 import {
   CatalogContractSchema,
   CATALOG_CONTRACT_MAGIC,
@@ -44,19 +47,36 @@ export interface InventorySlice {
 
 function routeCostToVault(get: () => AppState, category: string, code: string, cost: number): void {
   if (!cost || cost <= 0) return;
+  // เขียน vault ด้วยรหัส normalize เสมอ (src/lib/codes.ts) — ให้ตรงกับ importCatalog
+  // ฝั่งอ่าน (CostEngine) ใช้ vaultLookup ซึ่ง fallback หา key normalize อยู่แล้ว
+  const key = normalizeCode(code);
   const vault = categoryVault(category);
   if (vault === 'wallpaper') {
-    get().updateWallpaperCost(code, cost);
+    get().updateWallpaperCost(key, cost);
   } else if (vault === 'area') {
-    get().updateAreaCost(code, cost);
+    get().updateAreaCost(key, cost);
   } else if (vault === 'hardware') {
-    get().updateHardwareCost(code, cost);
+    get().updateHardwareCost(key, cost);
   } else {
-    get().updateFabricCost(code, cost);
+    get().updateFabricCost(key, cost);
   }
 }
 
-const generateId = () => Math.random().toString(36).substring(2, 9);
+const generateId = () => newUuid();
+
+// payload คลังผ้า: category → รายการที่อย่างน้อยต้องมี code (ฟิลด์อื่นคงไว้แบบ loose)
+// — กันไฟล์ผิดรูป (เช่น category เป็น object/ราคาเป็น array) ทำคลัง/UI พังเงียบ ๆ
+const FavoritesPayloadSchema = z.record(
+  z.string(),
+  z.array(
+    z.looseObject({
+      id: z.string().optional(),
+      code: z.string(),
+      default_price_per_m: z.number().optional(),
+      cost_per_yard: z.number().optional(),
+    })
+  )
+);
 
 export const createInventorySlice: StateCreator<
   AppState,
@@ -91,16 +111,18 @@ export const createInventorySlice: StateCreator<
     })),
 
   updateFavorite: (category, favId, updates) => {
-    if (updates.cost_per_yard && updates.cost_per_yard > 0 && updates.code) {
-      routeCostToVault(get, category, updates.code, updates.cost_per_yard);
-      delete updates.cost_per_yard;
+    // copy ก่อน — ไม่ mutate อาร์กิวเมนต์ของ caller (delete cost_per_yard เดิมเป็น side effect)
+    const clean = { ...updates };
+    if (clean.cost_per_yard && clean.cost_per_yard > 0 && clean.code) {
+      routeCostToVault(get, category, clean.code, clean.cost_per_yard);
+      delete clean.cost_per_yard;
     }
 
     set((state) => ({
       favorites: {
         ...state.favorites,
         [category]: (state.favorites[category] || []).map((f) =>
-          f.id === favId ? { ...f, ...updates } : f
+          f.id === favId ? { ...f, ...clean } : f
         ),
       },
     }));
@@ -122,21 +144,27 @@ export const createInventorySlice: StateCreator<
       }
 
       const payload = data.favorites ? data.favorites : data;
-      if (typeof payload !== 'object' || payload === null) return false;
 
-      const newFavorites = { ...payload };
+      // validate รูปร่าง (zod) — ปฏิเสธทั้งไฟล์เมื่อผิด แทนการ spread ของผิดรูปลง state
+      const checked = FavoritesPayloadSchema.safeParse(payload);
+      if (!checked.success) return false;
 
-      // Route costs to the correct vault per category
-      Object.entries(newFavorites).forEach(([category, items]) => {
-        if (Array.isArray(items)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          items.forEach((item: any) => {
-            if (item.cost_per_yard && item.cost_per_yard > 0) {
-              routeCostToVault(get, category, item.code, item.cost_per_yard);
-              delete item.cost_per_yard;
-            }
-          });
-        }
+      const newFavorites: InventoryState = {};
+      Object.entries(checked.data).forEach(([category, items]) => {
+        newFavorites[category] = items.map((item) => {
+          // Route costs to the correct vault per category
+          if (item.cost_per_yard && item.cost_per_yard > 0) {
+            routeCostToVault(get, category, item.code, item.cost_per_yard);
+          }
+          const rest = { ...item };
+          delete rest.cost_per_yard;
+          // เติม id/ราคา default ให้รายการที่ขาด (ปุ่มแก้/ลบใน UI อ้างด้วย id)
+          return {
+            default_price_per_m: 0,
+            ...rest,
+            id: item.id ?? generateId(),
+          } as InventoryItem;
+        });
       });
 
       set((state) => ({
@@ -173,7 +201,7 @@ export const createInventorySlice: StateCreator<
       const hardwareCosts = { ...state.hardwareCosts };
 
       for (const e of entries) {
-        const code = e.code.trim().toUpperCase();
+        const code = normalizeCode(e.code);
 
         // 1) ทุน → vault ตาม category
         if (typeof e.cost === 'number' && e.cost > 0) {

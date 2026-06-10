@@ -7,7 +7,11 @@ import { FORMULAS } from '@/config/formulas';
 
 interface AreaStrategyConfig {
   name: string; // ชื่อประเภทสินค้า (สำหรับ Debug)
-  // ❌ ลบ minAreaSqyd ออกจาก config เพราะจะไปดึงจาก Store แทน
+  /**
+   * คิดราคาต่อ "ตร.ม." แทน ตร.ล. (ปัจจุบัน: มุ้งจีบ — ดู isSqmPriced ใน src/lib/vault.ts)
+   * default = false (ตร.ล.) — ฟิลด์ราคายังชื่อ price_sqyd เพื่อไม่แตะ schema/ข้อมูลเดิม
+   */
+  pricePerSqm?: boolean;
 }
 
 /**
@@ -15,10 +19,10 @@ interface AreaStrategyConfig {
  * รองรับ: มู่ลี่ไม้, ม่านม้วน, ม่านปรับแสง, ฉากกั้นห้อง, มุ้งจีบ
  */
 export const createAreaStrategy = (
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _config: AreaStrategyConfig
+  config: AreaStrategyConfig
 ): PricingStrategy<AreaItemInput> => {
-  
+  const pricePerSqm = config.pricePerSqm ?? false;
+
   return {
     /**
      * 1. Calculate: พื้นที่ (ตร.ม.) -> ตร.ล. -> ราคา
@@ -53,17 +57,18 @@ export const createAreaStrategy = (
         areaSqyd = formulaConfig.min_yield;
       }
 
-      // 4. คำนวณราคารวม
-      let total = areaSqyd * priceSqyd;
+      // 4. ปริมาณที่ใช้คิดเงิน — ตร.ม. (มุ้งจีบ) หรือ ตร.ล. (ที่เหลือ); min_yield ใช้กับหน่วยที่คิดจริง
+      const pricedArea = pricePerSqm ? Math.max(areaSqm, formulaConfig.min_yield) : areaSqyd;
 
-      // 5. ปัดเศษ 2 ตำแหน่ง (Standard Rounding)
-      total = Math.round(total * 100) / 100;
+      // 5. คำนวณราคารวม + ปัดเศษ 2 ตำแหน่ง (Standard Rounding)
+      const total = Math.round(pricedArea * priceSqyd * 100) / 100;
 
       return {
         total,
         breakdown: {
           areaSqm,
-          areaSqyd, // ส่งค่า ตร.ล. ที่ใช้คำนวณเงินกลับไปแสดงผล
+          areaSqyd, // ตร.ล. (รวม min_yield) — แสดงผล/สรุปวัสดุ
+          pricedArea, // ปริมาณที่คูณเงินจริง — CostEngine ใช้ตัวเดียวกันคิดทุน (หน่วยตาม isSqmPriced)
           pricePerUnit: priceSqyd,
         },
       };
@@ -77,9 +82,9 @@ export const createAreaStrategy = (
       if (toNum(item.width_m) <= 0) errors.push('ระบุความกว้าง');
       if (toNum(item.height_m) <= 0) errors.push('ระบุความสูง');
 
-      // ถ้าไม่ได้เหมาจ่าย ต้องมีราคาต่อหน่วย
+      // ถ้าไม่ได้เหมาจ่าย ต้องมีราคาต่อหน่วย (หน่วยตามประเภท — มุ้งจีบ = ตร.ม.)
       if (!item.enable_set_price && toNum(item.price_sqyd) <= 0) {
-        errors.push('ระบุราคาต่อ ตร.ล.');
+        errors.push(pricePerSqm ? 'ระบุราคาต่อ ตร.ม.' : 'ระบุราคาต่อ ตร.ล.');
       }
 
       return errors;

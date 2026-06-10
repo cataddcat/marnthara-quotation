@@ -7,16 +7,8 @@ import { VerticalBlindsSchema, VerticalBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import {
-  Tag,
-  Columns,
-  SplitSquareHorizontal,
-  ArrowRight,
-  Star,
-  Book,
-  ArrowLeftToLine,
-  ArrowRightToLine,
-} from 'lucide-react';
+import { Tag, Columns, Star, Book, ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
+import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
@@ -29,7 +21,7 @@ import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
-import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
+import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const VERTICAL_BLINDS_FORM_ID = 'vertical-blinds-edit-form';
 
@@ -49,7 +41,7 @@ const DEFAULT_DATA: VerticalBlindsFormValues = {
   notes: '',
   fabric_variant: 'Dimout',
   adjustment_side: 'ขวา',
-  opening_style: OPENING_STYLES.SIDE,
+  opening_style: '', // ไม่มีค่าตั้งต้น — ผู้ใช้ต้องเลือกเอง (การ์ดจะเตือนถ้ายังไม่เลือก)
   is_suspended: false,
   enable_set_price: false,
   set_price_override: 0,
@@ -219,31 +211,16 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
 
       {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch in Lite) */}
       <AdvancedSection expanded={isFull} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <label className="text-[13px] font-medium text-muted-foreground">เก็บใบ</label>
-            <div className={cn(SEGMENTED_TRACK, 'flex flex-col gap-1')}>
-              <button
-                type="button"
-                onClick={() => handleChange('opening_style', OPENING_STYLES.SIDE)}
-                className={segmentedItemClass(formData.opening_style === OPENING_STYLES.SIDE, theme)}
-              >
-                <ArrowRight className="w-3.5 h-3.5" />
-                เก็บข้างเดียว
-              </button>
-              <button
-                type="button"
-                onClick={() => handleChange('opening_style', OPENING_STYLES.CENTER)}
-                className={segmentedItemClass(formData.opening_style === OPENING_STYLES.CENTER, theme)}
-              >
-                <SplitSquareHorizontal className="w-3.5 h-3.5" />
-                แยกกลาง
-              </button>
-            </div>
-          </div>
+        <div className="space-y-3">
+          {/* เก็บใบ — ตัวเลือกทิศทางการเปิดมาตรฐาน (ยังไม่เลือก/แยกกลาง/เก็บข้างเดียว) */}
+          <OpeningStyleSelector
+            label="เก็บใบ"
+            value={formData.opening_style}
+            onChange={(v) => handleChange('opening_style', v)}
+          />
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
-            <div className={cn(SEGMENTED_TRACK, 'flex flex-col gap-1')}>
+            <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
               <button
                 type="button"
                 onClick={() => handleChange('adjustment_side', 'ขวา')}

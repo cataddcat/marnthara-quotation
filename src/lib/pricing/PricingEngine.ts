@@ -9,14 +9,18 @@ import { CurtainStrategy } from '@/features/curtains/logic/CurtainStrategy';
 import { WallpaperStrategy } from '@/features/wallpapers/logic/WallpaperStrategy';
 import { RemovalStrategy } from '@/features/removal/logic/RemovalStrategy';
 import { createAreaStrategy } from '@/features/shared/logic/AreaStrategy';
+import { isSqmPriced } from '@/lib/vault';
 
-// Strategies Instances
+// Strategies Instances — หน่วยราคาต่อประเภทอ่านจาก vault.ts (single source: มุ้งจีบ = ตร.ม.)
 const WoodenBlindStrategy = createAreaStrategy({ name: 'มู่ลี่ไม้' });
 const RollerBlindStrategy = createAreaStrategy({ name: 'ม่านม้วน' });
 const VerticalBlindStrategy = createAreaStrategy({ name: 'ม่านปรับแสง' });
 const AluminumBlindStrategy = createAreaStrategy({ name: 'มู่ลี่อลูมิเนียม' });
 const PartitionStrategy = createAreaStrategy({ name: 'ฉากกั้นห้อง' });
-const PleatedScreenStrategy = createAreaStrategy({ name: 'มุ้งจีบ' });
+const PleatedScreenStrategy = createAreaStrategy({
+  name: 'มุ้งจีบ',
+  pricePerSqm: isSqmPriced(ITEM_TYPES.PLEATED_SCREEN),
+});
 
 export const PricingEngine = {
   calculatePrice: (item: ItemData, context?: PricingContext): number => {

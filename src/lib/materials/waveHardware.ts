@@ -17,6 +17,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 
 import { FORMULAS } from '@/config/formulas';
+import { openingBucket } from '@/lib/opening-style';
 
 /** การแยกผ้าม่านลอน: เก็บข้างเดียว (1 ตับ) vs แยกกลาง (2 ตับ) */
 export type WaveSplit = 'one-way' | 'two-way';
@@ -48,20 +49,11 @@ const EMPTY: WaveHardware = {
 /**
  * แปลง opening_style ของม่าน → การแยกตับ (split) สำหรับม่านลอน
  *
- * ⚠️ ฟอร์มม่านจริง (StyleSection) บันทึกค่าเป็นภาษาไทย: 'เก็บข้างเดียว' / 'แยกกลาง'
- *    (ค่าเก่า 'เก็บซ้าย' / 'เก็บขวา' ยังรองรับเป็น legacy) ส่วน 'side' / 'center' เป็น convention
- *    ของ OPENING_STYLES (ฉากกั้น) + ข้อมูล import เก่า — one-way คือ "เก็บข้างเดียว", อย่างอื่น (รวม default) = two-way
+ * one-way = "เก็บข้างเดียว" (รวม legacy เก็บซ้าย/เก็บขวา + โค้ด 'side'), อย่างอื่น (รวม default/ว่าง) = two-way.
+ * จัดถังด้วย `openingBucket` (single source ที่ [src/lib/opening-style.ts]) กันค่า convention ต่าง ๆ drift กัน
  */
 export function waveSplitFromOpening(openingStyle?: string): WaveSplit {
-  if (
-    openingStyle === 'side' ||
-    openingStyle === 'เก็บข้างเดียว' ||
-    openingStyle === 'เก็บซ้าย' ||
-    openingStyle === 'เก็บขวา'
-  ) {
-    return 'one-way';
-  }
-  return 'two-way';
+  return openingBucket(openingStyle) === 'side' ? 'one-way' : 'two-way';
 }
 
 /**

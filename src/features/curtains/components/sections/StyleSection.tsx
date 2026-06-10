@@ -3,15 +3,9 @@ import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLES, STYLES_WITHOUT_OPENING } from '@/config/constants';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { FormSection } from '@/components/ui/FormSection';
-import {
-  Settings2,
-  ArrowRightToLine,
-  SplitSquareHorizontal,
-  Minus,
-  Check,
-  AlertCircle,
-} from 'lucide-react';
+import { Settings2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 
 interface StyleSectionProps {
   data: CurtainItemInput;
@@ -20,49 +14,6 @@ interface StyleSectionProps {
   /** แสดงตัวเลือก "ทิศทางการเปิด" (ซ่อนในโหมด Lite) */
   showOpening?: boolean;
 }
-
-const OpeningButton = ({
-  value,
-  label,
-  icon: Icon,
-  currentValue,
-  onChange,
-}: {
-  value: string;
-  label: string;
-  icon: React.ElementType;
-  currentValue: string | undefined;
-  onChange: (val: string) => void;
-}) => {
-  const isSelected = currentValue === value;
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(value)}
-      className={cn(
-        'relative flex flex-col items-center justify-center h-20 rounded-xl border-2 transition-all active:scale-95',
-        isSelected
-          ? 'border-foreground bg-accent text-foreground'
-          : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-foreground/40'
-      )}
-    >
-      <Icon
-        className={cn(
-          'w-8 h-8 mb-1',
-          isSelected ? 'text-foreground' : 'text-slate-400',
-          isSelected && 'animate-bounce-short'
-        )}
-        strokeWidth={1.5}
-      />
-      <span className="text-xs font-medium">{label}</span>
-      {isSelected && (
-        <div className="absolute top-1 right-1 bg-foreground text-background rounded-full p-0.5">
-          <Check className="w-2 h-2" strokeWidth={1.5} />
-        </div>
-      )}
-    </button>
-  );
-};
 
 export const StyleSection: React.FC<StyleSectionProps> = ({
   data,
@@ -74,16 +25,6 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
 
   const getStyleLabel = () =>
     CURTAIN_STYLES.find((s) => s.value === data.style)?.label || 'เลือกรูปแบบ...';
-
-  // ทิศทางการเปิด — normalize legacy (เก็บซ้าย/เก็บขวา/side → เก็บข้างเดียว · center → แยกกลาง) ให้ปุ่ม active ถูก
-  const currentOpening =
-    data.opening_style === 'เก็บซ้าย' ||
-    data.opening_style === 'เก็บขวา' ||
-    data.opening_style === 'side'
-      ? 'เก็บข้างเดียว'
-      : data.opening_style === 'center'
-        ? 'แยกกลาง'
-        : data.opening_style || '';
 
   return (
     <div className="space-y-4">
@@ -118,34 +59,12 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
           </button>
         </div>
 
-        {/* Opening Style Grid — ม่านพับ (ยกขึ้นแนวตั้ง) / แป๊บ (สอดราว) ไม่มีทิศซ้าย/กลาง/ขวา */}
+        {/* ทิศทางการเปิด — ม่านพับ (ยกขึ้นแนวตั้ง) / แป๊บ (สอดราว) ไม่มีทิศซ้าย/กลาง/ขวา */}
         {showOpening && !STYLES_WITHOUT_OPENING.includes(data.style) && (
-        <div className="space-y-2 pt-2">
-          <label className="text-sm font-medium text-muted-foreground ml-1">ทิศทางการเปิด</label>
-          <div className="grid grid-cols-3 gap-3">
-            <OpeningButton
-              value=""
-              label="ยังไม่เลือก"
-              icon={Minus}
-              currentValue={currentOpening}
-              onChange={(v) => onChange('opening_style', v)}
-            />
-            <OpeningButton
-              value="แยกกลาง"
-              label="แยกกลาง"
-              icon={SplitSquareHorizontal}
-              currentValue={currentOpening}
-              onChange={(v) => onChange('opening_style', v)}
-            />
-            <OpeningButton
-              value="เก็บข้างเดียว"
-              label="เก็บข้างเดียว"
-              icon={ArrowRightToLine}
-              currentValue={currentOpening}
-              onChange={(v) => onChange('opening_style', v)}
-            />
-          </div>
-        </div>
+          <OpeningStyleSelector
+            value={data.opening_style}
+            onChange={(v) => onChange('opening_style', v)}
+          />
         )}
       </FormSection>
 

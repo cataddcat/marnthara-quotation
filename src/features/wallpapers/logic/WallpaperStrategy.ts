@@ -8,6 +8,12 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
    * 1. Calculate: คำนวณราคาวอลเปเปอร์ (จำนวนม้วน x ราคา)
    */
   calculate: (item, context?: PricingContext): PriceResult => {
+    // Priority 1: ราคาเหมา (Override Logic) — มาก่อนเช็คขนาด ให้พฤติกรรมเหมือน
+    // curtain/area ทุกประเภท (เดิมวอลเปเปอร์เช็คขนาดก่อน → เหมาแล้วแต่ไม่ใส่ขนาด = ราคา 0)
+    if (item.enable_set_price && toNum(item.set_price_override) > 0) {
+      return { total: toNum(item.set_price_override) };
+    }
+
     // รวมความกว้างทุกผนัง
     const widthTotal = item.widths.reduce((sum, w) => sum + toNum(w), 0);
     const height = toNum(item.height_m);
@@ -50,15 +56,8 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
     const materialPrice = rolls * pricePerRoll;
     const laborPrice = rolls * installCostPerRoll;
 
-    let total = materialPrice + laborPrice;
-
-    // Check Override Price
-    if (item.enable_set_price && toNum(item.set_price_override) > 0) {
-      total = toNum(item.set_price_override);
-    }
-
-    // ปัดเศษ 2 ตำแหน่ง
-    total = Math.round(total * 100) / 100;
+    // ปัดเศษ 2 ตำแหน่ง (override คืนค่าไปแล้วที่ Priority 1 ด้านบน)
+    const total = Math.round((materialPrice + laborPrice) * 100) / 100;
 
     return {
       total,

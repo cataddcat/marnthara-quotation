@@ -6,13 +6,18 @@ import { useUIStore } from '@/store/useUIStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
-import { Users, Scissors, Package, Train, Copy } from 'lucide-react';
+import { Users, Scissors, Package, Train, Copy, AlertTriangle } from 'lucide-react';
 import {
   generateSummaryText,
   type SummaryType,
   type SummaryInput,
   type RailFormat,
 } from '@/lib/summaryGenerator';
+import { missingOpeningItems } from '@/lib/item-status';
+
+// เอกสารฝั่งผลิต — ทิศเปิดมีผลต่อใบสั่ง (สไลด์/ลูกล้อ/ตับผ้า): ✅ เจ้าของร้านยืนยันให้
+// "ต้องใส่ทิศเปิดก่อนออกเอกสาร" (ค่าว่างเดิมถูกตีความเป็น "แยกกลาง" เงียบ ๆ → สั่งของผิด)
+const PRODUCTION_TYPES: readonly SummaryType[] = ['seamstress', 'purchase_order', 'rail_order'];
 
 interface CopySummaryModalProps {
   isOpen: boolean;
@@ -65,6 +70,10 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
   );
   const text = edited ?? generated;
 
+  // รายการที่ยังไม่เลือกทิศเปิด → บล็อกเอกสารฝั่งผลิตจนกว่าจะครบ
+  const missingOpening = useMemo(() => missingOpeningItems(rooms), [rooms]);
+  const blockedByOpening = PRODUCTION_TYPES.includes(type) && missingOpening.length > 0;
+
   const handleSelectType = (next: SummaryType) => {
     trigger('selection');
     setType(next);
@@ -78,6 +87,11 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
   };
 
   const handleCopy = async () => {
+    if (blockedByOpening) {
+      trigger('error');
+      addToast('warning', `เลือกทิศเปิดให้ครบก่อนออกเอกสาร (ค้าง ${missingOpening.length} รายการ)`);
+      return;
+    }
     trigger('success');
     try {
       await navigator.clipboard.writeText(text);
@@ -97,10 +111,11 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
       footer={
         <Button
           onClick={handleCopy}
+          disabled={blockedByOpening}
           className="w-full h-12 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Copy className="w-4 h-4" strokeWidth={1.5} />
-          คัดลอกข้อความ
+          {blockedByOpening ? 'เลือกทิศเปิดให้ครบก่อน' : 'คัดลอกข้อความ'}
         </Button>
       }
     >
@@ -155,6 +170,24 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* --- เตือน: ทิศเปิดยังไม่ครบ → เอกสารผลิตจะออก "แยกกลาง" ผิด ๆ — บล็อกจนกว่าจะเลือก --- */}
+        {blockedByOpening && (
+          <div className="shrink-0 rounded-xl border border-amber-200/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/40 p-3 text-sm text-amber-700 dark:text-amber-400">
+            <div className="flex items-center gap-1.5 font-semibold mb-1">
+              <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+              ยังไม่เลือกทิศเปิด {missingOpening.length} รายการ — ต้องครบก่อนออกเอกสารผลิต
+            </div>
+            <ul className="space-y-0.5 pl-5 list-disc">
+              {missingOpening.slice(0, 4).map((m, i) => (
+                <li key={i}>
+                  {m.roomName}: {m.label}
+                </li>
+              ))}
+              {missingOpening.length > 4 && <li>… อีก {missingOpening.length - 4} รายการ</li>}
+            </ul>
           </div>
         )}
 

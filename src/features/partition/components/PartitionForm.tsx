@@ -7,7 +7,7 @@ import { PartitionSchema, PartitionFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, Grid3X3, SplitSquareHorizontal, ArrowRight, Star, Book } from 'lucide-react';
+import { Tag, Grid3X3, Star, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
@@ -17,10 +17,11 @@ import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
+import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
-import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
-import { ITEM_TYPES, FAVORITE_CATEGORIES, OPENING_STYLES } from '@/config/enums';
+import { getItemTheme } from '@/lib/theme-utils';
+import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const PARTITION_FORM_ID = 'partition-edit-form';
 
@@ -39,7 +40,7 @@ const DEFAULT_DATA: PartitionFormValues = {
   code: '',
   notes: '',
   fabric_variant: 'PVC ทึบ',
-  opening_style: OPENING_STYLES.SIDE,
+  opening_style: '', // ไม่มีค่าตั้งต้น — ผู้ใช้ต้องเลือกเอง (การ์ดจะเตือนถ้ายังไม่เลือก)
   is_suspended: false,
   enable_set_price: false,
   set_price_override: 0,
@@ -211,27 +212,14 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
         </div>
       </FormSection>
 
-      {/* รูปแบบการเปิด (installation spec — collapsible escape hatch in Lite) */}
+      {/* รูปแบบการเปิด (installation spec — collapsible escape hatch in Lite)
+          ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — เก็บค่า canonical ไทย, รองรับค่าเก่า 'side'/'center' */}
       <AdvancedSection expanded={isFull} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
-        <div className="space-y-2">
-          <label className="text-[13px] font-medium text-muted-foreground">รูปแบบการเปิด</label>
-          <div className={cn(SEGMENTED_TRACK, 'flex gap-1')}>
-            {[
-              { l: 'เก็บข้างเดียว', v: OPENING_STYLES.SIDE, i: ArrowRight },
-              { l: 'แยกกลาง', v: OPENING_STYLES.CENTER, i: SplitSquareHorizontal },
-            ].map((opt) => (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => handleChange('opening_style', opt.v)}
-                className={cn('flex-1', segmentedItemClass(formData.opening_style === opt.v, theme))}
-              >
-                <opt.i className="w-4 h-4" />
-                {opt.l}
-              </button>
-            ))}
-          </div>
-        </div>
+        <OpeningStyleSelector
+          label="รูปแบบการเปิด"
+          value={formData.opening_style}
+          onChange={(v) => handleChange('opening_style', v)}
+        />
       </AdvancedSection>
 
       {/* 4. Notes & Actions */}

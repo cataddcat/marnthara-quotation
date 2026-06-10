@@ -14,6 +14,7 @@ import { ITEM_TYPES, type ItemTypeKey } from '@/config/enums';
 import { fmtDimension, toNum } from '@/utils/formatters';
 import { generateItemVisualSvg } from '@/lib/svgGenerator';
 import { calcWaveHardware, waveSplitFromOpening } from '@/lib/materials/waveHardware';
+import { openingStyleLabel } from '@/lib/opening-style';
 import { cn } from '@/lib/utils';
 import { buildDocFileBase, formatDocCode } from '@/lib/docName';
 import type {
@@ -138,7 +139,8 @@ function getCardData(item: ItemData): CardData {
     if (c.code) specs.push(`ทึบ ${c.code}`);
     if (c.sheer_code) specs.push(`โปร่ง ${c.sheer_code}`);
     if (c.rail_color) specs.push(`ราง ${c.rail_color}`);
-    if (c.opening_style) specs.push(`เปิด ${c.opening_style}`);
+    // ป้ายไทยเสมอ — ข้อมูลเก่า/นำเข้าอาจเก็บเป็นโค้ด 'side'/'center'
+    if (c.opening_style) specs.push(`เปิด ${openingStyleLabel(c.opening_style)}`);
     // ลูกล้อ — เฉพาะม่านลอน (snap-tape TW14.5); แยกกลาง = N+N, เก็บข้างเดียว = N
     if (c.style === 'ลอน') {
       const hw = calcWaveHardware(toNum(c.width_m) * 100, waveSplitFromOpening(c.opening_style));
@@ -162,7 +164,8 @@ function getCardData(item: ItemData): CardData {
   } else {
     const a = item as AreaItemInput;
     if (a.code) specs.push(`รหัส ${a.code}`);
-    if ('opening_style' in a && a.opening_style) specs.push(`เปิด ${a.opening_style}`);
+    if ('opening_style' in a && a.opening_style)
+      specs.push(`เปิด ${openingStyleLabel(a.opening_style)}`);
     if ('adjustment_side' in a && a.adjustment_side) specs.push(`ปรับ ${a.adjustment_side}`);
     dimStr = `${fmtDimension(a.width_m)} x ${fmtDimension(a.height_m)} ม.`;
   }

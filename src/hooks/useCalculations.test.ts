@@ -16,21 +16,28 @@ import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { asItemData, makeCurtain } from '@/test/factories';
 import type { Discount } from '@/types';
 
-const setPriceItem = (total: number) =>
-  asItemData(makeCurtain({ enable_set_price: true, set_price_override: total }));
+const setPriceItem = (total: number, suspended = false) =>
+  asItemData(
+    makeCurtain({ enable_set_price: true, set_price_override: total, is_suspended: suspended })
+  );
 
 const seed = (opts: {
   items?: number[];
   discount?: Discount;
   vat?: number;
   suspendedItems?: number[];
+  /** รายการที่ "พักรายการ" (item-level suspend) ในห้องปกติ — ต้องไม่ถูกนับยอด */
+  suspendedItemsInRoom?: number[];
 }) => {
   const rooms = [
     {
       id: 'r1',
       name: 'A',
       is_suspended: false,
-      items: (opts.items ?? []).map(setPriceItem),
+      items: [
+        ...(opts.items ?? []).map((t) => setPriceItem(t)),
+        ...(opts.suspendedItemsInRoom ?? []).map((t) => setPriceItem(t, true)),
+      ],
     },
   ];
   if (opts.suspendedItems) {
@@ -38,7 +45,7 @@ const seed = (opts: {
       id: 'r2',
       name: 'Suspended',
       is_suspended: true,
-      items: opts.suspendedItems.map(setPriceItem),
+      items: opts.suspendedItems.map((t) => setPriceItem(t)),
     });
   }
   useAppStore.setState({
@@ -107,6 +114,13 @@ describe('useCalculations — sync path (discount + VAT)', () => {
     seed({ items: [1000], suspendedItems: [9999] });
     const { result } = renderHook(() => useCalculations());
     expect(result.current.grandTotal).toBe(1000);
+  });
+
+  it('รายการที่พัก (item.is_suspended) ในห้องปกติ → ไม่นับยอด (ตรงกับใบพิมพ์/สรุปที่ตัดออก)', () => {
+    seed({ items: [1000], suspendedItemsInRoom: [9999] });
+    const { result } = renderHook(() => useCalculations());
+    expect(result.current.grandTotal).toBe(1000);
+    expect(result.current.finalTotal).toBe(1070); // +VAT 7% จากยอดที่ไม่รวมรายการพัก
   });
 });
 

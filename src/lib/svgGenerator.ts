@@ -244,7 +244,7 @@ function aluminiumBlind(f: Frame, item: AreaItemInput): string {
   return s + cord(sideFromAdjustment(item.adjustment_side), f);
 }
 
-// ── Vertical blind (louvers) + cord ──
+// ── Vertical blind (louvers) + cord + opening direction (เก็บใบ) ──
 function verticalBlind(f: Frame, item: AreaItemInput): string {
   let s = `<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" fill="none" stroke="${C.frame}" stroke-width="0.6"/>`;
   const n = Math.max(4, Math.floor(f.w / 8));
@@ -252,7 +252,12 @@ function verticalBlind(f: Frame, item: AreaItemInput): string {
   for (let i = 0; i < n; i++) {
     s += `<rect x="${f.x + i * sw + 0.5}" y="${f.y}" width="${sw - 1}" height="${f.h}" fill="${C.slat}" stroke="${C.slatStroke}" stroke-width="0.4"/>`;
   }
-  return s + cord(sideFromAdjustment(item.adjustment_side), f);
+  return (
+    s +
+    cord(sideFromAdjustment(item.adjustment_side), f) +
+    // ม่านปรับแสงเก็บ "เก็บใบ" (opening_style) แล้ว — วาดลูกศรทิศเหมือนฉากกั้น/มุ้งจีบ
+    openingIndicator(item.opening_style, undefined, f, sideFromAdjustment(item.adjustment_side))
+  );
 }
 
 // ── Roller blind (fabric + top roll + bottom bar) + cord ──
@@ -279,7 +284,9 @@ function partition(f: Frame, item: AreaItemInput): string {
 
 // ── Pleated screen (mesh) + opening direction ──
 function pleatedScreen(f: Frame, item: AreaItemInput, uid: string): string {
-  const pid = `mesh-${uid}`;
+  // sanitize id — uid มาจาก item.id ซึ่งอาจมาจากไฟล์ import ภายนอก และ SVG นี้
+  // ถูก render ผ่าน dangerouslySetInnerHTML (LookbookModal) — กันอักขระหลุดออกนอก attribute
+  const pid = `mesh-${uid.replace(/[^a-zA-Z0-9_-]/g, '')}`;
   return (
     `<defs><pattern id="${pid}" width="5" height="5" patternUnits="userSpaceOnUse">` +
     `<path d="M0 5 L5 0 M -1 1 L 1 -1 M 4 6 L 6 4" stroke="${C.slatStroke}" stroke-width="0.4"/></pattern></defs>` +

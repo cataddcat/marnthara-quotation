@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand';
+import { z } from 'zod';
 import { AppState } from '../useAppStore';
 
 export interface LaborCost {
@@ -128,6 +129,29 @@ export const DEFAULT_SERVICE_COSTS: Record<string, number> = {
   install_point:     300,  // ค่าติดตั้ง (ต่อจุด/ต่อช่องหน้าต่าง)
   removal_per_point: 300,  // ทุนค่ารื้อถอน (ต่อจุด)
 };
+
+// ── Schema ตรวจ payload ของ importSecrets ────────────────────────────────────
+// vault ตัวเลข = record(code → number) · laborCosts = record(style → {rate, unit, ...})
+// กันค่า string/object หลุดเข้าการคำนวณกำไรเป็น NaN (เดิม merge โดยไม่ตรวจชนิดเลย)
+const NumberVaultSchema = z.record(z.string(), z.number());
+const SecretsSchema = z.looseObject({
+  laborCosts: z
+    .record(
+      z.string(),
+      z.looseObject({
+        rate: z.number(),
+        unit: z.string(),
+        min_price: z.number().optional(),
+      })
+    )
+    .optional(),
+  serviceCosts: NumberVaultSchema.optional(),
+  accessoryCosts: NumberVaultSchema.optional(),
+  hardwareCosts: NumberVaultSchema.optional(),
+  fabricCosts: NumberVaultSchema.optional(),
+  wallpaperCosts: NumberVaultSchema.optional(),
+  areaCosts: NumberVaultSchema.optional(),
+});
 
 export const createCostDataSlice: StateCreator<
   AppState,
@@ -280,11 +304,36 @@ export const createCostDataSlice: StateCreator<
 
   importSecrets: (inputString) => {
     try {
-      const data = JSON.parse(inputString);
-      if (!data.laborCosts && !data.serviceCosts && !data.accessoryCosts && !data.fabricCosts)
+      const parsed = SecretsSchema.safeParse(JSON.parse(inputString));
+      if (!parsed.success) return false;
+      const data = parsed.data;
+      if (
+        !data.laborCosts &&
+        !data.serviceCosts &&
+        !data.accessoryCosts &&
+        !data.hardwareCosts &&
+        !data.fabricCosts &&
+        !data.wallpaperCosts &&
+        !data.areaCosts
+      )
         return false;
       set((state) => ({
-        laborCosts: data.laborCosts ? { ...state.laborCosts, ...data.laborCosts } : state.laborCosts,
+        // เติม field ที่ schema ไม่บังคับให้ครบตาม LaborCost: style = key, min_price default 0
+        laborCosts: data.laborCosts
+          ? {
+              ...state.laborCosts,
+              ...Object.fromEntries(
+                Object.entries(data.laborCosts).map(([key, v]) => [
+                  key,
+                  {
+                    min_price: 0,
+                    ...v,
+                    style: typeof v.style === 'string' ? v.style : key,
+                  } as LaborCost,
+                ])
+              ),
+            }
+          : state.laborCosts,
         serviceCosts: data.serviceCosts ? { ...state.serviceCosts, ...data.serviceCosts } : state.serviceCosts,
         accessoryCosts: data.accessoryCosts ? { ...state.accessoryCosts, ...data.accessoryCosts } : state.accessoryCosts,
         hardwareCosts: data.hardwareCosts ? { ...state.hardwareCosts, ...data.hardwareCosts } : state.hardwareCosts,

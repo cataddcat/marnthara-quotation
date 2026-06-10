@@ -9,6 +9,8 @@ import {
   isAreaItem,
   isRemovalItem
 } from '@/lib/type-guards';
+import { isSqmPriced } from '@/lib/vault';
+import { vaultLookup } from '@/lib/codes';
 import { toNum } from '@/utils/formatters';
 
 export interface CostBreakdown {
@@ -70,8 +72,10 @@ export const CostEngine = {
            usedQuantity += usedYards;
 
            if (item.code) {
-             // Priority 1: Vault lookup by code
-             const costPerYard = fabricCosts[item.code] || 0;
+             // Priority 1: Vault lookup by code (ทน case/space — ดู src/lib/codes.ts)
+             // ✅ ยืนยันจากเจ้าของร้าน (มิ.ย. 2026): มี code = vault เป็น source เด็ดขาด —
+             // vault ว่างให้ขึ้น "ไม่รู้ต้นทุน" (เทา) เพื่อบังคับเติมคลัง ไม่ fallback ไป price_sqyd ในฟอร์ม
+             const costPerYard = vaultLookup(fabricCosts, item.code);
              if (costPerYard === 0) hasMissingCost = true;
              fabricCost = usedYards * costPerYard;
            } else if (toNum(item.price_sqyd) > 0) {
@@ -92,8 +96,8 @@ export const CostEngine = {
            const sheerCode = item.sheer_code;
 
            if (sheerCode) {
-             // Priority 1: Vault lookup by sheer code
-             const sheerCostPerYard = fabricCosts[sheerCode] || 0;
+             // Priority 1: Vault lookup by sheer code (ทน case/space)
+             const sheerCostPerYard = vaultLookup(fabricCosts, sheerCode);
              if (sheerCostPerYard === 0) hasMissingCost = true;
              sheerCost = sheerYards * sheerCostPerYard;
            } else if (toNum(item.sheer_price_sqyd) > 0) {
@@ -119,7 +123,7 @@ export const CostEngine = {
         else if (item.style === 'แป๊บ') railKey = 'rail_rod';
         
         // Priority chain: SKU ที่เลือก (catalog) → ค่า legacy คงที่ (accessoryCosts) → 0
-        const railSkuCost = item.rail_code ? hardwareCosts[item.rail_code] ?? 0 : 0;
+        const railSkuCost = vaultLookup(hardwareCosts, item.rail_code);
         const costPerMeterRail = railSkuCost > 0 ? railSkuCost : accessoryCosts[railKey] || 0;
         railCost = width * costPerMeterRail;
 
@@ -187,7 +191,7 @@ export const CostEngine = {
              usedQuantity = rolls;
 
              const code = item.wallpaper_code;
-             const cost = code ? (wallpaperCosts[code] || 0) : 0;
+             const cost = vaultLookup(wallpaperCosts, code);
              if (cost === 0) hasMissingCost = true;
 
              fabricCost = rolls * cost;
@@ -199,15 +203,19 @@ export const CostEngine = {
     // 🪟 CASE 3: มู่ลี่ / ฉาก / มุ้ง (Area Items)
     // ==========================================
     else if (isAreaItem(item)) {
-        unit = 'ตร.ล.';
-        // ใช้พื้นที่ (ตร.ล.) เป็นตัวคูณต้นทุน
-        if (breakdown?.areaSqyd) {
-            usedQuantity = breakdown.areaSqyd;
+        // หน่วยทุนตามประเภท (vault.ts): มุ้งจีบ = ตร.ม., ที่เหลือ = ตร.ล. — ใช้ปริมาณเดียวกับ
+        // ที่ AreaStrategy ใช้คิดราคาขาย (breakdown.pricedArea) ให้ทุน/ขาย/สรุปวัสดุตรงกันเสมอ
+        unit = isSqmPriced(item.type) ? 'ตร.ม.' : 'ตร.ล.';
+        const costArea = breakdown?.pricedArea ?? breakdown?.areaSqyd;
+        if (costArea) {
+            usedQuantity = costArea;
 
             // ต้นทุนพื้นที่อยู่ใน areaCosts — key เป็นรหัสสินค้า ถ้าไม่ระบุรหัสใช้ประเภทสินค้า
             // (ตรงกับ buildSummary: costKey = code || item.type และ routeCostToVault → areaCosts)
-            const costKey = item.code || item.type;
-            const cost = areaCosts[costKey] || 0;
+            // key ประเภทสินค้า ('pleated_screen' ฯลฯ) ต้องคงรูปเดิม — normalize เฉพาะรหัสที่ผู้ใช้พิมพ์
+            const cost = item.code
+              ? vaultLookup(areaCosts, item.code)
+              : areaCosts[item.type] || 0;
             if (cost === 0) hasMissingCost = true;
 
             fabricCost = usedQuantity * cost;

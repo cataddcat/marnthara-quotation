@@ -123,8 +123,10 @@ export const CurtainStrategy: PricingStrategy<CurtainItemInput> = {
     }
 
     // --- รวมยอด ---
-    const railPrice = 0; // เผื่ออนาคต
-    const accessoryPrice = 0; // เผื่ออนาคต
+    // ✅ ยืนยันจากเจ้าของร้าน (มิ.ย. 2026): "ราคาผ้า/เมตร รวมรางแล้ว" — ฝั่งขายไม่บวกราง/อุปกรณ์แยก
+    // ส่วนฝั่งทุน (CostEngine) คิดค่ารางแยกตามจริง → margin ที่โชว์จะต่ำกว่า "กำไรผ้าล้วน" by design
+    const railPrice = 0;
+    const accessoryPrice = 0;
     
     const total = fabricPrice + sheerPrice + railPrice + accessoryPrice;
 

@@ -14,10 +14,11 @@ import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
+import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
-import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
-import { ITEM_TYPES, OPENING_STYLES, FAVORITE_CATEGORIES } from '@/config/enums';
+import { getItemTheme } from '@/lib/theme-utils';
+import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const PLEATED_SCREEN_FORM_ID = 'pleated-screen-edit-form';
 
@@ -36,7 +37,7 @@ const DEFAULT_DATA: PleatedScreenFormValues = {
   code: '',
   notes: '',
   fabric_variant: 'มุ้งจีบ',
-  opening_style: OPENING_STYLES.SIDE,
+  opening_style: '', // ไม่มีค่าตั้งต้น — ผู้ใช้ต้องเลือกเอง (การ์ดจะเตือนถ้ายังไม่เลือก)
   is_suspended: false,
   enable_set_price: false,
   set_price_override: 0,
@@ -182,23 +183,14 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         </div>
       </FormSection>
 
-      {/* Opening Style (installation spec — collapsible escape hatch in Lite) */}
+      {/* Opening Style (installation spec — collapsible escape hatch in Lite)
+          ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — ปุ่มเดิมโชว์ค่า enum ดิบ 'center'/'side' เป็นป้าย */}
       <AdvancedSection expanded={isFull} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
-        <div className="space-y-2">
-          <label className="text-[13px] font-medium text-muted-foreground">รูปแบบการเปิด</label>
-          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
-            {Object.values(OPENING_STYLES).map((style) => (
-              <button
-                key={style}
-                type="button"
-                onClick={() => handleChange('opening_style', style)}
-                className={segmentedItemClass(formData.opening_style === style, theme)}
-              >
-                {style}
-              </button>
-            ))}
-          </div>
-        </div>
+        <OpeningStyleSelector
+          label="รูปแบบการเปิด"
+          value={formData.opening_style}
+          onChange={(v) => handleChange('opening_style', v)}
+        />
       </AdvancedSection>
 
       <Input

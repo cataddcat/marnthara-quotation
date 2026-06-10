@@ -5,9 +5,10 @@ import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { ITEM_CONFIG, CURTAIN_STYLES, STYLES_WITHOUT_OPENING } from '@/config/constants';
+import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
-import { isItemIncomplete, incompleteLabel } from '@/lib/item-status';
+import { isItemIncomplete, incompleteLabel, requiresOpeningStyle } from '@/lib/item-status';
+import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
 import {
   ChevronDown,
@@ -131,7 +132,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     switch (item.type) {
       case ITEM_TYPES.CURTAIN:
         // รูปแบบ (ลอน/จีบ) ย้ายไปอยู่ใน title แล้ว — ชิปเหลือทิศเปิด/ชั้นผ้า
-        if (item.opening_style) chips.push(item.opening_style);
+        if (item.opening_style) chips.push(openingStyleLabel(item.opening_style));
         if (item.layer_mode === LAYER_MODES.DOUBLE) chips.push('ทึบ+โปร่ง');
         else if (item.layer_mode === LAYER_MODES.SHEER) chips.push('โปร่ง');
         break;
@@ -151,7 +152,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         const side = s('adjustment_side');
         const code = s('code');
         if (variant) chips.push(variant);
-        if (opening) chips.push(opening);
+        if (opening) chips.push(openingStyleLabel(opening));
         if (side) chips.push(`ปรับ ${side}`);
         if (code) chips.push(code);
         break;
@@ -207,12 +208,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   // หน้างานต้องการ "ขนาด" เป็นเมตริกซ้าย, "ยอดสุทธิ" เป็นฮีโร่ขวา — เฉพาะสินค้าที่มีมิติตัวเลข
   const showDim = item.type !== ITEM_TYPES.REMOVAL && !!dimNumbers;
 
-  // แจ้งเตือนบนการ์ด: ม่านที่เริ่มแล้ว (มีขนาด) + สไตล์ต้องมีทิศเปิด + ยังไม่ได้เลือกทิศ (ไม่มีค่าตั้งต้นแล้ว)
+  // แจ้งเตือนบนการ์ด: สินค้าที่เริ่มแล้ว (มีขนาด) + ต้องเลือกทิศเปิด แต่ยังไม่ได้เลือก (ไม่มีค่าตั้งต้นแล้ว)
+  // เกณฑ์ "ประเภทไหนต้องมีทิศ" ใช้ requiresOpeningStyle (single source — ตัวเดียวกับ gate ออกเอกสาร)
   const needsOpening =
-    item.type === ITEM_TYPES.CURTAIN &&
-    hasSize &&
-    !STYLES_WITHOUT_OPENING.includes(item.style) &&
-    !item.opening_style;
+    hasSize && requiresOpeningStyle(item) && !('opening_style' in item && item.opening_style);
 
   return (
     <div

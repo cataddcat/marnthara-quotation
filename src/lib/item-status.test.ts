@@ -5,6 +5,8 @@ import {
   incompleteLabel,
   isItemEmpty,
   isItemReady,
+  requiresOpeningStyle,
+  missingOpeningItems,
 } from './item-status';
 import { ItemData } from '@/types';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
@@ -201,5 +203,53 @@ describe('isItemReady (ใช้ตัดสินป้าย "ครบ")', ()
   });
   it('รายการว่าง → ไม่พร้อม', () => {
     expect(isItemReady(curtain({ width_m: '', height_m: '' }))).toBe(false);
+  });
+});
+
+describe('requiresOpeningStyle / missingOpeningItems — gate ออกเอกสารผลิต', () => {
+  const vertical = (over: Record<string, unknown> = {}): ItemData =>
+    ({
+      type: ITEM_TYPES.VERTICAL_BLIND,
+      id: 'v1',
+      width_m: '2.0',
+      height_m: '2.0',
+      price_sqyd: '500',
+      ...over,
+    }) as ItemData;
+
+  const room = (items: ItemData[], is_suspended = false) => ({
+    id: 'r1',
+    name: 'ห้องนอน',
+    items,
+    is_suspended,
+  });
+
+  it('ผ้าม่าน: สไตล์มีทิศ → ต้องระบุ; พับ/แป๊บ → ไม่ต้อง', () => {
+    expect(requiresOpeningStyle(curtain({ style: 'ลอน' }))).toBe(true);
+    expect(requiresOpeningStyle(curtain({ style: 'พับ' }))).toBe(false);
+    expect(requiresOpeningStyle(curtain({ style: 'แป๊บ' }))).toBe(false);
+  });
+
+  it('ม่านปรับแสง/ฉากกั้น/มุ้งจีบ → ต้องระบุเสมอ', () => {
+    expect(requiresOpeningStyle(vertical())).toBe(true);
+    expect(requiresOpeningStyle(vertical({ type: ITEM_TYPES.PARTITION }))).toBe(true);
+    expect(requiresOpeningStyle(vertical({ type: ITEM_TYPES.PLEATED_SCREEN }))).toBe(true);
+  });
+
+  it('รายการเริ่มแล้ว + ไม่มีทิศ → ติดลิสต์; เลือกแล้ว → ไม่ติด', () => {
+    const missing = missingOpeningItems([room([curtain({}), vertical()])]);
+    expect(missing).toHaveLength(2);
+    expect(missing[0].roomName).toBe('ห้องนอน');
+
+    const ok = missingOpeningItems([
+      room([curtain({ opening_style: 'แยกกลาง' }), vertical({ opening_style: 'เก็บข้างเดียว' })]),
+    ]);
+    expect(ok).toHaveLength(0);
+  });
+
+  it('รายการพัก/ห้องพัก/ยังไม่มีความกว้าง → ไม่ติดลิสต์', () => {
+    expect(missingOpeningItems([room([curtain({ is_suspended: true })])])).toHaveLength(0);
+    expect(missingOpeningItems([room([curtain({})], true)])).toHaveLength(0);
+    expect(missingOpeningItems([room([curtain({ width_m: '' })])])).toHaveLength(0);
   });
 });

@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { AppState } from '../useAppStore';
 import { Customer } from '@/types';
+import { newUuid } from '@/lib/id';
 
 export interface CustomerSlice {
   customer: Customer;
@@ -13,17 +14,6 @@ export interface CustomerSlice {
   /** เพิ่มเลขรันเอกสารต่อลูกค้า (+1 เงียบ ๆ) — สำหรับกรณีออกเอกสารฉบับใหม่ */
   bumpDocSeq: () => void;
 }
-
-/** UUID v4 — ใช้ crypto.randomUUID ถ้ามี (browser/Node 19+), ไม่งั้น fallback (กัน test env เก่า) */
-const newUuid = (): string => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-  });
-};
 
 export const createCustomerSlice: StateCreator<
   AppState,

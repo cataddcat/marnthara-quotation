@@ -42,8 +42,10 @@ export const useCalculations = (): CalculationResult => {
   const runIdRef = useRef(0);
 
   // 1. รวบรวม Items ทั้งหมดเพื่อเช็คปริมาณงาน
+  // กรองทั้งห้องที่พัก และ "รายการที่พัก" (item.is_suspended) — ให้ตรงกับ printModel/summaryGenerator
+  // ที่ตัดรายการพักออกจากเอกสารอยู่แล้ว (ไม่งั้นยอดรวมบนใบพิมพ์ ≠ ผลรวมรายการที่แสดง)
   const allActiveItems = useMemo(() => {
-    return rooms.flatMap((r) => (r.is_suspended ? [] : r.items));
+    return rooms.flatMap((r) => (r.is_suspended ? [] : r.items.filter((i) => !i.is_suspended)));
   }, [rooms]);
 
   const itemCount = allActiveItems.length;
@@ -56,10 +58,14 @@ export const useCalculations = (): CalculationResult => {
     // จับ ID ของ run นี้ เพื่อ ignore ผลลัพธ์จาก run ก่อนหน้า (stale result)
     const runId = ++runIdRef.current;
 
-    setTimeout(() => setIsWorkerBusy(true), 0);
+    // ตั้งสถานะ "กำลังคำนวณ" ผ่าน setTimeout(0) — กฎ react-hooks/set-state-in-effect ห้าม setState
+    // ตรง ๆ ใน effect body; เก็บ handle ไว้ clearTimeout เมื่อผลลัพธ์มาก่อน (กันเคสงานเสร็จไวมาก
+    // แล้ว timer ยิงทีหลัง ทับ false ด้วย true ค้าง)
+    const busyTimer = setTimeout(() => setIsWorkerBusy(true), 0);
 
     calculateBatch(allActiveItems)
       .then((priceMap) => {
+        clearTimeout(busyTimer); // ผลมาแล้ว — busy ที่ยังไม่ทันตั้งไม่ต้องตั้ง
         // ตรวจสอบทั้ง unmount และ superseded request
         if (!isMountedRef.current || runIdRef.current !== runId) return;
 
@@ -70,19 +76,23 @@ export const useCalculations = (): CalculationResult => {
         setIsWorkerBusy(false);
       })
       .catch((err) => {
+        clearTimeout(busyTimer);
         if (!isMountedRef.current || runIdRef.current !== runId) return;
         console.error("Worker Failed:", err);
         setIsWorkerBusy(false);
       });
 
     return () => {
+      clearTimeout(busyTimer);
       setAsyncResult(null);
       setIsWorkerBusy(false);
     };
   }, [allActiveItems, discount, shopConfig.baseVatRate, calculateBatch, useWorker]);
 
-  // Effect สำหรับรีเซ็ต mount state เมื่อ component ถูก unmount
+  // Effect สำหรับติดตาม mount state — ต้อง set true ใน setup ด้วย ไม่ใช่พึ่งค่าเริ่มของ ref
+  // (StrictMode รัน setup→cleanup→setup: ถ้าไม่ set กลับ ref จะค้าง false แล้วผล worker ถูกทิ้งทั้ง session)
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };

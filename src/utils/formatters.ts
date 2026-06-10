@@ -138,15 +138,16 @@ export const bahttext = (num: number): string => {
     'เจ็ด',
     'แปด',
     'เก้า',
-    'สิบ',
   ];
-  const TxtDigitArr = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+  // อ่านได้ภายในกลุ่ม 6 หลัก (ถึง "แสน") — เกินนั้นตัดเป็นกลุ่มละล้านแล้วคั่นด้วย "ล้าน" (recursive)
+  const TxtDigitArr = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน'];
 
   num = parseFloat(num.toFixed(2)); // Fix precision issues
   let bahtStr = '';
 
   if (num === 0) return 'ศูนย์บาทถ้วน';
 
+  // อ่านเลขกลุ่มเดียว (1–999,999)
   const processGroup = (numberGroup: number) => {
     let str = '';
     const s = String(numberGroup);
@@ -169,11 +170,23 @@ export const bahttext = (num: number): string => {
     return str;
   };
 
+  // อ่านจำนวนเต็มทุกขนาด: แบ่งเป็นกลุ่มละ 1,000,000 แล้วต่อด้วย "ล้าน" ซ้อนกันได้
+  // เช่น 12,000,000 → "สิบสองล้าน", 1,000,001 → "หนึ่งล้านหนึ่ง" (เดิมเกิน 9,999,999 จะได้ "undefined")
+  const readInteger = (n: number): string => {
+    if (n <= 0) return '';
+    const millions = Math.floor(n / 1_000_000);
+    const rest = n % 1_000_000;
+    let str = '';
+    if (millions > 0) str += readInteger(millions) + 'ล้าน';
+    if (rest > 0) str += processGroup(rest);
+    return str;
+  };
+
   const integerPart = Math.floor(num);
   const decimalPart = Math.round((num - integerPart) * 100);
 
   if (integerPart > 0) {
-    bahtStr += processGroup(integerPart);
+    bahtStr += readInteger(integerPart);
     bahtStr += 'บาท';
   }
 
@@ -200,12 +213,4 @@ export const fmtDate = (date: Date | string | number, full: boolean = false): st
     month: full ? 'long' : 'short',
     day: 'numeric',
   }).format(d);
-};
-
-/**
- * สร้าง Date String สำหรับใช้เป็น ID หรือ ชื่อไฟล์
- * @example getDateISO() -> "2025-12-03"
- */
-export const getDateISO = (): string => {
-  return new Date().toISOString().split('T')[0];
 };

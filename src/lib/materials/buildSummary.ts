@@ -11,6 +11,7 @@ import { ITEM_CONFIG } from '@/config/constants';
 import { toNum, fmtSize } from '@/utils/formatters';
 import { FORMULAS } from '@/config/formulas';
 import type { Room, CurtainItemInput, WallpaperItemInput, AreaItemInput } from '@/types';
+import { isSqmPriced } from '@/lib/vault';
 import { calcWaveHardware, waveSplitFromOpening } from './waveHardware';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -285,8 +286,8 @@ export function buildSummary(rooms: Room[]) {
           const typeName = ITEM_CONFIG[item.type as keyof typeof ITEM_CONFIG]?.name || item.type;
           const code = a.code || undefined;
           const costKey = code || item.type;
-          const isPleated = item.type === ITEM_TYPES.PLEATED_SCREEN;
-          const unit: 'ตร.ม.' | 'ตร.ล.' = isPleated ? 'ตร.ม.' : 'ตร.ล.';
+          // หน่วยต่อประเภทจาก vault.ts (single source — ตรงกับ AreaStrategy/CostEngine)
+          const unit: 'ตร.ม.' | 'ตร.ล.' = isSqmPriced(item.type) ? 'ตร.ม.' : 'ตร.ล.';
 
           const sqm = width * height;
           const breakdown = PricingEngine.calculateDetailedPrice(item).breakdown;

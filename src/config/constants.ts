@@ -28,11 +28,6 @@ export const CURTAIN_STYLES = [
 // รูปแบบที่ไม่มี "ทิศทางการเปิด" (พับ = ยกขึ้นแนวตั้ง, แป๊บ = สอดราว)
 export const STYLES_WITHOUT_OPENING: readonly string[] = ['พับ', 'แป๊บ'];
 
-export const OPENING_OPTIONS = [
-  { label: 'แยกกลาง', value: 'center' },
-  { label: 'เก็บข้างเดียว', value: 'side' },
-];
-
 export const HOOK_OPTIONS = [
   { label: 'ตะขอสั้น (บังราง)', value: 'short' },
   { label: 'ตะขอยาว (โชว์ราง)', value: 'long' },

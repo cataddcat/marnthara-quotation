@@ -62,6 +62,13 @@ describe('WallpaperStrategy.calculate', () => {
     expect(r.total).toBe(1234);
   });
 
+  it('ราคาเหมา override ใช้ได้แม้ยังไม่ใส่ขนาด (พฤติกรรมเดียวกับ curtain/area)', () => {
+    const r = WallpaperStrategy.calculate(
+      asWp({ widths: [], height_m: 0, enable_set_price: true, set_price_override: 999 })
+    );
+    expect(r.total).toBe(999);
+  });
+
   it('width รวม 0 → total 0', () => {
     const r = WallpaperStrategy.calculate(asWp({ widths: ['0'], height_m: 2.5, price_per_roll: 1000 }));
     expect(r.total).toBe(0);

@@ -15,12 +15,13 @@ export const useCostStatus = (item: ItemData | null): CostBreakdown | null => {
   const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
   const areaCosts = useAppStore((s) => s.areaCosts);
   const accessoryCosts = useAppStore((s) => s.accessoryCosts);
+  const hardwareCosts = useAppStore((s) => s.hardwareCosts); // ทุนราง SKU — CostEngine ใช้ (กัน stale)
   const laborCosts = useAppStore((s) => s.laborCosts);
   const serviceCosts = useAppStore((s) => s.serviceCosts);
 
   return useMemo(
     () => (item ? CostEngine.analyze(item) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, laborCosts, serviceCosts]
+    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts]
   );
 };

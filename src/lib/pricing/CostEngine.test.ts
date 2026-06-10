@@ -339,6 +339,44 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       expect(result.status).not.toBe('unknown');
     });
 
+    it('D13c: มุ้งจีบ (pleated) คิดทุนต่อ ตร.ม. — ไม่ใช่ ตร.ล. (ตรงกับ vault.ts/AreaStrategy)', () => {
+      setupStore({ areaCosts: { PS01: 300 } });
+      // width=2.0, height=2.0 → 4 ตร.ม. (เดิมคูณ 4.8 ตร.ล. = ทุนเกิน 20%)
+      const item = makeItem({
+        type: ITEM_TYPES.PLEATED_SCREEN,
+        id: 'ps-1',
+        width_m: 2.0,
+        height_m: 2.0,
+        code: 'PS01',
+        price_sqyd: 500, // ป้ายฟอร์ม = บาท/ตร.ม.
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.usedQuantity).toBeCloseTo(4.0, 2);
+      expect(result.unit).toBe('ตร.ม.');
+      expect(result.fabricCost).toBeCloseTo(4.0 * 300, 2); // 1200
+      expect(result.sellingPrice).toBeCloseTo(4.0 * 500, 2); // ขายก็ต่อ ตร.ม. เช่นกัน
+      expect(result.status).not.toBe('unknown');
+    });
+
+    it('D13d: ทุนเขียนด้วยรหัสพิมพ์เล็ก → vaultLookup ยังหาเจอ (normalize fallback)', () => {
+      setupStore({ areaCosts: { B009: 300 } }); // vault เก็บ UPPERCASE (ผ่าน importCatalog)
+      const item = makeItem({
+        type: ITEM_TYPES.WOODEN_BLIND,
+        id: 'wb-3',
+        width_m: 2.0,
+        height_m: 2.0,
+        code: 'b009', // ผู้ใช้พิมพ์เล็กในฟอร์ม
+        price_sqyd: 500,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.fabricCost).toBeCloseTo(4.8 * 300, 2);
+      expect(result.status).not.toBe('unknown');
+    });
+
     it('D13b: Area-type ไม่มี code → ใช้ areaCosts[item.type] เป็น fallback', () => {
       // ตรงกับ buildSummary: costKey = code || item.type
       setupStore({ areaCosts: { [ITEM_TYPES.WOODEN_BLIND]: 250 } });
