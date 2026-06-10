@@ -24,22 +24,22 @@ const makeProps = () => ({
 describe('MainMenuModal', () => {
   it('render เมนูหลัก + ป้ายเมนูครบ', () => {
     render(<MainMenuModal {...makeProps()} />);
-    ['ใบเสนอราคา', 'คัดลอกสรุป (LINE)', 'Lookbook', 'ลูกค้า', 'ตั้งค่าร้าน', 'ส่วนลด', 'สำรองข้อมูล', 'วิเคราะห์กำไร', 'ข้อมูลสินค้า & ราคา', 'ตั้งค่าต้นทุน', 'อธิบายสูตร'].forEach(
+    ['ใบเสนอราคา', 'คัดลอกสรุป', 'Lookbook', 'ฐานลูกค้า', 'ตั้งค่าร้านค้า', 'จัดการส่วนลด', 'สำรองข้อมูล', 'วิเคราะห์กำไร', 'สินค้า & ราคา', 'โครงสร้างต้นทุน', 'อธิบายสูตร'].forEach(
       (label) => expect(screen.getByText(label)).toBeInTheDocument()
     );
   });
 
   it.each([
     ['ใบเสนอราคา', 'onOpenPdf'],
-    ['คัดลอกสรุป (LINE)', 'onOpenCopySummary'],
+    ['คัดลอกสรุป', 'onOpenCopySummary'],
     ['Lookbook', 'onOpenLookbook'],
-    ['ลูกค้า', 'onOpenCustomer'],
-    ['ตั้งค่าร้าน', 'onOpenShopSettings'],
-    ['ส่วนลด', 'onOpenDiscount'],
+    ['ฐานลูกค้า', 'onOpenCustomer'],
+    ['ตั้งค่าร้านค้า', 'onOpenShopSettings'],
+    ['จัดการส่วนลด', 'onOpenDiscount'],
     ['สำรองข้อมูล', 'onOpenData'],
     ['วิเคราะห์กำไร', 'onOpenCostDashboard'],
-    ['ข้อมูลสินค้า & ราคา', 'onOpenMaterialSummary'],
-    ['ตั้งค่าต้นทุน', 'onOpenProductionSettings'],
+    ['สินค้า & ราคา', 'onOpenMaterialSummary'],
+    ['โครงสร้างต้นทุน', 'onOpenProductionSettings'],
     ['อธิบายสูตร', 'onOpenFormulaDocs'],
   ] as const)('คลิก "%s" → เรียก %s', (label, handler) => {
     const props = makeProps();
