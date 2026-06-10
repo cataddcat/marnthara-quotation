@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
-import { Save, CheckCircle2, ChevronDown, ArrowRight, Smartphone, Monitor } from 'lucide-react';
+import { Save, CheckCircle2, ChevronDown, ArrowRight } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useAppStore } from '@/store/useAppStore';
@@ -87,7 +87,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const { trigger } = useHaptic();
   const { addItem, updateItem } = useAppStore();
   const addToast = useUIStore((s) => s.addToast);
-  const { isLite, setMode } = useExperienceMode();
+  const { isLite } = useExperienceMode();
   // ชื่อห้องปัจจุบัน — แสดงด้านบน Modal กันผู้ใช้สับสนว่ากำลังเพิ่ม/แก้ไขในห้องไหน
   const roomName = useAppStore((s) => s.rooms.find((r) => r.id === roomId)?.name);
 
@@ -172,11 +172,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     setTypeConfirmed(true);
     setFormKey((k) => k + 1);
     setIsFormEmpty(true); // ฟอร์มประเภทใหม่ว่าง → footer เป็น "ปิด" จนกว่าจะกรอก
-  };
-
-  const toggleMode = () => {
-    trigger('selection');
-    setMode(isLite ? 'full' : 'lite');
   };
 
   // ── Persist draft (immediate) — ใช้ร่วมทั้ง auto-save (หลัง debounce) และ flush ตอนปิด ──
@@ -337,7 +332,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     value: item.id as ItemTypeKey,
   }));
 
-  // ── Header: auto-saved badge + mode toggle ─────────────────────────────────
+  // ── Header: auto-saved badge (ตัวสลับโหมดเร็ว/เต็มย้ายไปอยู่เมนูหลักที่เดียว — ไม่เบียดปุ่มปิด) ──
   const headerActions = (
     <div className="flex items-center gap-1.5">
       {autoSavedTick > 0 && (
@@ -354,16 +349,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           บันทึกแล้ว
         </span>
       )}
-      <button
-        type="button"
-        onClick={toggleMode}
-        title={isLite ? 'โหมดเร็ว (แตะเพื่อโหมดเต็ม)' : 'โหมดเต็ม (แตะเพื่อโหมดเร็ว)'}
-        aria-label="สลับโหมดการแสดงผล"
-        className="flex items-center gap-1 px-2.5 h-9 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95 transition-all"
-      >
-        {isLite ? <Smartphone className="w-3.5 h-3.5" /> : <Monitor className="w-3.5 h-3.5" />}
-        {isLite ? 'เร็ว' : 'เต็ม'}
-      </button>
     </div>
   );
 

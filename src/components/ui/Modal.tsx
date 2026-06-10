@@ -93,7 +93,7 @@ export const Modal: React.FC<ModalProps> = ({
                   {title}
                 </Drawer.Title>
                 {description && (
-                  <Drawer.Description className="max-w-full text-xs text-muted-foreground text-center mt-0.5 truncate">
+                  <Drawer.Description className="max-w-full text-xs text-muted-foreground text-center mt-1 truncate">
                     {description}
                   </Drawer.Description>
                 )}
@@ -185,14 +185,21 @@ export const Modal: React.FC<ModalProps> = ({
                       )
                 )}
               >
-                {/* Header — title 16px; ปุ่มมี hit area 44px (HIG) padding กระชับให้หัวเรื่องไม่สูงเกิน */}
+                {/* Header — title 16px; ปุ่มมี hit area 44px (HIG); เว้นขอบตามมาตรฐาน section (p-3.5) */}
                 <div
                   className={cn(
-                    'flex items-center justify-between gap-2 px-4 py-2.5 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors',
+                    'px-4 py-3.5 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors',
                     scrolled ? 'border-border' : 'border-transparent',
                     isFullscreen && 'pt-safe-top' // Safe Area for notch
                   )}
                 >
+                  {/* fullscreen บนจอกว้าง: แถวหัวเรื่องเรียงตรงคอลัมน์เนื้อหา (max-w-3xl) */}
+                  <div
+                    className={cn(
+                      'flex items-center justify-between gap-2 w-full',
+                      isFullscreen && 'max-w-3xl mx-auto'
+                    )}
+                  >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     {/* ปุ่ม Back สำหรับ Fullscreen (Lite tier) — hit area ≥44px + hover/active/focus-visible */}
                     {isFullscreen && isLite && (
@@ -216,7 +223,7 @@ export const Modal: React.FC<ModalProps> = ({
                       {description && (
                         <Description
                           as="p"
-                          className="text-xs text-muted-foreground mt-0.5 truncate"
+                          className="text-xs text-muted-foreground mt-1 truncate"
                         >
                           {description}
                         </Description>
@@ -238,6 +245,7 @@ export const Modal: React.FC<ModalProps> = ({
                       <X className="h-5 w-5" />
                     </Button>
                   )}
+                  </div>
                 </div>
 
                 {/* Content Container.
@@ -251,8 +259,9 @@ export const Modal: React.FC<ModalProps> = ({
                     className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4"
                     onScroll={handleScroll}
                   >
-                    {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks */}
-                    <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full')}>
+                    {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks;
+                        max-w-3xl กันฟอร์มยืดเต็มจอเมื่อ fullscreen (Lite) ถูกเปิดบนจอกว้าง */}
+                    <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full max-w-3xl')}>
                       {children}
                     </div>
                   </div>
@@ -266,7 +275,8 @@ export const Modal: React.FC<ModalProps> = ({
                       isFullscreen && 'pb-safe-bottom'
                     )}
                   >
-                    {footer}
+                    {/* fullscreen: ปุ่ม footer เรียงตรงคอลัมน์เนื้อหาเดียวกัน */}
+                    <div className={cn(isFullscreen && 'max-w-3xl mx-auto')}>{footer}</div>
                   </div>
                 )}
               </DialogPanel>
