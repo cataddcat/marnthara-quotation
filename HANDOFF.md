@@ -264,12 +264,12 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 - Replaced the old `react-to-print`-based `LookbookDocument` (deleted; `react-to-print` is still used by
   `PdfPreviewModal`).
 
-### Room Dashboard — Full-tier overview + drag-reorder (NEW, 2026-06)
-- `src/components/features/RoomDashboard.tsx` — the **Full**-tier rendering of `viewMode === 'overview'` (Lite keeps the compact `RoomCard` stack). Responsive grid (`sm:2 / xl:3`) of room cards, each = header (grip · name→focus · total · ⋯ menu) + its `ItemCard` list + add-item; trailing add-room cell; a project summary header on top (total points / ค้าง / grand total).
+### Room Dashboard — detail-mode overview + drag-reorder (NEW, 2026-06)
+- `src/components/features/RoomDashboard.tsx` — the **detail-mode** rendering of `viewMode === 'overview'` (since 2026-06-10 also on mobile — 1-col grid + touch drag; field mode keeps the focus view). Responsive grid (`sm:2 / xl:3`) of room cards, each = header (grip · name→focus · total · ⋯ menu) + its `ItemCard` list + add-item; trailing add-room cell; a project summary header on top (total points / ค้าง / grand total).
 - **Reorder via `@dnd-kit`** (dependency added: `@dnd-kit/core` + `/sortable` + `/utilities`) — mouse **+ touch + keyboard** (PointerSensor distance-8 so taps/clicks still work; KeyboardSensor). Grip (`GripVertical`) is the `setActivatorNodeRef` drag handle so `ItemCard` stays clickable.
 - **Three drag flows:** rooms reorder (grid `SortableContext`, `rectSortingStrategy`) · items reorder within a room (`verticalListSortingStrategy`) · **items move across rooms with live preview** (multi-container pattern: `onDragOver` mutates a local `localItems: Record<roomId, itemId[]>`, render reads from it; commit **once** in `onDragEnd`). Original room captured in `dragFromRoomRef` (the active sortable's `data.roomId` changes as it previews into other containers — don't rely on it for the source).
 - **Store is the source of truth; the drag commits one undoable step.** `onDragEnd` → `reorderRooms` / `reorderItems` / `moveItemToRoom` (see §8 ProjectSlice). Custom `collisionDetection` filters droppables by active type (`room` vs `item`/`roomdrop`) so the nested contexts don't fight.
-- **Discoverability:** in Full, the dock **"ภาพรวม"** (`MainLayout` `DockPill`, `active` state) **toggles** overview/focus instead of opening the summary drawer; `App.handleOpenOverview` branches on `useExperienceMode().isLite`. `MainLayout`'s `<main>` widens to `max-w-6xl` when Full+overview.
+- **Discoverability:** in detail mode, the dock **"ภาพรวม"** (`MainLayout` `DockPill`, `active` state) **toggles** overview/focus instead of opening the summary drawer; `App.handleOpenOverview` branches on `useExperienceMode().isField`. `MainLayout`'s `<main>` widens (`max-w-7xl`) when detail+overview.
 - The ⋯ room menu also offers **เลื่อนก่อนหน้า/ถัดไป** (`reorderRooms ±1`) as a non-drag, keyboard/touch-friendly reorder fallback, plus คัดลอก/ซ่อน/ลบ (reuses store actions + `useConfirm`).
 
 ---
@@ -489,9 +489,10 @@ src/types.ts                          — ItemData discriminated union + all inp
 >   วัดไว จดให้ครบ ซ่อนทุน/กำไร/เครื่องมือละเอียด; **detail/ละเอียด** = ราคา · ทุน/กำไร · Pro Mode ·
 >   catalog · ภาพรวมแบบทำงานได้ (ลากเรียง/ย้ายข้ามห้อง — ใช้ได้บนมือถือด้วย).
 > - **Desktop = detail เสมอ** (`useExperienceMode`: จอกว้างเป็น responsive enhancement ไม่ใช่โหมด);
->   สวิตช์โหมด (`canSwitch`) มีเฉพาะจอแคบ — **chip ใน header** (amber=หน้างาน / indigo=ละเอียด, 1 แตะ,
->   toast ยืนยัน) + segmented ใน MainMenu. Header KPI สลับตามโหมด: field = "จุดวัด · ค้าง N" (แตะ→ลิ้นชักห้อง),
->   detail = Net (แตะ→ส่วนลด).
+>   สวิตช์โหมด (`canSwitch`) มีเฉพาะจอแคบ — **"แคปซูลสถานะรวม" ใน header** (ชิ้นเดียว 2 ช่อง:
+>   ซ้าย=สวิตช์โหมด tint amber/หน้างาน · indigo/ละเอียด + toast ยืนยัน; ขวา=KPI ของโหมด บรรทัดเดียว —
+>   field "N จุด · ค้าง/ครบ" แตะ→ลิ้นชักห้อง, detail "Net ฿…" แตะ→ส่วนลด; ป้ายโหมดยุบเหลือไอคอนที่ <380px)
+>   + segmented ใน MainMenu. แบรนด์บนจอแคบ = บรรทัดเดียว (subtitle ซ่อน <sm) — header มือถือ 2 ก้อนบรรทัดเดียว.
 > - **กฎจำแนก 2 ถัง:** เรื่อง*พื้นที่จอจริง* (Modal drawer→center, `ItemModal.wideTwoCol`) ใช้ `useIsMobile()`;
 >   เรื่อง*ลักษณะงาน* (cost chrome, `AdvancedSection expanded`, overview gate, `useTierSize` density) ใช้
 >   `isField`/`isDetail`. **อย่าใช้โหมดตัดสิน layout จอ และอย่าใช้ความกว้างจอตัดสินฟีเจอร์งาน.**

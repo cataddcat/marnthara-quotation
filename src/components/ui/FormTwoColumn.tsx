@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { useTierSize } from '@/hooks/useExperienceMode';
 
 interface FormTwoColumnProps {
-  /** true = โหมด Full (เดสก์ท็อป) → 2 คอลัมน์บนจอกว้าง; false = stack คอลัมน์เดียว */
+  /** true = โหมดละเอียด (isDetail) → 2 คอลัมน์เมื่อจอกว้างพอ (lg+); false = stack คอลัมน์เดียว */
   full: boolean;
   /** คอลัมน์ขวา (สรุปราคา/ต้นทุน) — sticky บนจอกว้าง */
   right: React.ReactNode;
@@ -12,8 +12,8 @@ interface FormTwoColumnProps {
 }
 
 /**
- * เลย์เอาต์ 2 คอลัมน์สำหรับฟอร์มสินค้าในโหมด Full บนเดสก์ท็อปจอกว้าง (lg+)
- * input อยู่ซ้าย, สรุปราคาเกาะขวา (sticky); จอแคบ/มือถือ/Lite → stack คอลัมน์เดียว
+ * เลย์เอาต์ 2 คอลัมน์สำหรับฟอร์มสินค้าในโหมดละเอียดบนจอกว้าง (lg+)
+ * input อยู่ซ้าย, สรุปราคาเกาะขวา (sticky); จอแคบ/มือถือ/โหมดหน้างาน → stack คอลัมน์เดียว
  */
 export const FormTwoColumn: React.FC<FormTwoColumnProps> = ({ full, right, children }) => {
   const { sectionGap } = useTierSize();

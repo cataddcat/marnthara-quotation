@@ -111,7 +111,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                 </div>
 
                 <div className="flex gap-3 w-full sm:w-auto items-center">
-                  {/* Full/desktop: show the computed page count before handing off to the browser. */}
+                  {/* โหมดละเอียด: show the computed page count before handing off to the browser. */}
                   {isDetail && pageCount > 0 && (
                     <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-slate-500 font-mono whitespace-nowrap">
                       <FileText className="w-4 h-4" strokeWidth={1.5} />

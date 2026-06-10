@@ -164,7 +164,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
           )
         }
       >
-        {/* one field per line in Lite + on mobile; side-by-side only on desktop Full */}
+        {/* คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           <Input
             label="สีเฟรม"
@@ -183,7 +183,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         </div>
       </FormSection>
 
-      {/* Opening Style (installation spec — collapsible escape hatch in Lite)
+      {/* Opening Style (installation spec — collapsible escape hatch ในโหมดหน้างาน)
           ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — ปุ่มเดิมโชว์ค่า enum ดิบ 'center'/'side' เป็นป้าย */}
       <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
         <OpeningStyleSelector

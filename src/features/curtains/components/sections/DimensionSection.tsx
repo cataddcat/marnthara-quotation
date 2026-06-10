@@ -15,7 +15,7 @@ interface DimensionSectionProps {
 }
 
 export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChange, errors }) => {
-  // Lite = ช่องขนาดใหญ่ขึ้น (hero, กดด้วยนิ้วโป้งง่าย); Full = ปกติ
+  // หน้างาน = ช่องขนาดใหญ่ขึ้น (hero, กดด้วยนิ้วโป้งง่าย); ละเอียด = ปกติ
   const { control } = useTierSize();
 
   // คำแนะนำหน้าผ้าตามความสูง (กติกาเจ้าของร้าน: หน้า 2.8/3.2/3.4 − เผื่อเย็บ 30 ซม.)

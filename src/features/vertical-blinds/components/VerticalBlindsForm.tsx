@@ -209,7 +209,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
         </div>
       </FormSection>
 
-      {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch in Lite) */}
+      {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
       <AdvancedSection expanded={isDetail} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
         <div className="space-y-3">
           {/* เก็บใบ — ตัวเลือกทิศทางการเปิดมาตรฐาน (ยังไม่เลือก/แยกกลาง/เก็บข้างเดียว) */}

@@ -332,7 +332,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     value: item.id as ItemTypeKey,
   }));
 
-  // ── Header: auto-saved badge (ตัวสลับโหมดเร็ว/เต็มย้ายไปอยู่เมนูหลักที่เดียว — ไม่เบียดปุ่มปิด) ──
+  // ── Header: auto-saved badge (ตัวสลับโหมดหน้างาน/ละเอียดอยู่ header แอป + เมนูหลัก — ไม่เบียดปุ่มปิด) ──
   const headerActions = (
     <div className="flex items-center gap-1.5">
       {autoSavedTick > 0 && (

@@ -15,7 +15,7 @@ interface CollapsibleSectionProps {
 
 /**
  * Disclosure ใช้ซ้ำได้ — หัวข้อแตะเปิด/ปิด (tap target ≥48px)
- * ใช้ใน Lite สำหรับกลุ่ม "รายละเอียด" และ escape hatch "ตัวเลือกทั้งหมด"
+ * ใช้ในโหมดหน้างานสำหรับกลุ่ม "รายละเอียด" และ escape hatch "ตัวเลือกทั้งหมด"
  */
 export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   title,
