@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { RoomSlider } from '@/components/features/RoomSlider';
+import { type DashboardDensity } from '@/components/features/RoomDashboard';
 import { EmptyState } from '@/components/features/EmptyState';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -28,6 +29,8 @@ function App() {
   );
   const [prevRoomCount, setPrevRoomCount] = useState(rooms.length);
   const [viewMode, setViewMode] = useState<'focus' | 'overview'>('focus');
+  // ความหนาแน่นแดชบอร์ดภาพรวม — compact (การ์ดสรุปขนาดคงที่) ⇄ detailed (item เต็ม + ลากข้ามห้อง)
+  const [dashboardDensity, setDashboardDensity] = useState<DashboardDensity>('compact');
 
   // Auto-select newly added rooms via state-derived comparison
   if (rooms.length !== prevRoomCount) {
@@ -149,6 +152,8 @@ function App() {
             onSetActiveRoom={setActiveRoomId}
             viewMode={viewMode}
             onSetViewMode={setViewMode}
+            dashboardDensity={dashboardDensity}
+            onSetDashboardDensity={setDashboardDensity}
             onAddItem={handleAddItem}
             onEditItem={handleEditItem}
           />

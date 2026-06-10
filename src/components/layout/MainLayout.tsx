@@ -35,7 +35,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const discount = useAppStore((state) => state.discount);
   const { isLite } = useExperienceMode();
 
-  // Full tier + overview → กว้างพอสำหรับแดชบอร์ดหลายคอลัมน์
+  // Full tier + overview → กว้างพอสำหรับ sidebar ดัชนีห้อง (240px) + แดชบอร์ดหลายคอลัมน์
   const wideContent = !isLite && viewMode === 'overview';
 
   const { finalTotal } = useCalculations();
@@ -124,8 +124,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Main Content Area */}
       <main
         className={cn(
-          'pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-hidden transition-[max-width] duration-300',
-          wideContent ? 'max-w-6xl' : 'max-w-3xl'
+          // overflow-x-clip (ไม่ใช่ hidden) — ตัด slide-in animation ที่ล้นจอเหมือนกัน แต่ไม่สร้าง
+          // scroll container ที่ทำให้ position:sticky ของ OverviewSidebar ตาย
+          'pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-clip transition-[max-width] duration-300',
+          wideContent ? 'max-w-7xl' : 'max-w-3xl'
         )}
       >
         {children}

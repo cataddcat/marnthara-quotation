@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Room, ItemData } from '@/types';
 import { RoomCard } from './RoomCard';
-import { RoomDashboard } from './RoomDashboard';
+import { RoomDashboard, type DashboardDensity } from './RoomDashboard';
+import { OverviewSidebar } from './OverviewSidebar';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
@@ -13,6 +14,8 @@ interface RoomSliderProps {
   onSetActiveRoom: (roomId: string) => void;
   viewMode: 'focus' | 'overview';
   onSetViewMode: (mode: 'focus' | 'overview') => void;
+  dashboardDensity: DashboardDensity;
+  onSetDashboardDensity: (density: DashboardDensity) => void;
   onAddItem: (roomId: string) => void;
   onEditItem: (roomId: string, item: ItemData) => void;
 }
@@ -26,6 +29,8 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   onSetActiveRoom,
   viewMode,
   onSetViewMode,
+  dashboardDensity,
+  onSetDashboardDensity,
   onAddItem,
   onEditItem,
 }) => {
@@ -167,16 +172,21 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
     );
   }
 
-  // overview (Full เท่านั้น) = แดชบอร์ดกริด (ทุกห้อง+item) + ลากเรียงลำดับ
+  // overview (Full เท่านั้น) = sidebar ดัชนีห้อง (≥lg, sticky ซ้าย) + แดชบอร์ดกริด + ลากเรียงลำดับ
   return (
-    <RoomDashboard
-      rooms={rooms}
-      onAddItem={onAddItem}
-      onEditItem={onEditItem}
-      onOpenRoom={(roomId) => {
-        onSetActiveRoom(roomId);
-        onSetViewMode('focus');
-      }}
-    />
+    <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-4 lg:items-start">
+      <OverviewSidebar rooms={rooms} layoutKey={dashboardDensity} className="hidden lg:flex" />
+      <RoomDashboard
+        rooms={rooms}
+        density={dashboardDensity}
+        onSetDensity={onSetDashboardDensity}
+        onAddItem={onAddItem}
+        onEditItem={onEditItem}
+        onOpenRoom={(roomId) => {
+          onSetActiveRoom(roomId);
+          onSetViewMode('focus');
+        }}
+      />
+    </div>
   );
 };

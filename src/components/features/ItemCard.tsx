@@ -5,9 +5,9 @@ import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { ITEM_CONFIG, CURTAIN_STYLES } from '@/config/constants';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { isItemIncomplete, incompleteLabel, requiresOpeningStyle } from '@/lib/item-status';
+import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
 import {
@@ -22,12 +22,6 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// รูปแบบม่าน → ป้ายไทยสั้น (ตัด " (English)" ออกจาก CURTAIN_STYLES) สำหรับ title การ์ด
-// เช่น 'ลอน' → 'ม่านลอน', 'จีบ' → 'ม่านจีบ'
-const CURTAIN_STYLE_LABELS: Record<string, string> = Object.fromEntries(
-  CURTAIN_STYLES.map((s) => [s.value, s.label.replace(/\s*\(.*?\)\s*/, '').trim()])
-);
 
 interface ItemCardProps {
   item: ItemData;
@@ -51,19 +45,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const incomplete = useMemo(() => !item.is_suspended && isItemIncomplete(item), [item]);
 
   const { title, dimSpec } = useMemo(() => {
-    const config = ITEM_CONFIG[item.type];
     const rawSpecs = PricingEngine.getItemSpecs(item);
     const cleanSpecs = rawSpecs.filter((s) => s && s.trim() !== '');
-    const baseName = config?.name || 'สินค้า';
-    // ผ้าม่าน: ต่อท้ายด้วยรูปแบบให้ระบุชนิดชัด เช่น "ผ้าม่าน ม่านลอน" / "ผ้าม่าน ม่านจีบ"
-    // ประเภทอื่นใช้ชื่อตามเดิม ("ม่านม้วน", "ฉากกั้นห้อง", ...)
-    const styleLabel =
-      item.type === ITEM_TYPES.CURTAIN && item.style
-        ? CURTAIN_STYLE_LABELS[item.style] || item.style
-        : '';
     // First spec = dimensions (ใช้เป็น fallback ของ hero), ส่วนอื่นสร้างเป็นชิปด้านล่าง
     return {
-      title: styleLabel ? `${baseName} ${styleLabel}` : baseName,
+      title: itemTitle(item),
       dimSpec: cleanSpecs[0] || '',
     };
   }, [item]);
@@ -231,8 +217,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         <div className="flex items-center gap-2">
           {/* รายการว่าง (index = -1) ไม่ให้เลขลำดับ */}
           {index >= 0 && (
-            <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
-              ⌗{String(index + 1).padStart(2, '0')}
+            <span className="shrink-0 font-mono text-sm font-semibold tabular-nums text-muted-foreground">
+              {String(index + 1).padStart(2, '0')}
             </span>
           )}
           <span className="flex-1 min-w-0 font-semibold text-foreground truncate text-base">
