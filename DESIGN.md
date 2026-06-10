@@ -20,6 +20,14 @@
   meaning-bearing data is **vividly colour-coded** (§2 · §5). When "calm & soft" fights "readable", readable wins.
 - **Legible & premium, never cramped.** Readability and a confident, uncluttered feel beat information density.
   If a screen feels busy or the text feels small, it is **wrong** — fix it.
+- **Chunk it — Miller's Law.** Working memory holds only about **7±2** items at once — and for an owner with
+  **ageing eyes working outdoors under time pressure, assume fewer**. So **group related controls into
+  labelled chunks of ≈5 (never more than ~7) peers**, never a flat wall of options: a menu, a form section,
+  a list of specs must read as *a few named groups*, not one long undifferentiated scan. The **main menu is
+  the reference impl** — 3 labelled sections (นำเสนอ & ขาย · สินค้า & การเงิน · จัดการระบบ) of ≤4 items each,
+  not 11 buttons in a row ([`MainMenuModal.tsx`](./src/components/modals/MainMenuModal.tsx)). More than ~7
+  peers in one group → **split, nest, or progressively disclose** (e.g. an "ขั้นสูง" `AdvancedSection`). This
+  is the *low-cognitive-load* pillar made measurable.
 - **Measure, don't guess.** Never adjust by vibe ("make that smaller"). Use the **Design Probe** (§6) to
   read an element's *what / where / exact size* first, then change the exact line. "Bigger" is not
   automatically "better" — but the UI must never be hard to read.
@@ -140,7 +148,8 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
 4. **Per-screen checklist before merge:** Body ≥ 14px · Meta(12px) only on dates/counts/units · no < 12px
    content · content = `text-foreground` (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
    icons stroke 1.5 · borders + soft elevation (cards clearly separate from the page) · vivid colour-coded
-   data · `primary` only on CTA/selected · verified at 360–390px.
+   data · `primary` only on CTA/selected · **peers grouped into ≤ ~7 labelled chunks (Miller's Law, §0)** ·
+   verified at 360–390px.
 
 ---
 
