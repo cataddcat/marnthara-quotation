@@ -11,7 +11,7 @@ interface StyleSectionProps {
   data: CurtainItemInput;
   onChange: (field: keyof CurtainItemInput, val: string | number | boolean) => void;
   errors?: Partial<Record<keyof CurtainItemInput, string>>;
-  /** แสดงตัวเลือก "ทิศทางการเปิด" (ซ่อนในโหมด Lite) */
+  /** แสดงตัวเลือก "ทิศทางการเปิด" (ซ่อนในโหมดหน้างาน — กางได้จาก "ตัวเลือกขั้นสูง") */
   showOpening?: boolean;
 }
 

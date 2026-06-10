@@ -51,7 +51,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
   useFormAutoSave(formData, onAutoSave);
 
   const { isField } = useExperienceMode();
-  const [showAdvancedField, setShowAdvancedLite] = useState(false);
+  const [showAdvancedField, setShowAdvancedField] = useState(false);
   // Detail = แสดงทุกอย่าง; Field (หน้างาน) = เฉพาะที่จำเป็น เว้นแต่กด "ตัวเลือกขั้นสูง"
   const showAdvanced = !isField || showAdvancedField;
 
@@ -96,7 +96,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
   const advancedToggle = isField && (
     <button
       type="button"
-      onClick={() => setShowAdvancedLite((v) => !v)}
+      onClick={() => setShowAdvancedField((v) => !v)}
       aria-expanded={showAdvancedField}
       className={cn(
         'w-full flex items-center justify-between gap-2 min-h-[44px] px-3.5 rounded-xl border border-dashed transition-colors',

@@ -260,7 +260,7 @@ export const Modal: React.FC<ModalProps> = ({
                     onScroll={handleScroll}
                   >
                     {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks;
-                        max-w-3xl กันฟอร์มยืดเต็มจอเมื่อ fullscreen (Lite) ถูกเปิดบนจอกว้าง */}
+                        max-w-3xl กันฟอร์มยืดเต็มจอเมื่อ fullscreen (จอมือถือ) ถูกเปิดบนจอกว้าง */}
                     <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full max-w-3xl')}>
                       {children}
                     </div>

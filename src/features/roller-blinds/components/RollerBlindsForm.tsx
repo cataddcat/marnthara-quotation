@@ -231,7 +231,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
         </div>
       </FormSection>
 
-      {/* Controls: Pull Side (installation spec — collapsible escape hatch in Lite) */}
+      {/* Controls: Pull Side (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
       <AdvancedSection expanded={isDetail} hint="ฝั่งดึง — ใส่ทีหลังได้">
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>

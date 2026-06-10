@@ -38,7 +38,7 @@ interface ItemSummaryCardProps {
 /**
  * Summary card แบบ layered ที่ทั้ง 8 ประเภทใช้ร่วมกัน:
  * Tier-0 (เสมอ): breakdown + ราคาสุทธิ + override
- * Tier-1 (Full): ไฟจราจรกำไร + proSlot
+ * โหมดละเอียด (Detail): ไฟจราจรกำไร + proSlot
  */
 export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   total,

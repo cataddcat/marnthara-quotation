@@ -55,9 +55,9 @@ interface FabricSectionProps {
   onSheerFabricSelect: (item: InventoryItem) => void;
   errors: Partial<Record<keyof CurtainItemInput, string>>;
   warnings: Partial<Record<keyof CurtainItemInput, string>>;
-  /** แสดงเครื่องมือคลัง (ปุ่มจัดการรายการ / ปุ่มดาวบันทึก / ตัวบอก sync) — ซ่อนในโหมด Lite */
+  /** แสดงเครื่องมือคลัง (ปุ่มจัดการรายการ / ปุ่มดาวบันทึก / ตัวบอก sync) — ซ่อนในโหมดหน้างาน */
   showCatalogTools?: boolean;
-  /** โหมด Lite: วางรหัสผ้า + ราคา คนละบรรทัด (ไม่แบ่ง 2 คอลัมน์) ให้กดง่ายบนจอแคบ */
+  /** โหมดหน้างาน: วางรหัสผ้า + ราคา คนละบรรทัด (ไม่แบ่ง 2 คอลัมน์) ให้กดง่ายบนจอแคบ */
   stack?: boolean;
 }
 

@@ -194,7 +194,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
           ))}
         </div>
 
-        {/* Code & Price — one field per line in Lite + on mobile; side-by-side only on desktop Full */}
+        {/* Code & Price — คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           {/* [FIX] Keep Combobox ONLY for Code/Color */}
           <ComboboxInput
@@ -218,7 +218,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
         </div>
       </FormSection>
 
-      {/* Control Side (installation spec — collapsible escape hatch in Lite) */}
+      {/* Control Side (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
       <AdvancedSection expanded={isDetail} hint="ตำแหน่งดึง — ใส่ทีหลังได้">
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-muted-foreground">ตำแหน่งดึง (Side)</label>

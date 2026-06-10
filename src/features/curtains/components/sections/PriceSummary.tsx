@@ -15,7 +15,7 @@ interface PriceSummaryProps {
   data: CurtainItemInput;
   onChange: (field: keyof CurtainItemInput, val: string | number | boolean) => void;
   onNumberChange: (field: keyof CurtainItemInput, val: string) => void;
-  /** แสดงโหมดวิเคราะห์ต้นทุน (Pro Mode) — เฉพาะโหมด Full */
+  /** แสดงโหมดวิเคราะห์ต้นทุน (Pro Mode) — เฉพาะโหมดละเอียด */
   showProMode?: boolean;
 }
 

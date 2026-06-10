@@ -16,12 +16,12 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 
 // ────────────────────────────────────────────────────────────────────────────
-// Overview Sidebar (Full tier · โหมดภาพรวมเท่านั้น) — ดัชนีห้องเรียงลำดับ ติด sticky ข้างซ้าย
+// Overview Sidebar (โหมดละเอียด · ภาพรวมเท่านั้น) — ดัชนีห้องเรียงลำดับ ติด sticky ข้างซ้าย
 //   • คลิกชื่อห้อง → เลื่อนไปหาการ์ด `#room-{id}` ใน dashboard (การ์ดมี scroll-mt กัน header บัง)
 //   • ลากแถวขึ้น/ลง → สลับลำดับห้องทั้งแอป (reorderRooms) — PointerSensor distance 8
 //     ทำให้คลิกธรรมดายังนำทางได้ · คีย์บอร์ด reorder ใช้เมนู ⋯ บนการ์ด (เลื่อนก่อนหน้า/ถัดไป)
 //   • scrollspy ด้วย IntersectionObserver → ไฮไลต์ห้องบนสุดที่มองเห็น (chrome ขาวดำ ไม่ใช้ primary)
-//   • จอ <lg ซ่อนทั้งแผง (parent คุมด้วย `hidden lg:flex`) — Lite ใช้ ProjectOverviewModal เหมือนเดิม
+//   • จอ <lg ซ่อนทั้งแผง (parent คุมด้วย `hidden lg:flex`) — มือถือใช้กริด 1 คอลัมน์ของ RoomDashboard ตรงๆ
 // ────────────────────────────────────────────────────────────────────────────
 
 interface OverviewSidebarProps {

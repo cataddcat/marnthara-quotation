@@ -212,7 +212,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
         </div>
       </FormSection>
 
-      {/* รูปแบบการเปิด (installation spec — collapsible escape hatch in Lite)
+      {/* รูปแบบการเปิด (installation spec — collapsible escape hatch ในโหมดหน้างาน)
           ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — เก็บค่า canonical ไทย, รองรับค่าเก่า 'side'/'center' */}
       <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
         <OpeningStyleSelector
