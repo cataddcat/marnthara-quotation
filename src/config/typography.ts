@@ -8,6 +8,8 @@
 //   • Body / primary content = 14–16px (never below 14).
 //   • 12px is restricted to META only (dates / counts / units / micro-labels).
 //   • Anything < 12px is BANNED for human-readable content.
+//   • Anything > 18px is BANNED (the cap) — emphasis comes from colour / background
+//     tint / border / weight, never size. Print (src/components/print/**) is exempt.
 // See DESIGN.md for the full rationale + Phase-2 enforcement plan.
 
 export type TypographyRole = 'display' | 'title' | 'body' | 'label' | 'meta';
@@ -25,9 +27,11 @@ export interface TypographyRoleSpec {
 export const CONTENT_MIN_PX = 12;
 /** Body / primary content floor — never below this. */
 export const BODY_MIN_PX = 14;
+/** Hard cap — nothing on-screen above this; emphasize with colour/bg/border instead. */
+export const CONTENT_MAX_PX = 18;
 
 export const TYPOGRAPHY: Record<TypographyRole, TypographyRoleSpec> = {
-  display: { label: 'Display', className: 'text-2xl font-bold tracking-tight', minPx: 20 },
+  display: { label: 'Display', className: 'text-lg font-bold tracking-tight', minPx: 18 },
   title: { label: 'Title', className: 'text-base font-semibold', minPx: 16 },
   body: { label: 'Body', className: 'text-base', minPx: BODY_MIN_PX },
   label: { label: 'Label', className: 'text-sm', minPx: 14 },
@@ -47,11 +51,11 @@ export interface SizeVerdict {
 /**
  * Classify a measured computed font-size (px) against the standard.
  * Pure + dependency-free so the Probe, tests, and docs can reuse it.
- *   < 12px  → error (banned for content)
- *   ~12px   → warn  (Meta only — verify it's a date/count/unit)
- *   13–15px → ok    (Label / dense Body)
- *   16–19px → ok    (Title / Body)
- *   ≥ 20px  → ok    (Display)
+ *   < 12px    → error (banned for content)
+ *   ~12px     → warn  (Meta only — verify it's a date/count/unit)
+ *   13–15px   → ok    (Label / dense Body)
+ *   16–18px   → ok    (Title / Body / Display)
+ *   > 18px    → error (over the cap — emphasize with colour/bg/border, not size)
  */
 export function classifySizePx(px: number): SizeVerdict {
   if (!Number.isFinite(px) || px <= 0) {
@@ -66,10 +70,14 @@ export function classifySizePx(px: number): SizeVerdict {
   if (px < 15.5) {
     return { roleHint: 'Label / Body', status: 'ok', note: '' };
   }
-  if (px < 19.5) {
-    return { roleHint: 'Title / Body', status: 'ok', note: '' };
+  if (px <= 18.5) {
+    return { roleHint: 'Title / Body / Display', status: 'ok', note: '' };
   }
-  return { roleHint: 'Display', status: 'ok', note: '' };
+  return {
+    roleHint: '—',
+    status: 'error',
+    note: `${round(px)}px เกิน 18px (เพดาน — เน้นด้วยสี/พื้นหลัง/กรอบแทนขนาด)`,
+  };
 }
 
 function round(px: number): string {

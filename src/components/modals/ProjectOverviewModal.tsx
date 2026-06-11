@@ -303,7 +303,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-base font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                          <span className="text-sm font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
                             {fmtTH(PricingEngine.calculatePrice(item))}
                           </span>
                           <ChevronRight className="w-4 h-4 text-muted-foreground/30" strokeWidth={1.5} />

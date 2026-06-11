@@ -43,7 +43,8 @@ interface ItemSummaryCardProps {
 export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   total,
   totalLabel = 'ราคาสุทธิ',
-  totalClass = 'text-2xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400',
+  // Numeric layer caps at 16px (DESIGN.md §1) — hero emphasis via tone-tinted plate, not size
+  totalClass = 'text-base font-bold font-mono tabular-nums text-emerald-700 dark:text-emerald-400 border rounded-lg px-2 py-1 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900',
   title,
   titleIcon: TitleIcon,
   titleClass = 'text-emerald-600 dark:text-emerald-400',

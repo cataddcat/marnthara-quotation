@@ -86,7 +86,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
       titleIcon={DollarSign}
       titleClass="text-destructive"
       totalLabel="รวมเป็นเงิน"
-      totalClass="text-3xl font-bold font-mono tabular-nums text-destructive"
+      totalClass="text-base font-bold font-mono tabular-nums text-destructive border rounded-lg px-2 py-1 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900"
       total={pricePreview.total}
       enableSetPrice={formData.enable_set_price || false}
       onToggleSetPrice={(c) => handleChange('enable_set_price', c)}

@@ -140,7 +140,7 @@ export const FinancialDashboardModal: React.FC<{
               <div className="text-xs text-muted-foreground uppercase tracking-wider">
                 Target Margin
               </div>
-              <div className="text-xl font-bold font-mono tabular-nums">{targetMargin}%</div>
+              <div className="text-base font-bold font-mono tabular-nums">{targetMargin}%</div>
             </div>
             <button
               onClick={() => handleTargetChange(5)}

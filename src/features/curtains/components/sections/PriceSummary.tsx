@@ -123,11 +123,15 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                'text-2xl font-bold font-mono tracking-tight tabular-nums transition-colors duration-300',
+                // numeric layer 16px — hero emphasis via tone-tinted plate (colour, not size)
+                'text-base font-bold font-mono tracking-tight tabular-nums transition-colors duration-300 border rounded-lg px-2 py-1',
                 isOverride
-                  ? 'text-amber-500'
-                  : 'text-emerald-600 dark:text-emerald-400',
-                isProMode && status === 'loss' && !isOverride && 'text-destructive'
+                  ? 'text-amber-600 dark:text-amber-400 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900'
+                  : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900',
+                isProMode &&
+                  status === 'loss' &&
+                  !isOverride &&
+                  'text-destructive bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900'
               )}
             >
               {fmtTH(price)}

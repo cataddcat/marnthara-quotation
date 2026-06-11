@@ -245,7 +245,9 @@
   --font-size-xs: 0.75rem; /* 12px */
   --font-size-sm: 0.875rem; /* 14px */
   --font-size-base: 1rem; /* 16px - [CRITICAL] Standard Base Size */
-  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-lg: 1.125rem; /* 18px — APP MAX (DESIGN.md §1: >18px banned on-screen) */
+  /* >18px below = PRINT-ONLY (src/components/print/**). The eslint guard blocks
+     text-xl+ in app code; vars stay so print utilities keep working. */
   --font-size-xl: 1.25rem; /* 20px */
   --font-size-2xl: 1.5rem; /* 24px */
   --font-size-3xl: 1.875rem; /* 30px */
@@ -341,12 +343,13 @@
     --duration-base: 0.3s;
     --duration-slow: 0.5s;
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* signature easing */
-    --text-display: 1.5rem; /* 24px — section hero */
+    --text-display: 1.125rem; /* 18px — hero (the cap; emphasize via colour/bg, not size) */
     --text-title: 1rem; /* 16px — card/room/item titles */
     --text-body: 1rem; /* 16px — primary text (dense floor 14px) */
     --text-label: 0.875rem; /* 14px — secondary labels */
     --text-meta: 0.75rem; /* 12px — META ONLY (dates/counts/units) */
     --content-min-px: 12px; /* nothing readable below this */
+    --content-max-px: 18px; /* nothing on-screen above this (print exempt) */
     --body-min-px: 14px; /* body never below */
   }
 

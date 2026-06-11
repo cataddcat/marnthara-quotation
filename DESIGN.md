@@ -39,26 +39,34 @@
 
 The #1 readability rule. Primary content (**Body**) is **14–16px**, no compromise. **`12px` is heavily
 restricted — Meta only** (dates, counts, units, micro-labels). **Anything below 12px is banned** for any
-human-readable content.
+human-readable content. **The scale is capped at 18px** (2026-06-11): nothing on-screen renders larger —
+**hierarchy comes from colour / background tint / border / weight, never from size** (§2's colourful-data
+layer is the emphasis tool; see the `Metric` hero *plate*).
 
 | Role | Size | Class | Use |
 |---|---|---|---|
-| **Display** / หัวใหญ่ | 20–24px | `text-xl` / `text-2xl` + `font-bold` | screen / section hero |
+| **Display** / หัวใหญ่ | **18px — the cap** | `text-lg font-bold` | text headings only (form/section/room name); weight carries it, never a plate |
 | **Title** / ชื่อ | 16px | `text-base font-semibold` | card / room / item titles |
 | **Body** / เนื้อหา | **16px** (dense: **14px floor**) | `text-base` / `text-sm` | primary reading text — **never < 14px** |
 | **Label** / รอง | 14px | `text-sm` | secondary labels, specs |
 | **Meta** / ป้ายเล็ก | **12px — META ONLY** | `text-xs` | dates / counts / units only |
-| **Numeric** / ตัวเลข | mono, **≥ 14px** | `font-mono tabular-nums` | prices / dims / codes (§1.7) |
+| **Numeric** / ตัวเลข | mono, **14–16px** | `font-mono tabular-nums` | card/list/overview data (`Metric`) = **14px**; summary / document totals (`ItemSummaryCard` · `PriceSummary` · `DiscountModal` · margin %) = **16px + tone plate**. Plate/colour is the real emphasis — size adds at most one coarse 14→16 step |
 
 **Hard rules**
 - ❌ No `text-[9px] / text-[10px] / text-[11px]` (or any < 12px) on content. (Enforced — §6.)
+- ❌ **No `text-xl` / `text-2xl` / … (or any > 18px) on-screen — 18px is the cap.** (Enforced — §6.)
+  Importance = **tone colour + tinted plate (bg/border) + weight** (e.g. `Metric size="lg"`'s plate,
+  `ItemSummaryCard` total), never a bigger font. **The numeric/data layer is 14–16px** — dense card/list
+  numbers (`Metric`) at **14px**, summary / document totals at **16px + plate**; only *text headings*
+  (Display role) use the 18px ceiling. Plate/colour carries importance; size is at most one coarse step.
 - ❌ No `12px` for Body/primary content — `12px` is for Meta only.
 - ✅ Thai needs air: body `line-height ≥ 1.5` (`leading-normal`+); **never** `leading-none` / `leading-tight`
   on multi-line Thai. Negative tracking (`tracking-tight`) is for **Latin headings / numbers only**, never Thai body.
-- *Exempt:* `src/components/print/**` (print medium has its own sizing).
+- *Exempt:* `src/components/print/**` (print medium has its own sizing — both bounds).
 
 Machine-readable mirror: [`src/config/typography.ts`](./src/config/typography.ts) (`TYPOGRAPHY`,
-`CONTENT_MIN_PX = 12`, `BODY_MIN_PX = 14`, `classifySizePx`). The `Text` primitive and the Probe both read it.
+`CONTENT_MIN_PX = 12`, `BODY_MIN_PX = 14`, `CONTENT_MAX_PX = 18`, `classifySizePx`). The `Text` primitive
+and the Probe both read it.
 
 ---
 
@@ -142,17 +150,19 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
 
 1. **Measure with the Design Probe** (`src/components/dev/DevInspector.tsx`, dev only). `npm run dev` →
    **Alt+L** (or the floating "Probe" button) → hover/click any element. It shows **text · file:line ·
-   font-size / line-height / weight · the `text-*`/`font-*` classes · the DESIGN.md role · ⚠ if < 12px**,
+   font-size / line-height / weight · the `text-*`/`font-*` classes · the DESIGN.md role · ⚠ if < 12px or > 18px**,
    and **copies a paste-ready block**. Use it to give precise instructions ("this 11px → Label/14px"),
    never vague ones.
 2. **Size text via the `Text` primitive** (`src/components/ui/Text.tsx`):
    `<Text variant="title|body|label|meta|display" numeric muted>` resolves to the scale above (floor baked
    in). Prefer it over ad-hoc `text-*` classes for new/changed content.
-3. **Lint guard (gated)** — the `no-restricted-syntax` rule in [`eslint.config.js`](./eslint.config.js)
-   blocks every `< 12px` content size; `npm run lint` (the 0-warning gate) fails on regressions. Print
-   (`src/components/print/**`) is exempt. See §7.
+3. **Lint guard (gated)** — the `no-restricted-syntax` rules in [`eslint.config.js`](./eslint.config.js)
+   block **both bounds**: every `< 12px` content size *and* every `> 18px` size (`text-xl`+ / arbitrary
+   `text-[19px+]`); `npm run lint` (the 0-warning gate) fails on regressions. Print
+   (`src/components/print/**`) is exempt from both. See §7.
 4. **Per-screen checklist before merge:** Body ≥ 14px · Meta(12px) only on dates/counts/units · no < 12px
-   content · content = `text-foreground` (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
+   content · **no > 18px (cap — emphasis via colour/plate, not size)** · content = `text-foreground`
+   (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
    icons stroke 1.5 · borders + soft elevation (cards clearly separate from the page) · vivid colour-coded
    data · `primary` only on CTA/selected · **peers grouped into ≤ ~7 labelled chunks (Miller's Law, §0)** ·
    verified at 360–390px.
@@ -171,7 +181,18 @@ rendered UI changed**. **Phase 2 is complete:**
 - **Guard is gated** — the `no-restricted-syntax` rule now lives in [`eslint.config.js`](./eslint.config.js)
   at `error`, so **`npm run lint`** (the 0-warning gate) blocks any future `< 12px` content. The standalone
   `eslint.design.config.mjs` + `npm run lint:design` were retired.
-- **Exempt:** `src/components/print/**` (print medium has its own sizing).
+- **18px cap added (2026-06-11)** — all 17 on-screen `> 18px` sites (`text-xl`×8 · `text-2xl`×5 ·
+  `text-3xl`×3 + the Display token) were demoted. A second gated `no-restricted-syntax` regex blocks
+  `text-xl`+ / `text-[19px+]`; `classifySizePx` flags `> 18.5px` as error so the Probe catches computed
+  sizes too. Unit-tested in [`src/config/typography.test.ts`](./src/config/typography.test.ts).
+- **Numeric layer settled at 14–16px (2026-06-11, probe pass)** — after the cap, a Probe sweep pulled
+  numbers down and the owner fixed a deliberate two-step: **card / list / overview data (`Metric`,
+  all sizes) = 14px**; **summary / document totals (`ItemSummaryCard` · `PriceSummary` · `RemovalForm` ·
+  `DiscountModal` · `FinancialRing` & target margin %) = 16px + tone plate**. Emphasis is the
+  tone-tinted plate + colour + weight; size only separates "everyday data" (14) from "the headline total"
+  (16) by one coarse step. Only *text headings* (Display role) keep the 18px ceiling (`text-lg`,
+  weight-only — no plate). This 14/16 split is **intentional — do not "unify" it.**
+- **Exempt:** `src/components/print/**` (print medium has its own sizing — both bounds).
 
 > Ongoing discipline: keep new/changed UI on the scale (§1) and **measure with the Probe** (§6) before
 > adjusting — don't blanket-enlarge (the reverted "ภาพรวม" enlarge is the cautionary tale).

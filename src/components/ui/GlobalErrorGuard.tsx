@@ -50,7 +50,7 @@ export class GlobalErrorGuard extends Component<Props, State> {
           </div>
 
           <div className="space-y-2 max-w-sm mx-auto">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-lg font-bold text-foreground">
               ขออภัย เกิดข้อผิดพลาดบางอย่าง
             </h1>
             <p className="text-muted-foreground text-sm">

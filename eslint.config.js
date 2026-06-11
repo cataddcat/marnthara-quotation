@@ -12,6 +12,12 @@ const DESIGN_SUB_12 = String.raw`text-\[(9|10|11)px\]`;
 const DESIGN_SUB_12_MSG =
   'ห้ามใช้ตัวอักษร < 12px กับเนื้อหา (DESIGN.md §1/§2: Body 14–16px · 12px = Meta only). ใช้ <Text>/typography scale หรือ text-xs ขึ้นไป.';
 
+// 18px CAP — anything above is banned on-screen (print exempt via the same ignores).
+// Bans text-xl/2xl/…/9xl + arbitrary text-[19px+]. Emphasis = colour/bg/border, not size.
+const DESIGN_OVER_18 = String.raw`text-((xl|[2-9]xl)\b|\[(19|[2-9]\d|\d{3,})px\])`;
+const DESIGN_OVER_18_MSG =
+  'ห้ามใช้ตัวอักษร > 18px (DESIGN.md §1: เพดาน 18px — text-lg). เน้นความสำคัญด้วยสี/พื้นหลัง/กรอบแทนขนาด (เช่น plate ของ Metric).';
+
 export default defineConfig([
   globalIgnores(['dist', 'coverage', 'playwright-report', 'test-results']),
   {
@@ -37,6 +43,8 @@ export default defineConfig([
         'error',
         { selector: `Literal[value=/${DESIGN_SUB_12}/]`, message: DESIGN_SUB_12_MSG },
         { selector: `TemplateElement[value.raw=/${DESIGN_SUB_12}/]`, message: DESIGN_SUB_12_MSG },
+        { selector: `Literal[value=/${DESIGN_OVER_18}/]`, message: DESIGN_OVER_18_MSG },
+        { selector: `TemplateElement[value.raw=/${DESIGN_OVER_18}/]`, message: DESIGN_OVER_18_MSG },
       ],
     },
   },

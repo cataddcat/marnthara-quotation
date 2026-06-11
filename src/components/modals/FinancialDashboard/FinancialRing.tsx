@@ -31,7 +31,7 @@ export const FinancialRing = ({ revenue, cost, profit, targetMargin }: Financial
           </span>
           <div
             className={cn(
-              'text-3xl font-black font-mono tabular-nums tracking-tighter',
+              'text-base font-black font-mono tabular-nums tracking-tighter',
               isHealthy ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'
             )}
           >

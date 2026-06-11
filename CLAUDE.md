@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > 2. **[`HANDOFF.md`](./HANDOFF.md)** — deep architectural handoff: design philosophy, system map, critical
 >    invariants, cost/catalog model, bug history. The "why" behind the codebase shape.
 > 3. **[`DESIGN.md`](./DESIGN.md)** — the canonical **design system & UI requirements** ("the document is the
->    designer"): typography standard (Body 14–16px · 12px Meta-only · <12px banned), color/contrast, the
+>    designer"): typography standard (Body 14–16px · 12px Meta-only · <12px banned · **18px cap**), color/contrast, the
 >    Design Probe, the `Text` primitive, enforcement. Read before any UI/UX change.
 > 4. **[`COMMANDS.md`](./COMMANDS.md)** — every project command + the verification gate.
 >
@@ -79,9 +79,9 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 
 ## 🎨 UX/UI Standards
 
-**Canonical → [`DESIGN.md`](./DESIGN.md)** (owns typography · colour · spacing · the Design Probe · the gated `<12px` lint guard) + **[`HANDOFF.md`](./HANDOFF.md) §1.6** (HIG + NN/g ergonomics contract; ref impl `src/components/ui/Modal.tsx`). **Read DESIGN.md before any UI change.**
+**Canonical → [`DESIGN.md`](./DESIGN.md)** (owns typography · colour · spacing · the Design Probe · the gated `<12px` + `>18px` lint guards) + **[`HANDOFF.md`](./HANDOFF.md) §1.6** (HIG + NN/g ergonomics contract; ref impl `src/components/ui/Modal.tsx`). **Read DESIGN.md before any UI change.**
 
-The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load (chunk to ≤ ~7 — Miller's Law, DESIGN.md §0) · status/feedback on every control · error-prevention**. Current law (DESIGN.md §2): typography Body 14–16 / Meta-12 / **<12px banned** · **colourful data on monochrome chrome · high contrast · clear surface separation** · `primary` colour = CTA only · measure with the **Design Probe** first.
+The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load (chunk to ≤ ~7 — Miller's Law, DESIGN.md §0) · status/feedback on every control · error-prevention**. Current law (DESIGN.md §2): typography Body 14–16 / Meta-12 / **<12px banned** / **18px cap — emphasis via colour/plate, never size** · **colourful data on monochrome chrome · high contrast · clear surface separation** · `primary` colour = CTA only · measure with the **Design Probe** first.
 
 ## ✅ TypeScript & Linting
 

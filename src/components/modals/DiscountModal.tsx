@@ -220,7 +220,8 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
 
           <div className="flex justify-between items-end">
             <span className="text-primary-foreground font-medium">ยอดสุทธิ (Net Total)</span>
-            <span className="text-2xl font-bold font-mono text-primary-foreground tracking-tight tabular-nums">
+            {/* ตัวเลข 16px — เน้นด้วย plate (พื้นหลัง/กรอบ tint บนพื้น primary) แทนขนาด */}
+            <span className="text-base font-bold font-mono text-primary-foreground tracking-tight tabular-nums border border-primary-foreground/20 bg-primary-foreground/10 rounded-lg px-2 py-1">
               {fmtTH(preview.netTotal)}
             </span>
           </div>

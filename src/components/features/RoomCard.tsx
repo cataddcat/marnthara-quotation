@@ -306,7 +306,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   {roomIndex + 1}/{totalRooms}
                 </span>
               ) : (
-                <span className="text-xl font-bold">{room.name.charAt(0)}</span>
+                <span className="text-lg font-bold">{room.name.charAt(0)}</span>
               )}
             </div>
 
@@ -321,7 +321,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={handleNameKeyDown}
                       onBlur={handleSaveName}
-                      className="font-bold text-xl bg-background border border-primary/30 rounded-lg px-2 py-0.5 flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="font-bold text-lg bg-background border border-primary/30 rounded-lg px-2 py-0.5 flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                     <button
                       onClick={handleSaveName}
@@ -340,7 +340,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   <>
                     <h2
                       className={cn(
-                        'text-xl font-bold leading-tight truncate',
+                        'text-lg font-bold leading-tight truncate',
                         room.is_suspended && 'line-through text-muted-foreground'
                       )}
                     >
