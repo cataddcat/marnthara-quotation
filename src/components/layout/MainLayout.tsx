@@ -246,7 +246,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         className={cn(
           // overflow-x-clip (ไม่ใช่ hidden) — ตัด slide-in animation ที่ล้นจอเหมือนกัน แต่ไม่สร้าง
           // scroll container ที่ทำให้ position:sticky ของ OverviewSidebar ตาย
-          'pt-[calc(3.5rem+var(--safe-top))] pb-[calc(5rem+var(--safe-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-clip transition-[max-width] duration-300',
+          'pt-[var(--content-top)] pb-[calc(5rem+var(--safe-bottom))] px-4 sm:px-6 space-y-4 mx-auto overflow-x-clip transition-[max-width] duration-300',
           wideContent ? 'max-w-7xl' : 'max-w-3xl'
         )}
       >

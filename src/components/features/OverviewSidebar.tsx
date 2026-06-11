@@ -93,8 +93,8 @@ export const OverviewSidebar: React.FC<OverviewSidebarProps> = ({
     <aside
       className={cn(
         'flex flex-col rounded-2xl border border-border bg-card shadow-xs',
-        'lg:sticky lg:top-[calc(3.5rem+var(--safe-top)+1rem)]',
-        'max-h-[calc(100dvh-3.5rem-var(--safe-top)-7rem)]',
+        'lg:sticky lg:top-[var(--content-top)]',
+        'max-h-[calc(100dvh-var(--header-h)-var(--safe-top)-7rem)]',
         className
       )}
     >

@@ -64,9 +64,6 @@ export type DashboardDensity = 'compact' | 'detailed';
 const gripCls =
   'shrink-0 flex items-center justify-center w-7 h-9 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-muted cursor-grab active:cursor-grabbing transition-colors touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-// anchor ให้ OverviewSidebar เลื่อนมาหา — กันการ์ดมุดใต้ fixed header (3.5rem + safe-area)
-const roomAnchorCls = 'scroll-mt-[calc(3.5rem+var(--safe-top)+0.75rem)]';
-
 /** หา roomId ที่ array ของ item ids มี id นี้อยู่ (ใช้กับ local container map) */
 const findContainer = (map: Record<string, string[]>, id: string): string | undefined =>
   Object.keys(map).find((roomId) => map[roomId].includes(id));
@@ -540,7 +537,6 @@ const CompactRoomCard: React.FC<CompactRoomCardProps> = ({
       id={`room-${room.id}`}
       className={cn(
         'flex h-48 flex-col overflow-hidden rounded-2xl border bg-card transition-colors',
-        roomAnchorCls,
         room.is_suspended && 'grayscale opacity-60 border-dashed',
         isDragging ? 'opacity-40 border-primary/50' : 'border-border'
       )}
@@ -685,7 +681,6 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
       id={`room-${room.id}`}
       className={cn(
         'flex flex-col rounded-2xl border bg-card transition-colors',
-        roomAnchorCls,
         room.is_suspended && 'grayscale opacity-60 border-dashed',
         isDragging ? 'opacity-40 border-primary/50' : 'border-border'
       )}

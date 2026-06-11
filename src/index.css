@@ -496,12 +496,23 @@
 }
 
 /* --- 9.5 Safe-area variables + dev notch simulation --- */
-/* single source ของ safe-area — utilities ด้านล่าง + arbitrary calc ใน TSX
-   (MainLayout/RoomDashboard/OverviewSidebar) อ่านผ่าน var นี้ทั้งหมด
+/* single source ของ safe-area + chrome offset — utilities ด้านล่าง + arbitrary calc ใน TSX
+   (MainLayout/OverviewSidebar) อ่านผ่าน var นี้ทั้งหมด
    → จุดเดียวที่ override ได้ตอนจำลองจอมือถือบนเดสก์ท็อป */
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* fixed-chrome offset (DESIGN §3) — ระยะที่เนื้อหาต้องเว้นใต้ fixed header:
+     ความสูงแถบ header + safe-area + ระยะหายใจ 12px; ห้าม hardcode 3.5rem ใน TSX */
+  --header-h: 3.5rem;
+  --chrome-gap: 0.75rem;
+  --content-top: calc(var(--header-h) + var(--safe-top) + var(--chrome-gap));
+}
+
+/* WCAG 2.4.11 Focus Not Obscured — scroll target (scrollIntoView/anchor/focus)
+   บน root scroller ไม่มุดใต้ fixed header; แทน scroll-mt รายตัว ห้ามใส่ซ้อน (offset จะบวกซ้ำ) */
+html {
+  scroll-padding-top: var(--content-top);
 }
 
 /* dev-only: ปุ่ม 📱 Notch ใน DevInspector ใส่ class นี้บน <html> เพื่อจำลองระยะ iPhone จริง
