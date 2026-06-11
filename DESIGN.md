@@ -96,6 +96,10 @@ Machine-readable mirror: [`src/config/typography.ts`](./src/config/typography.ts
   **Exception (2026-06-10):** modal/dialog **footer action buttons** (e.g. `ItemModal` ยกเลิก / บันทึก / ปิด)
   use **`rounded-full` capsules** — a deliberate standard footer-CTA look; keep `size="md"` (≥44px) + right-aligned, not full-width.
 - **Density by mode:** `useTierSize().section` (หน้างาน roomier, ละเอียด denser). Don't let cards feel cramped on mobile.
+- **Fixed-chrome offset (2026-06-11):** เนื้อหาใต้ fixed header ต้องเว้น `var(--content-top)`
+  (= `--header-h` 3.5rem + `--safe-top` + `--chrome-gap` 12px — นิยามใน `index.css` §9.5). **ห้าม hardcode `3.5rem`**
+  ใน TSX. Scroll-to-element ใช้ `scroll-padding-top` บน `html` (มีแล้ว — WCAG 2.4.11 *Focus Not Obscured*);
+  **ห้าม**แปะ `scroll-mt-*` ซ้อนบน root scroller อีก — offset จะบวกซ้ำ (overscroll).
 
 ---
 
