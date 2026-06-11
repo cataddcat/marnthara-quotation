@@ -222,31 +222,37 @@ const InventoryItemRow = ({
           : 'border-border/50'
       )}
     >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex-1 min-w-0 space-y-1.5">
+        {/* รหัส = หัวการ์ด */}
+        <div className="flex items-center gap-1.5">
           <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotClass)} />
           <span className={cn('font-mono font-bold text-sm', accentClass)}>{item.code}</span>
-          {cost > 0 && (
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
-              ทุน ฿{fmtTH(cost)}/{costUnit}
-            </span>
-          )}
         </div>
+
+        {/* ทุน — แก้ได้ในที่ (InlineCostEditor = แหล่งเดียว ไม่มีชิปซ้ำอีก) */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground w-16 shrink-0">ทุน</span>
+          <InlineCostEditor value={cost} onSave={(v) => onCostSave(item.code, v)} unit={costUnit} />
+        </div>
+
+        {/* ราคาขาย — อ้างอิงจากแคตตาล็อก (รอง: ไม่ลงสี เพื่อไม่ชนความหมายของ "ทุน") */}
         {item.default_price_per_m > 0 && (
-          <div className="text-xs text-muted-foreground mt-0.5">
-            ราคา ฿{fmtTH(item.default_price_per_m)}/ม.
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground w-16 shrink-0">ราคาขาย</span>
+            <span className="text-sm font-mono tabular-nums text-foreground">
+              ฿{fmtTH(item.default_price_per_m)}
+              <span className="text-xs text-muted-foreground"> /ม.</span>
+            </span>
           </div>
         )}
+
+        {/* หมายเหตุ */}
         {item.note && (
-          <div className="text-xs text-muted-foreground/60 truncate">{item.note}</div>
+          <div className="flex items-start gap-2">
+            <span className="text-xs text-muted-foreground w-16 shrink-0">หมายเหตุ</span>
+            <span className="text-sm text-muted-foreground truncate">{item.note}</span>
+          </div>
         )}
-        <div className="mt-1.5">
-          <InlineCostEditor
-            value={cost}
-            onSave={(v) => onCostSave(item.code, v)}
-            unit={costUnit}
-          />
-        </div>
       </div>
       <div className="flex items-center gap-1 pt-0.5 shrink-0">
         <button
@@ -468,6 +474,56 @@ const SectionHeader = ({
   </div>
 );
 
+/**
+ * UsageRow — แถว "ใช้ที่ห้องไหน · เท่าไหร่" ที่การ์ดวัสดุใช้ร่วมกัน (จิ้ม → กระโดดไป item)
+ * 2 บรรทัด ไม่ตัดข้อมูล (DESIGN.md §1: data ≥14px · 12px = chip/Meta เท่านั้น):
+ *   บรรทัด 1: ห้อง 14px foreground + จำนวน 14px mono accent
+ *   บรรทัด 2: spec (ขนาดน้ำเงิน mono + chips) — flex-wrap, ห้าม truncate
+ */
+const UsageRow = ({
+  roomName,
+  qty,
+  qtyClass,
+  spec,
+  onJump,
+}: {
+  roomName: string;
+  qty: string;
+  qtyClass: string;
+  spec?: React.ReactNode;
+  onJump: () => void;
+}) => (
+  <button
+    onClick={onJump}
+    className="w-full px-1 py-2 hover:bg-muted/40 transition-colors group text-left"
+  >
+    <div className="flex justify-between items-center gap-2">
+      <span className="flex items-center gap-1.5 min-w-0">
+        <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+        <span className="text-sm font-medium text-foreground truncate">{roomName}</span>
+      </span>
+      <span className="flex items-center gap-1 shrink-0">
+        <span className={cn('text-sm font-mono tabular-nums', qtyClass)}>{qty}</span>
+        <ArrowRight
+          className="w-3.5 h-3.5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+          strokeWidth={1.5}
+        />
+      </span>
+    </div>
+    {spec && <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-2.5 mt-0.5">{spec}</div>}
+  </button>
+);
+
+/** ขนาด กว้าง×สูง — ชั้นข้อมูล #1 ของช่างหน้างาน: mono น้ำเงิน 14px (tone "dimension") */
+const SpecDims = ({ children }: { children: React.ReactNode }) => (
+  <span className="text-sm font-mono tabular-nums text-blue-700 dark:text-blue-400">{children}</span>
+);
+
+/** chip ป้ายหมวด (สไตล์/ชั้นผ้า) — 12px Meta โดยชอบ */
+const SpecChip = ({ children }: { children: React.ReactNode }) => (
+  <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">{children}</span>
+);
+
 const FabricCard = ({
   code,
   total,
@@ -532,27 +588,24 @@ const FabricCard = ({
               unit={unit}
             />
           </div>
-          <div className="px-3 py-2 space-y-1">
+          <div className="px-3 py-1 divide-y divide-border/60">
             {entries.map((e, i) => (
-              <button
+              <UsageRow
                 key={i}
-                onClick={() => onJumpItem(e.roomId, e.itemId)}
-                className="w-full flex justify-between items-center text-xs rounded-md -mx-1 px-1 py-1 hover:bg-muted/50 transition-colors group"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-muted-foreground truncate group-hover:text-foreground">
-                    {e.roomName}
-                  </span>
-                  <span className="text-muted-foreground/60 truncate">· {e.desc}</span>
-                </div>
-                <span className="flex items-center gap-1 shrink-0 ml-2">
-                  <span className={cn('font-mono', accent, 'opacity-80')}>
-                    {fmtTH(e.yards)} {unit}
-                  </span>
-                  <ArrowRight className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
-                </span>
-              </button>
+                roomName={e.roomName}
+                qty={`${fmtTH(e.yards)} ${unit}`}
+                qtyClass={accent}
+                onJump={() => onJumpItem(e.roomId, e.itemId)}
+                spec={
+                  <>
+                    <SpecDims>
+                      {e.width.toFixed(2)} × {e.height.toFixed(2)} ม.
+                    </SpecDims>
+                    <SpecChip>{e.style}</SpecChip>
+                    <SpecChip>{e.layerLabel}</SpecChip>
+                  </>
+                }
+              />
             ))}
           </div>
         </div>
@@ -569,7 +622,15 @@ const WallpaperCostCard = ({
 }: {
   code: string;
   total: number;
-  entries: { rolls: number; roomId: string; roomName: string; itemId: string; desc: string }[];
+  entries: {
+    rolls: number;
+    roomId: string;
+    roomName: string;
+    itemId: string;
+    desc: string;
+    wallWidth: number;
+    height: number;
+  }[];
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
@@ -613,25 +674,23 @@ const WallpaperCostCard = ({
               unit="ม้วน"
             />
           </div>
-          <div className="px-3 py-2 space-y-1">
+          <div className="px-3 py-1 divide-y divide-border/60">
             {entries.map((e, i) => (
-              <button
+              <UsageRow
                 key={i}
-                onClick={() => onJumpItem(e.roomId, e.itemId)}
-                className="w-full flex justify-between items-center text-xs rounded-md -mx-1 px-1 py-1 hover:bg-muted/50 transition-colors group"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-muted-foreground truncate group-hover:text-foreground">
-                    {e.roomName}
-                  </span>
-                  <span className="text-muted-foreground/60 truncate">· {e.desc}</span>
-                </div>
-                <span className="flex items-center gap-1 shrink-0 ml-2">
-                  <span className="font-mono text-orange-500 opacity-80">{Math.ceil(e.rolls)} ม้วน</span>
-                  <ArrowRight className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
-                </span>
-              </button>
+                roomName={e.roomName}
+                qty={`${Math.ceil(e.rolls)} ม้วน`}
+                qtyClass="text-orange-500"
+                onJump={() => onJumpItem(e.roomId, e.itemId)}
+                spec={
+                  <>
+                    <SpecChip>ผนัง</SpecChip>
+                    <SpecDims>
+                      {e.wallWidth.toFixed(1)} × {e.height.toFixed(1)} ม.
+                    </SpecDims>
+                  </>
+                }
+              />
             ))}
           </div>
         </div>
@@ -696,31 +755,22 @@ const AreaCostCard = ({
               unit={group.unit}
             />
           </div>
-          <div className="px-3 py-2 space-y-1">
+          <div className="px-3 py-1 divide-y divide-border/60">
             {group.entries.map((e, i) => {
               const entryQty = group.unit === 'ตร.ม.' ? e.sqm : e.sqyd;
               return (
-                <button
+                <UsageRow
                   key={i}
-                  onClick={() => onJumpItem(e.roomId, e.itemId)}
-                  className="w-full flex justify-between items-center text-xs rounded-md -mx-1 px-1 py-1 hover:bg-muted/50 transition-colors group"
-                >
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                    <span className="text-muted-foreground truncate group-hover:text-foreground">
-                      {e.roomName}
-                    </span>
-                    <span className="text-muted-foreground/60 truncate">
-                      · {e.width.toFixed(1)}×{e.height.toFixed(1)} ม.
-                    </span>
-                  </div>
-                  <span className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className="font-mono text-teal-600 dark:text-teal-400 opacity-80">
-                      {fmtTH(entryQty)} {group.unit}
-                    </span>
-                    <ArrowRight className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
-                  </span>
-                </button>
+                  roomName={e.roomName}
+                  qty={`${fmtTH(entryQty)} ${group.unit}`}
+                  qtyClass="text-teal-600 dark:text-teal-400"
+                  onJump={() => onJumpItem(e.roomId, e.itemId)}
+                  spec={
+                    <SpecDims>
+                      {e.width.toFixed(1)} × {e.height.toFixed(1)} ม.
+                    </SpecDims>
+                  }
+                />
               );
             })}
           </div>
@@ -758,30 +808,39 @@ const RailCard = ({
         <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
       </button>
       {open && (
-        <div className="border-t border-border/50 bg-muted/20 px-3 py-2 space-y-2">
+        <div className="border-t border-border/50 bg-muted/20 px-3 py-1 divide-y divide-border/60">
           {items.map((item, i) => (
-            <div key={i} className="text-xs space-y-0.5">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">{item.roomName}</span>
+            <div key={i} className="py-2 space-y-0.5">
+              <div className="flex justify-between items-center gap-2">
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
+                  <span className="text-sm font-medium text-foreground">{item.roomName}</span>
                   {item.isDouble && (
-                    <span className="text-xs bg-muted text-foreground px-1 rounded font-bold">2 ชั้น</span>
+                    <span className="text-xs bg-muted text-foreground px-1.5 py-0.5 rounded-full font-bold">
+                      2 ชั้น
+                    </span>
                   )}
-                  <span className="text-muted-foreground/60">· {item.opening}</span>
+                  <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+                    {item.opening}
+                  </span>
                 </div>
-                <span className={cn('font-mono', !isRoman && 'text-sky-600 dark:text-sky-400')}>
+                <span
+                  className={cn(
+                    'text-sm font-mono tabular-nums shrink-0',
+                    !isRoman && 'text-sky-600 dark:text-sky-400'
+                  )}
+                >
                   {isRoman ? '1 ชุด' : `${item.width.toFixed(2)} ม.`}
                 </span>
               </div>
               {(item.railCode || item.railColor) && (
-                <div className="pl-2 text-xs text-sky-600 dark:text-sky-400">
+                <div className="pl-2 text-sm font-mono text-sky-600 dark:text-sky-400">
                   {item.railCode ? `รุ่น ${item.railCode}` : ''}
                   {item.railCode && item.railColor ? ' · ' : ''}
                   {item.railColor ? `สี ${item.railColor}` : ''}
                 </div>
               )}
               {!isRoman && (
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground/70 pl-2">
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground pl-2">
                   {item.brackets > 0 && <span>ขาจับ: ~{item.brackets} ชิ้น</span>}
                   {item.eyelets > 0 && <span>ห่วงตาไก่: ~{item.eyelets} วง</span>}
                   {item.pinHooks > 0 && <span>ตะขอจีบ: ~{item.pinHooks} ตัว</span>}

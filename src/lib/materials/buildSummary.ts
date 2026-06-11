@@ -48,7 +48,13 @@ export interface FabricEntry {
   roomId: string;
   roomName: string;
   itemId: string;
+  /** legacy concatenated line — still used by summaryGenerator copy-text + useCodeUsage */
   desc: string;
+  // structured fields for the colour-coded UsageRow (MaterialSummaryModal)
+  style: string;
+  width: number;
+  height: number;
+  layerLabel: string;
 }
 
 export interface RailItem {
@@ -128,7 +134,16 @@ export function buildSummary(rooms: Room[]) {
     string,
     {
       total: number;
-      entries: { rolls: number; roomId: string; roomName: string; itemId: string; desc: string }[];
+      entries: {
+        rolls: number;
+        roomId: string;
+        roomName: string;
+        itemId: string;
+        desc: string;
+        // structured fields for the colour-coded UsageRow (MaterialSummaryModal)
+        wallWidth: number;
+        height: number;
+      }[];
     }
   >();
   const railsByKey = new Map<
@@ -184,6 +199,10 @@ export function buildSummary(rooms: Room[]) {
             roomName: room.name,
             itemId: c.id,
             desc,
+            style,
+            width,
+            height,
+            layerLabel,
           });
           fabricsByCode.set(code, existing);
         }
@@ -199,6 +218,10 @@ export function buildSummary(rooms: Room[]) {
             roomName: room.name,
             itemId: c.id,
             desc,
+            style,
+            width,
+            height,
+            layerLabel,
           });
           sheersByCode.set(code, existing);
         }
@@ -272,6 +295,8 @@ export function buildSummary(rooms: Room[]) {
             roomName: room.name,
             itemId: w.id,
             desc,
+            wallWidth: totalWidth,
+            height: toNum(w.height_m),
           });
           wallpapersByCode.set(code, existing);
         }
