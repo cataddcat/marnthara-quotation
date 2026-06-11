@@ -1,8 +1,10 @@
 import React from 'react';
+import { Lock } from 'lucide-react';
 import { Switch } from './Switch';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { STATUS_DOT } from '@/lib/status-style';
+import { DATA_TONE_TEXT, DATA_TONE_PLATE } from '@/config/dataTones';
 import type { CostBreakdown } from '@/lib/pricing/CostEngine';
 
 export interface SummaryRow {
@@ -35,16 +37,26 @@ interface ItemSummaryCardProps {
   proSlot?: React.ReactNode;
 }
 
+// รูปทรง plate ของยอดสุทธิ (numeric 16px + tone plate — DESIGN.md §1) แยกจาก "สี" ที่ไล่ตามสถานะ
+const PLATE_SHAPE =
+  'inline-flex items-center gap-1 text-base font-bold font-mono tabular-nums border rounded-lg px-2 py-1';
+// สถานะ "กำหนดราคาเอง" = amber (ราคามือ ไม่ใช่คำนวณ — สื่อด้วยสี ไม่ใช่ขนาด)
+const OVERRIDE_PLATE =
+  'text-amber-600 dark:text-amber-400 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900';
+
 /**
  * Summary card แบบ layered ที่ทั้ง 8 ประเภทใช้ร่วมกัน:
  * Tier-0 (เสมอ): breakdown + ราคาสุทธิ + override
  * โหมดละเอียด (Detail): ไฟจราจรกำไร + proSlot
+ *
+ * Plate ของยอดไล่สีตามสถานะ (ยกแบบมาจาก PriceSummary เดิมของม่าน — DESIGN.md §8):
+ * กำหนดราคาเอง → amber + Lock · ขาดทุน (รู้ทุนจริง) → rose · ปกติ → totalClass (default เขียว)
  */
 export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   total,
   totalLabel = 'ราคาสุทธิ',
   // Numeric layer caps at 16px (DESIGN.md §1) — hero emphasis via tone-tinted plate, not size
-  totalClass = 'text-base font-bold font-mono tabular-nums text-emerald-700 dark:text-emerald-400 border rounded-lg px-2 py-1 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900',
+  totalClass = cn(PLATE_SHAPE, DATA_TONE_TEXT.money, DATA_TONE_PLATE.money),
   title,
   titleIcon: TitleIcon,
   titleClass = 'text-emerald-600 dark:text-emerald-400',
@@ -58,6 +70,13 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   proSlot,
 }) => {
   const pulse = status === 'warning' || status === 'loss';
+
+  // สีของ plate ไล่ตามสถานะ — override ชนะ loss ชนะค่าปกติ
+  const effectiveTotalClass = enableSetPrice
+    ? cn(PLATE_SHAPE, OVERRIDE_PLATE)
+    : showStatus && status === 'loss'
+      ? cn(PLATE_SHAPE, DATA_TONE_TEXT.cost, DATA_TONE_PLATE.cost)
+      : totalClass;
 
   return (
     <div className="bg-card border border-border p-5 rounded-2xl space-y-4 relative overflow-hidden">
@@ -84,7 +103,10 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
         >
           <span className="text-muted-foreground pb-1">{totalLabel}</span>
           <span className="flex items-center gap-2">
-            <span className={totalClass}>{fmtTH(total)}</span>
+            <span className={effectiveTotalClass}>
+              {enableSetPrice && <Lock className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />}
+              {fmtTH(total)}
+            </span>
             {showStatus && status && (
               <span
                 className={cn(
@@ -98,26 +120,34 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
           </span>
         </div>
 
-        {/* Override — กำหนดราคาเอง */}
-        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Override — กำหนดราคาเอง (แถวกดได้ทั้งแถว + คำอธิบาย — ยกแบบจาก PriceSummary เดิม) */}
+        <div className="mt-4 pt-4 border-t border-border space-y-3">
+          <div
+            className="flex items-center justify-between gap-3 cursor-pointer select-none active:opacity-80 transition-opacity"
+            onClick={() => onToggleSetPrice(!enableSetPrice)}
+          >
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-foreground">กำหนดราคาเอง</div>
+              <div className="text-xs text-muted-foreground leading-tight mt-0.5">
+                ตั้งราคาคงที่ ข้ามการคำนวณอัตโนมัติ
+              </div>
+            </div>
             <Switch
               checked={enableSetPrice}
-              onCheckedChange={onToggleSetPrice}
-              className="data-[state=checked]:bg-emerald-500"
+              onCheckedChange={() => {}}
+              className="pointer-events-none shrink-0 data-[state=checked]:bg-amber-500"
             />
-            <span className="text-sm text-muted-foreground">กำหนดราคาเอง</span>
           </div>
           {enableSetPrice && (
-            <div className="w-32">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={setPriceValue || ''}
-                onChange={(e) => onSetPriceChange(e.target.value)}
-                className="w-full bg-muted/50 text-foreground border border-input rounded-lg px-3 py-1.5 text-right font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              />
-            </div>
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="0"
+              autoFocus
+              value={setPriceValue || ''}
+              onChange={(e) => onSetPriceChange(e.target.value)}
+              className="w-full text-right font-mono font-bold text-sm rounded-lg px-3 py-2 text-amber-600 dark:text-amber-500 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 animate-in slide-in-from-top-1 fade-in duration-200"
+            />
           )}
         </div>
       </div>

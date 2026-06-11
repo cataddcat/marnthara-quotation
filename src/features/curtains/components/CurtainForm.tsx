@@ -4,19 +4,23 @@ import { CurtainItemInput, ItemData } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
+import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
+import { useCostStatus } from '@/hooks/useCostStatus';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { STYLES_WITHOUT_OPENING } from '@/config/constants';
+import { MATERIAL_ACCENT } from '@/config/dataTones';
+import { Tag } from 'lucide-react';
 
 // Sections
 import { DimensionSection } from './sections/DimensionSection';
 import { FabricSection } from './sections/FabricSection';
 import { StyleSection } from './sections/StyleSection';
 import { HardwareSection } from './sections/HardwareSection';
-import { PriceSummary } from './sections/PriceSummary';
+import { CurtainCostAnalysis } from './sections/CurtainCostAnalysis';
 import { useCurtainFormLogic } from '../hooks/useCurtainFormLogic';
 
 export const CURTAIN_FORM_ID = 'curtain-edit-form';
@@ -58,15 +62,16 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeHandleNumberChange = handleNumberChange as any;
 
-  const livePrice = useMemo(
-    () =>
-      PricingEngine.calculatePrice({
-        ...formData,
-        type: ITEM_TYPES.CURTAIN,
-        id: 'temp',
-      } as ItemData),
+  // ราคา + breakdown (หลาผ้า) คำนวณที่เดียว — ใช้ทั้ง badge, summary rows และ cost status
+  const previewItem = useMemo<ItemData>(
+    () => ({ ...formData, type: ITEM_TYPES.CURTAIN, id: 'preview' }) as ItemData,
     [formData]
   );
+  const pricePreview = useMemo(
+    () => PricingEngine.calculateDetailedPrice(previewItem),
+    [previewItem]
+  );
+  const analysis = useCostStatus(previewItem);
 
   // Coercion ตามรูปแบบม่าน (ครอบคลุมทั้งตอนเปลี่ยน style และโหลด edit ข้อมูลเก่า)
   // - พับ/แป๊บ: ไม่มีทิศทางการเปิด → เคลียร์ค่าค้าง
@@ -128,12 +133,31 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     </>
   );
 
+  // สรุปราคา — ItemSummaryCard เดียวกับอีก 7 ฟอร์ม (DESIGN.md §8 ⑤); ของเฉพาะม่านอยู่ใน proSlot
+  const fabricYards = pricePreview.breakdown?.fabricYards ?? 0;
+  const sheerYards = pricePreview.breakdown?.sheerYards ?? 0;
   const priceSummary = (
-    <PriceSummary
-      data={formData}
-      onChange={safeHandleChange}
-      onNumberChange={safeHandleNumberChange}
-      showProMode={isDetail}
+    <ItemSummaryCard
+      title="สรุปรายการคำนวณ"
+      titleIcon={Tag}
+      rows={[
+        ...(fabricYards > 0
+          ? [{ label: 'ผ้าทึบ (หลา):', value: fabricYards.toFixed(2), valueClass: MATERIAL_ACCENT.fabric }]
+          : []),
+        ...(sheerYards > 0
+          ? [{ label: 'ผ้าโปร่ง (หลา):', value: sheerYards.toFixed(2), valueClass: MATERIAL_ACCENT.sheer }]
+          : []),
+      ]}
+      total={pricePreview.total}
+      enableSetPrice={formData.enable_set_price || false}
+      onToggleSetPrice={(c) => safeHandleChange('enable_set_price', c)}
+      setPriceValue={formData.set_price_override}
+      onSetPriceChange={(v) => safeHandleNumberChange('set_price_override', v)}
+      status={analysis?.status}
+      showStatus={isDetail && (analysis?.totalCost ?? 0) > 0}
+      proSlot={
+        isDetail ? <CurtainCostAnalysis formData={formData} onChange={safeHandleChange} /> : null
+      }
     />
   );
 
@@ -152,7 +176,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
             defaultOpen={mode === 'edit'}
             badge={
               <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums mr-1">
-                ฿{fmtTH(livePrice)}
+                ฿{fmtTH(pricePreview.total)}
               </span>
             }
             hint="ผ้า • ราคา — ใส่ทีหลังได้"

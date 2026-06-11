@@ -5,8 +5,9 @@ import { TrendingUp } from 'lucide-react';
 import type { CostBreakdown } from '@/lib/pricing/CostEngine';
 
 /**
- * สรุปต้นทุน/กำไรแบบอ่านอย่างเดียว — ใช้ใน proSlot ของประเภทที่ไม่มีช่องแก้ต้นทุนต่อชิ้น
- * (area/wallpaper ต้นทุนมาจาก Vault by code) ต่างจากผ้าม่านที่ใช้ ProModeControl แก้ได้
+ * สรุปต้นทุน/กำไรแบบอ่านอย่างเดียว — proSlot ของประเภทที่ทุนถังเดียว (area/wallpaper/removal:
+ * Vault by code → 2 บรรทัดพอ โชว์เสมอใน Detail) ต่างจากผ้าม่าน (CurtainCostAnalysis/ProModeControl)
+ * ที่ทุนหลายถัง (ผ้า/ราง/แรง) จึงโชว์ breakdown ละเอียด + toggle — ทั้งคู่อ่านอย่างเดียวเหมือนกัน
  */
 export const CostReadout: React.FC<{ analysis: CostBreakdown }> = ({ analysis }) => {
   const lowMargin = analysis.marginPercent < 30;
