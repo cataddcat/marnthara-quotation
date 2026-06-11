@@ -307,6 +307,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 | 13 | Jump to non-existent code shows empty list | No auto-prefill | Added `prefillCode` prop + auto-open create form |
 | 14 | `discount.is_enabled` optional but used as required | Type was `?: boolean` | Changed to `is_enabled: boolean` + defaults |
 | 15 | Financial Dashboard aggregation approximations | `usage = width * 2.5` hardcoded | Use `analysis.usedQuantity` from CostEngine |
+| 16 | E2E แดงบน mobile-chromium หลังรีดีไซน์ header (2026-06-10) | `seed-demo.spec.ts` ใช้ `getByText('ผ้าม่าน').first()` หลวม — ตัวแรกใน DOM คือ subtitle "ผ้าม่าน & ของตกแต่ง" ที่เพิ่งเปลี่ยนเป็น `hidden sm:block` → จอแคบ element นั้น hidden → fail (แอปเรนเดอร์ปกติ, locator จับผิดตัว) | Scope `page.locator('main').getByText('ผ้าม่าน').first()` (header อยู่นอก `<main>`). **บทเรียน:** เปลี่ยน responsive visibility (`hidden/sm:block`) ของข้อความใด ๆ → ตรวจ E2E locator ที่ match ข้อความนั้น; ตั้ง assertion ให้ scope (role/`locator('main')`/`getByTestId`) ไม่ใช่ `getByText().first()` ทั่วทั้งหน้า |
 
 ---
 
