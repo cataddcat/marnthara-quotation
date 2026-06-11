@@ -7,7 +7,7 @@ import { RollerBlindsSchema, RollerBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, ArrowLeftToLine, ArrowRightToLine, Minimize2, Star, Book } from 'lucide-react';
+import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Star, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
@@ -126,7 +126,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
     <form id={ROLLER_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <FormSection icon={Minimize2} title="ขนาดพื้นที่ (ม.)">
+      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -135,9 +135,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             onChange={(e) => handleNumberChange('width_m', e.target.value)}
             isDimension
             autoFocus
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.width_m}
+            size={control}            error={errors.width_m}
           />
           <Input
             label="สูง (H)"
@@ -145,9 +143,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.height_m}
+            size={control}            error={errors.height_m}
           />
         </div>
       </FormSection>
@@ -156,7 +152,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
       <FormSection
         icon={Tag}
         iconClass={theme.icon}
-        title="รหัส/รุ่น"
+        title="รหัส & ราคา"
         headerRight={
           isDetail && (
             <Button

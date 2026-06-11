@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert';
 import { fmtTH } from '@/utils/formatters';
 import { Metric } from '@/components/ui/Metric';
 import { FAVORITE_CATEGORIES } from '@/config/enums';
+import { COST_BUCKET_DOT } from '@/config/dataTones';
 import { CostRow } from './CostRow';
 import { CodeJumpButton } from './CodeJumpButton';
 import { STATUS_STYLE, type ItemRow } from './constants';
@@ -179,13 +180,13 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
             <CostRow
               label={`ค่าแรง${analysis.isLaborMinApplied ? ' ⚡ ขั้นต่ำ' : ''}`}
               value={laborTotal}
-              dotClass="bg-blue-500"
+              dotClass={COST_BUCKET_DOT.labor}
             />
           )}
 
           {/* Rail */}
           {railTotal > 0 && (
-            <CostRow label="ราง + อุปกรณ์" value={railTotal} dotClass="bg-orange-400" />
+            <CostRow label="ราง + อุปกรณ์" value={railTotal} dotClass={COST_BUCKET_DOT.hardware} />
           )}
 
           {/* No cost data at all */}

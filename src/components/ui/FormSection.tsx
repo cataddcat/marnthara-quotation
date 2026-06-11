@@ -5,7 +5,7 @@ import { useTierSize } from '@/hooks/useExperienceMode';
 interface FormSectionProps {
   /** ไอคอนหัวข้อ section */
   icon?: React.ElementType;
-  /** สีไอคอน — dimension ใช้ sky (semantic การวัด); ส่วนระบุประเภทใช้สี brand */
+  /** สีไอคอน — default = โทนมิติ (ทะเบียน §2.1, section ขนาดคือผู้ใช้หลัก); ส่วนรหัส/ราคาใช้สี brand (theme.icon) */
   iconClass?: string;
   /** หัวข้อ section (ตัวหนา) */
   title?: React.ReactNode;
@@ -25,7 +25,7 @@ interface FormSectionProps {
  */
 export const FormSection: React.FC<FormSectionProps> = ({
   icon: Icon,
-  iconClass = 'text-sky-500',
+  iconClass = 'text-blue-600 dark:text-blue-400',
   title,
   headerRight,
   children,

@@ -6,7 +6,7 @@ import { WoodenBlindsSchema, WoodenBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, ArrowLeftToLine, ArrowRightToLine, Blinds, Book } from 'lucide-react';
+import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
@@ -109,6 +109,13 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
     <ItemSummaryCard
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
+      rows={[
+        {
+          label: 'พื้นที่ (ตร.ล.):',
+          value: pricePreview.breakdown?.areaSqyd?.toFixed(2) || '0.00',
+          valueClass: theme.text,
+        },
+      ]}
       total={pricePreview.total}
       enableSetPrice={formData.enable_set_price || false}
       onToggleSetPrice={(c) => handleChange('enable_set_price', c)}
@@ -128,7 +135,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
     <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <FormSection icon={Blinds} title="ขนาดพื้นที่ (ม.)">
+      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           {/* [FIX] Use Standard Input instead of Combobox to prevent random suggestions */}
           <Input
@@ -138,9 +145,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             onChange={(e) => handleNumberChange('width_m', e.target.value)}
             isDimension
             autoFocus
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.width_m}
+            size={control}            error={errors.width_m}
           />
           <Input
             label="สูง (H)"
@@ -148,9 +153,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.height_m}
+            size={control}            error={errors.height_m}
           />
         </div>
       </FormSection>
@@ -159,7 +162,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
       <FormSection
         icon={Tag}
         iconClass={theme.icon}
-        title="รุ่น / ราคา"
+        title="รหัส & ราคา"
         headerRight={
           isDetail && (
             <Button
@@ -180,20 +183,6 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
           )
         }
       >
-        {/* Tape Type Selector */}
-        <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
-          {['รุ่นเชือก', 'รุ่นโซ่'].map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => handleChange('fabric_variant', type)} // Using fabric_variant to store tape type/model
-              className={segmentedItemClass(formData.fabric_variant === type, theme)}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-
         {/* Code & Price — คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           {/* [FIX] Keep Combobox ONLY for Code/Color */}
@@ -215,6 +204,23 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             inputMode="decimal"
             placeholder="0.00"
           />
+        </div>
+
+        {/* Option: รุ่นเชือก/โซ่ — variant ท้าย section คั่น border-t (แบบแผน DESIGN.md §8) */}
+        <div className="space-y-2 pt-2 border-t border-border">
+          <label className="text-[13px] font-medium text-muted-foreground">รุ่น</label>
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
+            {['รุ่นเชือก', 'รุ่นโซ่'].map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => handleChange('fabric_variant', type)} // Using fabric_variant to store tape type/model
+                className={segmentedItemClass(formData.fabric_variant === type, theme)}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
         </div>
       </FormSection>
 

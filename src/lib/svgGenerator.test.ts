@@ -6,9 +6,9 @@ import { generateItemVisualSvg } from './svgGenerator';
 import { ITEM_TYPES } from '@/config/enums';
 import { asItemData, makeCurtain, makeAreaItem, makeWallpaper, makeRemoval } from '@/test/factories';
 
-/** x of the first accent-filled circle (= cord/chain top bead). */
+/** x of the first accent-filled circle (= cord/chain top bead). accent = blue-700 (ทะเบียน §2.1) */
 const cordX = (svg: string): number | null => {
-  const m = svg.match(/<circle cx="([\d.]+)"[^>]*fill="#0284c7"/);
+  const m = svg.match(/<circle cx="([\d.]+)"[^>]*fill="#1d4ed8"/);
   return m ? parseFloat(m[1]) : null;
 };
 

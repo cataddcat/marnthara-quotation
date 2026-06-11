@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FormSection } from '@/components/ui/FormSection';
 import { FAVORITE_CATEGORIES, LAYER_MODES } from '@/config/enums';
+import { MATERIAL_ACCENT } from '@/config/dataTones';
 import { Moon, Sun, AlertTriangle, RefreshCw, Check, Star, Book, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toNum, fmtTH } from '@/utils/formatters';
@@ -183,7 +184,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
         {showMain && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
-              <div className="flex items-center gap-2 text-orange-500 font-bold">
+              <div className={cn('flex items-center gap-2 font-bold', MATERIAL_ACCENT.fabric)}>
                 <Moon className="w-4 h-4" />
                 <span>ผ้าทึบ (Main)</span>
               </div>
@@ -192,7 +193,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 gap-1 text-muted-foreground hover:text-orange-500"
+                className="h-7 px-2 gap-1 text-muted-foreground hover:text-violet-500"
                 onClick={() =>
                   openModal('materialSummary', {
                     initialTab: 'catalog',
@@ -273,7 +274,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                         'h-[42px] w-[42px] p-0 shrink-0 border-dashed transition-all',
                         mainSyncStatus === 'mismatch'
                           ? 'border-amber-400 text-amber-500 hover:bg-amber-50'
-                          : 'border-border text-muted-foreground hover:text-orange-500'
+                          : 'border-border text-muted-foreground hover:text-violet-500'
                       )}
                       onClick={() =>
                         handleSaveToCatalog(
@@ -285,7 +286,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       title="บันทึกราคานี้เป็นมาตรฐานใหม่"
                     >
                       {justSaved === FAVORITE_CATEGORIES.CURTAIN_MAIN ? (
-                        <Check className="w-5 h-5 text-green-600 animate-in zoom-in" />
+                        <Check className="w-5 h-5 text-emerald-600 animate-in zoom-in" />
                       ) : (
                         <Star
                           className={cn(
@@ -318,7 +319,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             showMain && "pt-4 border-t border-dashed border-border"
           )}>
             <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
-              <div className="flex items-center gap-2 text-orange-400 font-bold">
+              <div className={cn('flex items-center gap-2 font-bold', MATERIAL_ACCENT.sheer)}>
                 <Sun className="w-4 h-4" />
                 <span>ผ้าโปร่ง (Sheer)</span>
               </div>
@@ -327,7 +328,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 gap-1 text-muted-foreground hover:text-orange-400"
+                className="h-7 px-2 gap-1 text-muted-foreground hover:text-violet-400"
                 onClick={() =>
                   openModal('materialSummary', {
                     initialTab: 'catalog',
@@ -408,7 +409,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                         'h-[42px] w-[42px] p-0 shrink-0 border-dashed transition-all',
                         sheerSyncStatus === 'mismatch'
                           ? 'border-amber-400 text-amber-500 hover:bg-amber-50'
-                          : 'border-border text-muted-foreground hover:text-orange-400'
+                          : 'border-border text-muted-foreground hover:text-violet-400'
                       )}
                       onClick={() =>
                         handleSaveToCatalog(
@@ -420,7 +421,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       title="บันทึกราคานี้เป็นมาตรฐานใหม่"
                     >
                       {justSaved === FAVORITE_CATEGORIES.CURTAIN_SHEER ? (
-                        <Check className="w-5 h-5 text-green-600 animate-in zoom-in" />
+                        <Check className="w-5 h-5 text-emerald-600 animate-in zoom-in" />
                       ) : (
                         <Star
                           className={cn(

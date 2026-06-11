@@ -199,7 +199,7 @@ const LookbookCard: React.FC<{ item: ItemData }> = ({ item }) => {
           ))}
         </ul>
         {item.notes && (
-          <div className="mt-auto text-[12px] text-orange-600 line-clamp-2">⚠ {item.notes}</div>
+          <div className="mt-auto text-[12px] text-amber-600 line-clamp-2">⚠ {item.notes}</div>
         )}
       </div>
     </div>

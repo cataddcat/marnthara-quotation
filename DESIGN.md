@@ -94,6 +94,31 @@ and the Probe both read it.
   = `shadow-md`. Tuned scale (`--shadow-2xs…lg`) lives in [`index.css`](./src/index.css) `@theme`. Keep it
   subtle; dark mode leans on borders (soft shadows read weakly on OLED).
 
+### 2.1 📐 ทะเบียนสีความหมาย — semantic colour registry (one hue = one meaning)
+
+**หนึ่งสีมีเจ้าของเดียวทั้งแอพ** — ผู้ใช้เห็นสีแล้วรู้ความหมายทันทีโดยไม่ต้องอ่าน. Machine-readable
+mirror: [`src/config/dataTones.ts`](./src/config/dataTones.ts) (`DATA_TONE_TEXT` · `DATA_TONE_PLATE` ·
+`MATERIAL_ACCENT` · `MATERIAL_DOT` · `DIMENSION_INPUT_CLASS`) — `Metric`, `Input[isDimension]`, vault
+และทุก component อ่านจากไฟล์นี้ ห้าม hardcode hue ซ้ำเอง.
+
+| ชั้น | ความหมาย | Hue (light / dark) | ใช้ที่ |
+|---|---|---|---|
+| **Data tone** | เงิน / ราคาขาย | `emerald-700` / `-400` | Metric · ItemSummaryCard · ยอดสรุปทุกที่ |
+| | ทุน / รื้อถอน / ขาดทุน | `rose-600` / `-400` | CostReadout · FinancialDashboard · Removal |
+| | มิติ / ขนาด / พื้นที่ | `blue-700` / `-400` — **true blue, ห้าม sky/cyan เด็ดขาด** | Metric · `Input[isDimension]` · แถวขนาดทุกที่ |
+| **Material** | ผ้าทึบ / ผ้าโปร่ง | `violet-500` / `violet-400` | FabricSection · ItemCard · MaterialSummary · คลังรหัส |
+| | วอลเปเปอร์ (ม้วน) | `orange-500` | เดียวกัน — orange เป็นของวอลเปเปอร์ผู้เดียว |
+| | วัสดุพื้นที่ (ตร.ม./ตร.ล.) | `teal-600` / `-400` | คลังรหัส · สรุปวัสดุ |
+| | อุปกรณ์ / ราง | `sky-600` / `-400` — sky ถูกยกให้ hardware ผู้เดียว (ห้ามใช้กับมิติ) | คลังรหัส · แท็บราง/อุปกรณ์ใน MaterialSummary · ถังต้นทุนอุปกรณ์ |
+| | ค่าแรง / บริการ (ถังต้นทุน) | `fuchsia-500` | CostStructureBar · CostRow ใน FinancialDashboard |
+| **Identity** | ชนิดสินค้า (9 ชนิด) | `--brand-*` ([`index.css`](./src/index.css)) via `getItemTheme()` | หัว section ② ของฟอร์ม · ชิป ItemCard |
+| | ห้อง | room-accents (stripe/avatar/tag — ไม่มี sky) | RoomCard · All-Rooms summary |
+| **Status** | เตือน / ค้าง / ยังไม่ครบ | `amber` | ชิป "ยังไม่ใส่ผ้า" · validation warning |
+| | สำเร็จ `emerald` · ผิดพลาด/ลบ `rose` · info `sky` (`Alert` เท่านั้น) | | toast · Alert |
+
+กติกา: data tone ลงที่ **ตัวเลข/ค่า** ไม่ใช่ chrome (label/หัวข้อ = `text-foreground`/muted ยกเว้นป้ายหมวด
+วัสดุที่ทำหน้าที่ระบุชั้นวัสดุ เช่น "ผ้าทึบ"). hue เดียวกันห้ามมีสองความหมายบน surface เดียวกัน.
+
 ---
 
 ## 3. 📱 Spacing, radii & touch
@@ -164,7 +189,8 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
    content · **no > 18px (cap — emphasis via colour/plate, not size)** · content = `text-foreground`
    (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
    icons stroke 1.5 · borders + soft elevation (cards clearly separate from the page) · vivid colour-coded
-   data · `primary` only on CTA/selected · **peers grouped into ≤ ~7 labelled chunks (Miller's Law, §0)** ·
+   data **ตามทะเบียน §2.1 (hue ตรงความหมาย — ห้ามตั้ง hue ใหม่เอง)** · `primary` only on CTA/selected ·
+   **peers grouped into ≤ ~7 labelled chunks (Miller's Law, §0)** · product forms follow the §8 anatomy ·
    verified at 360–390px.
 
 ---
@@ -196,3 +222,23 @@ rendered UI changed**. **Phase 2 is complete:**
 
 > Ongoing discipline: keep new/changed UI on the scale (§1) and **measure with the Probe** (§6) before
 > adjusting — don't blanket-enlarge (the reverted "ภาพรวม" enlarge is the cautionary tale).
+
+---
+
+## 8. 🏗️ Form anatomy — โครงฟอร์มสินค้ามาตรฐาน
+
+ฟอร์มสินค้าทุกชนิดเรียง section เหมือนกัน ผู้ใช้เปิดฟอร์มไหนก็เจอของที่เดิม (Miller's chunking, §0):
+
+> **① ขนาด → ② รหัส & ราคา → ③ ขั้นสูง (AdvancedSection) → ④ หมายเหตุ → ⑤ สรุป (ItemSummaryCard)**
+
+| Section | มาตรฐาน |
+|---|---|
+| **① ขนาด** | ป้าย **"ขนาดพื้นที่ (ม.)"** · ไอคอน **`Ruler`** · สีไอคอน + ตัวเลข = dimension blue (§2.1) · ช่องกรอกใช้ `Input[isDimension]` (สไตล์ฝังใน primitive แล้ว — ห้ามแปะสีเอง) |
+| **② รหัส & ราคา** | ป้าย **"รหัส & ราคา"** (ไม่มีรหัส เช่น ฉากกั้นแบบจีบ → "สเปค & ราคา") · ไอคอนต่อชนิดได้ แต่สี = `getItemTheme(type).icon` (brand identity) · ตัวเลือกรุ่น/variant (segmented · `segmentedItemClass`) อยู่**ท้าย section คั่น `border-t`** |
+| **③ ขั้นสูง** | สเปคติดตั้ง/ทิศเปิดที่ใส่ทีหลังได้ → **`AdvancedSection`** เสมอ (ห้ามทำ toggle เอง) · hint บอกว่ามีอะไรข้างใน + "ใส่ทีหลังได้" |
+| **④ หมายเหตุ** | `Input` เปล่า (`bg-muted/50 border-transparent`) ไม่ครอบการ์ด |
+| **⑤ สรุป** | **`ItemSummaryCard`** เสมอ — มี breakdown row อย่างน้อย 1 แถว (พื้นที่/ม้วน/จุด) ไม่ใช่ยอดลอย ๆ · ราคาตั้งเอง = switch ในการ์ด · cost analysis = `proSlot` |
+
+- Section wrapper = **`FormSection`** เท่านั้น (single source ของ chrome + density) — ห้าม `<div className="bg-card …">` เอง.
+- ข้อยกเว้นที่รู้ตัว: **ผ้าม่าน** มี section "รูปแบบม่าน & การเก็บ" แทรกระหว่าง ① กับผ้า (style กำหนด field ที่เหลือ — จงใจ)
+  และ summary ยังเป็น `PriceSummary` เฉพาะตัว — **Phase C (PR ถัดไป): ย้ายเข้า `ItemSummaryCard`** แล้วลบข้อยกเว้นนี้ออกจากเอกสาร.

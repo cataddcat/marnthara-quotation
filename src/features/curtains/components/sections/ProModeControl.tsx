@@ -43,7 +43,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
         <button
           type="button"
           onClick={() => onChange('_is_pro_mode', true)}
-          className="text-xs text-slate-300 flex items-center gap-1 hover:text-emerald-400 transition-colors"
+          className="text-xs text-slate-300 flex items-center gap-1 hover:text-white transition-colors"
         >
           <Lock className="w-3 h-3" />
           เปิดโหมดคำนวณจากทุน
@@ -63,7 +63,8 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
       {/* Header (แสดงเฉพาะเมื่อไม่ใช่ Simple View) */}
       {!simpleView && (
         <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold">
+          {/* หัวข้อ = chrome (monochrome) — สี emerald สงวนให้ค่ากำไรด้านล่าง (ทะเบียน §2.1) */}
+          <div className="flex items-center gap-2 text-slate-200 font-bold">
             <TrendingUp className="w-4 h-4" />
             <span>วิเคราะห์ต้นทุน (Cost Breakdown)</span>
           </div>

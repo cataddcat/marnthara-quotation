@@ -5,7 +5,7 @@ import { useZodForm } from '@/hooks/useZodForm';
 import { PleatedScreenSchema, PleatedScreenFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Tag, Grid3X3, Book } from 'lucide-react';
+import { Tag, Ruler, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
@@ -98,6 +98,14 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
     <ItemSummaryCard
       title="สรุปรายการคำนวณ"
       titleIcon={Tag}
+      rows={[
+        {
+          // มุ้งจีบคิดราคา/ตร.ม. (vault.isSqmPriced) — โชว์หน่วยเดียวกับที่คิดเงิน
+          label: 'พื้นที่ (ตร.ม.):',
+          value: pricePreview.breakdown?.areaSqm?.toFixed(2) || '0.00',
+          valueClass: theme.text,
+        },
+      ]}
       total={pricePreview.total}
       enableSetPrice={formData.enable_set_price || false}
       onToggleSetPrice={(c) => handleChange('enable_set_price', c)}
@@ -116,7 +124,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   return (
     <form id={PLEATED_SCREEN_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
-      <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
+      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -124,18 +132,14 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
             onChange={(e) => handleNumberChange('width_m', e.target.value)}
             isDimension
             autoFocus
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.width_m}
+            size={control}            error={errors.width_m}
           />
           <Input
             label="สูง (H)"
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.height_m}
+            size={control}            error={errors.height_m}
           />
         </div>
       </FormSection>
@@ -143,7 +147,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
       <FormSection
         icon={Tag}
         iconClass={theme.icon}
-        title="สเปค / ราคา"
+        title="สเปค & ราคา"
         headerRight={
           isDetail && (
             <Button

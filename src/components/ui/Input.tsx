@@ -2,6 +2,7 @@ import React, { useId, useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { X, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { parseDimension, toNum } from '@/utils/formatters';
+import { DIMENSION_INPUT_CLASS } from '@/config/dataTones';
 
 /** ช่วงขนาดสมเหตุสมผล (ม.) — นอกช่วงนี้เตือน (ไม่บล็อก) */
 const DIM_MIN_M = 0.1;
@@ -172,6 +173,8 @@ export const Input = ({
             'placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
             'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/50',
             statusClasses,
+            // ช่องมิติ = โทน dimension จากทะเบียน §2.1 — ฝังที่ primitive เดียว caller ห้ามแปะสีเอง
+            isDimension && DIMENSION_INPUT_CLASS,
             suffix ? 'pr-12' : showClear ? 'pr-10' : '',
             prefix ? 'pl-10' : '',
             className

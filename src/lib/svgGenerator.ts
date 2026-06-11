@@ -30,7 +30,7 @@ const C = {
   slatStroke: '#94a3b8',
   wood: '#e8dcc8',
   woodStroke: '#b08d57',
-  accent: '#0284c7', // sky-600 — opening direction + cord/chain
+  accent: '#1d4ed8', // blue-700 — opening direction + cord/chain (โทนมิติ ทะเบียน §2.1 — sky สงวนให้ hardware)
   dim: '#94a3b8',
   dimText: '#64748b',
 } as const;

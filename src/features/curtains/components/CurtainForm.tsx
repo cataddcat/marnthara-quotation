@@ -1,16 +1,15 @@
 // src/features/curtains/components/CurtainForm.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { CurtainItemInput, ItemData } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { STYLES_WITHOUT_OPENING } from '@/config/constants';
-import { cn } from '@/lib/utils';
-import { SlidersHorizontal } from 'lucide-react';
 
 // Sections
 import { DimensionSection } from './sections/DimensionSection';
@@ -50,10 +49,9 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData, onAutoSave);
 
-  const { isField } = useExperienceMode();
-  const [showAdvancedField, setShowAdvancedField] = useState(false);
-  // Detail = แสดงทุกอย่าง; Field (หน้างาน) = เฉพาะที่จำเป็น เว้นแต่กด "ตัวเลือกขั้นสูง"
-  const showAdvanced = !isField || showAdvancedField;
+  // Detail = แสดงทุกอย่าง; Field (หน้างาน) = อุปกรณ์ติดตั้งยุบใน AdvancedSection (escape hatch
+  // มาตรฐานเดียวกับฟอร์มอื่น — DESIGN.md §8) ส่วนเครื่องมือคลังรหัส/ต้นทุน = งานโหมดละเอียด
+  const { isField, isDetail } = useExperienceMode();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeHandleChange = handleChange as any;
@@ -93,41 +91,18 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
     />
   );
 
-  const advancedToggle = isField && (
-    <button
-      type="button"
-      onClick={() => setShowAdvancedField((v) => !v)}
-      aria-expanded={showAdvancedField}
-      className={cn(
-        'w-full flex items-center justify-between gap-2 min-h-[44px] px-3.5 rounded-xl border border-dashed transition-colors',
-        showAdvancedField
-          ? 'border-foreground/30 bg-muted/40 text-foreground'
-          : 'border-border text-muted-foreground hover:bg-muted/30'
-      )}
-    >
-      <span className="flex items-center gap-2 text-sm font-medium text-left">
-        <SlidersHorizontal className="w-4 h-4 shrink-0" strokeWidth={1.5} />
-        ตัวเลือกขั้นสูง (อุปกรณ์ผลิต · ทิศเปิด · ต้นทุน)
-      </span>
-      <span className="text-xs font-semibold shrink-0">{showAdvancedField ? 'ซ่อน' : 'แสดง'}</span>
-    </button>
-  );
-
   const dimensionSection = (
     <DimensionSection data={formData} onChange={safeHandleNumberChange} errors={errors} />
   );
 
   // รูปแบบม่าน — อยู่ต่อจากขนาดเสมอ (เป็นตัวกำหนดอุปกรณ์/ชั้นผ้า/ทิศเปิด)
+  // ทิศเปิดแสดงทุกโหมด: บังคับเลือกก่อนออกเอกสารอยู่แล้ว — คนหน้างานคือคนที่รู้คำตอบ
   const styleSection = (
-    <StyleSection
-      data={formData}
-      onChange={safeHandleChange}
-      errors={errors}
-      showOpening={showAdvanced}
-    />
+    <StyleSection data={formData} onChange={safeHandleChange} errors={errors} />
   );
 
   // กลุ่ม input (ผ้า/อุปกรณ์) — ใช้ร่วมทั้ง Field (ใน collapsible) และ Detail (คอลัมน์ซ้าย)
+  // อุปกรณ์ราง = installation spec → AdvancedSection (Detail กางตรง ๆ / Field ยุบแต่กางได้เสมอ)
   const inputSections = (
     <>
       <FabricSection
@@ -138,18 +113,18 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
         onSheerFabricSelect={handleSheerFabricSelect}
         errors={errors}
         warnings={warnings}
-        showCatalogTools={showAdvanced}
+        showCatalogTools={isDetail}
         stack={isField}
       />
 
-      {showAdvanced && (
+      <AdvancedSection expanded={isDetail} hint="ราง · สี · ขายึด — ใส่ทีหลังได้">
         <HardwareSection
           data={formData}
           onChange={safeHandleChange}
           errors={errors}
           warnings={warnings}
         />
-      )}
+      </AdvancedSection>
     </>
   );
 
@@ -158,7 +133,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
       data={formData}
       onChange={safeHandleChange}
       onNumberChange={safeHandleNumberChange}
-      showProMode={showAdvanced}
+      showProMode={isDetail}
     />
   );
 
@@ -182,7 +157,6 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
             }
             hint="ผ้า • ราคา — ใส่ทีหลังได้"
           >
-            {advancedToggle}
             {inputSections}
             {priceSummary}
             {notesInput}

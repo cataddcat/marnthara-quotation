@@ -1,6 +1,7 @@
 // src/components/modals/FinancialDashboard/CostStructureBar.tsx
 
 import { fmtTH } from '@/utils/formatters';
+import { COST_BUCKET_DOT } from '@/config/dataTones';
 
 interface CostStructureBarProps {
   fabric: number;
@@ -23,21 +24,21 @@ export const CostStructureBar = ({ fabric, labor, rail, total }: CostStructureBa
         <span className="tabular-nums normal-case">{fmtTH(total)}</span>
       </div>
       <div className="h-2.5 rounded-full overflow-hidden flex gap-px bg-muted">
-        {fp > 0 && <div style={{ width: `${fp}%` }} className="bg-violet-500 rounded-l-full" />}
-        {lp > 0 && <div style={{ width: `${lp}%` }} className="bg-blue-500" />}
-        {rp > 0 && <div style={{ width: `${rp}%` }} className="bg-orange-400 rounded-r-full" />}
+        {fp > 0 && <div style={{ width: `${fp}%` }} className={`${COST_BUCKET_DOT.material} rounded-l-full`} />}
+        {lp > 0 && <div style={{ width: `${lp}%` }} className={COST_BUCKET_DOT.labor} />}
+        {rp > 0 && <div style={{ width: `${rp}%` }} className={`${COST_BUCKET_DOT.hardware} rounded-r-full`} />}
       </div>
       <div className="flex gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
+          <span className={`w-2 h-2 rounded-full shrink-0 ${COST_BUCKET_DOT.material}`} />
           ผ้า {fp}% · {fmtTH(fabric)}
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+          <span className={`w-2 h-2 rounded-full shrink-0 ${COST_BUCKET_DOT.labor}`} />
           แรง {lp}% · {fmtTH(labor)}
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
+          <span className={`w-2 h-2 rounded-full shrink-0 ${COST_BUCKET_DOT.hardware}`} />
           ราง {rp}% · {fmtTH(rail)}
         </span>
       </div>

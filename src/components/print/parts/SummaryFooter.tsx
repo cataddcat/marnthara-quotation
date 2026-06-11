@@ -74,7 +74,7 @@ export const SummaryFooter: React.FC<Props> = ({
               <span className="font-mono font-medium text-[13px]">{fmtNum(grandTotal)}</span>
             </div>
             {discountAmount > 0 && (
-              <div className="flex justify-between text-green-700">
+              <div className="flex justify-between text-emerald-700">
                 <span>ส่วนลด</span>
                 <span className="font-mono font-medium text-[13px]">-{fmtNum(discountAmount)}</span>
               </div>

@@ -6,6 +6,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 import { FAVORITE_CATEGORIES } from '@/config/enums';
+import { MATERIAL_ACCENT, MATERIAL_DOT, type MaterialKind } from '@/config/dataTones';
 
 export type VaultKind = 'fabric' | 'wallpaper' | 'area' | 'hardware';
 
@@ -55,30 +56,18 @@ export const categoryCostUnit = (category: string): string => BY_ID.get(category
 export const isSqmPriced = (typeOrCategory: string): boolean =>
   BY_ID.get(typeOrCategory)?.costUnit === 'ตร.ม.';
 
-// ── สีประจำหมวด (color-coding) — จัดกลุ่มตาม vault ให้สอดคล้องทั้งแอป ──
-//   ผ้าทึบ = violet-500, ผ้าโปร่ง = violet-400, วอลเปเปอร์ = orange-500, พื้นที่ = teal
-/** text color ของหมวด — ใช้กับรหัส/ป้ายในคลังรหัส */
-export const categoryAccent = (category: string): string => {
-  if (category === FAVORITE_CATEGORIES.CURTAIN_SHEER) return 'text-violet-400';
+// ── สีประจำหมวด (color-coding) — hue จากทะเบียน DESIGN.md §2.1 (dataTones.ts) ──
+/** หมวดวัสดุของ category — ตัวกลางระหว่าง vault ↔ ทะเบียนสี */
+const categoryMaterialKind = (category: string): MaterialKind => {
+  if (category === FAVORITE_CATEGORIES.CURTAIN_SHEER) return 'sheer';
   const v = categoryVault(category);
-  return v === 'wallpaper'
-    ? 'text-orange-500'
-    : v === 'area'
-      ? 'text-teal-600 dark:text-teal-400'
-      : v === 'hardware'
-        ? 'text-sky-600 dark:text-sky-400'
-        : 'text-violet-500';
+  return v === 'wallpaper' || v === 'area' || v === 'hardware' ? v : 'fabric';
 };
 
+/** text color ของหมวด — ใช้กับรหัส/ป้ายในคลังรหัส */
+export const categoryAccent = (category: string): string =>
+  MATERIAL_ACCENT[categoryMaterialKind(category)];
+
 /** bg color ของจุดนำหน้า (dot) — คู่กับ categoryAccent */
-export const categoryDotClass = (category: string): string => {
-  if (category === FAVORITE_CATEGORIES.CURTAIN_SHEER) return 'bg-violet-400';
-  const v = categoryVault(category);
-  return v === 'wallpaper'
-    ? 'bg-orange-500'
-    : v === 'area'
-      ? 'bg-teal-500'
-      : v === 'hardware'
-        ? 'bg-sky-500'
-        : 'bg-violet-500';
-};
+export const categoryDotClass = (category: string): string =>
+  MATERIAL_DOT[categoryMaterialKind(category)];

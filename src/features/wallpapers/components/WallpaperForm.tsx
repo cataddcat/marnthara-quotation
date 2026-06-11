@@ -97,7 +97,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
         {
           label: 'ใช้จริง (ม้วน):',
           value: `${pricePreview.breakdown?.rolls ?? 0} ม้วน`,
-          valueClass: cn(theme.text, 'text-lg font-bold'),
+          valueClass: theme.text,
         },
       ]}
       total={pricePreview.total}
@@ -119,7 +119,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
     <form id={WALLPAPER_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <FormSection icon={Ruler} title="ขนาดพื้นที่">
+      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
         <div className="space-y-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground ml-1">
@@ -133,7 +133,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
                   onChange={(e) => handleWidthChange(i, e.target.value)}
                   isDimension
                   size={control}
-                  className={cn('text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10', errors.widths && 'border-red-300 bg-red-50')}
+                  className={cn(errors.widths && 'border-red-300 bg-red-50')}
                 />
                 {formData.widths.length > 1 && (
                   <button
@@ -149,7 +149,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             <button
               type="button"
               onClick={addWidthField}
-              className="text-sm text-indigo-600 font-medium flex items-center gap-1 px-1 hover:underline"
+              className="text-sm text-foreground font-medium flex items-center gap-1 px-1 hover:underline"
             >
               <Plus className="w-4 h-4" /> เพิ่มผนัง
             </button>
@@ -162,7 +162,6 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension
             size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
             error={errors.height_m}
           />
         </div>
@@ -172,7 +171,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
       <FormSection
         icon={ScrollText}
         iconClass={theme.icon}
-        title="รหัสวอลเปเปอร์"
+        title="รหัส & ราคา"
         headerRight={
           isDetail && (
             <Button

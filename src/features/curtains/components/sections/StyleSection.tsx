@@ -11,16 +11,9 @@ interface StyleSectionProps {
   data: CurtainItemInput;
   onChange: (field: keyof CurtainItemInput, val: string | number | boolean) => void;
   errors?: Partial<Record<keyof CurtainItemInput, string>>;
-  /** แสดงตัวเลือก "ทิศทางการเปิด" (ซ่อนในโหมดหน้างาน — กางได้จาก "ตัวเลือกขั้นสูง") */
-  showOpening?: boolean;
 }
 
-export const StyleSection: React.FC<StyleSectionProps> = ({
-  data,
-  onChange,
-  errors,
-  showOpening = true,
-}) => {
+export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, errors }) => {
   const [activeSheet, setActiveSheet] = useState<'style' | null>(null);
 
   const getStyleLabel = () =>
@@ -59,8 +52,9 @@ export const StyleSection: React.FC<StyleSectionProps> = ({
           </button>
         </div>
 
-        {/* ทิศทางการเปิด — ม่านพับ (ยกขึ้นแนวตั้ง) / แป๊บ (สอดราว) ไม่มีทิศซ้าย/กลาง/ขวา */}
-        {showOpening && !STYLES_WITHOUT_OPENING.includes(data.style) && (
+        {/* ทิศทางการเปิด — ม่านพับ (ยกขึ้นแนวตั้ง) / แป๊บ (สอดราว) ไม่มีทิศซ้าย/กลาง/ขวา
+            แสดงทุกโหมด: บังคับเลือกก่อนออกเอกสาร — เก็บคำตอบได้ตั้งแต่หน้างาน */}
+        {!STYLES_WITHOUT_OPENING.includes(data.style) && (
           <OpeningStyleSelector
             value={data.opening_style}
             onChange={(v) => onChange('opening_style', v)}

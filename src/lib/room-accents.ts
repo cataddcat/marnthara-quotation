@@ -20,10 +20,11 @@ const ROOM_ACCENTS: readonly RoomAccent[] = [
     tag: 'bg-violet-500/10 text-violet-700 dark:text-violet-300',
   },
   {
-    stripe: 'bg-sky-500',
-    avatar: 'bg-sky-500/15',
-    avatarText: 'text-sky-700 dark:text-sky-300',
-    tag: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
+    // indigo (เดิม sky) — sky สงวนให้หมวดอุปกรณ์ + ห้ามเฉียดโทนมิติ (DESIGN.md §2.1)
+    stripe: 'bg-indigo-500',
+    avatar: 'bg-indigo-500/15',
+    avatarText: 'text-indigo-700 dark:text-indigo-300',
+    tag: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300',
   },
   {
     stripe: 'bg-teal-500',

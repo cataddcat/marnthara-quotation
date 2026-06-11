@@ -10,6 +10,8 @@ import { isItemIncomplete, incompleteLabel, requiresOpeningStyle } from '@/lib/i
 import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
+import { DATA_TONE_TEXT, MATERIAL_ACCENT } from '@/config/dataTones';
+import { getItemTheme } from '@/lib/theme-utils';
 import {
   ChevronDown,
   Edit2,
@@ -38,6 +40,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const { confirm } = useConfirm();
 
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // สี brand ประจำชนิดสินค้า (ทะเบียน §2.1 ชั้น Identity) — ใช้กับชิปสเปค ให้ตรงหัว section ของฟอร์ม
+  const theme = getItemTheme(item.type);
 
   const priceResult = useMemo(() => PricingEngine.calculateDetailedPrice(item), [item]);
 
@@ -244,7 +249,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           />
         </div>
 
-        {/* Row 2: Metric strip — ขนาด (sky) ซ้าย · ยอดสุทธิ (emerald hero) ขวา */}
+        {/* Row 2: Metric strip — ขนาด (blue) ซ้าย · ยอดสุทธิ (emerald hero) ขวา */}
         <div className="flex items-end justify-between gap-3">
           {showDim ? (
             <Metric
@@ -276,7 +281,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {typeChips.map((chip, i) => (
               <span
                 key={i}
-                className="text-xs leading-tight px-2.5 py-1 rounded-full bg-muted/60 text-foreground/80 font-medium"
+                className={cn(
+                'text-xs leading-tight px-2.5 py-1 rounded-full font-medium',
+                theme.badge
+              )}
               >
                 {chip}
               </span>
@@ -301,7 +309,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {hasSize && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">ขนาด</span>
-                <span className="font-semibold font-mono text-sky-600 dark:text-sky-400">
+                <span className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension)}>
                   {width.toFixed(2)} × {height.toFixed(2)} ม.
                 </span>
               </div>
@@ -314,7 +322,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                   ผ้าทึบ
                   {item.code && renderCodeButton(item.code, FAVORITE_CATEGORIES.CURTAIN_MAIN)}
                 </span>
-                <span className="font-semibold font-mono text-orange-500 shrink-0">
+                <span className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.fabric)}>
                   {fabricYards.toFixed(2)}
                 </span>
               </div>
@@ -328,7 +336,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                   {item.sheer_code &&
                     renderCodeButton(item.sheer_code, FAVORITE_CATEGORIES.CURTAIN_SHEER)}
                 </span>
-                <span className="font-semibold font-mono text-orange-400 shrink-0">
+                <span className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.sheer)}>
                   {sheerYards.toFixed(2)}
                 </span>
               </div>
@@ -338,7 +346,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {item.type === ITEM_TYPES.WALLPAPER && rolls > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">จำนวนม้วน</span>
-                <span className="font-semibold font-mono text-orange-500">{Math.ceil(rolls)} ม้วน</span>
+                <span className={cn('font-semibold font-mono', MATERIAL_ACCENT.wallpaper)}>{Math.ceil(rolls)} ม้วน</span>
               </div>
             )}
 
@@ -346,7 +354,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {isAreaType && (areaSqm > 0 || areaSqyd > 0) && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">พื้นที่</span>
-                <span className="font-semibold font-mono text-sky-600 dark:text-sky-400">
+                <span className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension)}>
                   {areaSqm > 0 && `${areaSqm.toFixed(2)} ตร.ม.`}
                   {areaSqm > 0 && areaSqyd > 0 && ' · '}
                   {areaSqyd > 0 && `${areaSqyd.toFixed(2)} ตร.ล.`}

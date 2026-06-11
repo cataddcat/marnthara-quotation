@@ -34,9 +34,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
           onChange={(e) => onChange('width_m', e.target.value)}
           isDimension
           autoFocus
-          size={control}
-          className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-          error={errors.width_m}
+          size={control}          error={errors.width_m}
         />
         <Input
           label="สูง (H)"
@@ -44,9 +42,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
           value={data.height_m}
           onChange={(e) => onChange('height_m', e.target.value)}
           isDimension
-          size={control}
-          className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-          error={errors.height_m}
+          size={control}          error={errors.height_m}
         />
       </div>
 

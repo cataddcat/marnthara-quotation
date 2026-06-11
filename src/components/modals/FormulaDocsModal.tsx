@@ -172,7 +172,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
           </Section>
 
           {/* ── 📐 พื้นที่ (มู่ลี่/ฉาก/มุ้ง) ── */}
-          <Section title="📐 พื้นที่ (มู่ลี่/ฉาก/มุ้ง)" icon={Square} iconColor="text-sky-500">
+          <Section title="📐 พื้นที่ (มู่ลี่/ฉาก/มุ้ง)" icon={Square} iconColor="text-blue-600">
             <Formula>
               พื้นที่ (ตร.ม.) = กว้าง × สูง
               <br />

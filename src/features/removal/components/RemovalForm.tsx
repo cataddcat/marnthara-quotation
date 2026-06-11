@@ -13,6 +13,7 @@ import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
+import { DATA_TONE_TEXT } from '@/config/dataTones';
 
 export const REMOVAL_FORM_ID = 'removal-edit-form';
 
@@ -85,6 +86,13 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
       title="สรุปค่าใช้จ่าย"
       titleIcon={DollarSign}
       titleClass="text-destructive"
+      rows={[
+        {
+          label: 'จำนวน × ราคา/จุด:',
+          value: `${toNum(formData.quantity)} × ${toNum(formData.price_per_item).toLocaleString('en-US')}`,
+          valueClass: DATA_TONE_TEXT.cost,
+        },
+      ]}
       totalLabel="รวมเป็นเงิน"
       totalClass="text-base font-bold font-mono tabular-nums text-destructive border rounded-lg px-2 py-1 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900"
       total={pricePreview.total}

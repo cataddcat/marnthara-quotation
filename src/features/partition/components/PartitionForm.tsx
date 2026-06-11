@@ -7,7 +7,7 @@ import { PartitionSchema, PartitionFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, Grid3X3, Star, Book } from 'lucide-react';
+import { Tag, Ruler, Star, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
@@ -124,7 +124,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
     <form id={PARTITION_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimension Section */}
-      <FormSection icon={Grid3X3} title="ขนาดพื้นที่ (ม.)">
+      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="กว้าง (W)"
@@ -133,9 +133,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             onChange={(e) => handleNumberChange('width_m', e.target.value)}
             isDimension
             autoFocus
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.width_m}
+            size={control}            error={errors.width_m}
           />
           <Input
             label="สูง (H)"
@@ -143,9 +141,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension
-            size={control}
-            className="text-lg font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10"
-            error={errors.height_m}
+            size={control}            error={errors.height_m}
           />
         </div>
       </FormSection>
@@ -154,7 +150,7 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
       <FormSection
         icon={Tag}
         iconClass={theme.icon}
-        title="รุ่น/สเปค"
+        title="รหัส & ราคา"
         headerRight={
           isDetail && (
             <Button

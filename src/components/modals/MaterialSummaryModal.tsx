@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
+import { MATERIAL_ACCENT } from '@/config/dataTones';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
@@ -647,14 +648,14 @@ const WallpaperCostCard = ({
       >
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-mono font-bold text-sm text-orange-500">{code}</span>
+            <span className={cn('font-mono font-bold text-sm', MATERIAL_ACCENT.wallpaper)}>{code}</span>
             <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
               {entries.length} รายการ
             </span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-0.5 shrink-0">
-          <span className="font-mono font-bold text-sm text-orange-500">{Math.ceil(total)} ม้วน</span>
+          <span className={cn('font-mono font-bold text-sm', MATERIAL_ACCENT.wallpaper)}>{Math.ceil(total)} ม้วน</span>
           {totalCost > 0 && (
             <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
               ทุน ฿{fmtTH(totalCost)}
@@ -680,7 +681,7 @@ const WallpaperCostCard = ({
                 key={i}
                 roomName={e.roomName}
                 qty={`${Math.ceil(e.rolls)} ม้วน`}
-                qtyClass="text-orange-500"
+                qtyClass={MATERIAL_ACCENT.wallpaper}
                 onJump={() => onJumpItem(e.roomId, e.itemId)}
                 spec={
                   <>
@@ -802,7 +803,7 @@ const RailCard = ({
           <div className="font-semibold text-sm text-foreground truncate">{label}</div>
           <div className="text-xs text-muted-foreground mt-0.5">{items.length} ชุด/หน้าต่าง</div>
         </div>
-        <div className={cn('font-mono font-bold text-sm shrink-0', isRoman ? 'text-foreground' : 'text-sky-600 dark:text-sky-400')}>
+        <div className={cn('font-mono font-bold text-sm shrink-0', isRoman ? 'text-foreground' : MATERIAL_ACCENT.hardware)}>
           {isRoman ? `${totalSets} ชุด` : `${fmtTH(totalLength)} ม.`}
         </div>
         <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
@@ -826,14 +827,14 @@ const RailCard = ({
                 <span
                   className={cn(
                     'text-sm font-mono tabular-nums shrink-0',
-                    !isRoman && 'text-sky-600 dark:text-sky-400'
+                    !isRoman && MATERIAL_ACCENT.hardware
                   )}
                 >
                   {isRoman ? '1 ชุด' : `${item.width.toFixed(2)} ม.`}
                 </span>
               </div>
               {(item.railCode || item.railColor) && (
-                <div className="pl-2 text-sm font-mono text-sky-600 dark:text-sky-400">
+                <div className={cn('pl-2 text-sm font-mono', MATERIAL_ACCENT.hardware)}>
                   {item.railCode ? `รุ่น ${item.railCode}` : ''}
                   {item.railCode && item.railColor ? ' · ' : ''}
                   {item.railColor ? `สี ${item.railColor}` : ''}
@@ -1122,7 +1123,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       label={`🧵 ผ้าทึบ (${fabricsByCode.size} รหัส)`}
                       count={totalFabricYards}
                       unit="หลา"
-                      valueColor="text-orange-500"
+                      valueColor={MATERIAL_ACCENT.fabric}
                       totalCost={fabricTotalCost}
                     />
                     {[...fabricsByCode.entries()].map(([code, v]) => (
@@ -1132,7 +1133,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         total={v.total}
                         entries={v.entries}
                         unit="หลา"
-                        accent="text-orange-500"
+                        accent={MATERIAL_ACCENT.fabric}
                         costLookup={fabricCosts}
                         onCostSave={updateFabricCost}
                         onJumpItem={handleJumpItem}
@@ -1147,7 +1148,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       label={`🌫️ ผ้าโปร่ง (${sheersByCode.size} รหัส)`}
                       count={totalSheerYards}
                       unit="หลา"
-                      valueColor="text-orange-400"
+                      valueColor={MATERIAL_ACCENT.sheer}
                       totalCost={sheerTotalCost}
                     />
                     {[...sheersByCode.entries()].map(([code, v]) => (
@@ -1157,7 +1158,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         total={v.total}
                         entries={v.entries}
                         unit="หลา"
-                        accent="text-orange-400"
+                        accent={MATERIAL_ACCENT.sheer}
                         costLookup={fabricCosts}
                         onCostSave={updateFabricCost}
                         onJumpItem={handleJumpItem}
@@ -1172,7 +1173,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       label={`🖼️ วอลเปเปอร์ (${wallpapersByCode.size} รหัส)`}
                       count={totalWallpaperRolls}
                       unit="ม้วน"
-                      valueColor="text-orange-500"
+                      valueColor={MATERIAL_ACCENT.wallpaper}
                     />
                     {[...wallpapersByCode.entries()].map(([code, v]) => (
                       <WallpaperCostCard
@@ -1216,7 +1217,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         ราง {railsByKey.size} ชนิด
                       </span>
-                      <span className="text-xs font-mono font-bold text-sky-600 dark:text-sky-400">
+                      <span className={cn('text-xs font-mono font-bold', MATERIAL_ACCENT.hardware)}>
                         รวม {fmtTH(totalRailM)} ม.
                       </span>
                     </div>
