@@ -15,6 +15,6 @@ test.describe('Happy path', () => {
     // 3. เปิดเมนูหลักผ่าน dock → drawer แสดงหัวข้อ "เมนูหลัก"
     await page.getByRole('button', { name: 'เมนู', exact: true }).click();
     await expect(page.getByText('เมนูหลัก')).toBeVisible();
-    await expect(page.getByText('วิเคราะห์กำไร')).toBeVisible();
+    await expect(page.getByText('การเงินของงาน')).toBeVisible();
   });
 });

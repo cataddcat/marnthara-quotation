@@ -16,6 +16,8 @@ import { toNum } from '@/utils/formatters';
 export interface CostBreakdown {
   totalCost: number;
   sellingPrice: number;
+  // ⚠️ semantics: "ส่วนต่างจากทุนที่รู้" — ไม่ใช่กำไรทางบัญชี (ทุนขนส่ง/เหมา/อื่นๆ ยังไม่รวม)
+  // คงชื่อ field เดิมเพื่อลด blast radius; UI ต้อง relabel เป็น "ส่วนต่าง" เสมอ ห้ามใช้คำว่า "กำไร"
   profitAmount: number;
   marginPercent: number;
   status: 'profit' | 'warning' | 'loss' | 'unknown';
@@ -28,6 +30,9 @@ export interface CostBreakdown {
   accCost?: number;      // อุปกรณ์อื่นๆ
   
   isLaborMinApplied?: boolean; // ✅ NEW: บอกว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
+  // ส่วนทุนที่ "ปิดไม่นับ" ผ่านสวิตช์ costInclude (ProductionSettings) — ป้ายไทยสำหรับ UI
+  // เช่น ['ค่าเย็บ'] = เจ้าของปิดเพราะทุนไม่แน่นอน ไปบันทึกจ่ายจริงใน "การเงินของงาน" แทน
+  excludedComponents: string[];
   usedQuantity: number;  // จำนวนที่ใช้ ผ้าทึบ/วัสดุหลัก (หลา/ม้วน/ตร.ล./ชิ้น)
   sheerQuantity?: number; // จำนวนผ้าโปร่งที่ใช้ (หลา) — เฉพาะ DOUBLE
   unit: string;          // หน่วย (หลา/ม้วน/ตร.ล./ชิ้น)
@@ -39,7 +44,7 @@ export const CostEngine = {
     // ผ้า/ผ้าโปร่ง → fabricCosts, วอลเปเปอร์ → wallpaperCosts, มู่ลี่/ฉาก/มุ้ง → areaCosts
     // (ต้องตรงกับฝั่งบันทึก: routeCostToVault ใน InventorySlice + แค็ตตาล็อกใน MaterialSummaryModal)
     const state = useAppStore.getState();
-    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts } =
+    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts, costInclude } =
       state;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
@@ -53,7 +58,8 @@ export const CostEngine = {
     let laborCost = 0;
     const accCost = 0; // component (ขาจับ/ลูกล้อ/เทป) รวมในชุดรางแล้ว — ไม่คิดแยก
     let isLaborMinApplied = false; // ✅ NEW: เก็บสถานะว่ามีการใช้ค่าแรงขั้นต่ำหรือไม่
-    
+    const excludedComponents: string[] = [];
+
     let usedQuantity = 0;
     let sheerQuantity = 0;
     let unit = 'หน่วย';
@@ -112,27 +118,32 @@ export const CostEngine = {
            }
         }
 
-        // C. ต้นทุนราง (Rail)
-        // Map ชื่อ Style ให้ตรงกับ Key ใน accessoryCosts
-        let railKey = 'rail_standard'; 
-        if (item.style === 'ลอน') railKey = 'rail_wave';
-        else if (item.style === 'จีบ') railKey = 'rail_pleated';
-        else if (item.style === 'ตาไก่') railKey = 'rail_eyelet';
-        else if (item.style === 'พับ') railKey = 'rail_roman';
-        else if (item.style === 'หลุยส์') railKey = 'rail_louis';
-        else if (item.style === 'แป๊บ') railKey = 'rail_rod';
-        
-        // Priority chain: SKU ที่เลือก (catalog) → ค่า legacy คงที่ (accessoryCosts) → 0
-        const railSkuCost = vaultLookup(hardwareCosts, item.rail_code);
-        const costPerMeterRail = railSkuCost > 0 ? railSkuCost : accessoryCosts[railKey] || 0;
-        railCost = width * costPerMeterRail;
+        // C. ต้นทุนราง (Rail) — ข้ามเมื่อสวิตช์ costInclude.rail ปิด (ทุนไม่แน่นอน → บันทึกจ่ายจริงแทน)
+        if (costInclude.rail) {
+          // Map ชื่อ Style ให้ตรงกับ Key ใน accessoryCosts
+          let railKey = 'rail_standard';
+          if (item.style === 'ลอน') railKey = 'rail_wave';
+          else if (item.style === 'จีบ') railKey = 'rail_pleated';
+          else if (item.style === 'ตาไก่') railKey = 'rail_eyelet';
+          else if (item.style === 'พับ') railKey = 'rail_roman';
+          else if (item.style === 'หลุยส์') railKey = 'rail_louis';
+          else if (item.style === 'แป๊บ') railKey = 'rail_rod';
+
+          // Priority chain: SKU ที่เลือก (catalog) → ค่า legacy คงที่ (accessoryCosts) → 0
+          const railSkuCost = vaultLookup(hardwareCosts, item.rail_code);
+          const costPerMeterRail = railSkuCost > 0 ? railSkuCost : accessoryCosts[railKey] || 0;
+          railCost = width * costPerMeterRail;
+        } else {
+          excludedComponents.push('ค่าราง/อุปกรณ์');
+        }
 
         // C2. ขาจับราง/ลูกล้อ/เทป — รวมในชุดรางแล้ว (ราคา SKU ราง = ชุดประกอบเสร็จ)
         //     ไม่คิดทุน component แยก (accCost คง 0)
 
-        // D. ต้นทุนค่าแรง (Labor)
+        // D. ต้นทุนค่าแรง (Labor) — ข้ามทั้ง D/D2 เมื่อสวิตช์ costInclude.labor ปิด
         const laborKey = item.style;
-        const laborData = laborCosts[laborKey];
+        const laborData = costInclude.labor ? laborCosts[laborKey] : undefined;
+        if (!costInclude.labor) excludedComponents.push('ค่าเย็บ');
 
         const calcLaborAmount = (
           data: typeof laborData,
@@ -165,7 +176,7 @@ export const CostEngine = {
         // D2. ค่าแรงเย็บผ้าโปร่ง — เฉพาะ ทึบ+โปร่ง (DOUBLE layer)
         // คิดแยกต่างหากเพราะต้องเย็บผ้าอีก 1 ชั้น
         const sheerYardsForLabor = breakdown?.sheerYards || 0;
-        if (sheerYardsForLabor > 0) {
+        if (costInclude.labor && sheerYardsForLabor > 0) {
           const sheerLaborData = laborCosts['ผ้าโปร่ง'];
           if (sheerLaborData) {
             let sheerLabor = calcLaborAmount(sheerLaborData, sheerYardsForLabor);
@@ -229,15 +240,20 @@ export const CostEngine = {
     else if (isRemovalItem(item)) {
         unit = 'จุด';
         usedQuantity = toNum(item.quantity);
-        // ทุนค่ารื้อถอน = อัตรา/จุด × จำนวนจุด (serviceCosts.removal_per_point)
-        // ถ้าอัตรา = 0 (ยังไม่ตั้ง) → totalCost = 0 = พฤติกรรมเดิม (กำไรเต็ม)
-        const removalRate = serviceCosts['removal_per_point'] || 0;
-        totalCost = removalRate * usedQuantity;
-        laborCost = totalCost; // นับเป็นค่าแรงบริการใน breakdown
+        if (costInclude.service) {
+          // ทุนค่ารื้อถอน = อัตรา/จุด × จำนวนจุด (serviceCosts.removal_per_point)
+          // ถ้าอัตรา = 0 (ยังไม่ตั้ง) → totalCost = 0 = พฤติกรรมเดิม (ส่วนต่างเต็มราคาขาย)
+          const removalRate = serviceCosts['removal_per_point'] || 0;
+          totalCost = removalRate * usedQuantity;
+          laborCost = totalCost; // นับเป็นค่าแรงบริการใน breakdown
+        } else {
+          excludedComponents.push('ค่าบริการ');
+        }
     }
 
     // ==========================================
-    // 📊 สรุปผลกำไร (Final Verdict)
+    // 📊 สรุปส่วนต่างจากทุนที่รู้ (Final Verdict)
+    // — ไม่ใช่กำไรบัญชี: ส่วนที่ปิดสวิตช์ (excludedComponents) + ขนส่ง/อื่นๆ ยังไม่รวม
     // ==========================================
     const profitAmount = sellingPrice - totalCost;
     let marginPercent = 0;
@@ -274,6 +290,7 @@ export const CostEngine = {
       laborCost,
       accCost,
       isLaborMinApplied, // ✅ ส่ง Flag ออกไป
+      excludedComponents,
       usedQuantity,
       sheerQuantity,
       unit

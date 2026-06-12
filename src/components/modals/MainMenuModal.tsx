@@ -200,7 +200,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           </h3>
           <div className="grid grid-cols-2 gap-2">
             <MenuCompactItem icon={Layers} label="สินค้า & ราคา" desc="อัปเดตรหัสวัสดุ" onClick={onOpenMaterialSummary} accentColor="indigo" />
-            <MenuCompactItem icon={TrendingUp} label="วิเคราะห์กำไร" desc="ดู Margin / กำไรสุทธิ" onClick={onOpenCostDashboard} accentColor="emerald" />
+            <MenuCompactItem icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} accentColor="emerald" />
             <MenuCompactItem icon={Percent} label="จัดการส่วนลด" desc="ลดท้ายบิล / โปรโมชัน" onClick={onOpenDiscount} accentColor="emerald" />
             <MenuCompactItem icon={Calculator} label="อธิบายสูตร" desc="ตรวจสอบวิธีคิดเงิน" onClick={onOpenFormulaDocs} accentColor="primary" />
           </div>

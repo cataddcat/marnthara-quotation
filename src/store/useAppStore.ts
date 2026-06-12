@@ -11,6 +11,7 @@ import { createShopProfileSlice, ShopProfileSlice } from './slices/ShopProfileSl
 import { createInventorySlice, InventorySlice } from './slices/InventorySlice';
 import { createUISlice, UISlice } from './slices/UISlice';
 import { createCostDataSlice, CostDataSlice } from './slices/CostDataSlice';
+import { createPaymentSlice, PaymentSlice } from './slices/PaymentSlice';
 
 // --- [QOL] EXPORT TYPES HERE ---
 // เพื่อให้ไฟล์อื่น import { ProjectSlice } from '@/store/useAppStore' ได้เลย
@@ -20,7 +21,8 @@ export type { ProjectSlice } from './slices/ProjectSlice';
 export type { ShopProfileSlice } from './slices/ShopProfileSlice';
 export type { InventorySlice } from './slices/InventorySlice';
 export type { UISlice, ModalType } from './slices/UISlice';
-export type { CostDataSlice, LaborCost } from './slices/CostDataSlice';
+export type { CostDataSlice, LaborCost, CostInclude } from './slices/CostDataSlice';
+export type { PaymentSlice, ReceiptEntry, ExpenseEntry } from './slices/PaymentSlice';
 // formulas เป็น compile-time constant แล้ว — import { FORMULAS } from '@/config/formulas'
 export type { FormulaConfig } from '@/config/formulas';
 
@@ -30,7 +32,8 @@ export type AppState = CustomerSlice &
   ShopProfileSlice &
   InventorySlice &
   UISlice &
-  CostDataSlice;
+  CostDataSlice &
+  PaymentSlice;
 
 const omitTransientState = (state: AppState): Partial<AppState> => {
   const newState = { ...state };
@@ -50,6 +53,7 @@ export const useAppStore = create<AppState>()(
         ...createInventorySlice(...a),
         ...createUISlice(...a),
         ...createCostDataSlice(...a),
+        ...createPaymentSlice(...a),
       }),
       {
         name: STORAGE_KEY,
@@ -79,6 +83,8 @@ export const useAppStore = create<AppState>()(
           wallpaperCosts,
           areaCosts,
           favorites,
+          receipts,
+          expenses,
         } = state;
         return {
           rooms,
@@ -93,6 +99,8 @@ export const useAppStore = create<AppState>()(
           wallpaperCosts,
           areaCosts,
           favorites,
+          receipts,
+          expenses,
         };
       },
     }

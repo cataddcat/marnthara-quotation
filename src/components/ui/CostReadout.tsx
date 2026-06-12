@@ -5,9 +5,10 @@ import { TrendingUp } from 'lucide-react';
 import type { CostBreakdown } from '@/lib/pricing/CostEngine';
 
 /**
- * สรุปต้นทุน/กำไรแบบอ่านอย่างเดียว — proSlot ของประเภทที่ทุนถังเดียว (area/wallpaper/removal:
+ * สรุปทุนที่รู้/ส่วนต่างแบบอ่านอย่างเดียว — proSlot ของประเภทที่ทุนถังเดียว (area/wallpaper/removal:
  * Vault by code → 2 บรรทัดพอ โชว์เสมอใน Detail) ต่างจากผ้าม่าน (CurtainCostAnalysis/ProModeControl)
  * ที่ทุนหลายถัง (ผ้า/ราง/แรง) จึงโชว์ breakdown ละเอียด + toggle — ทั้งคู่อ่านอย่างเดียวเหมือนกัน
+ * "ส่วนต่าง" ไม่ใช่กำไรบัญชี (ขนส่ง/ค่าใช้จ่ายอื่นยังไม่รวม) — ห้าม relabel กลับเป็น "กำไร"
  */
 export const CostReadout: React.FC<{ analysis: CostBreakdown }> = ({ analysis }) => {
   const lowMargin = analysis.marginPercent < 30;
@@ -20,13 +21,13 @@ export const CostReadout: React.FC<{ analysis: CostBreakdown }> = ({ analysis })
 
       <div className="flex justify-between text-muted-foreground">
         <span>
-          ต้นทุน ({analysis.usedQuantity.toFixed(2)} {analysis.unit})
+          ทุนที่รู้ ({analysis.usedQuantity.toFixed(2)} {analysis.unit})
         </span>
         <span className="tabular-nums">{fmtTH(analysis.totalCost)}</span>
       </div>
 
       <div className="flex justify-between font-semibold">
-        <span>กำไร</span>
+        <span>ส่วนต่าง</span>
         <span className="flex items-center gap-2">
           <span
             className={cn(

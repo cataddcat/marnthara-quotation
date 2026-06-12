@@ -292,8 +292,8 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
             </div>
           </Section>
 
-          {/* ── 💰 ภาษี + กำไร ── */}
-          <Section title="💰 ภาษี / ส่วนลด / กำไร" icon={DollarSign} iconColor="text-rose-500">
+          {/* ── 💰 ภาษี + ส่วนต่างจากทุนที่รู้ ── */}
+          <Section title="💰 ภาษี / ส่วนลด / ส่วนต่างจากทุนที่รู้" icon={DollarSign} iconColor="text-rose-500">
             <div>
               <p className="font-semibold text-foreground mb-1">ภาษีมูลค่าเพิ่ม (VAT)</p>
               <Formula>
@@ -308,13 +308,17 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
               </p>
             </div>
             <div>
-              <p className="font-semibold text-foreground mb-1">อัตรากำไร (Gross Margin)</p>
-              <Formula>กำไร % = ((ราคาขาย − ต้นทุน) / ราคาขาย) × 100</Formula>
+              <p className="font-semibold text-foreground mb-1">ส่วนต่างจากทุนที่รู้</p>
+              <Formula>ส่วนต่าง % = ((ราคาขาย − ทุนที่รู้) / ราคาขาย) × 100</Formula>
               <p className="text-xs text-muted-foreground">
-                เกณฑ์ใน Financial Dashboard (ปรับได้แบบ ad-hoc):
-                <br />• กำไร ≥ 30% → 🟢 profit
-                <br />• 0 ≤ กำไร &lt; 30% → 🟡 warning
-                <br />• กำไร &lt; 0 → 🔴 loss
+                ⚠️ <strong>ไม่ใช่กำไรทางบัญชี</strong> — "ทุนที่รู้" คือทุนที่ตั้งไว้ในคลังเท่านั้น
+                (ค่าขนส่ง ค่าช่างเหมา และส่วนที่ปิดสวิตช์ "ไม่นับ" ยังไม่รวม)
+                กำไรจริงดูจากเงินรับ−จ่ายจริงใน "การเงินของงาน"
+                <br />
+                เกณฑ์ไฟจราจร:
+                <br />• ส่วนต่าง ≥ 30% → 🟢 ส่วนต่างดี
+                <br />• 0 ≤ ส่วนต่าง &lt; 30% → 🟡 ส่วนต่างต่ำ
+                <br />• ส่วนต่าง &lt; 0 → 🔴 ขายต่ำกว่าทุนที่รู้
                 <br />• ไม่ทราบทุน → ⚪ unknown
               </p>
             </div>

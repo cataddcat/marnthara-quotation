@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { CostEngine } from './CostEngine';
 import { useAppStore } from '@/store/useAppStore';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
-import type { LaborCost } from '@/store/slices/CostDataSlice';
+import { DEFAULT_COST_INCLUDE, type LaborCost, type CostInclude } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -24,6 +24,7 @@ const setupStore = (overrides?: {
   hardwareCosts?: Record<string, number>;
   laborCosts?: Record<string, LaborCost>;
   serviceCosts?: Record<string, number>;
+  costInclude?: CostInclude;
 }) => {
   useAppStore.setState({
     fabricCosts: overrides?.fabricCosts ?? {},
@@ -33,6 +34,8 @@ const setupStore = (overrides?: {
     hardwareCosts: overrides?.hardwareCosts ?? {},
     laborCosts: overrides?.laborCosts ?? {},
     serviceCosts: overrides?.serviceCosts ?? {},
+    // reset เสมอ — กัน test ที่ปิดสวิตช์รั่วไป test ถัดไป (store เป็น singleton)
+    costInclude: overrides?.costInclude ?? DEFAULT_COST_INCLUDE,
   });
 };
 
@@ -586,6 +589,85 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       const result = CostEngine.analyze(item);
 
       expect(result.accCost).toBe(0);
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // กลุ่ม G: สวิตช์ costInclude — "ปิดนับ" ทุนส่วนที่ไม่แน่นอน (ProductionSettings)
+  // ปิดแล้วต้อง: ข้ามทุนส่วนนั้น · ไม่ขึ้น unknown · รายงานใน excludedComponents
+  // ───────────────────────────────────────────────────────────────────────
+  describe('costInclude toggles (ปิดการคำนวณบางส่วน)', () => {
+    it('G21: labor=false → laborCost 0 (ทั้งทึบ+โปร่ง), excludedComponents มี "ค่าเย็บ", ไม่ unknown', () => {
+      setupStore({
+        fabricCosts: { F001: 50, S001: 30 },
+        laborCosts: {
+          จีบ: cheapLabor,
+          ผ้าโปร่ง: { style: 'ผ้าโปร่ง', rate: 130, unit: 'meter', min_price: 0 },
+        },
+        costInclude: { labor: false, rail: true, service: true },
+      });
+      const item = makeCurtainItem({
+        code: 'F001',
+        layer_mode: LAYER_MODES.DOUBLE,
+        sheer_code: 'S001',
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.laborCost).toBe(0);
+      expect(result.excludedComponents).toContain('ค่าเย็บ');
+      expect(result.status).not.toBe('unknown');
+      // ทุนผ้ายังคิดปกติ
+      expect(result.fabricCost).toBeGreaterThan(0);
+      expect(result.sheerCost).toBeGreaterThan(0);
+    });
+
+    it('G22: rail=false → railCost 0 แม้มี accessoryCosts, excludedComponents มี "ค่าราง/อุปกรณ์"', () => {
+      setupStore({
+        fabricCosts: { F001: 50 },
+        accessoryCosts: { rail_pleated: 100 },
+        laborCosts: { จีบ: cheapLabor },
+        costInclude: { labor: true, rail: false, service: true },
+      });
+      const item = makeCurtainItem({ code: 'F001' });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.railCost).toBe(0);
+      expect(result.excludedComponents).toContain('ค่าราง/อุปกรณ์');
+      // totalCost = fabric + labor เท่านั้น
+      expect(result.totalCost).toBeCloseTo((result.fabricCost ?? 0) + (result.laborCost ?? 0), 2);
+    });
+
+    it('G23: service=false → removal item ทุน 0, excludedComponents มี "ค่าบริการ"', () => {
+      setupStore({
+        serviceCosts: { removal_per_point: 300 },
+        costInclude: { labor: true, rail: true, service: false },
+      });
+      const item = makeItem({
+        type: ITEM_TYPES.REMOVAL,
+        id: 'removal-1',
+        quantity: 4,
+        price_per_item: 500,
+      });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.totalCost).toBe(0);
+      expect(result.excludedComponents).toContain('ค่าบริการ');
+      expect(result.status).not.toBe('unknown');
+    });
+
+    it('G24: ทุกสวิตช์เปิด (default) → excludedComponents ว่าง', () => {
+      setupStore({
+        fabricCosts: { F001: 50 },
+        laborCosts: { จีบ: cheapLabor },
+      });
+      const item = makeCurtainItem({ code: 'F001' });
+
+      const result = CostEngine.analyze(item);
+
+      expect(result.excludedComponents).toEqual([]);
     });
   });
 });

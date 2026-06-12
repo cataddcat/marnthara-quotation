@@ -251,6 +251,9 @@ export const createProjectSlice: StateCreator<
         showInstallationAddress: true,
       },
       discount: { type: 'amount', value: 0, is_enabled: false },
+      // เงินของงาน (มัดจำ/รายจ่ายจริง) ผูกกับงาน ไม่ใช่ร้าน — งานใหม่เริ่มศูนย์
+      receipts: [],
+      expenses: [],
     })),
 
   factoryReset: () => {

@@ -196,15 +196,23 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
             </div>
           )}
 
-          {/* Divider + totals — 2-up KPI footer (ต้นทุน cost · กำไร money) */}
+          {/* ส่วนที่ปิดสวิตช์ไม่นับ (costInclude) — บอกชัดว่าทุนนี้ไม่ครบเพราะอะไร */}
+          {analysis.excludedComponents.length > 0 && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Info className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+              ไม่นับ: {analysis.excludedComponents.join(' · ')} — บันทึกจ่ายจริงแทน
+            </div>
+          )}
+
+          {/* Divider + totals — 2-up KPI footer (ทุนที่รู้ cost · ส่วนต่าง money) */}
           <div className="pt-3 mt-1 border-t border-border/50 grid grid-cols-2 gap-2">
             <Metric
-              label="ต้นทุนรวม"
+              label="ทุนที่รู้"
               value={`฿${fmtTH(analysis.totalCost)}`}
               tone="cost"
             />
             <Metric
-              label="กำไรสุทธิ"
+              label="ส่วนต่างจากทุนที่รู้"
               value={`${analysis.profitAmount >= 0 ? '+' : ''}฿${fmtTH(analysis.profitAmount)}`}
               tone={analysis.profitAmount >= 0 ? 'money' : 'cost'}
               align="right"

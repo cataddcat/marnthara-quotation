@@ -51,3 +51,25 @@ export const CHAIN_POSITIONS = {
   LEFT: 'left',
   RIGHT: 'right',
 } as const;
+
+// --- หมวดรายจ่ายจริงของงาน (เช็คลิสท์ใน "การเงินของงาน") ---
+// ล้อ 3-bucket taxonomy ทุน (แรง/อุปกรณ์/วัสดุ) + ขนส่ง/ติดตั้ง ที่ระบบประมาณการไม่ครอบคลุม
+export const EXPENSE_CATEGORIES = {
+  MATERIAL: 'material', // ค่าผ้า/วัสดุ
+  HARDWARE: 'hardware', // ราง/อุปกรณ์
+  SEWING: 'sewing', // ค่าเย็บ
+  SHIPPING: 'shipping', // ค่าขนส่ง
+  INSTALL: 'install', // ค่าช่างติดตั้ง
+  OTHER: 'other', // อื่นๆ
+} as const;
+
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[keyof typeof EXPENSE_CATEGORIES];
+
+export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+  material: 'ค่าผ้า/วัสดุ',
+  hardware: 'ราง/อุปกรณ์',
+  sewing: 'ค่าเย็บ',
+  shipping: 'ค่าขนส่ง',
+  install: 'ค่าช่างติดตั้ง',
+  other: 'อื่นๆ',
+};

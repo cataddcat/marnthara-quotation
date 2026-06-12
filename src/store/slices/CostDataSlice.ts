@@ -13,6 +13,16 @@ export interface LaborCost {
   min_price: number;
 }
 
+// สวิตช์ "นับรวมในทุนประมาณการ" — ปิดเมื่อทุนส่วนนั้นไม่แน่นอน (เช่น จ้างเหมาช่าง)
+// แล้วไปบันทึกจ่ายจริงใน "การเงินของงาน" แทน; ผ้า/วัสดุไม่มีสวิตช์ (ทุนแกนของระบบ vault)
+export interface CostInclude {
+  labor: boolean;   // ค่าเย็บ
+  rail: boolean;    // ค่าราง/อุปกรณ์
+  service: boolean; // ค่าบริการติดตั้ง/รื้อถอน
+}
+
+export const DEFAULT_COST_INCLUDE: CostInclude = { labor: true, rail: true, service: true };
+
 export interface CostDataSlice {
   laborCosts: Record<string, LaborCost>;
   serviceCosts: Record<string, number>;   // ค่าติดตั้ง/เดินทาง/รื้อถอน (flat rate)
@@ -21,10 +31,12 @@ export interface CostDataSlice {
   fabricCosts: Record<string, number>;
   wallpaperCosts: Record<string, number>; // code → cost per roll
   areaCosts: Record<string, number>;      // code or type → cost per sqm
+  costInclude: CostInclude;
 
   // ค่าตั้งต้นของฉัน (owner baseline) — snapshot ค่าเย็บ+บริการ ของเจ้าของ; null = ยังไม่เคยบันทึก
   userCostDefaults: { laborCosts: Record<string, LaborCost>; serviceCosts: Record<string, number>; savedAt: number } | null;
 
+  setCostInclude: (key: keyof CostInclude, on: boolean) => void;
   updateLaborCost: (key: string, data: Partial<LaborCost>) => void;
   removeLaborCost: (key: string) => void;
   updateServiceCost: (key: string, price: number) => void;
@@ -151,6 +163,13 @@ const SecretsSchema = z.looseObject({
   fabricCosts: NumberVaultSchema.optional(),
   wallpaperCosts: NumberVaultSchema.optional(),
   areaCosts: NumberVaultSchema.optional(),
+  costInclude: z
+    .looseObject({
+      labor: z.boolean().optional(),
+      rail: z.boolean().optional(),
+      service: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export const createCostDataSlice: StateCreator<
@@ -166,7 +185,13 @@ export const createCostDataSlice: StateCreator<
   fabricCosts: {},
   wallpaperCosts: {},
   areaCosts: {},
+  costInclude: DEFAULT_COST_INCLUDE,
   userCostDefaults: null,
+
+  setCostInclude: (key, on) =>
+    set((state) => ({
+      costInclude: { ...state.costInclude, [key]: on },
+    })),
 
   updateLaborCost: (key, data) =>
     set((state) => ({
@@ -267,6 +292,7 @@ export const createCostDataSlice: StateCreator<
       fabricCosts: {},
       wallpaperCosts: {},
       areaCosts: {},
+      costInclude: DEFAULT_COST_INCLUDE,
       userCostDefaults: null, // factory reset = ล้าง baseline ของเจ้าของด้วย
     })),
 
@@ -293,10 +319,10 @@ export const createCostDataSlice: StateCreator<
   clearCostDefaults: () => set(() => ({ userCostDefaults: null })),
 
   exportSecrets: () => {
-    const { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts } =
+    const { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts, costInclude } =
       get();
     return JSON.stringify(
-      { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts },
+      { laborCosts, serviceCosts, accessoryCosts, hardwareCosts, fabricCosts, wallpaperCosts, areaCosts, costInclude },
       null,
       2
     );
@@ -340,6 +366,9 @@ export const createCostDataSlice: StateCreator<
         fabricCosts: data.fabricCosts ? { ...state.fabricCosts, ...data.fabricCosts } : state.fabricCosts,
         wallpaperCosts: data.wallpaperCosts ? { ...state.wallpaperCosts, ...data.wallpaperCosts } : state.wallpaperCosts,
         areaCosts: data.areaCosts ? { ...state.areaCosts, ...data.areaCosts } : state.areaCosts,
+        costInclude: data.costInclude
+          ? { ...state.costInclude, ...data.costInclude }
+          : state.costInclude,
       }));
       return true;
     } catch (e) {

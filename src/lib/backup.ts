@@ -38,12 +38,31 @@ const LaborCostSchema = z.looseObject({
   min_price: z.number().optional(),
 });
 
+// เงินจริงของงาน — ตรวจ amount เป็นตัวเลข (กัน NaN ในยอดรับ/จ่าย/คงเหลือ) + id/label ขั้นต่ำ
+const ReceiptEntrySchema = z.looseObject({
+  id: z.string(),
+  label: z.string(),
+  amount: z.number(),
+});
+const ExpenseEntrySchema = z.looseObject({
+  id: z.string(),
+  label: z.string(),
+  amount: z.number(),
+  paid: z.boolean(),
+});
+
 const BackupSchema = z.looseObject({
   customer: z.looseObject({}).optional(),
   rooms: z.array(BackupRoomSchema).optional(),
   shopConfig: z.looseObject({}).optional(),
   discount: z.looseObject({}).optional(),
   favorites: z.record(z.string(), z.array(z.looseObject({ code: z.string() }))).optional(),
+  payments: z
+    .looseObject({
+      receipts: z.array(ReceiptEntrySchema).optional(),
+      expenses: z.array(ExpenseEntrySchema).optional(),
+    })
+    .optional(),
   production: z
     .looseObject({
       laborCosts: z.record(z.string(), LaborCostSchema).optional(),
@@ -53,6 +72,13 @@ const BackupSchema = z.looseObject({
       fabricCosts: CostRecordSchema.optional(),
       wallpaperCosts: CostRecordSchema.optional(),
       areaCosts: CostRecordSchema.optional(),
+      costInclude: z
+        .looseObject({
+          labor: z.boolean().optional(),
+          rail: z.boolean().optional(),
+          service: z.boolean().optional(),
+        })
+        .optional(),
     })
     .optional(),
 });

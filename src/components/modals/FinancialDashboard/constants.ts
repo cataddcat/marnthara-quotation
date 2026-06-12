@@ -34,7 +34,7 @@ export const STATUS_STYLE: Record<
     badge: 'text-amber-600 bg-amber-500/10 border-amber-200/50',
     dot: 'bg-amber-400',
     accent: 'border-l-amber-400',
-    label: 'กำไรต่ำ',
+    label: 'ส่วนต่างต่ำ',
   },
   unknown: {
     badge: 'text-slate-500 bg-slate-500/10 border-slate-200/50',
@@ -46,6 +46,6 @@ export const STATUS_STYLE: Record<
     badge: 'text-emerald-600 bg-emerald-500/10 border-emerald-200/50',
     dot: 'bg-emerald-500',
     accent: 'border-l-emerald-500',
-    label: 'กำไร',
+    label: 'ส่วนต่างดี',
   },
 };

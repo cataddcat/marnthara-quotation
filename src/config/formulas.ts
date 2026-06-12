@@ -218,8 +218,8 @@ export const FORMULAS: FormulaConfig = {
 // 💰 VAT (ภาษีมูลค่าเพิ่ม) — อยู่ใน ShopProfileSlice.shopConfig.baseVatRate (default 7%)
 //    เพราะร้านอาจขอใบกำกับภาษี/ไม่ใบกำกับ ปรับได้ผ่าน "ตั้งค่าร้าน"
 //
-// 🎯 Target Margin (เกณฑ์กำไร) — อยู่ใน FinancialDashboardModal local state (default 30%)
-//    เพราะ user ปรับค่าใน dashboard ได้แบบ ad-hoc ไม่กระทบสูตรอื่น
+// 🎯 เกณฑ์ไฟจราจรส่วนต่าง (30%) — hardcode ใน CostEngine.analyze (status warning เมื่อ < 30%)
+//    "ส่วนต่างจากทุนที่รู้" ไม่ใช่กำไรบัญชี — Target Margin UI ถูกถอดออกจาก dashboard (2026-06)
 //
 // 🏷️ ราคาผ้า/ค่าแรง/ค่าราง — อยู่ใน CostDataSlice (Vault + Cost Vault)
 //    เพราะเป็นข้อมูลที่ owner ใส่เอง ไม่ใช่สูตรตายตัว

@@ -182,8 +182,23 @@ describe('CostDataSlice — owner baseline (ค่าตั้งต้นขอ
   });
 });
 
+describe('CostDataSlice — costInclude (สวิตช์นับ/ไม่นับ)', () => {
+  it('default เปิดครบ 3 ส่วน · setCostInclude สลับเฉพาะ key เป้าหมาย', () => {
+    expect(store().costInclude).toEqual({ labor: true, rail: true, service: true });
+
+    store().setCostInclude('labor', false);
+    expect(store().costInclude).toEqual({ labor: false, rail: true, service: true });
+  });
+
+  it('resetProductionCosts → คืนสวิตช์เป็น default (เปิดครบ)', () => {
+    store().setCostInclude('rail', false);
+    store().resetProductionCosts();
+    expect(store().costInclude.rail).toBe(true);
+  });
+});
+
 describe('CostDataSlice — import/export', () => {
-  it('exportSecrets คืน JSON ที่มี 7 vault keys', () => {
+  it('exportSecrets คืน JSON ที่มี 7 vault keys + costInclude', () => {
     store().updateFabricCost('F001', 120);
     const parsed = JSON.parse(store().exportSecrets());
     expect(parsed).toHaveProperty('laborCosts');
@@ -193,6 +208,15 @@ describe('CostDataSlice — import/export', () => {
     expect(parsed.fabricCosts).toMatchObject({ F001: 120 });
     expect(parsed).toHaveProperty('wallpaperCosts');
     expect(parsed).toHaveProperty('areaCosts');
+    expect(parsed).toHaveProperty('costInclude');
+  });
+
+  it('importSecrets รับ costInclude (merge ทับ key ที่ส่งมา)', () => {
+    const ok = store().importSecrets(
+      JSON.stringify({ fabricCosts: { F001: 99 }, costInclude: { labor: false } })
+    );
+    expect(ok).toBe(true);
+    expect(store().costInclude).toEqual({ labor: false, rail: true, service: true });
   });
 
   it('importSecrets merge ข้อมูลที่ valid → true', () => {

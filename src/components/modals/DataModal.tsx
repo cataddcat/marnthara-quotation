@@ -56,6 +56,11 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         shopConfig: state.shopConfig,
         discount: state.discount,
         favorites: state.favorites,
+        // เงินจริงของงาน (มัดจำ/เช็คลิสท์จ่าย) — ส่วนหนึ่งของก้อนข้อมูลงาน เหมือน rooms
+        payments: {
+          receipts: state.receipts,
+          expenses: state.expenses,
+        },
         // ⚠️ ให้ครบทุก cost vault ใน CostDataSlice (กัน backup ตกข้อมูล) —
         // ปัจจุบัน 7 ถัง: labor / service / accessory / hardware / fabric / wallpaper / area
         production: {
@@ -66,6 +71,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           fabricCosts: state.fabricCosts,
           wallpaperCosts: state.wallpaperCosts,
           areaCosts: state.areaCosts,
+          costInclude: state.costInclude,
         },
         version: '1.0.0',
         exportDate: new Date().toISOString(),
@@ -118,6 +124,8 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           shopConfig:     (json.shopConfig as unknown as typeof s.shopConfig) ?? s.shopConfig,
           discount:       (json.discount as unknown as typeof s.discount)     ?? s.discount,
           favorites:      (json.favorites as unknown as typeof s.favorites)   ?? s.favorites,
+          receipts:       (json.payments?.receipts as unknown as typeof s.receipts)  ?? s.receipts,
+          expenses:       (json.payments?.expenses as unknown as typeof s.expenses)  ?? s.expenses,
           // ให้ครบทุก vault เท่ากับฝั่ง handleExport (replace ต่อ vault — ไม่ merge)
           laborCosts:     (json.production?.laborCosts as unknown as typeof s.laborCosts) ?? s.laborCosts,
           serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
@@ -126,6 +134,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           fabricCosts:    json.production?.fabricCosts     ?? s.fabricCosts,
           wallpaperCosts: json.production?.wallpaperCosts  ?? s.wallpaperCosts,
           areaCosts:      json.production?.areaCosts       ?? s.areaCosts,
+          costInclude:    (json.production?.costInclude as unknown as typeof s.costInclude) ?? s.costInclude,
         });
 
         // formulas เป็น compile-time constant (src/config/formulas.ts) — ไม่ import จาก backup

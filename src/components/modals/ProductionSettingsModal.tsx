@@ -23,7 +23,10 @@ import {
   History,
   Scissors,
   Wrench,
+  Hammer,
+  Calculator,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/Switch';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
@@ -117,6 +120,8 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
     importSecrets,
     importCatalog,
     exportCatalog,
+    costInclude,
+    setCostInclude,
   } = useAppStore();
 
   const addToast = useUIStore((state) => state.addToast);
@@ -665,6 +670,51 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               </MenuItems>
             </Transition>
           </Menu>
+        </div>
+
+        {/* สวิตช์ "นับรวมในทุนประมาณการ" — mode ไม่ใช่ข้อมูลทุน จึงอยู่นอก lock
+            ปิด = CostEngine ข้ามส่วนนั้น (ไม่ขึ้น "ไม่ทราบทุน") → บันทึกจ่ายจริงใน "การเงินของงาน" แทน */}
+        <div className="rounded-xl border border-border bg-muted/20 p-3 space-y-2 shrink-0">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <Calculator className="w-3.5 h-3.5" strokeWidth={1.5} />
+            นับรวมในทุนประมาณการ
+          </div>
+          <div className="space-y-1">
+            {(
+              [
+                { key: 'labor', Icon: Scissors, label: 'ค่าเย็บ' },
+                { key: 'rail', Icon: Hammer, label: 'ค่าราง/อุปกรณ์' },
+                { key: 'service', Icon: Wrench, label: 'ค่าบริการติดตั้ง/รื้อถอน' },
+              ] as const
+            ).map(({ key, Icon, label }) => (
+              <div
+                key={key}
+                className="flex items-center justify-between gap-3 py-1.5 cursor-pointer select-none active:opacity-80 transition-opacity"
+                onClick={() => setCostInclude(key, !costInclude[key])}
+              >
+                <div className="flex items-center gap-2 text-sm text-foreground min-w-0">
+                  <Icon className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+                  <span className={cn(!costInclude[key] && 'text-muted-foreground line-through')}>
+                    {label}
+                  </span>
+                  {!costInclude[key] && (
+                    <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">
+                      ไม่นับ
+                    </span>
+                  )}
+                </div>
+                <Switch
+                  checked={costInclude[key]}
+                  onCheckedChange={() => {}}
+                  className="pointer-events-none shrink-0"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            ปิดเมื่อทุนส่วนนั้นไม่แน่นอน (เช่น จ้างเหมาช่าง) แล้วบันทึกจ่ายจริงใน{' '}
+            <span className="font-medium text-foreground">การเงินของงาน</span> แทน
+          </p>
         </div>
 
         {/* Tabs: ค่าเย็บ / บริการ */}

@@ -34,7 +34,7 @@ export const CurtainCostAnalysis: React.FC<CurtainCostAnalysisProps> = ({
             วิเคราะห์ต้นทุน
           </div>
           <div className="text-xs text-muted-foreground leading-tight mt-0.5">
-            ดูต้นทุน กำไร และราคาแนะนำ
+            ดูทุนที่รู้ ส่วนต่าง และราคาแนะนำ
           </div>
         </div>
         <Switch

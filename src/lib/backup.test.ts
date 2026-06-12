@@ -70,6 +70,46 @@ describe('parseBackup — migrate schema เก่า', () => {
   });
 });
 
+describe('parseBackup — payments (เงินจริงของงาน)', () => {
+  it('payments round-trip — receipts/expenses คงครบทุกฟิลด์ (loose ไม่ strip)', () => {
+    const r = parseBackup({
+      payments: {
+        receipts: [{ id: 'rc1', label: 'มัดจำ 50%', amount: 5000, date: '2026-06-12' }],
+        expenses: [
+          {
+            id: 'ex1',
+            label: 'ค่าผ้า F001',
+            amount: 2500,
+            category: 'material',
+            paid: true,
+            date: '2026-06-12',
+          },
+        ],
+      },
+    });
+    expect(r.ok).toBe(true);
+    expect(r.data?.payments?.receipts?.[0]).toMatchObject({ label: 'มัดจำ 50%', amount: 5000 });
+    const ex = r.data?.payments?.expenses?.[0] as Record<string, unknown>;
+    expect(ex.paid).toBe(true);
+    expect(ex.category).toBe('material'); // ฟิลด์นอก schema ขั้นต่ำต้องไม่หาย
+  });
+
+  it('amount ไม่ใช่ตัวเลข → fail (กัน NaN ในยอดรับ/จ่าย/คงเหลือ)', () => {
+    const r = parseBackup({
+      payments: { receipts: [{ id: 'rc1', label: 'มัดจำ', amount: 'ห้าพัน' }] },
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('costInclude ใน production round-trip', () => {
+    const r = parseBackup({
+      production: { costInclude: { labor: false, rail: true, service: true } },
+    });
+    expect(r.ok).toBe(true);
+    expect(r.data?.production?.costInclude).toEqual({ labor: false, rail: true, service: true });
+  });
+});
+
 describe('parseBackup — ไฟล์ผิดรูปต้องถูกปฏิเสธ (ไม่ import บางส่วน)', () => {
   it('rooms ไม่ใช่ array → fail', () => {
     const r = parseBackup({ rooms: { id: 'r1' } });

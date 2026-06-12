@@ -18,10 +18,11 @@ export const useCostStatus = (item: ItemData | null): CostBreakdown | null => {
   const hardwareCosts = useAppStore((s) => s.hardwareCosts); // ทุนราง SKU — CostEngine ใช้ (กัน stale)
   const laborCosts = useAppStore((s) => s.laborCosts);
   const serviceCosts = useAppStore((s) => s.serviceCosts);
+  const costInclude = useAppStore((s) => s.costInclude); // สวิตช์นับ/ไม่นับ — recalc เมื่อสลับ
 
   return useMemo(
     () => (item ? CostEngine.analyze(item) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts]
+    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts, costInclude]
   );
 };

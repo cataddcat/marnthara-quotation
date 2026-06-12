@@ -21,7 +21,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
   // 📡 Subscribe to Store: ดักฟังการเปลี่ยนแปลงของต้นทุน
   // เพื่อให้ Pro Mode คำนวณใหม่ทันทีที่การตั้งค่าหลังบ้านเปลี่ยน (แม้ไม่ได้พิมพ์อะไรในฟอร์ม)
   // (formulas เป็น compile-time constant แล้ว ไม่ต้อง subscribe)
-  const { fabricCosts, accessoryCosts, laborCosts } = useAppStore();
+  const { fabricCosts, accessoryCosts, laborCosts, costInclude } = useAppStore();
 
   // 🔮 คำนวณ Real-time
   // CostEngine.analyze() อ่าน store data ผ่าน useAppStore.getState() — ESLint ไม่เห็น
@@ -32,7 +32,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
       return CostEngine.analyze({ ...formData, type: ITEM_TYPES.CURTAIN, id: 'temp' } as ItemData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [formData, fabricCosts, accessoryCosts, laborCosts]
+    [formData, fabricCosts, accessoryCosts, laborCosts, costInclude]
   );
 
   // กรณี Parent สั่งเปิด (simpleView) หรือ user เปิดเอง -> แสดงผล
@@ -93,46 +93,58 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
           <span className="text-slate-200">{fmtTH((analysis.fabricCost || 0) + (analysis.sheerCost || 0))}</span>
         </div>
 
-        {/* ค่าราง + อุปกรณ์ */}
+        {/* ค่าราง + อุปกรณ์ — "ไม่นับ" เมื่อปิดสวิตช์ costInclude.rail */}
         <div className="flex justify-between items-center text-slate-400 text-xs">
           <div className="flex items-center gap-2">
              <Hammer className="w-3 h-3 text-slate-600" />
              <span>ค่าราง/อุปกรณ์:</span>
           </div>
-          <span>{fmtTH((analysis.railCost || 0) + (analysis.accCost || 0))}</span>
+          {analysis.excludedComponents.includes('ค่าราง/อุปกรณ์') ? (
+            <span className="text-slate-500 italic">ไม่นับ</span>
+          ) : (
+            <span>{fmtTH((analysis.railCost || 0) + (analysis.accCost || 0))}</span>
+          )}
         </div>
 
-        {/* ค่าแรง (ตัดเย็บ+ติดตั้ง) */}
+        {/* ค่าแรง (ตัดเย็บ+ติดตั้ง) — "ไม่นับ" เมื่อปิดสวิตช์ costInclude.labor */}
         <div className="flex justify-between items-center text-slate-400 text-xs">
           <div className="flex items-center gap-2">
              <Scissors className="w-3 h-3 text-slate-600" />
              <span>ค่าแรง/บริการ:</span>
           </div>
-          <div className="flex items-center gap-2">
-            {analysis.isLaborMinApplied && (
-              <span className="text-xs bg-amber-900/30 text-amber-400 px-1.5 py-0.5 rounded border border-amber-700/50">
-                ขั้นต่ำ
-              </span>
-            )}
-            <span>{fmtTH((analysis.laborCost || 0))}</span>
-          </div>
+          {analysis.excludedComponents.includes('ค่าเย็บ') ? (
+            <span className="text-slate-500 italic">ไม่นับ</span>
+          ) : (
+            <div className="flex items-center gap-2">
+              {analysis.isLaborMinApplied && (
+                <span className="text-xs bg-amber-900/30 text-amber-400 px-1.5 py-0.5 rounded border border-amber-700/50">
+                  ขั้นต่ำ
+                </span>
+              )}
+              <span>{fmtTH((analysis.laborCost || 0))}</span>
+            </div>
+          )}
         </div>
 
         <div className="h-px bg-white/10 my-1" />
 
-        {/* 2. สรุปผล (Total) */}
+        {/* 2. สรุปผล — "บอกเท่าที่รู้": ทุนที่รู้ + ส่วนต่าง ไม่ใช่กำไรบัญชี */}
         <div className="flex justify-between text-rose-300 font-medium">
-          <span>ต้นทุนรวม (Total Cost):</span>
+          <span>ทุนที่รู้รวม:</span>
           <span>{fmtTH(analysis.totalCost)}</span>
         </div>
         <div className="flex justify-between text-emerald-400 font-bold">
-          <span>กำไร (Profit):</span>
+          <span>ส่วนต่างจากทุนที่รู้:</span>
           <div className="flex items-center gap-2">
              <span className={analysis.marginPercent < 30 ? "text-amber-400" : "text-emerald-400"}>
                 {analysis.marginPercent.toFixed(1)}%
              </span>
              <span>+{fmtTH(analysis.profitAmount)}</span>
           </div>
+        </div>
+        <div className="text-xs text-slate-500 text-right">
+          ยังไม่รวม:{' '}
+          {[...analysis.excludedComponents.map((c) => `${c} (ปิดนับ)`), 'ขนส่ง', 'ค่าใช้จ่ายอื่น'].join(' · ')}
         </div>
         <div className="text-xs text-slate-500 text-right mt-1 pt-1 border-t border-dashed border-slate-700">
           แนะนำขายต่อเมตร:{' '}
