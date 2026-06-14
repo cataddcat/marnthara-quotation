@@ -604,7 +604,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
           จีบ: cheapLabor,
           ผ้าโปร่ง: { style: 'ผ้าโปร่ง', rate: 130, unit: 'meter', min_price: 0 },
         },
-        costInclude: { labor: false, rail: true, service: true },
+        costInclude: { labor: false, rail: true, service: true, shipping: false },
       });
       const item = makeCurtainItem({
         code: 'F001',
@@ -627,7 +627,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         fabricCosts: { F001: 50 },
         accessoryCosts: { rail_pleated: 100 },
         laborCosts: { จีบ: cheapLabor },
-        costInclude: { labor: true, rail: false, service: true },
+        costInclude: { labor: true, rail: false, service: true, shipping: false },
       });
       const item = makeCurtainItem({ code: 'F001' });
 
@@ -642,7 +642,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
     it('G23: service=false → removal item ทุน 0, excludedComponents มี "ค่าบริการ"', () => {
       setupStore({
         serviceCosts: { removal_per_point: 300 },
-        costInclude: { labor: true, rail: true, service: false },
+        costInclude: { labor: true, rail: true, service: false, shipping: false },
       });
       const item = makeItem({
         type: ITEM_TYPES.REMOVAL,

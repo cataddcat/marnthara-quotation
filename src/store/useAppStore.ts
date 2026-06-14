@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { STORAGE_KEY } from '@/config/constants';
-import { migrateLegacyState } from './migrations';
+import { migrateLegacyState, adoptCurrentJobIntoRegistry } from './migrations';
+import { registerClearUndo } from './temporalBridge';
 
 // Import Slices
 import { createCustomerSlice, CustomerSlice } from './slices/CustomerSlice';
@@ -12,6 +13,11 @@ import { createInventorySlice, InventorySlice } from './slices/InventorySlice';
 import { createUISlice, UISlice } from './slices/UISlice';
 import { createCostDataSlice, CostDataSlice } from './slices/CostDataSlice';
 import { createPaymentSlice, PaymentSlice } from './slices/PaymentSlice';
+import { createJobsSlice, JobsSlice } from './slices/JobsSlice';
+import {
+  createCustomerRegistrySlice,
+  CustomerRegistrySlice,
+} from './slices/CustomerRegistrySlice';
 
 // --- [QOL] EXPORT TYPES HERE ---
 // เพื่อให้ไฟล์อื่น import { ProjectSlice } from '@/store/useAppStore' ได้เลย
@@ -23,6 +29,8 @@ export type { InventorySlice } from './slices/InventorySlice';
 export type { UISlice, ModalType } from './slices/UISlice';
 export type { CostDataSlice, LaborCost, CostInclude } from './slices/CostDataSlice';
 export type { PaymentSlice, ReceiptEntry, ExpenseEntry } from './slices/PaymentSlice';
+export type { JobsSlice } from './slices/JobsSlice';
+export type { CustomerRegistrySlice } from './slices/CustomerRegistrySlice';
 // formulas เป็น compile-time constant แล้ว — import { FORMULAS } from '@/config/formulas'
 export type { FormulaConfig } from '@/config/formulas';
 
@@ -33,7 +41,9 @@ export type AppState = CustomerSlice &
   InventorySlice &
   UISlice &
   CostDataSlice &
-  PaymentSlice;
+  PaymentSlice &
+  JobsSlice &
+  CustomerRegistrySlice;
 
 const omitTransientState = (state: AppState): Partial<AppState> => {
   const newState = { ...state };
@@ -54,15 +64,22 @@ export const useAppStore = create<AppState>()(
         ...createUISlice(...a),
         ...createCostDataSlice(...a),
         ...createPaymentSlice(...a),
+        ...createJobsSlice(...a),
+        ...createCustomerRegistrySlice(...a),
       }),
       {
         name: STORAGE_KEY,
         storage: createJSONStorage(() => localStorage),
-        version: 4,
+        version: 6,
         // v1→v2: แปลงผ้าม่าน schema เก่า (type:'set' + ชื่อฟิลด์เดิม) → โครงสร้างปัจจุบัน
         // v2→v3: ย้ายค่าบริการ (install/transport/fuel) จาก accessoryCosts → serviceCosts
         // v3→v4: ชื่อร้าน default เดิม "Marnthara Smart Quotation" → "ม่านธารา"
-        migrate: (persisted) => migrateLegacyState(persisted) as AppState,
+        // v4→v5: เติม serviceCosts.shipping_per_job + costInclude.shipping ให้ store เดิม
+        // v5→v6: รับงานที่ค้างอยู่เข้าชั้นวางงาน (jobs[]) สำหรับระบบสลับงาน
+        migrate: (persisted) =>
+          adoptCurrentJobIntoRegistry(
+            migrateLegacyState(persisted) as Record<string, unknown>
+          ) as unknown as AppState,
         partialize: (state) => omitTransientState(state),
       }
     ),
@@ -106,3 +123,6 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+// เชื่อม temporalBridge → ให้ JobsSlice ล้างประวัติ undo ตอนสลับ/สร้างงาน โดยไม่ import วน
+registerClearUndo(() => useAppStore.temporal.getState().clear());

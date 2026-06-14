@@ -11,6 +11,7 @@ import {
   Home,
   HardHat,
   ClipboardList,
+  User,
 } from 'lucide-react';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ import { SmartNavigator } from '@/components/features/SmartNavigator';
 interface MainLayoutProps {
   children: React.ReactNode;
   onOpenMainMenu?: () => void;
+  onOpenJobs?: () => void;
   onOpenDiscount?: () => void;
   onOpenOverview?: () => void;
   onGoHome?: () => void;
@@ -33,6 +35,7 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   onOpenMainMenu,
+  onOpenJobs,
   onOpenDiscount,
   onOpenOverview,
   onGoHome,
@@ -44,6 +47,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const shopConfig = useAppStore((state) => state.shopConfig);
   const discount = useAppStore((state) => state.discount);
   const rooms = useAppStore((state) => state.rooms);
+  const customerName = useAppStore((state) => state.customer.name);
   const addToast = useUIStore((s) => s.addToast);
   const { isField, isDetail, canSwitch, setMode } = useExperienceMode();
 
@@ -105,25 +109,34 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           )}
         >
           <div className="max-w-3xl mx-auto h-14 px-6 flex items-center justify-between">
-            {/* Left: Logo / Brand */}
-            <button
-              className="flex flex-col items-start justify-center text-left group active:scale-95 transition-transform outline-none min-h-[44px]"
-              onClick={() => {
-                trigger('light');
-                onOpenMainMenu?.();
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[110px] sm:max-w-[220px]">
+            {/* Left: Logo / Brand (→ เมนู) + ชื่อลูกค้างานปัจจุบัน (→ สลับงาน) */}
+            <div className="flex flex-col items-start justify-center min-w-0">
+              <button
+                className="flex items-center gap-2 group active:scale-95 transition-transform outline-none"
+                onClick={() => {
+                  trigger('light');
+                  onOpenMainMenu?.();
+                }}
+              >
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[120px] sm:max-w-[220px]">
                   {shopConfig.name || 'ม่านธารา'}
                 </h1>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
-              </div>
-              {/* subtitle ตกแต่ง — ซ่อนบนจอแคบ ให้ header เหลือบรรทัดเดียว (ลดความรก) */}
-              <span className="hidden sm:block text-xs font-medium text-muted-foreground tracking-wide">
-                ผ้าม่าน & ของตกแต่ง
-              </span>
-            </button>
+              </button>
+              {/* ชื่อลูกค้างานปัจจุบัน — แตะเพื่อเปิด "งานทั้งหมด" (สลับงาน) */}
+              <button
+                onClick={() => {
+                  trigger('selection');
+                  onOpenJobs?.();
+                }}
+                aria-label="สลับงาน / ดูงานทั้งหมด"
+                className="flex items-center gap-1 mt-0.5 text-xs font-medium text-muted-foreground hover:text-foreground active:scale-95 transition-colors max-w-[150px] sm:max-w-[260px] outline-none"
+              >
+                <User className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+                <span className="truncate">{customerName || 'งานใหม่'}</span>
+                <ChevronRight className="w-3 h-3 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
+              </button>
+            </div>
 
             {/* Right: จอแคบ = แคปซูลสถานะรวม (โหมด | KPI ของโหมด — หน่วยเดียว ลด 3 ก้อนเหลือ 2)
                 · Desktop = Net badge 2 บรรทัดเดิม */}

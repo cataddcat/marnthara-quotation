@@ -16,12 +16,20 @@ export interface LaborCost {
 // สวิตช์ "นับรวมในทุนประมาณการ" — ปิดเมื่อทุนส่วนนั้นไม่แน่นอน (เช่น จ้างเหมาช่าง)
 // แล้วไปบันทึกจ่ายจริงใน "การเงินของงาน" แทน; ผ้า/วัสดุไม่มีสวิตช์ (ทุนแกนของระบบ vault)
 export interface CostInclude {
-  labor: boolean;   // ค่าเย็บ
-  rail: boolean;    // ค่าราง/อุปกรณ์
-  service: boolean; // ค่าบริการติดตั้ง/รื้อถอน
+  labor: boolean;    // ค่าเย็บ
+  rail: boolean;     // ค่าราง/อุปกรณ์
+  service: boolean;  // ค่าบริการติดตั้ง/รื้อถอน
+  // ค่าขนส่ง — ทุนระดับ "งาน" (เหมา/งาน ไม่ใช่ต่อรายการ) คิดที่ FinancialDashboard ไม่ใช่ CostEngine
+  // default ปิด: ขนส่งไม่เคยถูกนับมาก่อน เปิดเมื่อเจ้าของเชื่ออัตราเหมาของตัวเอง (shipping_per_job)
+  shipping: boolean;
 }
 
-export const DEFAULT_COST_INCLUDE: CostInclude = { labor: true, rail: true, service: true };
+export const DEFAULT_COST_INCLUDE: CostInclude = {
+  labor: true,
+  rail: true,
+  service: true,
+  shipping: false,
+};
 
 export interface CostDataSlice {
   laborCosts: Record<string, LaborCost>;
@@ -140,6 +148,7 @@ export const DEFAULT_ACCESSORY_COSTS: Record<string, number> = {
 export const DEFAULT_SERVICE_COSTS: Record<string, number> = {
   install_point:     300,  // ค่าติดตั้ง (ต่อจุด/ต่อช่องหน้าต่าง)
   removal_per_point: 300,  // ทุนค่ารื้อถอน (ต่อจุด)
+  shipping_per_job:    0,  // ค่าขนส่ง (เหมาต่องาน) — 0 = ยังไม่ตั้ง เจ้าของกรอกอัตราเอง (ระยะทางต่างกันมาก)
 };
 
 // ── Schema ตรวจ payload ของ importSecrets ────────────────────────────────────
@@ -168,6 +177,7 @@ const SecretsSchema = z.looseObject({
       labor: z.boolean().optional(),
       rail: z.boolean().optional(),
       service: z.boolean().optional(),
+      shipping: z.boolean().optional(),
     })
     .optional(),
 });
@@ -340,7 +350,8 @@ export const createCostDataSlice: StateCreator<
         !data.hardwareCosts &&
         !data.fabricCosts &&
         !data.wallpaperCosts &&
-        !data.areaCosts
+        !data.areaCosts &&
+        !data.costInclude
       )
         return false;
       set((state) => ({

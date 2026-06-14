@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { parseDimension, normalizeDimension, bahttext } from './formatters';
+import { parseDimension, normalizeDimension, bahttext, localDateISO } from './formatters';
+
+describe('localDateISO — วันที่ท้องถิ่น (ไม่ใช่ UTC)', () => {
+  it('รูปแบบ yyyy-mm-dd + pad ศูนย์', () => {
+    expect(localDateISO(new Date(2026, 0, 5))).toBe('2026-01-05');
+    expect(localDateISO(new Date(2026, 11, 31))).toBe('2026-12-31');
+  });
+
+  it('หลังเที่ยงคืนตามเวลาเครื่อง → ยังเป็นวันนี้ (toISOString ในไทยจะถอยเป็นเมื่อวาน)', () => {
+    expect(localDateISO(new Date(2026, 5, 12, 1, 30))).toBe('2026-06-12');
+  });
+
+  it('ไม่ส่ง argument → คืนรูปแบบถูกต้อง', () => {
+    expect(localDateISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
 
 describe('parseDimension — กฎ: ทศนิยม=เมตร · จำนวนเต็ม<10=เมตร · จำนวนเต็ม≥10=ซม.', () => {
   it('จำนวนเต็ม ≥10 = เซนติเมตร → หาร 100', () => {

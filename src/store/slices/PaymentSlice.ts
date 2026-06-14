@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand';
 import { AppState } from '../useAppStore';
 import { ExpenseCategory } from '@/config/enums';
 import { newUuid } from '@/lib/id';
+import { localDateISO } from '@/utils/formatters';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // เงินจริงของงาน (per-job) — ข้อเท็จจริงทางประวัติศาสตร์ เก็บตายตัวใน entry
@@ -82,9 +83,13 @@ export const createPaymentSlice: StateCreator<
       expenses: state.expenses.map((e) => (e.id === id ? { ...e, ...data } : e)),
     })),
 
+  // ติ๊กเป็น "จ่ายแล้ว" → stamp วันที่จ่ายจริง (UI โชว์ "จ่ายแล้ว · วันที่" — ต้องเป็นวันกดจ่าย
+  // ไม่ใช่วันสร้างรายการ); ติ๊กกลับเป็นยังไม่จ่าย → คง date เดิมไว้
   toggleExpensePaid: (id) =>
     set((state) => ({
-      expenses: state.expenses.map((e) => (e.id === id ? { ...e, paid: !e.paid } : e)),
+      expenses: state.expenses.map((e) =>
+        e.id === id ? { ...e, paid: !e.paid, ...(!e.paid ? { date: localDateISO() } : {}) } : e
+      ),
     })),
 
   removeExpense: (id) =>

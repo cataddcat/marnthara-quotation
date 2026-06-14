@@ -42,6 +42,10 @@ export type ModalPropsMap = {
   mainMenu: undefined;
   productionSettings: undefined;
   formulaDocs: undefined;
+  // ระบบสลับงาน + ฐานลูกค้า cloud + ล็อกอิน
+  jobs: undefined;
+  customerDirectory: undefined;
+  signIn: undefined;
 };
 
 export type ModalType = keyof ModalPropsMap;

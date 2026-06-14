@@ -19,6 +19,15 @@ export const fmtDimension = (v: number | string): string => {
 };
 
 /**
+ * วันที่วันนี้แบบ ISO (yyyy-mm-dd) ตาม "เวลาท้องถิ่น" — ห้ามใช้ toISOString().slice()
+ * (นั่นคือ UTC: เวลาไทยก่อน 07:00 น. จะได้วันที่เมื่อวาน) ใช้กับบันทึกเงินรับ/จ่ายของงาน
+ */
+export const localDateISO = (d: Date = new Date()): string => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+/**
  * รูปแบบขนาด "กว้าง × สูง" สำหรับข้อความสรุป (LINE/ช่างเย็บ/สั่งราง)
  * — ใช้เครื่องหมายคูณ × (U+00D7), เว้นวรรครอบ, ไม่มีหน่วย เช่น "2.75 × 2.83"
  */

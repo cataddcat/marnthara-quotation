@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
 import { AppState } from '../useAppStore';
 import { Room, ItemData } from '@/types';
-import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
+import { ITEM_TYPES, FAVORITE_CATEGORIES, DEFAULT_JOB_STATUS } from '@/config/enums';
 import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { isAreaItem } from '@/lib/type-guards';
 import { newUuid } from '@/lib/id';
@@ -254,6 +254,8 @@ export const createProjectSlice: StateCreator<
       // เงินของงาน (มัดจำ/รายจ่ายจริง) ผูกกับงาน ไม่ใช่ร้าน — งานใหม่เริ่มศูนย์
       receipts: [],
       expenses: [],
+      // สถานะงานกลับเป็นเริ่มต้น (live field ของ JobsSlice)
+      jobStatus: DEFAULT_JOB_STATUS,
     })),
 
   factoryReset: () => {

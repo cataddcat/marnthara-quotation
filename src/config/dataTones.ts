@@ -61,3 +61,25 @@ export const COST_BUCKET_DOT = {
   labor: 'bg-fuchsia-500',
   hardware: 'bg-sky-500',
 } as const;
+
+// ── สถานะงาน (Job lifecycle) — แกนความหมายใหม่ของกระดาน "งานทั้งหมด" ───────────────
+// ไล่โทนตามไปป์ไลน์: ใหม่(เทา) → วัด(ฟ้า) → เสนอ(เหลือง) → ยืนยัน(คราม) → ผลิต(ม่วง) → จบ(เขียว=สำเร็จ)
+// คลาส literal คงที่ (Tailwind JIT). key = JobStatusKey ใน enums.ts
+export const JOB_STATUS_CHIP: Record<string, string> = {
+  lead: 'bg-muted text-muted-foreground border-border',
+  measured: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900',
+  quoted: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900',
+  confirmed: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-900',
+  production: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-900',
+  done: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900',
+};
+
+/** จุดนำหน้าสถานะ (dot) คู่กับ JOB_STATUS_CHIP */
+export const JOB_STATUS_DOT: Record<string, string> = {
+  lead: 'bg-muted-foreground/50',
+  measured: 'bg-blue-500',
+  quoted: 'bg-amber-500',
+  confirmed: 'bg-indigo-500',
+  production: 'bg-violet-500',
+  done: 'bg-emerald-500',
+};

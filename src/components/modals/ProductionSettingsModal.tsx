@@ -24,6 +24,7 @@ import {
   Scissors,
   Wrench,
   Hammer,
+  Truck,
   Calculator,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/Switch';
@@ -63,6 +64,7 @@ const UNIT_LABELS: Record<string, string> = {
 const SERVICE_LABELS: Record<string, string> = {
   install_point: 'ค่าติดตั้ง (ต่อจุด)',
   removal_per_point: 'ค่ารื้อถอน (ต่อจุด)',
+  shipping_per_job: 'ค่าขนส่ง (เหมาต่องาน)',
 };
 
 interface CurrentItem {
@@ -685,6 +687,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                 { key: 'labor', Icon: Scissors, label: 'ค่าเย็บ' },
                 { key: 'rail', Icon: Hammer, label: 'ค่าราง/อุปกรณ์' },
                 { key: 'service', Icon: Wrench, label: 'ค่าบริการติดตั้ง/รื้อถอน' },
+                { key: 'shipping', Icon: Truck, label: 'ค่าขนส่ง (เหมา/งาน)' },
               ] as const
             ).map(({ key, Icon, label }) => (
               <div

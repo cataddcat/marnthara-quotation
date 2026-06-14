@@ -5,6 +5,8 @@ import { type DashboardDensity } from '@/components/features/RoomDashboard';
 import { EmptyState } from '@/components/features/EmptyState';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { startSync, stopSync } from '@/lib/sync/syncEngine';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
@@ -17,6 +19,7 @@ import { Home, Plus } from 'lucide-react';
 
 function App() {
   const rooms = useAppStore((state) => state.rooms);
+  const currentJobId = useAppStore((state) => state.currentJobId);
   const openModal = useAppStore((state) => state.openModal);
   const addRoom = useAppStore((state) => state.addRoom);
   const favorites = useAppStore((state) => state.favorites);
@@ -28,12 +31,20 @@ function App() {
     () => (rooms.length > 0 ? rooms[0].id : null)
   );
   const [prevRoomCount, setPrevRoomCount] = useState(rooms.length);
+  const [prevJobId, setPrevJobId] = useState(currentJobId);
   const [viewMode, setViewMode] = useState<'focus' | 'overview'>('focus');
   // ความหนาแน่นแดชบอร์ดภาพรวม — compact (การ์ดสรุปขนาดคงที่) ⇄ detailed (item เต็ม + ลากข้ามห้อง)
   const [dashboardDensity, setDashboardDensity] = useState<DashboardDensity>('compact');
 
-  // Auto-select newly added rooms via state-derived comparison
-  if (rooms.length !== prevRoomCount) {
+  // ปรับ selection ตอน render แบบ state-derived (เลี่ยง setState ใน effect)
+  if (currentJobId !== prevJobId) {
+    // สลับงาน → ห้องคนละชุด: โฟกัสห้องแรกของงานใหม่ + sync prevRoomCount กันบล็อกล่างยิงซ้ำ
+    setPrevJobId(currentJobId);
+    setPrevRoomCount(rooms.length);
+    setSelectedRoomId(rooms.length > 0 ? rooms[0].id : null);
+    setViewMode('focus');
+  } else if (rooms.length !== prevRoomCount) {
+    // Auto-select newly added rooms
     setPrevRoomCount(rooms.length);
     if (rooms.length > prevRoomCount && rooms.length > 0) {
       const newestId = rooms[rooms.length - 1].id;
@@ -56,6 +67,21 @@ function App() {
   );
 
   const setActiveRoomId = setSelectedRoomId;
+
+  // Auth init — subscribe onAuthStateChanged ครั้งเดียว (no-op ถ้ายังไม่ตั้งค่า Firebase)
+  useEffect(() => {
+    useAuthStore.getState().init();
+  }, []);
+
+  // Cloud sync — เริ่มเมื่อ sign-in, หยุดเมื่อ sign-out / เปลี่ยนบัญชี
+  const authStatus = useAuthStore((state) => state.status);
+  const authUid = useAuthStore((state) => state.uid);
+  useEffect(() => {
+    if (authStatus === 'signed-in' && authUid) {
+      startSync(authUid);
+      return () => stopSync();
+    }
+  }, [authStatus, authUid]);
 
   // Theme Initialization
   const theme = useThemeStore((state) => state.theme);
@@ -93,6 +119,7 @@ function App() {
   }, [favorites, fabricCosts, batchUpdateFabricCosts]);
 
   const handleOpenMainMenu = () => openModal('mainMenu');
+  const handleOpenJobs = () => openModal('jobs');
   const handleOpenDiscount = () => openModal('discount');
   const handleOpenOverview = () => {
     // ละเอียด (detail): สลับเข้า/ออกแดชบอร์ดทุกห้อง (overview viewMode — รวมมือถือโหมดละเอียด)
@@ -138,6 +165,7 @@ function App() {
     <>
       <MainLayout
         onOpenMainMenu={handleOpenMainMenu}
+        onOpenJobs={handleOpenJobs}
         onOpenDiscount={handleOpenDiscount}
         onOpenOverview={handleOpenOverview}
         onGoHome={handleGoHome}

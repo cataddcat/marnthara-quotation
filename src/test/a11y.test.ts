@@ -43,6 +43,9 @@ const checkNoViolations = async () => {
 const mainMenuProps = {
   isOpen: true,
   onClose: vi.fn(),
+  onOpenJobs: vi.fn(),
+  onOpenSignIn: vi.fn(),
+  onOpenCustomerDirectory: vi.fn(),
   onOpenPdf: vi.fn(),
   onOpenCopySummary: vi.fn(),
   onOpenLookbook: vi.fn(),

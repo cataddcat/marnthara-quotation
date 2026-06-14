@@ -1,7 +1,7 @@
 // src/store/slices/PaymentSlice.test.ts
 // PaymentSlice — เงินจริงของงาน: add/update/toggle/remove + ผูกกับ resetProject
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useAppStore } from '@/store/useAppStore';
 import { EXPENSE_CATEGORIES } from '@/config/enums';
 
@@ -62,6 +62,27 @@ describe('💸 PaymentSlice — เช็คลิสท์รายจ่าย
     const id = addExpense();
     const e = useAppStore.getState().expenses.find((x) => x.id === id);
     expect(e).toMatchObject({ label: 'ค่าผ้า F001', amount: 2500, paid: false });
+  });
+
+  it('toggle → จ่ายแล้ว stamp วันที่กดจ่าย (เวลาท้องถิ่น) · toggle กลับ คง date เดิม', () => {
+    vi.useFakeTimers();
+    // 01:30 น. ตามเวลาเครื่อง — ฝั่ง UTC ยังเป็นเมื่อวาน (จับ bug toISOString)
+    vi.setSystemTime(new Date(2026, 5, 12, 1, 30));
+
+    const id = addExpense({ date: '2026-01-01' }); // สร้างไว้นานแล้ว
+    useAppStore.getState().toggleExpensePaid(id);
+    expect(useAppStore.getState().expenses.find((e) => e.id === id)?.date).toBe('2026-06-12');
+
+    useAppStore.getState().toggleExpensePaid(id); // ติ๊กกลับเป็นยังไม่จ่าย
+    const e = useAppStore.getState().expenses.find((x) => x.id === id);
+    expect(e?.paid).toBe(false);
+    expect(e?.date).toBe('2026-06-12'); // ไม่ถูกแตะตอนติ๊กกลับ
+
+    vi.useRealTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('toggleExpensePaid → สลับ จ่ายแล้ว/ยังไม่จ่าย เฉพาะตัวเป้าหมาย', () => {

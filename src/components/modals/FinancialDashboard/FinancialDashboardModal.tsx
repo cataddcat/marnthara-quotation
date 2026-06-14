@@ -9,7 +9,7 @@
 import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
-import { fmtTH } from '@/utils/formatters';
+import { fmtTH, toNum } from '@/utils/formatters';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useCalculations } from '@/hooks/useCalculations';
@@ -44,6 +44,7 @@ export const FinancialDashboardModal: React.FC<{
   const areaCosts = useAppStore((s) => s.areaCosts);
   const laborCosts = useAppStore((s) => s.laborCosts);
   const accessoryCosts = useAppStore((s) => s.accessoryCosts);
+  const serviceCosts = useAppStore((s) => s.serviceCosts); // ทุนรื้อถอน (per-item) + ขนส่งเหมา/งาน
   const costInclude = useAppStore((s) => s.costInclude);
   const receipts = useAppStore((s) => s.receipts);
   const expenses = useAppStore((s) => s.expenses);
@@ -93,23 +94,28 @@ export const FinancialDashboardModal: React.FC<{
     });
     // cost maps เป็น dependency เพราะ CostEngine.analyze อ่านค่าผ่าน getState() (ไม่ได้ใช้ตรงๆ ใน memo)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, fabricCosts, wallpaperCosts, areaCosts, laborCosts, accessoryCosts, costInclude]);
+  }, [rooms, fabricCosts, wallpaperCosts, areaCosts, laborCosts, accessoryCosts, serviceCosts, costInclude]);
 
   // ── Aggregates — ทุนที่รู้ (ประมาณการ) + เงินจริง ─────────────────────────
   const totals = useMemo(() => {
-    let knownCost = 0;
+    let itemsCost = 0; // ทุนรายการ (per-item) — ฐานของ CostStructureBar
     let fabric = 0;
     let labor = 0;
     let rail = 0;
     const excluded = new Set<string>();
 
     rows.forEach(({ analysis: a }) => {
-      knownCost += a.totalCost;
+      itemsCost += a.totalCost;
       fabric += (a.fabricCost ?? 0) + (a.sheerCost ?? 0);
       labor += a.laborCost ?? 0;
       rail += (a.railCost ?? 0) + (a.accCost ?? 0);
       a.excludedComponents.forEach((c) => excluded.add(c));
     });
+
+    // ค่าขนส่ง — ทุนระดับงาน (เหมา/งาน ครั้งเดียว) บวกที่นี่ ไม่ใช่ใน CostEngine ต่อรายการ
+    const shippingEstimate = costInclude.shipping
+      ? toNum(serviceCosts['shipping_per_job'])
+      : 0;
 
     const knownCount = rows.filter((r) => r.analysis.status !== 'unknown').length;
     const unknownCount = rows.filter((r) => r.analysis.status === 'unknown').length;
@@ -119,7 +125,9 @@ export const FinancialDashboardModal: React.FC<{
     const paidOut = expenses.reduce((s, e) => s + (e.paid ? e.amount : 0), 0);
 
     return {
-      knownCost,
+      itemsCost,
+      knownCost: itemsCost + shippingEstimate,
+      shippingEstimate,
       fabric,
       labor,
       rail,
@@ -132,7 +140,7 @@ export const FinancialDashboardModal: React.FC<{
       onHand: received - paidOut,
       uncollected: Math.max(finalTotal - received, 0),
     };
-  }, [rows, receipts, expenses, finalTotal]);
+  }, [rows, receipts, expenses, finalTotal, costInclude.shipping, serviceCosts]);
 
   const mask = (v: number) => (blind ? '••••' : fmtTH(v));
 
@@ -204,11 +212,21 @@ export const FinancialDashboardModal: React.FC<{
                 ฿{mask(totals.knownCost)}
               </span>{' '}
               · รู้ทุน {totals.knownCount}/{rows.length} รายการ
+              {totals.shippingEstimate > 0 && (
+                <span className="text-muted-foreground/80"> (รวมขนส่งเหมา ฿{mask(totals.shippingEstimate)})</span>
+              )}
+              {costInclude.shipping && totals.shippingEstimate === 0 && (
+                <span className="block mt-0.5 text-amber-600">
+                  เปิดนับค่าขนส่งแล้ว แต่ยังไม่ตั้งอัตรา — ตั้งใน โครงสร้างต้นทุน → บริการ
+                </span>
+              )}
               <span className="block mt-0.5 text-muted-foreground/80">
                 ยังไม่รวม:{' '}
-                {[...totals.excluded.map((c) => `${c} (ปิดนับ)`), 'ค่าขนส่ง', 'ค่าใช้จ่ายอื่น'].join(
-                  ' · '
-                )}
+                {[
+                  ...totals.excluded.map((c) => `${c} (ปิดนับ)`),
+                  ...(costInclude.shipping ? [] : ['ค่าขนส่ง']),
+                  'ค่าใช้จ่ายอื่น',
+                ].join(' · ')}
               </span>
             </div>
           </div>
@@ -259,7 +277,12 @@ export const FinancialDashboardModal: React.FC<{
             <div className="px-4 py-4">
               <MoneyTab
                 jobPrice={finalTotal}
-                estimates={{ fabric: totals.fabric, labor: totals.labor, rail: totals.rail }}
+                estimates={{
+                  fabric: totals.fabric,
+                  labor: totals.labor,
+                  rail: totals.rail,
+                  shipping: totals.shippingEstimate,
+                }}
               />
               <div className="h-8" />
             </div>
@@ -267,13 +290,13 @@ export const FinancialDashboardModal: React.FC<{
 
           {activeTab === 'costs' && (
             <>
-              {/* Cost Structure Bar — โครงสร้างทุนที่รู้ (ไม่ใช่คำกล่าวอ้างกำไร) */}
-              {totals.knownCost > 0 && (
+              {/* Cost Structure Bar — โครงสร้างทุนรายการ (ไม่รวมขนส่งระดับงาน — segment ต้องเต็มแถบ) */}
+              {totals.itemsCost > 0 && (
                 <CostStructureBar
                   fabric={totals.fabric}
                   labor={totals.labor}
                   rail={totals.rail}
-                  total={totals.knownCost}
+                  total={totals.itemsCost}
                 />
               )}
 

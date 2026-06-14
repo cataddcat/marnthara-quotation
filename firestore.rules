@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// กฎความปลอดภัย Firestore — ร้าน = บัญชีเดียว (shopId = uid ของผู้ลงชื่อเข้า)
+// เจ้าของเข้าถึงได้เฉพาะข้อมูลใต้ shops/{ของตัวเอง}: customers/{code} + jobs/{jobId}
+// deploy: firebase deploy --only firestore:rules  (หรือวางใน Console → Firestore → Rules)
+//
+// อนาคต (multi-staff): เพิ่ม shop doc + members แล้วเช็ค membership แทน uid==shopId
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /shops/{shopId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == shopId;
+    }
+  }
+}

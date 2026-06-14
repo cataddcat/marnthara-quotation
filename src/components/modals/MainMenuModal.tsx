@@ -17,17 +17,25 @@ import {
   HardHat,
   ClipboardList,
   Gem,
+  FolderKanban,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { APP_VERSION } from '@/config/constants';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useUIStore } from '@/store/useUIStore';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { Cloud, CloudOff, LogOut } from 'lucide-react';
 
 interface MainMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenJobs: () => void;
+  onOpenSignIn: () => void;
+  onOpenCustomerDirectory: () => void;
   onOpenPdf: () => void;
   onOpenCopySummary: () => void;
   onOpenLookbook: () => void;
@@ -90,6 +98,9 @@ const MenuCompactItem = ({
 export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   isOpen,
   onClose,
+  onOpenJobs,
+  onOpenSignIn,
+  onOpenCustomerDirectory,
   onOpenPdf,
   onOpenCopySummary,
   onOpenLookbook,
@@ -104,6 +115,10 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 }) => {
   const { theme, setTheme } = useThemeStore();
   const shopName = useAppStore((s) => s.shopConfig.name);
+  const authStatus = useAuthStore((s) => s.status);
+  const authEmail = useAuthStore((s) => s.email);
+  const signOutUser = useAuthStore((s) => s.signOutUser);
+  const addToast = useUIStore((s) => s.addToast);
   const { trigger } = useHaptic();
   const { mode, canSwitch, setMode } = useExperienceMode();
 
@@ -140,6 +155,53 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
               </span>
             </div>
           </div>
+
+          {/* บัญชี / สถานะซิงค์ — ซ่อนเมื่อยังไม่ตั้งค่า Firebase (local-only) */}
+          {authStatus !== 'disabled' && (
+            <div className="flex items-center justify-between gap-2 bg-card border border-border/50 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {authStatus === 'signed-in' ? (
+                  <Cloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" strokeWidth={1.5} />
+                ) : (
+                  <CloudOff className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+                )}
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-foreground truncate max-w-[160px]">
+                    {authStatus === 'signed-in'
+                      ? authEmail
+                      : authStatus === 'loading'
+                        ? 'กำลังเชื่อมต่อ…'
+                        : 'ยังไม่ได้เข้าสู่ระบบ'}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {authStatus === 'signed-in' ? 'ซิงค์หลายอุปกรณ์' : 'เข้าสู่ระบบเพื่อซิงค์งาน'}
+                  </div>
+                </div>
+              </div>
+              {authStatus === 'signed-in' ? (
+                <button
+                  onClick={async () => {
+                    trigger('light');
+                    await signOutUser();
+                    addToast('info', 'ออกจากระบบแล้ว');
+                  }}
+                  className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors min-h-[44px] px-2 shrink-0"
+                >
+                  <LogOut className="w-4 h-4" strokeWidth={1.5} /> ออก
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    trigger('light');
+                    onOpenSignIn();
+                  }}
+                  className="text-xs font-bold text-info hover:text-info/80 transition-colors min-h-[44px] px-2 shrink-0"
+                >
+                  เข้าสู่ระบบ
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {/* Theme Toggle */}
@@ -186,10 +248,12 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             <span className="w-1 h-3 bg-indigo-500 rounded-full"></span> นำเสนอ & ขาย
           </h3>
           <div className="grid grid-cols-2 gap-2">
+            <MenuCompactItem icon={FolderKanban} label="งานทั้งหมด" desc="สลับงาน · ดูความคืบหน้าทุกงาน" onClick={onOpenJobs} accentColor="indigo" />
             <MenuCompactItem icon={FileText} label="ใบเสนอราคา" desc="พิมพ์ใบเสนอราคา / ส่งของ" onClick={onOpenPdf} accentColor="primary" />
             <MenuCompactItem icon={MessageSquareText} label="คัดลอกสรุป" desc="ส่ง LINE คุยลูกค้า/ช่าง" onClick={onOpenCopySummary} accentColor="emerald" />
             <MenuCompactItem icon={BookOpen} label="Lookbook" desc="แคตตาล็อกโชว์ผลงาน" onClick={onOpenLookbook} accentColor="indigo" />
-            <MenuCompactItem icon={Users} label="ฐานลูกค้า" desc="จัดการประวัติลูกค้า" onClick={onOpenCustomer} accentColor="orange" />
+            <MenuCompactItem icon={Users} label="ฐานลูกค้า" desc="เลือกลูกค้า · เปิดงานใหม่" onClick={onOpenCustomerDirectory} accentColor="orange" />
+            <MenuCompactItem icon={User} label="ลูกค้างานนี้" desc="แก้ชื่อ/ที่อยู่บนเอกสาร" onClick={onOpenCustomer} accentColor="orange" />
           </div>
         </section>
 

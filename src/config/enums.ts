@@ -73,3 +73,38 @@ export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   install: 'ค่าช่างติดตั้ง',
   other: 'อื่นๆ',
 };
+
+// --- สถานะงาน (Job lifecycle) — ไปป์ไลน์ 6 สเตจสำหรับกระดาน "งานทั้งหมด" (สลับงาน) ---
+// ผู้ใช้ตั้งเอง (manual) + ป้ายอัตโนมัติ (ค้างเก็บ/ค้าง N จุด) คำนวณสดแยกต่างหาก ไม่เก็บใน status
+export const JOB_STATUS = {
+  LEAD: 'lead', // ลูกค้าใหม่ — เพิ่งรับเรื่อง ยังไม่วัด
+  MEASURED: 'measured', // วัดแล้ว — มีขนาด/รายการ ยังไม่เคาะราคา
+  QUOTED: 'quoted', // เสนอราคา — ส่งใบเสนอ รอลูกค้าตัดสินใจ
+  CONFIRMED: 'confirmed', // มัดจำ/ยืนยัน — ลูกค้าตกลง/วางมัดจำ
+  PRODUCTION: 'production', // กำลังผลิต/ติดตั้ง — สั่งของ/เย็บ/ติดตั้ง
+  DONE: 'done', // จบงาน — ส่งมอบ/เก็บเงินครบ
+} as const;
+
+export type JobStatusKey = (typeof JOB_STATUS)[keyof typeof JOB_STATUS];
+
+export const JOB_STATUS_LABELS: Record<JobStatusKey, string> = {
+  lead: 'ลูกค้าใหม่',
+  measured: 'วัดแล้ว',
+  quoted: 'เสนอราคา',
+  confirmed: 'มัดจำ/ยืนยัน',
+  production: 'กำลังผลิต/ติดตั้ง',
+  done: 'จบงาน',
+};
+
+/** ลำดับไปป์ไลน์ (ใช้เรียง/จัดกลุ่ม/เลื่อนสถานะถัดไป) — งานใหม่เริ่มที่ตัวแรก */
+export const JOB_STATUS_ORDER: readonly JobStatusKey[] = [
+  JOB_STATUS.LEAD,
+  JOB_STATUS.MEASURED,
+  JOB_STATUS.QUOTED,
+  JOB_STATUS.CONFIRMED,
+  JOB_STATUS.PRODUCTION,
+  JOB_STATUS.DONE,
+];
+
+/** สถานะเริ่มต้นของงานใหม่ */
+export const DEFAULT_JOB_STATUS: JobStatusKey = JOB_STATUS.LEAD;

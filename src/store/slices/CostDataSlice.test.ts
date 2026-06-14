@@ -183,17 +183,23 @@ describe('CostDataSlice — owner baseline (ค่าตั้งต้นขอ
 });
 
 describe('CostDataSlice — costInclude (สวิตช์นับ/ไม่นับ)', () => {
-  it('default เปิดครบ 3 ส่วน · setCostInclude สลับเฉพาะ key เป้าหมาย', () => {
-    expect(store().costInclude).toEqual({ labor: true, rail: true, service: true });
+  it('default: เปิด 3 ส่วนแรก · ขนส่งปิด (ไม่เคยถูกนับมาก่อน — opt-in)', () => {
+    expect(store().costInclude).toEqual({ labor: true, rail: true, service: true, shipping: false });
 
     store().setCostInclude('labor', false);
-    expect(store().costInclude).toEqual({ labor: false, rail: true, service: true });
+    expect(store().costInclude).toEqual({ labor: false, rail: true, service: true, shipping: false });
   });
 
-  it('resetProductionCosts → คืนสวิตช์เป็น default (เปิดครบ)', () => {
+  it('resetProductionCosts → คืนสวิตช์เป็น default', () => {
     store().setCostInclude('rail', false);
+    store().setCostInclude('shipping', true);
     store().resetProductionCosts();
     expect(store().costInclude.rail).toBe(true);
+    expect(store().costInclude.shipping).toBe(false);
+  });
+
+  it('DEFAULT_SERVICE_COSTS มีอัตราขนส่งเหมาต่องาน (เริ่ม 0 = ยังไม่ตั้ง)', () => {
+    expect(store().serviceCosts).toHaveProperty('shipping_per_job', 0);
   });
 });
 
@@ -216,7 +222,7 @@ describe('CostDataSlice — import/export', () => {
       JSON.stringify({ fabricCosts: { F001: 99 }, costInclude: { labor: false } })
     );
     expect(ok).toBe(true);
-    expect(store().costInclude).toEqual({ labor: false, rail: true, service: true });
+    expect(store().costInclude).toEqual({ labor: false, rail: true, service: true, shipping: false });
   });
 
   it('importSecrets merge ข้อมูลที่ valid → true', () => {

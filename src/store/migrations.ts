@@ -1,4 +1,5 @@
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
+import { newUuid } from '@/lib/id';
 
 /**
  * Persist migrations — แปลงข้อมูล schema เก่าใน localStorage ให้เข้ากับโครงสร้างปัจจุบัน
@@ -88,6 +89,30 @@ const migrateCostVaults = (state: Record<string, unknown>): Record<string, unkno
 };
 
 /**
+ * v4→v5: เติม key ค่าขนส่งที่เพิ่มทีหลังให้ object ที่ persist ไว้แล้ว — idempotent
+ * (persist ทำ shallow merge: object เดิมแทนที่ default ทั้งก้อน → key ใหม่หายถ้าไม่ migrate;
+ * ค่า literal จงใจ freeze ในไฟล์นี้ ไม่ import จาก CostDataSlice — migration ต้องนิ่งตามเวลา)
+ * - serviceCosts มีอยู่แต่ไม่มี shipping_per_job → เติม 0 (ยังไม่ตั้งอัตรา)
+ * - costInclude มีอยู่แต่ไม่มี shipping → เติม false (ขนส่งไม่เคยถูกนับ — opt-in)
+ * - object ไหนไม่มีทั้งก้อน → ไม่แตะ (default จาก slice ครบอยู่แล้ว)
+ */
+const migrateShippingDefaults = (state: Record<string, unknown>): Record<string, unknown> => {
+  let next = state;
+
+  const svc = state.serviceCosts;
+  if (svc && typeof svc === 'object' && !('shipping_per_job' in (svc as object))) {
+    next = { ...next, serviceCosts: { ...(svc as Record<string, unknown>), shipping_per_job: 0 } };
+  }
+
+  const ci = next.costInclude;
+  if (ci && typeof ci === 'object' && !('shipping' in (ci as object))) {
+    next = { ...next, costInclude: { ...(ci as Record<string, unknown>), shipping: false } };
+  }
+
+  return next;
+};
+
+/**
  * v3→v4: ชื่อร้านเริ่มต้นเดิมพ่วงคำโฆษณาแอป ("Marnthara Smart Quotation") — แอปไม่ใช่
  * "เครื่องทำใบเสนอราคา" จึงเปลี่ยนเป็นชื่อแบรนด์จริง "ม่านธารา" เฉพาะกรณีที่ยังเป็นค่า default
  * เดิมเป๊ะ (ไม่แตะชื่อร้านที่ผู้ใช้ตั้งเอง) — idempotent
@@ -101,6 +126,52 @@ const migrateShopName = (state: Record<string, unknown>): Record<string, unknown
   return { ...state, shopConfig: { ...conf, name: 'ม่านธารา' } };
 };
 
+/**
+ * v5→v6: "รับงานที่ค้างอยู่" เข้าชั้นวางงาน (jobs[]) ตอนเปิดระบบสลับงานครั้งแรก
+ *
+ * ⚠️ เรียก "เฉพาะใน persist migrate" เท่านั้น — ห้ามใส่ใน migrateLegacyState เพราะ backup.ts
+ * ใช้ migrateLegacyState ร่วม และไฟล์ backup = งานเดียว ไม่ใช่ registry (จะได้ jobs ปลอม)
+ *
+ * - มี jobs อยู่แล้ว → ไม่แตะ
+ * - มีงาน live (ชื่อลูกค้า/มีห้อง) → ห่อเป็น JobBundle ก้อนเดียว seed jobs + currentJobId
+ * - ว่าง → jobs=[], currentJobId=null (literal 'lead' จงใจ freeze — migration ต้องนิ่งตามเวลา)
+ */
+export const adoptCurrentJobIntoRegistry = (
+  state: Record<string, unknown>
+): Record<string, unknown> => {
+  if (Array.isArray(state.jobs)) return state;
+
+  const customer = (state.customer ?? {}) as Record<string, unknown>;
+  const rooms = Array.isArray(state.rooms) ? state.rooms : [];
+  const hasName = typeof customer.name === 'string' && customer.name.trim().length > 0;
+  if (!hasName && rooms.length === 0) {
+    return { ...state, jobs: [], currentJobId: null, jobStatus: 'lead' };
+  }
+
+  const now = new Date().toISOString();
+  const id = typeof customer.id === 'string' && customer.id ? customer.id : newUuid();
+  const customerWithId = { ...customer, id };
+  const bundle = {
+    id,
+    customerCode: typeof customer.code === 'string' ? customer.code : undefined,
+    customer: customerWithId,
+    rooms,
+    discount: state.discount ?? { type: 'amount', value: 0, is_enabled: false },
+    receipts: Array.isArray(state.receipts) ? state.receipts : [],
+    expenses: Array.isArray(state.expenses) ? state.expenses : [],
+    status: 'lead',
+    createdAt: now,
+    updatedAt: now,
+  };
+  return {
+    ...state,
+    customer: customerWithId,
+    jobs: [bundle],
+    currentJobId: id,
+    jobStatus: 'lead',
+  };
+};
+
 /** แปลง persisted state ทั้งก้อน — เดินทุกห้อง/ทุกรายการ (ทนต่อรูปร่างที่ไม่คาดคิด) */
 export const migrateLegacyState = (persisted: unknown): unknown => {
   if (!persisted || typeof persisted !== 'object') return persisted;
@@ -108,6 +179,8 @@ export const migrateLegacyState = (persisted: unknown): unknown => {
   let state = migrateCostVaults(persisted as Record<string, unknown>);
   // v3→v4: ชื่อร้าน default เดิม → ชื่อแบรนด์จริง
   state = migrateShopName(state);
+  // v4→v5: เติม key ค่าขนส่ง (shipping_per_job / costInclude.shipping) ให้ store เดิม
+  state = migrateShippingDefaults(state);
 
   const rooms = state.rooms;
   if (!Array.isArray(rooms)) return state;

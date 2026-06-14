@@ -98,9 +98,9 @@
 
 ถ้าไอเดียตรงลิสต์นี้ — ปฏิเสธทันที ไม่ต้อง debate:
 
-- ❌ **Cloud sync / multi-device sync** — ใช้ device หลักเป็นที่เก็บข้อมูล ถ้าจำเป็นต้องย้ายข้อมูลใช้ Import/Export JSON
-- ❌ **Real-time collaboration** — single-user ไม่มีทีม
-- ❌ **User accounts / login** — ไม่จำเป็น
+- ✅ **Cloud sync / multi-device sync** *(2026-06-14: กลับมาทำแล้ว — Firebase/Firestore)* — งาน+ลูกค้า sync ข้ามอุปกรณ์ด้วยบัญชีร้านเดียว (offline-first, SDK cache). ดู HANDOFF §12. **ยังคง local-first:** ถ้าไม่ตั้งค่า Firebase แอปทำงาน local-only เหมือนเดิม
+- ❌ **Real-time collaboration** — single-shop owner; ยังไม่ทำ multi-staff/locking (sync = last-write-wins ระดับ doc)
+- ✅ **User accounts / login** *(2026-06-14)* — บัญชีร้าน (email/password) เปิด cloud sync; ไม่บังคับถ้าใช้ local-only
 - ❌ **Customer-facing portal** — ลูกค้าเห็นแค่ PDF ที่ส่งให้
 - ❌ **Analytics / telemetry / tracking** — ไม่มีคนเก็บข้อมูล privacy issue สำหรับ user คนเดียว
 - ❌ **Billing / payment / e-commerce** — เก็บเงินนอกแอพ

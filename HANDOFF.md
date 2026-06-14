@@ -580,6 +580,37 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 
 ---
 
-**Last refactor:** 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
-**Persistence key:** `marnthara.input.v6.4` (persist **v3**) · tier override: `marnthara-experience`  
+## 12. ☁️ Multi-job switcher + Firebase cloud sync (2026-06-14)
+
+ระบบ "สลับลูกค้า/งาน" + ออนไลน์ซิงค์หลายอุปกรณ์ (พลิก non-goal เดิมใน PRINCIPLES). อ่านก่อนแตะ store/sync.
+
+### 12.1 โมเดล 3 ชั้น (checkout model)
+- **Live working copy** = field เดิม (`rooms`/`customer`/`discount`/`receipts`/`expenses`/`jobStatus`) — งานที่กำลังแก้. **ทั้งแอปอ่านจากตรงนี้เหมือนเดิม (แก้โค้ดแอป = 0)**. persist localStorage (กันแครช + local-only fallback).
+- **Zustand mirror** = `jobs[]` (JobsSlice) + `customerRegistry[]` (CustomerRegistrySlice) — ชั้นวางงาน/ทะเบียนลูกค้า.
+- **Firestore** = `shops/{uid}/jobs/{id}` (งานเก็บเป็น **JSON string** ต่อ doc — เลี่ยงข้อจำกัด nested-array/undefined) + `shops/{uid}/customers/{code}` (structured). canonical เมื่อ sign-in.
+
+### 12.2 "งานหนึ่งก้อน" (JobBundle) — `src/lib/job-bundle.ts`
+`{ customer, rooms, discount, receipts, expenses } + status/timestamps`. `extractJobBundle`/`bundleToLiveFields`/`blankJob`/`isBundleEmpty`/`customerFromRegistry`. ใช้ซ้ำใน JobsSlice + resetProject + DataModal restore. **id งาน = customer.id (UUID); customer.code = join key ไปทะเบียนลูกค้า.**
+
+### 12.3 JobsSlice (checkout)
+`saveCurrentJob` (no-op ถ้า `isBundleEmpty`) · `switchJob`/`createJob(fromCustomer?)`/`duplicateJob`/`deleteJob`/`setJobStatus(_, id?)`. switch/create → `clearUndoHistory()` (กัน undo ข้ามงาน, ผ่าน `temporalBridge`). push/delete cloud ผ่าน `jobSyncBridge` (no-op จนกว่า syncEngine จะ register). สถานะ 6 สเตจ: `JOB_STATUS` (enums) + ชิปสีใน `dataTones.ts`.
+
+### 12.4 Sync — `src/lib/sync/syncEngine.ts` (startSync/stopSync จาก App effect ตาม auth)
+- onSnapshot(jobs/customers) → ป้อน mirror realtime. **reconcile ครั้งแรก**: รวม local↔cloud โดย `updatedAt` (ดัน local-ใหม่กว่า/local-only ขึ้น) = first-sign-in adopt + กัน stale ทับ.
+- **auto-save**: `useAppStore.subscribe` จับ live-field ref เปลี่ยน → debounce 800ms → `saveCurrentJob` → push. (snapshot อัปเดต `jobs[]`/`customerRegistry` ไม่ใช่ live → ไม่ลูป.)
+- conflict (single-owner): mirror = cloud; live ของงานที่เปิดอยู่ไม่ถูกทับ, push ทับเมื่อเซฟ (last-write-wins ระดับ doc).
+- bridges (`jobSyncBridge`/`customerSyncBridge`) + `temporalBridge` = decouple slice จาก Firestore (กัน circular import).
+
+### 12.5 Firebase (guarded) — `src/lib/firebase/app.ts` + `useAuthStore`
+`isFirebaseConfigured` (env `VITE_FIREBASE_*`). **ไม่ตั้งค่า → db/auth=null → local-only (ไม่พัง build/CI/ออฟไลน์)**. Auth = email/password, `shopId = uid` (1 บัญชี/ร้าน). Firestore = `persistentLocalCache` + multi-tab + `ignoreUndefinedProperties`. กฎ: `firestore.rules` (uid==shopId). SW ไม่ cache `*.googleapis.com` (vite PWA NetworkOnly).
+
+### 12.6 UI
+`JobsModal` (กระดานสลับงาน) · `CustomerDirectoryModal` ("ฐานลูกค้า" → เปิดงานใหม่ให้ลูกค้า) · `SignInModal` · ชื่อลูกค้างานปัจจุบันบน header (→ jobs) · MainMenu: "งานทั้งหมด"/"ฐานลูกค้า"(directory)/"ลูกค้างานนี้"(CustomerModal เดิม) + แถวบัญชี/sync. persist **v5→v6**: `adoptCurrentJobIntoRegistry` (เฉพาะ persist migrate, ไม่ใส่ใน migrateLegacyState ที่ backup.ts ใช้ร่วม).
+
+### 12.7 Setup (ผู้ใช้ทำเอง) — `npm install firebase` · สร้าง Firebase project (เปิด Email/Password + Firestore) · ก๊อป `.env.example`→`.env` ใส่ค่า · deploy `firestore.rules`.
+
+---
+
+**Last refactor:** 2026-06-14 (Multi-job + Firebase sync §12) · 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
+**Persistence key:** `marnthara.input.v6.4` (persist **v6**) · tier override: `marnthara-experience`  
 **App version:** `vite-refactor/6.7.0-strict-mode`

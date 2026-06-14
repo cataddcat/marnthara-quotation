@@ -77,6 +77,7 @@ const BackupSchema = z.looseObject({
           labor: z.boolean().optional(),
           rail: z.boolean().optional(),
           service: z.boolean().optional(),
+          shipping: z.boolean().optional(),
         })
         .optional(),
     })
@@ -106,12 +107,14 @@ export function parseBackup(raw: unknown): BackupParseResult {
   const data = parsed.data;
 
   // reuse migration ของ persist — ประกอบ state-like object ให้ migrateCostVaults
-  // (ซึ่งอ่าน accessoryCosts/serviceCosts ระดับบนสุด) ทำงานกับ vault ใน backup ได้ด้วย
+  // (ซึ่งอ่าน accessoryCosts/serviceCosts ระดับบนสุด) + migrateShippingDefaults
+  // (เติม shipping_per_job/costInclude.shipping ให้ backup รุ่นเก่า) ทำงานกับ backup ได้ด้วย
   const migrated = migrateLegacyState({
     rooms: data.rooms,
     shopConfig: data.shopConfig,
     accessoryCosts: data.production?.accessoryCosts,
     serviceCosts: data.production?.serviceCosts,
+    costInclude: data.production?.costInclude,
   }) as Record<string, unknown>;
 
   return {
@@ -125,6 +128,9 @@ export function parseBackup(raw: unknown): BackupParseResult {
             ...data.production,
             accessoryCosts: migrated.accessoryCosts as Record<string, number> | undefined,
             serviceCosts: migrated.serviceCosts as Record<string, number> | undefined,
+            costInclude: migrated.costInclude as NonNullable<
+              ParsedBackup['production']
+            >['costInclude'],
           }
         : undefined,
     },

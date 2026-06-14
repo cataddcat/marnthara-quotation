@@ -8,6 +8,9 @@ import { MainMenuModal } from './MainMenuModal';
 const makeProps = () => ({
   isOpen: true,
   onClose: vi.fn(),
+  onOpenJobs: vi.fn(),
+  onOpenSignIn: vi.fn(),
+  onOpenCustomerDirectory: vi.fn(),
   onOpenPdf: vi.fn(),
   onOpenCopySummary: vi.fn(),
   onOpenLookbook: vi.fn(),
@@ -24,16 +27,18 @@ const makeProps = () => ({
 describe('MainMenuModal', () => {
   it('render เมนูหลัก + ป้ายเมนูครบ', () => {
     render(<MainMenuModal {...makeProps()} />);
-    ['ใบเสนอราคา', 'คัดลอกสรุป', 'Lookbook', 'ฐานลูกค้า', 'ตั้งค่าร้านค้า', 'จัดการส่วนลด', 'สำรองข้อมูล', 'การเงินของงาน', 'สินค้า & ราคา', 'โครงสร้างต้นทุน', 'อธิบายสูตร'].forEach(
+    ['งานทั้งหมด', 'ใบเสนอราคา', 'คัดลอกสรุป', 'Lookbook', 'ฐานลูกค้า', 'ลูกค้างานนี้', 'ตั้งค่าร้านค้า', 'จัดการส่วนลด', 'สำรองข้อมูล', 'การเงินของงาน', 'สินค้า & ราคา', 'โครงสร้างต้นทุน', 'อธิบายสูตร'].forEach(
       (label) => expect(screen.getByText(label)).toBeInTheDocument()
     );
   });
 
   it.each([
+    ['งานทั้งหมด', 'onOpenJobs'],
     ['ใบเสนอราคา', 'onOpenPdf'],
     ['คัดลอกสรุป', 'onOpenCopySummary'],
     ['Lookbook', 'onOpenLookbook'],
-    ['ฐานลูกค้า', 'onOpenCustomer'],
+    ['ฐานลูกค้า', 'onOpenCustomerDirectory'],
+    ['ลูกค้างานนี้', 'onOpenCustomer'],
     ['ตั้งค่าร้านค้า', 'onOpenShopSettings'],
     ['จัดการส่วนลด', 'onOpenDiscount'],
     ['สำรองข้อมูล', 'onOpenData'],

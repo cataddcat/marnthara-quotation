@@ -22,6 +22,9 @@ import { FormulaDocsModal } from '@/components/modals/FormulaDocsModal';
 import { MaterialSummaryModal } from '@/components/modals/MaterialSummaryModal';
 import { CopySummaryModal } from '@/components/modals/CopySummaryModal';
 import { CodeDetailModal } from '@/components/modals/CodeDetailModal';
+import { JobsModal } from '@/components/modals/JobsModal';
+import { SignInModal } from '@/components/modals/SignInModal';
+import { CustomerDirectoryModal } from '@/components/modals/CustomerDirectoryModal';
 
 export const ModalManager: React.FC = () => {
   const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
@@ -128,9 +131,30 @@ export const ModalManager: React.FC = () => {
         category={codeDetailProps?.category}
       />
 
+      <JobsModal
+        key={isVisible('jobs') ? 'jobs-open' : 'jobs-closed'}
+        isOpen={isVisible('jobs')}
+        onClose={closeModal}
+      />
+
+      <SignInModal
+        key={isVisible('signIn') ? 'signin-open' : 'signin-closed'}
+        isOpen={isVisible('signIn')}
+        onClose={closeModal}
+      />
+
+      <CustomerDirectoryModal
+        key={isVisible('customerDirectory') ? 'custdir-open' : 'custdir-closed'}
+        isOpen={isVisible('customerDirectory')}
+        onClose={closeModal}
+      />
+
       <MainMenuModal
         isOpen={isVisible('mainMenu')}
         onClose={closeModal}
+        onOpenJobs={() => openModal('jobs')}
+        onOpenSignIn={() => openModal('signIn')}
+        onOpenCustomerDirectory={() => openModal('customerDirectory')}
         onOpenPdf={() => openModal('pdf')}
         onOpenCopySummary={() => openModal('copySummary')}
         onOpenLookbook={() => openModal('lookbook')}

@@ -28,7 +28,7 @@ interface DataModalProps {
 }
 
 export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
-  const { resetProject, factoryReset, importFavorites, importSecrets, importCatalog } = useAppStore();
+  const { createJob, factoryReset, importFavorites, importSecrets, importCatalog } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
   const { confirm } = useConfirm();
 
@@ -124,8 +124,12 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           shopConfig:     (json.shopConfig as unknown as typeof s.shopConfig) ?? s.shopConfig,
           discount:       (json.discount as unknown as typeof s.discount)     ?? s.discount,
           favorites:      (json.favorites as unknown as typeof s.favorites)   ?? s.favorites,
-          receipts:       (json.payments?.receipts as unknown as typeof s.receipts)  ?? s.receipts,
-          expenses:       (json.payments?.expenses as unknown as typeof s.expenses)  ?? s.expenses,
+          // เงินของงานเดินตามก้อนงาน: backup ที่มี rooms แต่ไม่มี payments (รุ่นเก่า) → ล้างเป็นศูนย์
+          // (ห้ามคงมัดจำ/รายจ่ายของงานปัจจุบันไว้กับห้อง/ลูกค้าของงานที่ restore — เงินปนข้ามงาน)
+          receipts:       (json.payments?.receipts as unknown as typeof s.receipts)
+                            ?? (json.rooms ? [] : s.receipts),
+          expenses:       (json.payments?.expenses as unknown as typeof s.expenses)
+                            ?? (json.rooms ? [] : s.expenses),
           // ให้ครบทุก vault เท่ากับฝั่ง handleExport (replace ต่อ vault — ไม่ merge)
           laborCosts:     (json.production?.laborCosts as unknown as typeof s.laborCosts) ?? s.laborCosts,
           serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
@@ -134,11 +138,15 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           fabricCosts:    json.production?.fabricCosts     ?? s.fabricCosts,
           wallpaperCosts: json.production?.wallpaperCosts  ?? s.wallpaperCosts,
           areaCosts:      json.production?.areaCosts       ?? s.areaCosts,
-          costInclude:    (json.production?.costInclude as unknown as typeof s.costInclude) ?? s.costInclude,
+          // merge ทับ default ปัจจุบัน — กัน costInclude บางส่วน (รุ่นเก่า/ไฟล์มือ) ลบ key ที่เหลือ
+          costInclude:    { ...s.costInclude, ...(json.production?.costInclude as Partial<typeof s.costInclude> | undefined) },
         });
 
         // formulas เป็น compile-time constant (src/config/formulas.ts) — ไม่ import จาก backup
         // ถ้า backup เก่ามี formulas → ignore (silent)
+
+        // งานที่ restore = งานปัจจุบัน → เก็บลง "งานทั้งหมด" + ตั้งเป็นงานที่เปิดอยู่
+        useAppStore.getState().saveCurrentJob();
 
         addToast('success', 'นำเข้าข้อมูลสำเร็จ');
         onClose();
@@ -199,16 +207,16 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
 
   const handleNewProject = async () => {
     const isConfirmed = await confirm({
-      title: 'เริ่มโครงการใหม่?',
+      title: 'เริ่มงานใหม่?',
       description:
-        'ระบบจะล้างข้อมูลลูกค้าและรายการวัดพื้นที่ทั้งหมด แต่จะเก็บ "การตั้งค่าร้าน" และ "ต้นทุน" ไว้เหมือนเดิม',
+        'งานปัจจุบันจะถูกเก็บไว้ใน "งานทั้งหมด" อัตโนมัติ แล้วเปิดงานเปล่าให้ — "การตั้งค่าร้าน" และ "ต้นทุน" คงเดิม',
       confirmLabel: 'เริ่มงานใหม่',
       variant: 'default',
     });
 
     if (isConfirmed) {
-      resetProject();
-      addToast('success', 'เริ่มโครงการใหม่แล้ว');
+      createJob();
+      addToast('success', 'เริ่มงานใหม่แล้ว (งานเดิมเก็บไว้ในงานทั้งหมด)');
       onClose();
     }
   };

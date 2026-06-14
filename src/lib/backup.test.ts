@@ -57,7 +57,7 @@ describe('parseBackup — migrate schema เก่า', () => {
     expect(item.width_m).toBe('2'); // number → string
   });
 
-  it('ค่าบริการที่ปนใน accessoryCosts → ย้ายไป serviceCosts (v2→v3)', () => {
+  it('ค่าบริการที่ปนใน accessoryCosts → ย้ายไป serviceCosts (v2→v3) + เติมขนส่ง (v4→v5)', () => {
     const legacy = {
       production: {
         accessoryCosts: { rail_wave: 130, install_point: 300 },
@@ -66,7 +66,27 @@ describe('parseBackup — migrate schema เก่า', () => {
     const r = parseBackup(legacy);
     expect(r.ok).toBe(true);
     expect(r.data?.production?.accessoryCosts).toEqual({ rail_wave: 130 });
-    expect(r.data?.production?.serviceCosts).toEqual({ install_point: 300 });
+    expect(r.data?.production?.serviceCosts).toEqual({ install_point: 300, shipping_per_job: 0 });
+  });
+
+  it('backup รุ่นก่อนขนส่ง → serviceCosts/costInclude ได้ key ใหม่ (v4→v5 เส้นทางเดียวกับ persist)', () => {
+    const r = parseBackup({
+      production: {
+        serviceCosts: { install_point: 350 },
+        costInclude: { labor: false, rail: true, service: true },
+      },
+    });
+    expect(r.ok).toBe(true);
+    expect(r.data?.production?.serviceCosts).toEqual({
+      install_point: 350,
+      shipping_per_job: 0,
+    });
+    expect(r.data?.production?.costInclude).toEqual({
+      labor: false,
+      rail: true,
+      service: true,
+      shipping: false,
+    });
   });
 });
 
@@ -101,12 +121,17 @@ describe('parseBackup — payments (เงินจริงของงาน)'
     expect(r.ok).toBe(false);
   });
 
-  it('costInclude ใน production round-trip', () => {
+  it('costInclude ใน production round-trip (รวม shipping)', () => {
     const r = parseBackup({
-      production: { costInclude: { labor: false, rail: true, service: true } },
+      production: { costInclude: { labor: false, rail: true, service: true, shipping: true } },
     });
     expect(r.ok).toBe(true);
-    expect(r.data?.production?.costInclude).toEqual({ labor: false, rail: true, service: true });
+    expect(r.data?.production?.costInclude).toEqual({
+      labor: false,
+      rail: true,
+      service: true,
+      shipping: true,
+    });
   });
 });
 

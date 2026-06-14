@@ -127,7 +127,8 @@ export const useCalculations = (): CalculationResult => {
 
 // --- Helper: Logic คำนวณส่วนลดและ VAT (ใช้ร่วมกันทั้ง 2 โหมด) ---
 // แยกออกมาเพื่อให้ Code Clean และ Logic ตรงกันเป๊ะ 100%
-const performFinalAdjustments = (
+// export: ใช้ซ้ำในสรุปเงินต่องาน (job-summary.ts) — สูตรส่วนลด/VAT เดียวกับหน้าหลัก
+export const performFinalAdjustments = (
   rawTotal: number,
   discount: { type: 'amount' | 'percent'; value: number; is_enabled?: boolean },
   vatRate: number

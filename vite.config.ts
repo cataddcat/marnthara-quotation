@@ -60,6 +60,11 @@ export default defineConfig(({ command }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'], // Cache ทุกอย่างที่จำเป็น
         runtimeCaching: [
           {
+            // Firestore / Auth — ห้าม cache (SDK มี offline cache ของตัวเองใน IndexedDB)
+            urlPattern: /^https:\/\/(firestore|identitytoolkit|securetoken)\.googleapis\.com\/.*/i,
+            handler: 'NetworkOnly',
+          },
+          {
             // Cache Google Fonts (ถ้ามีใช้)
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
@@ -103,6 +108,8 @@ export default defineConfig(({ command }) => ({
           'vendor-utils': ['zustand', 'zundo', 'clsx', 'tailwind-merge'],
           // Heavy Libraries (PDF Printing)
           'vendor-print': ['react-to-print'],
+          // Firebase (cloud sync) — แยกก้อน: โหลดคู่ขนาน + cache ดี, ไม่ทำให้ main bundle บวม
+          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
         },
       },
     },

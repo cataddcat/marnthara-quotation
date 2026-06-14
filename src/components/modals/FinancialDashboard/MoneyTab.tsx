@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { fmtTH, toNum } from '@/utils/formatters';
+import { fmtTH, toNum, localDateISO } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -19,8 +19,6 @@ import {
   type ExpenseCategory,
 } from '@/config/enums';
 import { Wallet, ClipboardCheck, Check, Trash2, Plus, Sparkles } from 'lucide-react';
-
-const todayISO = () => new Date().toISOString().slice(0, 10);
 
 const fmtDateTH = (iso: string) => {
   const d = new Date(iso);
@@ -37,8 +35,8 @@ const CATEGORY_OPTIONS = Object.values(EXPENSE_CATEGORIES).map((value) => ({
 interface MoneyTabProps {
   /** ราคางานหลังส่วนลด/VAT (finalTotal) — ฐาน quick-add มัดจำ 50% */
   jobPrice: number;
-  /** ประมาณการทุนที่รู้รายถัง (จาก CostEngine aggregate) — ปุ่ม "เติมจากประมาณการ" */
-  estimates: { fabric: number; labor: number; rail: number };
+  /** ประมาณการทุนที่รู้รายถัง (จาก CostEngine aggregate + ขนส่งเหมา/งาน) — ปุ่ม "เติมจากประมาณการ" */
+  estimates: { fabric: number; labor: number; rail: number; shipping: number };
 }
 
 export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
@@ -70,7 +68,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
     addReceipt({
       label: receiptLabel.trim() || 'เงินรับ',
       amount,
-      date: todayISO(),
+      date: localDateISO(),
     });
     setReceiptLabel('');
     setReceiptAmount('');
@@ -81,7 +79,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
     addReceipt({
       label: 'มัดจำ 50%',
       amount: Math.round(jobPrice / 2),
-      date: todayISO(),
+      date: localDateISO(),
     });
   };
 
@@ -93,26 +91,35 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
       amount,
       category: expenseCategory,
       paid: false,
-      date: todayISO(),
+      date: localDateISO(),
     });
     setExpenseLabel('');
     setExpenseAmount('');
   };
 
   // เติมจากประมาณการ — สร้างรายการ "ยังไม่จ่าย" จากทุนที่รู้ (ปัดเศษเต็มบาท)
+  // ชื่อรายการที่ chip สร้าง = ตัวตนเดียวกับที่ใช้กันกดซ้ำ — ต้องผ่าน helper เดียวกันเสมอ
+  const estimateLabel = (label: string) => `${label} (ประมาณการ)`;
+
   const estimateChips: { label: string; amount: number; category: ExpenseCategory }[] = [
     { label: 'ค่าผ้า/วัสดุ', amount: estimates.fabric, category: EXPENSE_CATEGORIES.MATERIAL },
     { label: 'ค่าเย็บ', amount: estimates.labor, category: EXPENSE_CATEGORIES.SEWING },
     { label: 'ราง/อุปกรณ์', amount: estimates.rail, category: EXPENSE_CATEGORIES.HARDWARE },
-  ].filter((c) => c.amount > 0);
+    { label: 'ค่าขนส่ง', amount: estimates.shipping, category: EXPENSE_CATEGORIES.SHIPPING },
+  ].filter(
+    (c) =>
+      c.amount > 0 &&
+      // กันกดซ้ำ: รายการประมาณการนี้อยู่ในเช็คลิสท์แล้ว → ซ่อน chip (ลบรายการ → chip กลับมา)
+      !expenses.some((e) => e.label === estimateLabel(c.label))
+  );
 
   const handleAddEstimate = (chip: (typeof estimateChips)[number]) => {
     addExpense({
-      label: `${chip.label} (ประมาณการ)`,
+      label: estimateLabel(chip.label),
       amount: Math.round(chip.amount),
       category: chip.category,
       paid: false,
-      date: todayISO(),
+      date: localDateISO(),
     });
   };
 
@@ -289,10 +296,11 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                 <button
                   key={chip.category}
                   onClick={() => handleAddEstimate(chip)}
-                  className="flex items-center gap-1 text-xs font-medium bg-muted hover:bg-muted/70 border border-border/50 rounded-full px-2.5 py-1.5 active:scale-95 transition-transform"
+                  className="flex items-center gap-1.5 min-h-[44px] text-sm font-medium bg-muted hover:bg-muted/70 border border-border/50 rounded-full px-3 py-2 active:scale-95 transition-transform"
                 >
-                  <Plus className="w-3 h-3" strokeWidth={1.5} />
-                  {chip.label} ≈ ฿{fmtTH(Math.round(chip.amount))}
+                  <Plus className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  {chip.label} ≈{' '}
+                  <span className="font-mono tabular-nums">฿{fmtTH(Math.round(chip.amount))}</span>
                 </button>
               ))}
             </div>
