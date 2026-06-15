@@ -12,6 +12,7 @@ import {
 import { type JobStatusKey, DEFAULT_JOB_STATUS } from '@/config/enums';
 import { clearUndoHistory } from '../temporalBridge';
 import { jobSync } from '@/lib/sync/jobSyncBridge';
+import { suppressNextLiveSync } from '@/lib/sync/syncFlags';
 import { newUuid } from '@/lib/id';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -37,6 +38,14 @@ export interface JobsSlice {
   currentJobId: string | null;
   jobStatus: JobStatusKey;
 
+  // ── conflict guard (sync) ──
+  /** updatedAt ของงานที่เปิดอยู่ตอนโหลดเข้า live — ฐานเทียบว่า cloud ใหม่กว่าไหม */
+  activeBaseUpdatedAt: string;
+  /** ผู้ใช้แก้งานที่เปิดอยู่แต่ยังไม่ได้ push ขึ้น cloud */
+  activeDirty: boolean;
+  /** งานที่เปิดอยู่ถูกแก้จากอีกเครื่องขณะมี edit ค้าง — เวอร์ชัน remote รอให้เลือก */
+  conflict: JobBundle | null;
+
   /** เก็บงานปัจจุบัน (live → jobs[] + push cloud); no-op ถ้างานเปล่า */
   saveCurrentJob: () => void;
   /** สลับไปงานอื่น: เก็บงานปัจจุบันก่อน แล้ว load เป้าหมายเข้า live + ล้าง undo */
@@ -52,7 +61,29 @@ export interface JobsSlice {
 
   /** sync engine ป้อน mirror เข้ามา (replace jobs[] ทั้งก้อนจาก snapshot) */
   setJobsMirror: (jobs: JobBundle[]) => void;
+
+  /** ติดธงว่าผู้ใช้แก้งานที่เปิดอยู่ (เรียกจาก auto-save subscription) */
+  markActiveDirty: () => void;
+  /** โหลด remote เข้า live เงียบ ๆ (ไม่มี edit ค้าง / หรือหลังเลือก "โหลดล่าสุด") */
+  applyRemoteToActive: (remote: JobBundle) => void;
+  /** ตั้ง/ล้าง conflict */
+  setConflict: (remote: JobBundle | null) => void;
+  /** เลือกตอนชน: 'load' โหลดล่าสุด (เก็บของฉันเป็นสำเนา) · 'keep' เก็บของฉัน (เก็บ remote เป็นสำเนา) */
+  resolveConflict: (choice: 'load' | 'keep') => void;
 }
+
+/** สร้างสำเนาเก็บกันชน (id ใหม่ + ป้ายต่อท้ายชื่อ) — ใช้ตอน resolveConflict ให้ "ไม่มีของหาย" */
+const stashCopy = (bundle: JobBundle, label: string): JobBundle => {
+  const newId = newUuid();
+  const now = new Date().toISOString();
+  return {
+    ...bundle,
+    id: newId,
+    customer: { ...bundle.customer, id: newId, name: `${bundle.customer.name || 'งาน'} (${label})` },
+    createdAt: now,
+    updatedAt: now,
+  };
+};
 
 /** หยิบเฉพาะ field ที่ประกอบเป็นงานหนึ่งก้อนจาก state */
 const pickLive = (s: AppState): JobLiveFields => ({
@@ -73,6 +104,9 @@ export const createJobsSlice: StateCreator<
   jobs: [],
   currentJobId: null,
   jobStatus: DEFAULT_JOB_STATUS,
+  activeBaseUpdatedAt: '',
+  activeDirty: false,
+  conflict: null,
 
   saveCurrentJob: () => {
     // id งานนิ่ง: ensureCustomerIdentity เติม customer.id ถ้ายังไม่มี
@@ -90,6 +124,9 @@ export const createJobsSlice: StateCreator<
         ? state.jobs.map((j) => (j.id === id ? merged : j))
         : [...state.jobs, merged],
       currentJobId: id,
+      // เซฟแล้ว = ฐานใหม่ + ไม่ dirty (กัน conflict false-positive ของ write ตัวเอง)
+      activeBaseUpdatedAt: merged.updatedAt,
+      activeDirty: false,
     }));
     jobSync().pushJob(merged);
   },
@@ -99,7 +136,14 @@ export const createJobsSlice: StateCreator<
     get().saveCurrentJob(); // กันแก้งานปัจจุบันหาย
     const target = get().jobs.find((j) => j.id === id);
     if (!target) return;
-    set(() => ({ ...bundleToLiveFields(target), currentJobId: id }));
+    suppressNextLiveSync();
+    set(() => ({
+      ...bundleToLiveFields(target),
+      currentJobId: id,
+      activeBaseUpdatedAt: target.updatedAt,
+      activeDirty: false,
+      conflict: null,
+    }));
     clearUndoHistory();
   },
 
@@ -112,7 +156,14 @@ export const createJobsSlice: StateCreator<
       fresh.id = cust.id as string;
       fresh.customerCode = fromCustomer.code;
     }
-    set(() => ({ ...bundleToLiveFields(fresh), currentJobId: fresh.id }));
+    suppressNextLiveSync();
+    set(() => ({
+      ...bundleToLiveFields(fresh),
+      currentJobId: fresh.id,
+      activeBaseUpdatedAt: fresh.updatedAt,
+      activeDirty: false,
+      conflict: null,
+    }));
     clearUndoHistory();
     // ถ้ามาจากลูกค้า (มีชื่อ) → เก็บลงชั้นวางทันที; งานเปล่า → no-op
     get().saveCurrentJob();
@@ -151,7 +202,14 @@ export const createJobsSlice: StateCreator<
     // ลบงานที่เปิดอยู่ → สลับไปงานล่าสุด หรือเริ่มงานเปล่า
     const next = get().jobs[get().jobs.length - 1];
     const target = next ?? blankJob();
-    set(() => ({ ...bundleToLiveFields(target), currentJobId: target.id }));
+    suppressNextLiveSync();
+    set(() => ({
+      ...bundleToLiveFields(target),
+      currentJobId: target.id,
+      activeBaseUpdatedAt: target.updatedAt,
+      activeDirty: false,
+      conflict: null,
+    }));
     clearUndoHistory();
   },
 
@@ -174,4 +232,46 @@ export const createJobsSlice: StateCreator<
   },
 
   setJobsMirror: (jobs) => set(() => ({ jobs })),
+
+  markActiveDirty: () => {
+    if (!get().activeDirty) set(() => ({ activeDirty: true }));
+  },
+
+  applyRemoteToActive: (remote) => {
+    suppressNextLiveSync();
+    set((state) => ({
+      ...bundleToLiveFields(remote),
+      currentJobId: remote.id,
+      activeBaseUpdatedAt: remote.updatedAt,
+      activeDirty: false,
+      conflict: null,
+      jobs: state.jobs.map((j) => (j.id === remote.id ? remote : j)),
+    }));
+    clearUndoHistory();
+  },
+
+  setConflict: (remote) => set(() => ({ conflict: remote })),
+
+  resolveConflict: (choice) => {
+    const remote = get().conflict;
+    if (!remote) return;
+
+    if (choice === 'load') {
+      // เก็บงานของฉัน (live) เป็นสำเนา ก่อนทับด้วย remote → ไม่มีของหาย
+      const mine = extractJobBundle(pickLive(get()));
+      mine.id = get().currentJobId ?? mine.id;
+      if (!isBundleEmpty(mine)) {
+        const copy = stashCopy(mine, 'ของฉัน');
+        set((state) => ({ jobs: [...state.jobs, copy] }));
+        jobSync().pushJob(copy);
+      }
+      get().applyRemoteToActive(remote);
+    } else {
+      // เก็บของฉัน (ทับ cloud) — เก็บ remote เป็นสำเนาแยก doc ไว้
+      const copy = stashCopy(remote, 'จากอีกเครื่อง');
+      set((state) => ({ jobs: [...state.jobs, copy], activeDirty: true, conflict: null }));
+      jobSync().pushJob(copy);
+      get().saveCurrentJob(); // ดัน live ทับ doc เดิม + อัปเดต base
+    }
+  },
 });

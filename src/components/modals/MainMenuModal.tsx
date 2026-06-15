@@ -28,6 +28,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { Cloud, CloudOff, LogOut } from 'lucide-react';
 
 interface MainMenuModalProps {
@@ -119,6 +120,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   const authEmail = useAuthStore((s) => s.email);
   const signOutUser = useAuthStore((s) => s.signOutUser);
   const addToast = useUIStore((s) => s.addToast);
+  const sync = useSyncStatus();
   const { trigger } = useHaptic();
   const { mode, canSwitch, setMode } = useExperienceMode();
 
@@ -173,8 +175,17 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
                         ? 'กำลังเชื่อมต่อ…'
                         : 'ยังไม่ได้เข้าสู่ระบบ'}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {authStatus === 'signed-in' ? 'ซิงค์หลายอุปกรณ์' : 'เข้าสู่ระบบเพื่อซิงค์งาน'}
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    {authStatus === 'signed-in' ? (
+                      <>
+                        {!sync.hidden && (
+                          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', sync.dotClass)} />
+                        )}
+                        {sync.hidden ? 'ซิงค์หลายอุปกรณ์' : sync.label}
+                      </>
+                    ) : (
+                      'เข้าสู่ระบบเพื่อซิงค์งาน'
+                    )}
                   </div>
                 </div>
               </div>

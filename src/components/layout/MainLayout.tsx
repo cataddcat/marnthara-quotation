@@ -16,6 +16,7 @@ import {
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { isItemIncomplete } from '@/lib/item-status';
 import { SmartNavigator } from '@/components/features/SmartNavigator';
 
@@ -48,6 +49,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const discount = useAppStore((state) => state.discount);
   const rooms = useAppStore((state) => state.rooms);
   const customerName = useAppStore((state) => state.customer.name);
+  const sync = useSyncStatus();
   const addToast = useUIStore((s) => s.addToast);
   const { isField, isDetail, canSwitch, setMode } = useExperienceMode();
 
@@ -130,8 +132,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   onOpenJobs?.();
                 }}
                 aria-label="สลับงาน / ดูงานทั้งหมด"
-                className="flex items-center gap-1 mt-0.5 text-xs font-medium text-muted-foreground hover:text-foreground active:scale-95 transition-colors max-w-[150px] sm:max-w-[260px] outline-none"
+                className="flex items-center gap-1 mt-0.5 text-xs font-medium text-muted-foreground hover:text-foreground active:scale-95 transition-colors max-w-[160px] sm:max-w-[280px] outline-none"
               >
+                {!sync.hidden && (
+                  <span
+                    className={cn('w-1.5 h-1.5 rounded-full shrink-0', sync.dotClass)}
+                    title={sync.label}
+                  />
+                )}
                 <User className="w-3 h-3 shrink-0" strokeWidth={1.5} />
                 <span className="truncate">{customerName || 'งานใหม่'}</span>
                 <ChevronRight className="w-3 h-3 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />

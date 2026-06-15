@@ -22,12 +22,14 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/app';
 import { useAppStore } from '@/store/useAppStore';
+import { useSyncStore } from '@/store/useSyncStore';
 import type { JobBundle } from '@/lib/job-bundle';
 import type { RegistryCustomer } from '@/lib/customers/contract';
 import { normalizeCode } from '@/lib/codes';
 import { newUuid } from '@/lib/id';
 import { setJobSyncBridge, resetJobSyncBridge } from '@/lib/sync/jobSyncBridge';
 import { setCustomerSyncBridge, resetCustomerSyncBridge } from '@/lib/sync/customerSyncBridge';
+import { consumeSuppress } from '@/lib/sync/syncFlags';
 
 // ── Firestore refs ───────────────────────────────────────────────────────────
 const jobsCol = (uid: string) => collection(db!, 'shops', uid, 'jobs');
@@ -86,6 +88,10 @@ let unsubAutoSave: (() => void) | null = null;
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let activeUid: string | null = null;
 
+// online/offline ของเบราว์เซอร์ — สัญญาณเสริมให้ useSyncStore
+const onOnline = () => useSyncStore.getState().setOnline(true);
+const onOffline = () => useSyncStore.getState().setOnline(false);
+
 const scheduleAutoSave = () => {
   if (autoSaveTimer) clearTimeout(autoSaveTimer);
   autoSaveTimer = setTimeout(() => {
@@ -99,6 +105,13 @@ export function startSync(uid: string): void {
   if (!db || activeUid === uid) return;
   if (activeUid) stopSync();
   activeUid = uid;
+
+  useSyncStore.getState().start();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    useSyncStore.getState().setOnline(navigator.onLine);
+  }
 
   // เก็บงานปัจจุบันลงชั้นวางก่อน reconcile (จะได้ถูกรวม/ดันขึ้น cloud)
   useAppStore.getState().saveCurrentJob();
@@ -114,14 +127,19 @@ export function startSync(uid: string): void {
     deleteCustomerRemote: (code) => void deleteCustomerDoc(uid, code),
   });
 
-  // ── jobs: realtime + reconcile ครั้งแรก ──
+  // ── jobs: realtime + reconcile ครั้งแรก + สถานะซิงค์ + conflict guard ──
   let jobsReconciled = false;
-  unsubJobs = onSnapshot(jobsCol(uid), (snap) => {
+  unsubJobs = onSnapshot(jobsCol(uid), { includeMetadataChanges: true }, (snap) => {
     const cloud = new Map<string, JobBundle>();
+    let pending = 0;
     snap.forEach((d) => {
+      if (d.metadata.hasPendingWrites) pending++;
       const b = docToBundle(d.data());
       if (b) cloud.set(b.id, b);
     });
+    // สถานะซิงค์ (fromCache=ออฟไลน์/cache · pending=ยังไม่ ack server)
+    useSyncStore.getState().setSnapshot(snap.metadata.fromCache, pending);
+
     if (!jobsReconciled) {
       jobsReconciled = true;
       for (const lb of useAppStore.getState().jobs) {
@@ -129,6 +147,24 @@ export function startSync(uid: string): void {
         if (!cb || lb.updatedAt > cb.updatedAt) {
           cloud.set(lb.id, lb);
           void pushJobDoc(uid, lb); // local-only / local-ใหม่กว่า → ดันขึ้น
+        }
+      }
+    } else {
+      // conflict guard: งานที่เปิดอยู่ถูกแก้จากอีกเครื่อง (server) + ใหม่กว่าฐานที่เราโหลดมา?
+      const st = useAppStore.getState();
+      const cid = st.currentJobId;
+      const cloudActive = cid ? cloud.get(cid) : undefined;
+      if (
+        cid &&
+        cloudActive &&
+        !snap.metadata.fromCache &&
+        cloudActive.updatedAt > st.activeBaseUpdatedAt &&
+        !st.conflict
+      ) {
+        if (st.activeDirty) {
+          st.setConflict(cloudActive); // มี edit ค้าง → ให้ผู้ใช้เลือก
+        } else {
+          st.applyRemoteToActive(cloudActive); // ไม่มี edit ค้าง → โหลดล่าสุดเงียบ
         }
       }
     }
@@ -156,7 +192,7 @@ export function startSync(uid: string): void {
     useAppStore.getState().setCustomerRegistryMirror([...cloud.values()]);
   });
 
-  // ── auto-save: live edit → debounce → saveCurrentJob (push) ──
+  // ── auto-save: live edit → mark dirty → debounce → saveCurrentJob (push) ──
   unsubAutoSave = useAppStore.subscribe((state, prev) => {
     if (
       state.rooms === prev.rooms &&
@@ -168,6 +204,9 @@ export function startSync(uid: string): void {
     ) {
       return;
     }
+    // การโหลดงาน (switch/create/applyRemote) ไม่ใช่ผู้ใช้แก้ → ข้าม (ไม่ dirty/ไม่ push ซ้ำ)
+    if (consumeSuppress()) return;
+    useAppStore.getState().markActiveDirty();
     scheduleAutoSave();
   });
 }
@@ -182,7 +221,12 @@ export function stopSync(): void {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = null;
   }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('online', onOnline);
+    window.removeEventListener('offline', onOffline);
+  }
   resetJobSyncBridge();
   resetCustomerSyncBridge();
+  useSyncStore.getState().stop();
   activeUid = null;
 }

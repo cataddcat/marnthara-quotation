@@ -14,6 +14,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
 import { ModalManager } from '@/components/managers/ModalManager';
+import { ConflictBanner } from '@/components/features/ConflictBanner';
 import { DevInspector } from '@/components/dev/DevInspector';
 import { ItemData } from '@/types';
 import { ITEM_TYPES } from '@/config/enums';
@@ -223,6 +224,7 @@ function App() {
         )}
       </MainLayout>
       <ModalManager />
+      <ConflictBanner />
       <ToastContainer />
       <AlertDialog />
       {/* Dev-only: คลิกองค์ประกอบเพื่อคัดลอก ไฟล์:บรรทัด ไปบอก AI (ตัดออกจาก prod) */}

@@ -14,6 +14,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { cn } from '@/lib/utils';
 import { fmtTH } from '@/utils/formatters';
 import { extractJobBundle, isBundleEmpty, type JobBundle } from '@/lib/job-bundle';
@@ -63,6 +64,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const addToast = useUIStore((s) => s.addToast);
   const { confirm } = useConfirm();
   const { trigger } = useHaptic();
+  const sync = useSyncStatus();
 
   const [query, setQuery] = useState('');
   const PAGE = 50;
@@ -168,8 +170,14 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
               งานใหม่
             </Button>
           </div>
-          <div className="text-xs text-muted-foreground px-0.5">
-            {list.length > 0 ? `${list.length} งาน` : 'ยังไม่มีงานในระบบ'}
+          <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
+            <span>{list.length > 0 ? `${list.length} งาน` : 'ยังไม่มีงานในระบบ'}</span>
+            {!sync.hidden && (
+              <span className="flex items-center gap-1.5">
+                <span className={cn('w-1.5 h-1.5 rounded-full', sync.dotClass)} />
+                {sync.label}
+              </span>
+            )}
           </div>
         </div>
 

@@ -598,8 +598,15 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 ### 12.4 Sync — `src/lib/sync/syncEngine.ts` (startSync/stopSync จาก App effect ตาม auth)
 - onSnapshot(jobs/customers) → ป้อน mirror realtime. **reconcile ครั้งแรก**: รวม local↔cloud โดย `updatedAt` (ดัน local-ใหม่กว่า/local-only ขึ้น) = first-sign-in adopt + กัน stale ทับ.
 - **auto-save**: `useAppStore.subscribe` จับ live-field ref เปลี่ยน → debounce 800ms → `saveCurrentJob` → push. (snapshot อัปเดต `jobs[]`/`customerRegistry` ไม่ใช่ live → ไม่ลูป.)
-- conflict (single-owner): mirror = cloud; live ของงานที่เปิดอยู่ไม่ถูกทับ, push ทับเมื่อเซฟ (last-write-wins ระดับ doc).
-- bridges (`jobSyncBridge`/`customerSyncBridge`) + `temporalBridge` = decouple slice จาก Firestore (กัน circular import).
+- **สถานะซิงค์ (2026-06-15):** `onSnapshot(jobs, {includeMetadataChanges:true})` → อ่าน `metadata.fromCache`/`hasPendingWrites`
+  → ป้อน `useSyncStore` (online/pending/synced) → UI: จุดสีบน header + เมนู + JobsModal (`useSyncStatus`). สำคัญบน iOS PWA offline.
+- **conflict guard (2026-06-15):** `JobsSlice` มี `activeBaseUpdatedAt`/`activeDirty`/`conflict`. snapshot (หลัง reconcile):
+  ถ้า cloud ของงานที่เปิดอยู่ `updatedAt > base` + server (`!fromCache`) → **dirty** → `setConflict` → `ConflictBanner`
+  ([โหลดล่าสุด]/[เก็บของฉัน] — อีกเวอร์ชันเก็บเป็นสำเนาเสมอ ไม่หาย); **ไม่ dirty** → `applyRemoteToActive` เงียบ.
+  `activeDirty` ตั้งโดย auto-save subscription; การโหลดงาน (switch/create/applyRemote/delete) ใช้ `syncFlags.suppressNextLiveSync()`
+  ให้ subscription ข้าม (ไม่ dirty/ไม่ push ซ้ำ).
+- bridges (`jobSyncBridge`/`customerSyncBridge`) + `temporalBridge` + `syncFlags` = decouple slice จาก Firestore (กัน circular import).
+- **iOS PWA offline:** ไม่มี background sync (ซิงค์ตอนเปิดแอปออนไลน์); อาจ evict storage → backup เป็นเข็มขัด. ดู [docs/FIREBASE-SETUP.md](docs/FIREBASE-SETUP.md) §iOS.
 
 ### 12.5 Firebase (guarded) — `src/lib/firebase/app.ts` + `useAuthStore`
 `isFirebaseConfigured` (env `VITE_FIREBASE_*`). **ไม่ตั้งค่า → db/auth=null → local-only (ไม่พัง build/CI/ออฟไลน์)**. Auth = email/password, `shopId = uid` (1 บัญชี/ร้าน). Firestore = `persistentLocalCache` + multi-tab + `ignoreUndefinedProperties`. กฎ: `firestore.rules` (uid==shopId). SW ไม่ cache `*.googleapis.com` (vite PWA NetworkOnly).
@@ -611,6 +618,6 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 
 ---
 
-**Last refactor:** 2026-06-14 (Multi-job + Firebase sync §12) · 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
-**Persistence key:** `marnthara.input.v6.4` (persist **v6**) · tier override: `marnthara-experience`  
+**Last refactor:** 2026-06-15 (Sync status + conflict guard + iOS offline §12.4) · 2026-06-14 (Multi-job + Firebase sync §12) · 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
+**Persistence key:** `marnthara.input.v6.4` (persist **v6**) · tier override: `marnthara-experience` · sync status: `useSyncStore` (ไม่ persist)  
 **App version:** `vite-refactor/6.7.0-strict-mode`
