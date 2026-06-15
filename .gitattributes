@@ -1,0 +1,3 @@
+# Husky hooks ต้องเป็น LF เสมอ — CRLF ทำให้ sh รันไม่ได้บน Windows
+.husky/* text eol=lf
+*.sh text eol=lf

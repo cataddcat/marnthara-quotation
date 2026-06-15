@@ -1,1 +1,6 @@
-npm test
+# ข้ามถ้าไม่มี bash (เช่น GitHub Desktop บน Windows — npm wrapper ต้องใช้ bash → 127)
+# commit จะผ่านปกติ; ให้รัน "npm run lint && npm run test:run && npm run build" เองก่อน push
+command -v bash >/dev/null 2>&1 || exit 0
+
+# รันเทสต์ครั้งเดียว (test:run ไม่ใช่ test = watch mode ที่ค้าง)
+npm run test:run

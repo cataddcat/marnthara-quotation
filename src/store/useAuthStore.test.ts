@@ -1,9 +1,17 @@
 // src/store/useAuthStore.test.ts
-// ไม่ตั้งค่า Firebase ใน test env → auth=null → status 'disabled', action เป็น no-op ปลอดภัย
-import { describe, it, expect } from 'vitest';
+// mock firebase/app ให้ auth=null เสมอ → เทสต์ guarded path ได้ deterministic
+// (ไม่ขึ้นกับว่ามี .env จริงในเครื่องไหม — vitest โหลด .env ทำให้ isFirebaseConfigured เพี้ยนได้)
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@/lib/firebase/app', () => ({
+  auth: null,
+  db: null,
+  isFirebaseConfigured: false,
+}));
+
 import { useAuthStore } from '@/store/useAuthStore';
 
-describe('useAuthStore — guarded (Firebase ไม่ตั้งค่า)', () => {
+describe('useAuthStore — guarded (auth=null)', () => {
   it('status = disabled', () => {
     expect(useAuthStore.getState().status).toBe('disabled');
   });
