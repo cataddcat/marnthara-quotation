@@ -177,6 +177,7 @@
   --animate-zoom-in: zoom-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-pulse-subtle: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-room-flash: room-flash 0.7s ease-out forwards;
 
   @keyframes fade-in {
     from {
@@ -238,6 +239,16 @@
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Room-change highlight — accent ring overlay fades out (เปลี่ยนห้องแล้วสังเกตง่าย) */
+  @keyframes room-flash {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
     }
   }
 
@@ -605,6 +616,10 @@ html.sim-notch.dark body::after {
 
   .animate-fade-slide-up {
     animation: fade-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-room-flash {
+    animation: var(--animate-room-flash);
   }
 
   /* Text Utilities */

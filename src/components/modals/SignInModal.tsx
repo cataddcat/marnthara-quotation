@@ -14,9 +14,13 @@ interface SignInModalProps {
   onClose: () => void;
 }
 
+// สมัครบัญชีในแอปเปิดได้เฉพาะตั้ง VITE_ALLOW_SIGNUP=true (default ปิด — สร้างบัญชีร้านผ่าน Console)
+const ALLOW_SIGNUP = import.meta.env.VITE_ALLOW_SIGNUP === 'true';
+
 export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
   const signIn = useAuthStore((s) => s.signIn);
   const signUp = useAuthStore((s) => s.signUp);
+  const resetPassword = useAuthStore((s) => s.resetPassword);
   const busy = useAuthStore((s) => s.busy);
   const error = useAuthStore((s) => s.error);
   const clearError = useAuthStore((s) => s.clearError);
@@ -26,16 +30,28 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // ถ้าปิดสมัคร → บังคับโหมดเข้าสู่ระบบเสมอ
+  const effectiveMode = ALLOW_SIGNUP ? mode : 'in';
   const canSubmit = email.trim().length > 3 && password.length >= 6 && !busy;
 
   const submit = async () => {
     if (!canSubmit) return;
-    const ok = mode === 'in' ? await signIn(email, password) : await signUp(email, password);
+    const ok =
+      effectiveMode === 'in' ? await signIn(email, password) : await signUp(email, password);
     if (ok) {
-      addToast('success', mode === 'in' ? 'เข้าสู่ระบบแล้ว' : 'สร้างบัญชีและเข้าสู่ระบบแล้ว');
+      addToast('success', effectiveMode === 'in' ? 'เข้าสู่ระบบแล้ว' : 'สร้างบัญชีและเข้าสู่ระบบแล้ว');
       setPassword('');
       onClose();
     }
+  };
+
+  const handleResetPassword = async () => {
+    if (email.trim().length < 4) {
+      addToast('warning', 'กรอกอีเมลก่อน แล้วกด "ลืมรหัสผ่าน"');
+      return;
+    }
+    const ok = await resetPassword(email);
+    if (ok) addToast('success', `ส่งลิงก์รีเซ็ตรหัสผ่านไปที่ ${email.trim()} แล้ว`);
   };
 
   const switchMode = () => {
@@ -47,7 +63,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === 'in' ? 'เข้าสู่ระบบ' : 'สร้างบัญชีร้าน'}
+      title={effectiveMode === 'in' ? 'เข้าสู่ระบบ' : 'สร้างบัญชีร้าน'}
       description="ซิงค์งานและลูกค้าทุกเครื่องด้วยบัญชีเดียว"
       maxWidth="sm"
     >
@@ -74,7 +90,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             prefix={<Lock className="w-4 h-4 text-muted-foreground" />}
             label="รหัสผ่าน"
             type="password"
-            autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+            autoComplete={effectiveMode === 'in' ? 'current-password' : 'new-password'}
             placeholder="อย่างน้อย 6 ตัวอักษร"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -82,6 +98,15 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
               if (e.key === 'Enter') submit();
             }}
           />
+          {effectiveMode === 'in' && (
+            <button
+              onClick={handleResetPassword}
+              disabled={busy}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              ลืมรหัสผ่าน?
+            </button>
+          )}
         </div>
 
         {error && (
@@ -96,15 +121,21 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           disabled={!canSubmit}
           className="w-full bg-primary text-primary-foreground"
         >
-          {busy ? 'กำลังดำเนินการ…' : mode === 'in' ? 'เข้าสู่ระบบ' : 'สร้างบัญชี'}
+          {busy ? 'กำลังดำเนินการ…' : effectiveMode === 'in' ? 'เข้าสู่ระบบ' : 'สร้างบัญชี'}
         </Button>
 
-        <button
-          onClick={switchMode}
-          className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {mode === 'in' ? 'ยังไม่มีบัญชีร้าน? สร้างบัญชีใหม่' : 'มีบัญชีอยู่แล้ว? เข้าสู่ระบบ'}
-        </button>
+        {ALLOW_SIGNUP && (
+          <button
+            onClick={switchMode}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {mode === 'in' ? 'ยังไม่มีบัญชีร้าน? สร้างบัญชีใหม่' : 'มีบัญชีอยู่แล้ว? เข้าสู่ระบบ'}
+          </button>
+        )}
+
+        <p className="text-xs text-muted-foreground text-center leading-relaxed pt-1">
+          ต้องตั้งค่า Firebase ก่อนใช้ — ดูคู่มือ <span className="font-mono">docs/FIREBASE-SETUP.md</span> ในโปรเจกต์
+        </p>
       </div>
     </Modal>
   );

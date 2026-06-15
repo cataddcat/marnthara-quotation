@@ -11,6 +11,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   type User,
 } from 'firebase/auth';
@@ -29,6 +30,8 @@ interface AuthState {
   init: () => void;
   signIn: (email: string, password: string) => Promise<boolean>;
   signUp: (email: string, password: string) => Promise<boolean>;
+  /** ส่งอีเมลรีเซ็ตรหัสผ่าน — คืน true ถ้าส่งสำเร็จ */
+  resetPassword: (email: string) => Promise<boolean>;
   signOutUser: () => Promise<void>;
   clearError: () => void;
 }
@@ -72,6 +75,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
     try {
       await createUserWithEmailAndPassword(auth, email.trim(), password);
+      set({ busy: false });
+      return true;
+    } catch (e) {
+      set({ busy: false, error: authErrorMessage(e) });
+      return false;
+    }
+  },
+
+  resetPassword: async (email) => {
+    if (!auth) return false;
+    set({ busy: true, error: null });
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
       set({ busy: false });
       return true;
     } catch (e) {

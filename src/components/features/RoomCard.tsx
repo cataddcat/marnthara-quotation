@@ -280,12 +280,19 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       {/* Room Header Card */}
       <div
         className={cn(
-          'rounded-2xl border bg-card overflow-hidden transition-[border-color] duration-300 flex',
+          'relative rounded-2xl border bg-card overflow-hidden transition-[border-color] duration-300 flex',
           room.is_suspended
             ? 'grayscale opacity-60 border-dashed border-border'
             : 'border-border/60'
         )}
       >
+        {/* Room-change highlight — accent ring กระพริบ on remount (RoomSlider keys by room id) */}
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-0 z-10 rounded-2xl ring-2 ring-inset animate-room-flash',
+            accent.ring
+          )}
+        />
         {/* Left accent rail — full-height container edge (dashboard panel feel) */}
         <div className={cn('w-1.5 shrink-0', accent.stripe)} />
 

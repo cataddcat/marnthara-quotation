@@ -17,7 +17,7 @@ import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
 import { fmtTH } from '@/utils/formatters';
 import { extractJobBundle, isBundleEmpty, type JobBundle } from '@/lib/job-bundle';
-import { summarizeJob } from '@/lib/job-summary';
+import { summarizeJob, type JobSummary } from '@/lib/job-summary';
 import { JOB_STATUS_ORDER, JOB_STATUS_LABELS, type JobStatusKey } from '@/config/enums';
 import { JOB_STATUS_CHIP, JOB_STATUS_DOT } from '@/config/dataTones';
 import {
@@ -65,6 +65,8 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const { trigger } = useHaptic();
 
   const [query, setQuery] = useState('');
+  const PAGE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE);
 
   const list = useMemo<JobBundle[]>(() => {
     const live = extractJobBundle({
@@ -103,6 +105,13 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
       return a.updatedAt < b.updatedAt ? 1 : -1;
     });
   }, [jobs, currentJobId, customer, rooms, discount, receipts, expenses, jobStatus, query]);
+
+  // คำนวณสรุปเงินครั้งเดียวต่อชุดข้อมูล (กัน recompute ทุก render ตอนงานเยอะ)
+  const summaries = useMemo(() => {
+    const m = new Map<string, JobSummary>();
+    for (const j of list) m.set(j.id, summarizeJob(j, vatRate));
+    return m;
+  }, [list, vatRate]);
 
   const handleSwitch = (id: string) => {
     if (id === currentJobId) {
@@ -174,8 +183,8 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
               </p>
             </div>
           ) : (
-            list.map((job) => {
-              const sum = summarizeJob(job, vatRate);
+            list.slice(0, visibleCount).map((job) => {
+              const sum = summaries.get(job.id) ?? summarizeJob(job, vatRate);
               const isCurrent = job.id === currentJobId;
               const status = job.status as JobStatusKey;
               return (
@@ -325,6 +334,15 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                 </div>
               );
             })
+          )}
+
+          {list.length > visibleCount && (
+            <button
+              onClick={() => setVisibleCount((c) => c + PAGE)}
+              className="w-full py-3 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              ดูเพิ่ม ({list.length - visibleCount} งาน)
+            </button>
           )}
           <div className="h-6" />
         </div>

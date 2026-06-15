@@ -20,7 +20,8 @@ interface RoomSliderProps {
   onEditItem: (roomId: string, item: ItemData) => void;
 }
 
-const SWIPE_THRESHOLD = 50;
+const SWIPE_THRESHOLD = 60; // ระยะแนวนอนขั้นต่ำ (px) — กันการลั่นจากปัดสั้น
+const SWIPE_RATIO = 1.5; // แนวนอนต้องเด่นกว่าแนวตั้งชัดเจน (กันปัดเฉียง/เลื่อนจอ)
 const MAX_DOTS = 8;
 
 export const RoomSlider: React.FC<RoomSliderProps> = ({
@@ -39,7 +40,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
   // overview เป็นของโหมดละเอียด (detail — รวมมือถือ) — โหมดหน้างาน (field) ใช้ focus ทีละห้อง
   // และดูสรุปผ่าน "All Rooms Summary" (ProjectOverviewModal) จาก dock "ภาพรวม" แทน
   const effectiveViewMode = isField ? 'focus' : viewMode;
-  const touchStartXRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   // ทิศการสลับห้องล่าสุด — ใช้เลือกทิศ slide animation (state: อ่านตอน render ได้)
   const [direction, setDirection] = useState<'next' | 'prev'>('next');
 
@@ -56,7 +57,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 
   const navigatePrev = () => {
     if (!canNavigate) return;
-    trigger('selection');
+    trigger('light');
     setDirection('prev');
     const prevIndex = (activeIndex - 1 + rooms.length) % rooms.length;
     onSetActiveRoom(rooms[prevIndex].id);
@@ -64,22 +65,32 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 
   const navigateNext = () => {
     if (!canNavigate) return;
-    trigger('selection');
+    trigger('light');
     setDirection('next');
     const nextIndex = (activeIndex + 1) % rooms.length;
     onSetActiveRoom(rooms[nextIndex].id);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
+    if (e.touches.length !== 1) {
+      touchStartRef.current = null;
+      return;
+    }
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current === null) return;
-    const delta = e.changedTouches[0].clientX - touchStartXRef.current;
-    touchStartXRef.current = null;
-    if (Math.abs(delta) < SWIPE_THRESHOLD) return;
-    if (delta < 0) navigateNext();
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const deltaX = t.clientX - start.x;
+    const deltaY = t.clientY - start.y;
+    // แนวนอนต้องถึงเกณฑ์ "และ" เด่นกว่าแนวตั้ง — ไม่งั้นถือเป็นการเลื่อนจอแนวตั้งตามปกติ
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+    if (Math.abs(deltaX) < Math.abs(deltaY) * SWIPE_RATIO) return;
+    if (deltaX < 0) navigateNext();
     else navigatePrev();
   };
 
@@ -116,7 +127,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
                   key={room.id}
                   onClick={() => {
                     if (i !== activeIndex) {
-                      trigger('selection');
+                      trigger('light');
                       setDirection(i > activeIndex ? 'next' : 'prev');
                       onSetActiveRoom(room.id);
                     }
@@ -162,7 +173,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
           key={activeRoom.id}
           className={cn(
             'animate-in fade-in duration-300',
-            direction === 'next' ? 'slide-in-from-right-8' : 'slide-in-from-left-8'
+            direction === 'next' ? 'slide-in-from-right-16' : 'slide-in-from-left-16'
           )}
         >
           <RoomCard

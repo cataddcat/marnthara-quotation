@@ -5,6 +5,7 @@ import { ITEM_TYPES, FAVORITE_CATEGORIES, DEFAULT_JOB_STATUS } from '@/config/en
 import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { isAreaItem } from '@/lib/type-guards';
 import { newUuid } from '@/lib/id';
+import { downloadBackup } from '@/lib/backup-export';
 
 // [REFACTOR] Renamed from RoomSlice to ProjectSlice to reflect broader scope
 export interface ProjectSlice {
@@ -260,6 +261,14 @@ export const createProjectSlice: StateCreator<
 
   factoryReset: () => {
     // ── ล้างข้อมูลทั้งหมด (เหมือนติดตั้งแอพใหม่) ──
+    // 0) สำรองข้อมูลอัตโนมัติก่อนล้าง — กันเผลอล้างแล้วหายเกลี้ยง (โดยเฉพาะ local-only)
+    try {
+      const ident = get().ensureCustomerIdentity();
+      downloadBackup(get(), ident);
+    } catch (e) {
+      console.error('factoryReset backup', e);
+    }
+
     // 1) reset state ในหน่วยความจำให้ clean "ก่อน" — กัน persist เขียนข้อมูลเก่ากลับ
     //    (onClose ของ modal จะ trigger closeModal → re-persist state ปัจจุบันหลัง factoryReset)
     get().resetProject(); // rooms / customer / discount
@@ -269,7 +278,7 @@ export const createProjectSlice: StateCreator<
     // 2) ล้าง persisted storage ทุกตัว (main + theme + experience) ไม่ใช่แค่ key เดียว
     localStorage.clear();
 
-    // 3) hard reload → re-init จาก default ทั้งหมด
-    window.location.reload();
+    // 3) hard reload → re-init จาก default ทั้งหมด (หน่วงเล็กน้อยให้ดาวน์โหลด backup เริ่มก่อน)
+    setTimeout(() => window.location.reload(), 300);
   },
 });

@@ -6,7 +6,9 @@ import { EmptyState } from '@/components/features/EmptyState';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useUIStore } from '@/store/useUIStore';
 import { startSync, stopSync } from '@/lib/sync/syncEngine';
+import { shouldRemindBackup, daysSinceBackup } from '@/lib/backup-reminder';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
@@ -82,6 +84,26 @@ function App() {
       return () => stopSync();
     }
   }, [authStatus, authUid]);
+
+  // เตือนสำรองข้อมูล (เฉพาะ local-only — signed-in มี Firestore เป็น backup แล้ว) ครั้งเดียว/เซสชัน
+  const addToast = useUIStore((state) => state.addToast);
+  const remindedRef = useRef(false);
+  useEffect(() => {
+    if (remindedRef.current || authStatus === 'loading' || authStatus === 'signed-in') return;
+    remindedRef.current = true;
+    const st = useAppStore.getState();
+    const hasContent = st.rooms.length > 0 || st.jobs.length > 0;
+    if (hasContent && shouldRemindBackup(7)) {
+      const d = daysSinceBackup();
+      addToast(
+        'warning',
+        'แนะนำสำรองข้อมูล',
+        d === null
+          ? 'ยังไม่เคยสำรอง — เมนู › สำรองข้อมูล › Backup (หรือเข้าสู่ระบบเพื่อซิงค์ cloud)'
+          : `สำรองล่าสุด ${Math.floor(d)} วันก่อน — เมนู › สำรองข้อมูล › Backup`
+      );
+    }
+  }, [authStatus, addToast]);
 
   // Theme Initialization
   const theme = useThemeStore((state) => state.theme);

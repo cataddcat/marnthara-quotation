@@ -19,8 +19,8 @@ import {
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { buildDocFileBase, formatDocCode } from '@/lib/docName';
 import { parseBackup } from '@/lib/backup';
+import { downloadBackup } from '@/lib/backup-export';
 
 interface DataModalProps {
   isOpen: boolean;
@@ -46,54 +46,10 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleExport = () => {
-    try {
-      // เติม identity ก่อน เพื่อให้ customer.id (UUID) ติดไปใน JSON ด้วย (กุญแจเชื่อมนอกแอพ)
-      const { id, code, seq } = useAppStore.getState().ensureCustomerIdentity();
-      const state = useAppStore.getState();
-      const dataToExport = {
-        customer: state.customer,
-        rooms: state.rooms,
-        shopConfig: state.shopConfig,
-        discount: state.discount,
-        favorites: state.favorites,
-        // เงินจริงของงาน (มัดจำ/เช็คลิสท์จ่าย) — ส่วนหนึ่งของก้อนข้อมูลงาน เหมือน rooms
-        payments: {
-          receipts: state.receipts,
-          expenses: state.expenses,
-        },
-        // ⚠️ ให้ครบทุก cost vault ใน CostDataSlice (กัน backup ตกข้อมูล) —
-        // ปัจจุบัน 7 ถัง: labor / service / accessory / hardware / fabric / wallpaper / area
-        production: {
-          laborCosts: state.laborCosts,
-          serviceCosts: state.serviceCosts,
-          accessoryCosts: state.accessoryCosts,
-          hardwareCosts: state.hardwareCosts,
-          fabricCosts: state.fabricCosts,
-          wallpaperCosts: state.wallpaperCosts,
-          areaCosts: state.areaCosts,
-          costInclude: state.costInclude,
-        },
-        version: '1.0.0',
-        exportDate: new Date().toISOString(),
-      };
-
-      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-
-      // มาตรฐานชื่อเอกสาร: <ประเภท>_<ลูกค้า>_<รหัส>_<YYYYMMDD> (สืบย้อนได้ + ไม่ซ้ำ)
-      const docCode = formatDocCode({ id, code, seq });
-      a.download = `${buildDocFileBase('mtr-backup', state.customer.name, docCode)}.json`;
-
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      addToast('success', 'Backup ข้อมูลสำเร็จ');
-    } catch (e) {
-      console.error(e);
-      addToast('error', 'เกิดข้อผิดพลาดในการ Backup');
-    }
+    // เติม identity ก่อน เพื่อให้ customer.id (UUID) ติดไปใน JSON ด้วย (กุญแจเชื่อมนอกแอพ)
+    const ident = useAppStore.getState().ensureCustomerIdentity();
+    const ok = downloadBackup(useAppStore.getState(), ident);
+    addToast(ok ? 'success' : 'error', ok ? 'Backup ข้อมูลสำเร็จ' : 'เกิดข้อผิดพลาดในการ Backup');
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

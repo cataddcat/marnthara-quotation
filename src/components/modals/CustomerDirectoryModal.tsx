@@ -52,6 +52,8 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
   const [panel, setPanel] = useState<Panel>('none');
   const [form, setForm] = useState(emptyForm);
   const [importText, setImportText] = useState('');
+  const PAGE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -283,7 +285,7 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
               </p>
             </div>
           ) : (
-            list.map((c) => (
+            list.slice(0, visibleCount).map((c) => (
               <div
                 key={c.id}
                 className="rounded-2xl border border-border/60 bg-card p-3 flex items-center gap-2"
@@ -318,6 +320,15 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
                 </button>
               </div>
             ))
+          )}
+
+          {list.length > visibleCount && (
+            <button
+              onClick={() => setVisibleCount((c) => c + PAGE)}
+              className="w-full py-3 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              ดูเพิ่ม ({list.length - visibleCount} ราย)
+            </button>
           )}
           <div className="h-6" />
         </div>
