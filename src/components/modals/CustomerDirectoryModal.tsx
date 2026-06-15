@@ -12,6 +12,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useRequireAdmin } from '@/hooks/useRequireAdmin';
 import { cn } from '@/lib/utils';
 import type { RegistryCustomer } from '@/lib/customers/contract';
 import {
@@ -47,6 +48,7 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
   const addToast = useUIStore((s) => s.addToast);
   const { confirm } = useConfirm();
   const { trigger } = useHaptic();
+  const requireAdmin = useRequireAdmin();
 
   const [query, setQuery] = useState('');
   const [panel, setPanel] = useState<Panel>('none');
@@ -91,17 +93,19 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
     setPanel('form');
   };
 
-  const handleDelete = async (c: RegistryCustomer) => {
-    const ok = await confirm({
-      title: 'ลบลูกค้าออกจากทะเบียน?',
-      description: `"${c.name}" (${c.code}) จะถูกลบจากฐานลูกค้า — งานที่อ้างถึงยังอยู่`,
-      confirmLabel: 'ลบ',
-      variant: 'destructive',
+  // ลบลูกค้า = ทำลายล้าง → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
+  const handleDelete = (c: RegistryCustomer) =>
+    requireAdmin(async () => {
+      const ok = await confirm({
+        title: 'ลบลูกค้าออกจากทะเบียน?',
+        description: `"${c.name}" (${c.code}) จะถูกลบจากฐานลูกค้า — งานที่อ้างถึงยังอยู่`,
+        confirmLabel: 'ลบ',
+        variant: 'destructive',
+      });
+      if (!ok) return;
+      removeCustomer(c.code);
+      addToast('success', 'ลบลูกค้าแล้ว');
     });
-    if (!ok) return;
-    removeCustomer(c.code);
-    addToast('success', 'ลบลูกค้าแล้ว');
-  };
 
   const handleSaveForm = () => {
     if (!form.code.trim() || !form.name.trim()) {

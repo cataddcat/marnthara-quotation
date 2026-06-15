@@ -29,6 +29,11 @@ export type ModalPropsMap = {
     code: string;
     category: string;
   };
+  // การ์ดผู้ดูแล (บัญชีร่วม) — ใส่/ตั้ง PIN; onSuccess รัน action ที่ถูกล็อกไว้
+  adminPin: {
+    intent: 'unlock' | 'setup' | 'disable';
+    onSuccess?: () => void;
+  };
 
   // Modals ที่ไม่รับ props ผ่าน store
   costDashboard: undefined;

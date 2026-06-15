@@ -592,6 +592,8 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 ### 12.2 "งานหนึ่งก้อน" (JobBundle) — `src/lib/job-bundle.ts`
 `{ customer, rooms, discount, receipts, expenses } + status/timestamps`. `extractJobBundle`/`bundleToLiveFields`/`blankJob`/`isBundleEmpty`/`customerFromRegistry`. ใช้ซ้ำใน JobsSlice + resetProject + DataModal restore. **id งาน = customer.id (UUID); customer.code = join key ไปทะเบียนลูกค้า.**
 
+**Identity invariant (1 งาน = 1 UUID):** `customer.id (crypto.randomUUID v4)` = `job.id` = Firestore doc key (`shops/{uid}/jobs/{id}`) = id ที่ฝังในไฟล์ JSON export. **per-account isolation** (firestore.rules: `uid == shopId` — ไม่ใช่ cross-account). Restore ไฟล์ dedup ด้วย UUID: `src/lib/restore-identity.ts` (`resolveRestoreIdentity` ตรวจชนกับ `jobs[]` + `forkBundleId` มอบ UUID ใหม่ตอนเลือก "สำเนาใหม่") → DataModal flush งานปัจจุบันก่อนทับ + ถาม "ทับ/สำเนาใหม่" เมื่อชน (ไม่มีงานหายเงียบ).
+
 ### 12.3 JobsSlice (checkout)
 `saveCurrentJob` (no-op ถ้า `isBundleEmpty`) · `switchJob`/`createJob(fromCustomer?)`/`duplicateJob`/`deleteJob`/`setJobStatus(_, id?)`. switch/create → `clearUndoHistory()` (กัน undo ข้ามงาน, ผ่าน `temporalBridge`). push/delete cloud ผ่าน `jobSyncBridge` (no-op จนกว่า syncEngine จะ register). สถานะ 6 สเตจ: `JOB_STATUS` (enums) + ชิปสีใน `dataTones.ts`.
 
@@ -616,8 +618,31 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 
 ### 12.7 Setup (ผู้ใช้ทำเอง) — `npm install firebase` · สร้าง Firebase project (เปิด Email/Password + Firestore) · ก๊อป `.env.example`→`.env` ใส่ค่า · deploy `firestore.rules`.
 
+### 12.8 บทบาทในบัญชีร่วม (admin/พนักงาน) — "การ์ดกันงานพัง"
+ทีมใช้ **บัญชีร้านเดียวร่วมกัน** (multi-device sync) → เพิ่มชั้นบทบาทกันพนักงานเผลอทำพัง.
+- **โมเดล (derived):** `deriveRole({guardEnabled, unlocked})` = `guardEnabled ? (unlocked ? admin : staff) : admin`.
+  - ค่าระดับร้าน (sync): `shops/{uid}/settings/security` = `{ guardEnabled, adminPinHash }` (SHA-256, `lib/security/pin.ts`).
+  - ต่ออุปกรณ์ (local, persist `marnthara-role`, **ไม่ sync**): `unlocked` → เครื่องใหม่ที่ร้านเปิดการ์ด = staff อัตโนมัติ.
+- **ไฟล์:** `store/useRoleStore.ts` (+`deriveRole`) · `hooks/useRole.ts` · `hooks/useRequireAdmin.ts` (action→เด้ง PIN) ·
+  `components/ui/AdminGate.tsx` (ลอก ModeGate) · `components/modals/AdminPinModal.tsx` · `lib/sync/securityBridge.ts` (decouple store↔Firestore).
+  syncEngine subscribe/push `securityRef` (รูปแบบเดียวกับ jobs/customers).
+- **ล็อกอะไร (admin-only):** ลบงาน (`JobsModal`) · ลบลูกค้า (`CustomerDirectoryModal`) · ล้างเครื่อง (`ShopSettingsModal`/`DataModal`) ·
+  เมนูต้นทุน/กำไร (`การเงินของงาน` + `โครงสร้างต้นทุน` ห่อ `AdminGate` — เป็น entry เดียวของ 2 modal นั้น).
+- ⚠️ **client-side guard เท่านั้น** (บัญชีร่วม = แยกผู้ใช้ใน Firestore ไม่ได้) — กันพลาด ไม่ใช่กันคนใน. แยกสิทธิ์จริง = ต้องแยกบัญชี + membership (อนาคต).
+  ข้อจำกัดที่เหลือ: ต้นทุน/กำไร **inline ในโหมดละเอียด** (การ์ดรายการ) ยังเห็นได้ — ถ้าต้องซ่อนทั้งหมดต้อง sweep เพิ่ม.
+
+### 12.9 Pricing sync (สินค้า&ราคา + ต้นทุน ระดับร้าน)
+"ความรู้ราคาทั้งร้าน" = `favorites` + 7 vault ต้นทุน + `costInclude` — **ชุดเดียวของร้าน** (ไม่ใช่ต่องาน) → sync ให้ทุกเครื่องตรงกัน.
+- **Firestore:** `shops/{uid}/settings/pricing` = `{ updatedAt, data: JSON.stringify(PricingBundle) }` (JSON string เหมือน jobs · doc limit 1MB).
+- **helper:** `src/lib/pricing-bundle.ts` (pure) — `extractPricing`/`applyPricingFields`/`mergePricing`/`isPricingEmpty`.
+- **syncEngine:** `pricingRef` + `onSnapshot` — reconcile ครั้งแรก: cloud มี doc → **merge** (union, cloud ชนะ — ไม่ให้ของหาย) + ดันผลรวมขึ้น;
+  cloud ว่าง (server ยืนยัน) → **seed** จาก local. หลัง reconcile → **replace** (mirror, รองรับการลบข้ามเครื่อง) คุมด้วย flag `pricingHydrating` กัน echo.
+  push = subscription จับ favorites/vault/costInclude เปลี่ยน (≠ hydrate) → debounce 800ms → `pushPricingDoc` (ไม่ผ่าน bridge — ไม่มี slice action ที่ push).
+- **conflict:** last-write-wins ระดับ doc (catalog ร้านแก้ไม่บ่อย).
+- ⚠️ **Restore ไฟล์ backup** (DataModal) ยัง replace favorites+vault → จะ push ทับ pricing ร้าน (follow-up: เตือน/ผูก role guard/แยก backup).
+
 ---
 
 **Last refactor:** 2026-06-15 (Sync status + conflict guard + iOS offline §12.4) · 2026-06-14 (Multi-job + Firebase sync §12) · 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
-**Persistence key:** `marnthara.input.v6.4` (persist **v6**) · tier override: `marnthara-experience` · sync status: `useSyncStore` (ไม่ persist)  
+**Persistence key:** `marnthara.input.v6.4` (persist **v6**) · tier override: `marnthara-experience` · บทบาท: `marnthara-role` (ต่ออุปกรณ์) · sync status: `useSyncStore` (ไม่ persist)  
 **App version:** `vite-refactor/6.7.0-strict-mode`

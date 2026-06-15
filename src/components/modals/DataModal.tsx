@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useRequireAdmin } from '@/hooks/useRequireAdmin';
 import {
   Upload,
   Download,
@@ -19,8 +20,10 @@ import {
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { parseBackup } from '@/lib/backup';
+import { parseBackup, type ParsedBackup } from '@/lib/backup';
 import { downloadBackup } from '@/lib/backup-export';
+import { resolveRestoreIdentity, forkBundleId } from '@/lib/restore-identity';
+import type { Customer } from '@/types';
 
 interface DataModalProps {
   isOpen: boolean;
@@ -31,6 +34,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
   const { createJob, factoryReset, importFavorites, importSecrets, importCatalog } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
   const { confirm } = useConfirm();
+  const requireAdmin = useRequireAdmin();
 
   const [resetInput, setResetInput] = useState('');
   const [showDangerZone, setShowDangerZone] = useState(false);
@@ -52,6 +56,86 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
     addToast(ok ? 'success' : 'error', ok ? 'Backup ข้อมูลสำเร็จ' : 'เกิดข้อผิดพลาดในการ Backup');
   };
 
+  /**
+   * เขียนงานจากไฟล์เข้า live + ชั้นวาง โดยรักษา identity (UUID = 1 งาน):
+   *  1) flush งานปัจจุบันลงชั้นวางก่อน (กันงาน local-only/ออฟไลน์ที่แก้ค้างหายตอนถูกทับ)
+   *  2) ถ้า UUID ในไฟล์ชนกับงานในชั้นวาง → ถาม "ทับงานเดิม" หรือ "เก็บเป็นสำเนาใหม่ (UUID ใหม่)"
+   *     — ไม่ว่าเลือกอะไรก็ไม่มีงานหายเงียบ
+   */
+  const applyRestore = async (json: ParsedBackup, raw: unknown) => {
+    // 1) flush งานปัจจุบันก่อนเขียนทับ live (no-op ถ้างานเปล่า)
+    useAppStore.getState().saveCurrentJob();
+
+    // 2) ตัดสิน identity: ไฟล์ชนกับงานในชั้นวางไหม (UUID ตรงกัน) + ไฟล์เก่ากว่าไหม
+    let customer = json.customer as unknown as Customer | undefined;
+    const exportDate =
+      raw && typeof raw === 'object' && typeof (raw as Record<string, unknown>).exportDate === 'string'
+        ? ((raw as Record<string, unknown>).exportDate as string)
+        : undefined;
+    const { collides, existing, incomingOlder } = resolveRestoreIdentity(
+      customer?.id,
+      useAppStore.getState().jobs,
+      exportDate
+    );
+
+    if (collides && customer) {
+      const updatedLabel = existing?.updatedAt
+        ? new Date(existing.updatedAt).toLocaleDateString('th-TH', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })
+        : '';
+      const overwrite = await confirm({
+        title: 'งานนี้มีอยู่แล้วในเครื่อง',
+        description:
+          `ไฟล์นี้เป็นงานเดียวกับที่มีอยู่ (รหัสงานตรงกัน${updatedLabel ? ` · งานในเครื่องอัปเดตล่าสุด ${updatedLabel}` : ''})` +
+          (incomingOlder ? ' ⚠️ ไฟล์ที่นำเข้าเก่ากว่างานในเครื่อง' : '') +
+          ' — เลือก "ทับงานเดิม" เพื่ออัปเดตด้วยไฟล์นี้ หรือ "เก็บเป็นสำเนาใหม่" เพื่อไม่ให้ของเดิมหาย',
+        confirmLabel: 'ทับงานเดิม',
+        cancelLabel: 'เก็บเป็นสำเนาใหม่',
+        variant: incomingOlder ? 'destructive' : 'default',
+      });
+      if (!overwrite) customer = forkBundleId(customer); // สำเนาใหม่ → UUID ใหม่ (คนละงาน)
+    }
+
+    // 3) เขียนทับ live (customer อาจถูก fork แล้ว) — known fields เท่านั้น
+    // cast ผ่าน unknown: schema ใน parseBackup ตรวจแบบ "หลวม" (เฉพาะ field ที่พังแอปได้)
+    // โครงเต็มมาจากไฟล์ที่แอป export เอง — ไม่ re-declare ทุก field ซ้ำที่นี่
+    const s = useAppStore.getState();
+    useAppStore.setState({
+      customer:       customer                                              ?? s.customer,
+      rooms:          (json.rooms as unknown as typeof s.rooms)             ?? s.rooms,
+      shopConfig:     (json.shopConfig as unknown as typeof s.shopConfig)   ?? s.shopConfig,
+      discount:       (json.discount as unknown as typeof s.discount)       ?? s.discount,
+      favorites:      (json.favorites as unknown as typeof s.favorites)     ?? s.favorites,
+      // เงินของงานเดินตามก้อนงาน: backup ที่มี rooms แต่ไม่มี payments (รุ่นเก่า) → ล้างเป็นศูนย์
+      // (ห้ามคงมัดจำ/รายจ่ายของงานปัจจุบันไว้กับห้อง/ลูกค้าของงานที่ restore — เงินปนข้ามงาน)
+      receipts:       (json.payments?.receipts as unknown as typeof s.receipts)
+                        ?? (json.rooms ? [] : s.receipts),
+      expenses:       (json.payments?.expenses as unknown as typeof s.expenses)
+                        ?? (json.rooms ? [] : s.expenses),
+      // ให้ครบทุก vault เท่ากับฝั่ง handleExport (replace ต่อ vault — ไม่ merge)
+      laborCosts:     (json.production?.laborCosts as unknown as typeof s.laborCosts) ?? s.laborCosts,
+      serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
+      accessoryCosts: json.production?.accessoryCosts  ?? s.accessoryCosts,
+      hardwareCosts:  json.production?.hardwareCosts   ?? s.hardwareCosts,
+      fabricCosts:    json.production?.fabricCosts     ?? s.fabricCosts,
+      wallpaperCosts: json.production?.wallpaperCosts  ?? s.wallpaperCosts,
+      areaCosts:      json.production?.areaCosts       ?? s.areaCosts,
+      // merge ทับ default ปัจจุบัน — กัน costInclude บางส่วน (รุ่นเก่า/ไฟล์มือ) ลบ key ที่เหลือ
+      costInclude:    { ...s.costInclude, ...(json.production?.costInclude as Partial<typeof s.costInclude> | undefined) },
+    });
+
+    // formulas เป็น compile-time constant (src/config/formulas.ts) — ไม่ import จาก backup
+    // ถ้า backup เก่ามี formulas → ignore (silent)
+
+    // 4) งานที่ restore = งานปัจจุบัน → เก็บลง "งานทั้งหมด" + ตั้งเป็นงานที่เปิดอยู่
+    useAppStore.getState().saveCurrentJob();
+    addToast('success', 'นำเข้าข้อมูลสำเร็จ');
+    onClose();
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -68,44 +152,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
           addToast('error', `ไฟล์ Backup ไม่ถูกต้อง: ${result.error ?? ''}`);
           return;
         }
-        const json = result.data;
-        const s = useAppStore.getState();
-
-        // Restore only known fields — prevents polluting store with exportDate/version/etc.
-        // cast ผ่าน unknown: schema ใน parseBackup ตรวจแบบ "หลวม" (เฉพาะ field ที่พังแอปได้)
-        // โครงเต็มมาจากไฟล์ที่แอป export เอง — ไม่ re-declare ทุก field ซ้ำที่นี่
-        useAppStore.setState({
-          customer:       (json.customer as unknown as typeof s.customer)     ?? s.customer,
-          rooms:          (json.rooms as unknown as typeof s.rooms)           ?? s.rooms,
-          shopConfig:     (json.shopConfig as unknown as typeof s.shopConfig) ?? s.shopConfig,
-          discount:       (json.discount as unknown as typeof s.discount)     ?? s.discount,
-          favorites:      (json.favorites as unknown as typeof s.favorites)   ?? s.favorites,
-          // เงินของงานเดินตามก้อนงาน: backup ที่มี rooms แต่ไม่มี payments (รุ่นเก่า) → ล้างเป็นศูนย์
-          // (ห้ามคงมัดจำ/รายจ่ายของงานปัจจุบันไว้กับห้อง/ลูกค้าของงานที่ restore — เงินปนข้ามงาน)
-          receipts:       (json.payments?.receipts as unknown as typeof s.receipts)
-                            ?? (json.rooms ? [] : s.receipts),
-          expenses:       (json.payments?.expenses as unknown as typeof s.expenses)
-                            ?? (json.rooms ? [] : s.expenses),
-          // ให้ครบทุก vault เท่ากับฝั่ง handleExport (replace ต่อ vault — ไม่ merge)
-          laborCosts:     (json.production?.laborCosts as unknown as typeof s.laborCosts) ?? s.laborCosts,
-          serviceCosts:   json.production?.serviceCosts    ?? s.serviceCosts,
-          accessoryCosts: json.production?.accessoryCosts  ?? s.accessoryCosts,
-          hardwareCosts:  json.production?.hardwareCosts   ?? s.hardwareCosts,
-          fabricCosts:    json.production?.fabricCosts     ?? s.fabricCosts,
-          wallpaperCosts: json.production?.wallpaperCosts  ?? s.wallpaperCosts,
-          areaCosts:      json.production?.areaCosts       ?? s.areaCosts,
-          // merge ทับ default ปัจจุบัน — กัน costInclude บางส่วน (รุ่นเก่า/ไฟล์มือ) ลบ key ที่เหลือ
-          costInclude:    { ...s.costInclude, ...(json.production?.costInclude as Partial<typeof s.costInclude> | undefined) },
-        });
-
-        // formulas เป็น compile-time constant (src/config/formulas.ts) — ไม่ import จาก backup
-        // ถ้า backup เก่ามี formulas → ignore (silent)
-
-        // งานที่ restore = งานปัจจุบัน → เก็บลง "งานทั้งหมด" + ตั้งเป็นงานที่เปิดอยู่
-        useAppStore.getState().saveCurrentJob();
-
-        addToast('success', 'นำเข้าข้อมูลสำเร็จ');
-        onClose();
+        void applyRestore(result.data, raw);
       } catch {
         addToast('error', 'ไฟล์ไม่ถูกต้อง หรือเสียหาย');
       }
@@ -177,22 +224,24 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleFactoryReset = async () => {
+  // ล้างเครื่อง = ทำลายล้างสูงสุด → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
+  const handleFactoryReset = () => {
     if (resetInput !== 'RESET') return;
+    requireAdmin(async () => {
+      const isConfirmed = await confirm({
+        title: 'ยืนยันล้างเครื่อง (Factory Reset)?',
+        description:
+          'ข้อมูลทุกอย่างรวมถึง การตั้งค่าร้าน, ต้นทุน, และรายการโปรด จะหายไปทั้งหมด! คุณแน่ใจหรือไม่?',
+        confirmLabel: 'ล้างข้อมูลทั้งหมด',
+        variant: 'destructive',
+      });
 
-    const isConfirmed = await confirm({
-      title: 'ยืนยันล้างเครื่อง (Factory Reset)?',
-      description:
-        'ข้อมูลทุกอย่างรวมถึง การตั้งค่าร้าน, ต้นทุน, และรายการโปรด จะหายไปทั้งหมด! คุณแน่ใจหรือไม่?',
-      confirmLabel: 'ล้างข้อมูลทั้งหมด',
-      variant: 'destructive',
+      if (isConfirmed) {
+        factoryReset();
+        addToast('success', 'ล้างข้อมูลทั้งหมดเรียบร้อยแล้ว');
+        onClose();
+      }
     });
-
-    if (isConfirmed) {
-      factoryReset();
-      addToast('success', 'ล้างข้อมูลทั้งหมดเรียบร้อยแล้ว');
-      onClose();
-    }
   };
 
   return (

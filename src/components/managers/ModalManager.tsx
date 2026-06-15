@@ -25,6 +25,7 @@ import { CodeDetailModal } from '@/components/modals/CodeDetailModal';
 import { JobsModal } from '@/components/modals/JobsModal';
 import { SignInModal } from '@/components/modals/SignInModal';
 import { CustomerDirectoryModal } from '@/components/modals/CustomerDirectoryModal';
+import { AdminPinModal } from '@/components/modals/AdminPinModal';
 
 export const ModalManager: React.FC = () => {
   const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
@@ -37,6 +38,7 @@ export const ModalManager: React.FC = () => {
   const materialSummaryProps = modalPropsAs(activeModal, modalProps, 'materialSummary');
   const projectOverviewProps = modalPropsAs(activeModal, modalProps, 'projectOverview');
   const codeDetailProps = modalPropsAs(activeModal, modalProps, 'codeDetail');
+  const adminPinProps = modalPropsAs(activeModal, modalProps, 'adminPin');
 
   // Handler for Item Form Submit (Add/Edit)
   const handleItemSubmit = (data: ItemData) => {
@@ -147,6 +149,14 @@ export const ModalManager: React.FC = () => {
         key={isVisible('customerDirectory') ? 'custdir-open' : 'custdir-closed'}
         isOpen={isVisible('customerDirectory')}
         onClose={closeModal}
+      />
+
+      <AdminPinModal
+        key={isVisible('adminPin') ? `adminpin-${adminPinProps?.intent}` : 'adminpin-closed'}
+        isOpen={isVisible('adminPin')}
+        onClose={closeModal}
+        intent={adminPinProps?.intent ?? 'unlock'}
+        onSuccess={adminPinProps?.onSuccess}
       />
 
       <MainMenuModal

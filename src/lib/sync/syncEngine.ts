@@ -23,12 +23,22 @@ import {
 import { db } from '@/lib/firebase/app';
 import { useAppStore } from '@/store/useAppStore';
 import { useSyncStore } from '@/store/useSyncStore';
+import { useRoleStore } from '@/store/useRoleStore';
 import type { JobBundle } from '@/lib/job-bundle';
 import type { RegistryCustomer } from '@/lib/customers/contract';
+import {
+  extractPricing,
+  applyPricingFields,
+  mergePricing,
+  isPricingEmpty,
+  type PricingBundle,
+  type PricingFields,
+} from '@/lib/pricing-bundle';
 import { normalizeCode } from '@/lib/codes';
 import { newUuid } from '@/lib/id';
 import { setJobSyncBridge, resetJobSyncBridge } from '@/lib/sync/jobSyncBridge';
 import { setCustomerSyncBridge, resetCustomerSyncBridge } from '@/lib/sync/customerSyncBridge';
+import { setSecuritySyncBridge, resetSecuritySyncBridge } from '@/lib/sync/securityBridge';
 import { consumeSuppress } from '@/lib/sync/syncFlags';
 
 // ── Firestore refs ───────────────────────────────────────────────────────────
@@ -37,6 +47,10 @@ const jobRef = (uid: string, id: string) => doc(db!, 'shops', uid, 'jobs', id);
 const customersCol = (uid: string) => collection(db!, 'shops', uid, 'customers');
 const customerRef = (uid: string, code: string) =>
   doc(db!, 'shops', uid, 'customers', normalizeCode(code));
+// ค่าความปลอดภัยระดับร้าน (การ์ดผู้ดูแล) — doc เดียวต่อร้าน
+const securityRef = (uid: string) => doc(db!, 'shops', uid, 'settings', 'security');
+// ความรู้ราคาทั้งร้าน (แค็ตตาล็อก + ต้นทุน) — doc เดียวต่อร้าน
+const pricingRef = (uid: string) => doc(db!, 'shops', uid, 'settings', 'pricing');
 
 // ── serialize / parse ────────────────────────────────────────────────────────
 const bundleToDoc = (b: JobBundle): DocumentData => ({
@@ -72,6 +86,22 @@ const docToCustomer = (data: DocumentData): RegistryCustomer | null => {
   };
 };
 
+// pricing: เก็บทั้งก้อนเป็น JSON string ต่อ doc (เหมือน jobs) — เลี่ยงข้อจำกัดชนิดข้อมูล
+const pricingToDoc = (b: PricingBundle): DocumentData => ({
+  updatedAt: b.updatedAt,
+  data: JSON.stringify(b),
+});
+const docToPricing = (data: DocumentData): PricingBundle | null => {
+  if (typeof data.data !== 'string') return null;
+  try {
+    return JSON.parse(data.data) as PricingBundle;
+  } catch {
+    return null;
+  }
+};
+const pushPricingDoc = (uid: string, b: PricingBundle) =>
+  setDoc(pricingRef(uid), pricingToDoc(b)).catch((e) => console.error('pushPricing', e));
+
 const pushJobDoc = (uid: string, b: JobBundle) =>
   setDoc(jobRef(uid, b.id), bundleToDoc(b)).catch((e) => console.error('pushJob', e));
 const deleteJobDoc = (uid: string, id: string) =>
@@ -84,8 +114,14 @@ const deleteCustomerDoc = (uid: string, code: string) =>
 // ── lifecycle state ──────────────────────────────────────────────────────────
 let unsubJobs: Unsubscribe | null = null;
 let unsubCustomers: Unsubscribe | null = null;
+let unsubSecurity: Unsubscribe | null = null;
+let unsubPricing: Unsubscribe | null = null;
 let unsubAutoSave: (() => void) | null = null;
+let unsubPricingSave: (() => void) | null = null;
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+let pricingTimer: ReturnType<typeof setTimeout> | null = null;
+// hydrate pricing จาก cloud → setState (zustand notify แบบ sync) → flag กัน subscription push echo
+let pricingHydrating = false;
 let activeUid: string | null = null;
 
 // online/offline ของเบราว์เซอร์ — สัญญาณเสริมให้ useSyncStore
@@ -97,6 +133,21 @@ const scheduleAutoSave = () => {
   autoSaveTimer = setTimeout(() => {
     autoSaveTimer = null;
     useAppStore.getState().saveCurrentJob();
+  }, 800);
+};
+
+/** วาง pricing fields เข้า store แบบ replace (mirror) โดยกัน echo-push */
+const hydratePricing = (fields: PricingFields) => {
+  pricingHydrating = true;
+  useAppStore.setState(fields);
+  pricingHydrating = false;
+};
+
+const schedulePricingPush = (uid: string) => {
+  if (pricingTimer) clearTimeout(pricingTimer);
+  pricingTimer = setTimeout(() => {
+    pricingTimer = null;
+    void pushPricingDoc(uid, extractPricing(useAppStore.getState()));
   }, 800);
 };
 
@@ -125,6 +176,12 @@ export function startSync(uid: string): void {
     pushCustomer: (c) => void pushCustomerDoc(uid, c),
     pushCustomers: (cs) => cs.forEach((c) => void pushCustomerDoc(uid, c)),
     deleteCustomerRemote: (code) => void deleteCustomerDoc(uid, code),
+  });
+  setSecuritySyncBridge({
+    pushSecurity: (payload) =>
+      void setDoc(securityRef(uid), { ...payload, updatedAt: new Date().toISOString() }).catch(
+        (e) => console.error('pushSecurity', e)
+      ),
   });
 
   // ── jobs: realtime + reconcile ครั้งแรก + สถานะซิงค์ + conflict guard ──
@@ -192,6 +249,80 @@ export function startSync(uid: string): void {
     useAppStore.getState().setCustomerRegistryMirror([...cloud.values()]);
   });
 
+  // ── security (การ์ดผู้ดูแล): doc เดียว → mirror เข้า useRoleStore ──
+  // reconcile: ถ้า server ยืนยันว่าไม่มี doc + เครื่องนี้ตั้ง guard ไว้ (local ก่อน sign-in) → ดันขึ้น cloud
+  // (adopt เฉพาะ server snapshot — กัน cache-empty ครั้งแรกดัน guard ทับ PIN ที่อีกเครื่องตั้งไว้)
+  let securityReconciled = false;
+  unsubSecurity = onSnapshot(securityRef(uid), (snap) => {
+    const data = snap.data();
+    if (data && typeof data.adminPinHash === 'string') {
+      useRoleStore.getState().setSecurityMirror({
+        guardEnabled: Boolean(data.guardEnabled),
+        adminPinHash: data.adminPinHash,
+      });
+      securityReconciled = true;
+    } else if (!snap.metadata.fromCache) {
+      // server ยืนยันว่าไม่มี doc
+      if (!securityReconciled) {
+        const local = useRoleStore.getState();
+        if (local.guardEnabled && local.adminPinHash) {
+          void setDoc(securityRef(uid), {
+            guardEnabled: true,
+            adminPinHash: local.adminPinHash,
+            updatedAt: new Date().toISOString(),
+          }).catch((e) => console.error('adoptSecurity', e));
+        }
+      }
+      securityReconciled = true;
+    }
+    // snapshot ที่เป็น cache + ไม่มี data → รอ server (ไม่ adopt/ไม่ reconcile)
+  });
+
+  // ── pricing (สินค้า&ราคา + ต้นทุนทั้งร้าน): doc เดียว → mirror เข้า store ──
+  // reconcile ครั้งแรก: cloud มี doc → merge (ไม่ให้ของหาย) + ดันผลรวมขึ้น; cloud ว่าง (server ยืนยัน) → seed จาก local
+  // หลัง reconcile: replace (mirror — รองรับการลบข้ามเครื่อง)
+  let pricingReconciled = false;
+  unsubPricing = onSnapshot(pricingRef(uid), (snap) => {
+    const cloud = docToPricing(snap.data() ?? {});
+    if (cloud) {
+      if (!pricingReconciled) {
+        pricingReconciled = true;
+        const merged = mergePricing(useAppStore.getState(), cloud);
+        hydratePricing(merged);
+        void pushPricingDoc(uid, extractPricing(useAppStore.getState()));
+      } else {
+        hydratePricing(applyPricingFields(cloud));
+      }
+    } else if (!snap.metadata.fromCache) {
+      // server ยืนยันไม่มี doc → seed จาก local ถ้ายังไม่เคยตั้ง (และไม่ว่าง)
+      if (!pricingReconciled) {
+        const local = extractPricing(useAppStore.getState());
+        if (!isPricingEmpty(local)) void pushPricingDoc(uid, local);
+      }
+      pricingReconciled = true;
+    }
+    // cache + ไม่มี data → รอ server
+  });
+
+  // ── pricing auto-save: แก้ favorites/vault/costInclude (ไม่ใช่ hydrate) → debounce → push ──
+  unsubPricingSave = useAppStore.subscribe((state, prev) => {
+    if (
+      state.favorites === prev.favorites &&
+      state.laborCosts === prev.laborCosts &&
+      state.serviceCosts === prev.serviceCosts &&
+      state.accessoryCosts === prev.accessoryCosts &&
+      state.hardwareCosts === prev.hardwareCosts &&
+      state.fabricCosts === prev.fabricCosts &&
+      state.wallpaperCosts === prev.wallpaperCosts &&
+      state.areaCosts === prev.areaCosts &&
+      state.costInclude === prev.costInclude
+    ) {
+      return;
+    }
+    if (pricingHydrating) return; // hydrate จาก cloud ไม่ใช่ผู้ใช้แก้ → ไม่ push ซ้ำ
+    schedulePricingPush(uid);
+  });
+
   // ── auto-save: live edit → mark dirty → debounce → saveCurrentJob (push) ──
   unsubAutoSave = useAppStore.subscribe((state, prev) => {
     if (
@@ -215,11 +346,18 @@ export function startSync(uid: string): void {
 export function stopSync(): void {
   unsubJobs?.();
   unsubCustomers?.();
+  unsubSecurity?.();
+  unsubPricing?.();
   unsubAutoSave?.();
-  unsubJobs = unsubCustomers = unsubAutoSave = null;
+  unsubPricingSave?.();
+  unsubJobs = unsubCustomers = unsubSecurity = unsubPricing = unsubAutoSave = unsubPricingSave = null;
   if (autoSaveTimer) {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = null;
+  }
+  if (pricingTimer) {
+    clearTimeout(pricingTimer);
+    pricingTimer = null;
   }
   if (typeof window !== 'undefined') {
     window.removeEventListener('online', onOnline);
@@ -227,6 +365,7 @@ export function stopSync(): void {
   }
   resetJobSyncBridge();
   resetCustomerSyncBridge();
+  resetSecuritySyncBridge();
   useSyncStore.getState().stop();
   activeUid = null;
 }

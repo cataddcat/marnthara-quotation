@@ -15,6 +15,7 @@ import { useUIStore } from '@/store/useUIStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
+import { useRequireAdmin } from '@/hooks/useRequireAdmin';
 import { cn } from '@/lib/utils';
 import { fmtTH } from '@/utils/formatters';
 import { extractJobBundle, isBundleEmpty, type JobBundle } from '@/lib/job-bundle';
@@ -65,6 +66,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const { confirm } = useConfirm();
   const { trigger } = useHaptic();
   const sync = useSyncStatus();
+  const requireAdmin = useRequireAdmin();
 
   const [query, setQuery] = useState('');
   const PAGE = 50;
@@ -139,17 +141,19 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
     addToast('success', 'ทำสำเนางานแล้ว');
   };
 
-  const handleDelete = async (job: JobBundle) => {
-    const ok = await confirm({
-      title: 'ลบงานนี้?',
-      description: `งานของ "${job.customer.name || 'ไม่มีชื่อ'}" จะถูกลบ — กู้คืนไม่ได้`,
-      confirmLabel: 'ลบงาน',
-      variant: 'destructive',
+  // ลบงาน = ทำลายล้าง → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
+  const handleDelete = (job: JobBundle) =>
+    requireAdmin(async () => {
+      const ok = await confirm({
+        title: 'ลบงานนี้?',
+        description: `งานของ "${job.customer.name || 'ไม่มีชื่อ'}" จะถูกลบ — กู้คืนไม่ได้`,
+        confirmLabel: 'ลบงาน',
+        variant: 'destructive',
+      });
+      if (!ok) return;
+      deleteJob(job.id);
+      addToast('success', 'ลบงานแล้ว');
     });
-    if (!ok) return;
-    deleteJob(job.id);
-    addToast('success', 'ลบงานแล้ว');
-  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="งานทั้งหมด" variant="fullscreen">

@@ -8,6 +8,7 @@ import { ShopConfig } from '@/types';
 import { Save, AlertTriangle, Store, CreditCard, FileText, ImagePlus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useRequireAdmin } from '@/hooks/useRequireAdmin';
 import { useUIStore } from '@/store/useUIStore';
 import { compressImage } from '@/utils/imageHelper';
 
@@ -22,6 +23,7 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
   const factoryReset = useAppStore((state) => state.factoryReset);
 
   const { confirm } = useConfirm();
+  const requireAdmin = useRequireAdmin();
   const addToast = useUIStore((state) => state.addToast);
 
   // Local State
@@ -37,21 +39,23 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
     onClose();
   };
 
-  const handleReset = async () => {
-    const isConfirmed = await confirm({
-      title: 'ล้างข้อมูลทั้งหมด?',
-      description:
-        'การกระทำนี้จะลบข้อมูลลูกค้า รายการสินค้า และการตั้งค่าทั้งหมด ไม่สามารถกู้คืนได้',
-      confirmLabel: 'ล้างข้อมูล',
-      variant: 'destructive',
-    });
+  // ล้างเครื่อง = ทำลายล้างสูงสุด → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
+  const handleReset = () =>
+    requireAdmin(async () => {
+      const isConfirmed = await confirm({
+        title: 'ล้างข้อมูลทั้งหมด?',
+        description:
+          'การกระทำนี้จะลบข้อมูลลูกค้า รายการสินค้า และการตั้งค่าทั้งหมด ไม่สามารถกู้คืนได้',
+        confirmLabel: 'ล้างข้อมูล',
+        variant: 'destructive',
+      });
 
-    if (isConfirmed) {
-      factoryReset();
-      addToast('success', 'รีเซ็ตระบบเรียบร้อย');
-      onClose();
-    }
-  };
+      if (isConfirmed) {
+        factoryReset();
+        addToast('success', 'รีเซ็ตระบบเรียบร้อย');
+        onClose();
+      }
+    });
 
   const handleShopChange = (field: keyof ShopConfig, value: string) => {
     setShopData((prev) => ({ ...prev, [field]: value }));

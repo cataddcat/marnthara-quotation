@@ -19,6 +19,9 @@ import {
   Gem,
   FolderKanban,
   User,
+  Lock,
+  Unlock,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { APP_VERSION } from '@/config/constants';
@@ -29,6 +32,8 @@ import { useUIStore } from '@/store/useUIStore';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
+import { useRole } from '@/hooks/useRole';
+import { AdminGate } from '@/components/ui/AdminGate';
 import { Cloud, CloudOff, LogOut } from 'lucide-react';
 
 interface MainMenuModalProps {
@@ -116,6 +121,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 }) => {
   const { theme, setTheme } = useThemeStore();
   const shopName = useAppStore((s) => s.shopConfig.name);
+  const openModal = useAppStore((s) => s.openModal);
   const authStatus = useAuthStore((s) => s.status);
   const authEmail = useAuthStore((s) => s.email);
   const signOutUser = useAuthStore((s) => s.signOutUser);
@@ -123,6 +129,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   const sync = useSyncStatus();
   const { trigger } = useHaptic();
   const { mode, canSwitch, setMode } = useExperienceMode();
+  const { isAdmin, isStaff, guardEnabled, lock } = useRole();
 
   const themes = [
     { id: 'light' as const, label: 'สว่าง', icon: Sun, active: theme === 'light' },
@@ -214,6 +221,78 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             </div>
           )}
 
+          {/* ── บทบาท (การ์ดผู้ดูแล) — บัญชีร่วม: กันพนักงานเผลอทำพัง ── */}
+          {authStatus === 'signed-in' && (
+            <div className="bg-card border border-border/50 rounded-lg px-3 py-2 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {guardEnabled && isStaff ? (
+                    <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" strokeWidth={1.5} />
+                  ) : (
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" strokeWidth={1.5} />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-foreground">
+                      {guardEnabled ? (isAdmin ? 'ผู้ดูแล' : 'พนักงาน') : 'ผู้ดูแล'}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate max-w-[170px]">
+                      {!guardEnabled
+                        ? 'ตั้ง PIN กันพนักงานเผลอลบ/แก้ทุน'
+                        : isAdmin
+                          ? 'ปลดล็อกอยู่ — ทำได้ทุกอย่าง'
+                          : 'จำกัดสิทธิ์ — แตะปลดล็อก'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {!guardEnabled && (
+                    <button
+                      onClick={() => { trigger('light'); openModal('adminPin', { intent: 'setup' }); }}
+                      className="text-xs font-bold text-info hover:text-info/80 transition-colors min-h-[44px] px-2"
+                    >
+                      ตั้ง PIN
+                    </button>
+                  )}
+                  {guardEnabled && isStaff && (
+                    <button
+                      onClick={() => { trigger('light'); openModal('adminPin', { intent: 'unlock' }); }}
+                      className="flex items-center gap-1 text-xs font-bold text-info hover:text-info/80 transition-colors min-h-[44px] px-2"
+                    >
+                      <Unlock className="w-4 h-4" strokeWidth={1.5} /> ปลดล็อก
+                    </button>
+                  )}
+                  {guardEnabled && isAdmin && (
+                    <>
+                      <button
+                        onClick={() => { trigger('light'); openModal('adminPin', { intent: 'setup' }); }}
+                        aria-label="เปลี่ยน PIN"
+                        className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors min-h-[44px]"
+                      >
+                        <KeyRound className="w-4 h-4" strokeWidth={1.5} />
+                      </button>
+                      <button
+                        onClick={() => { trigger('light'); lock(); addToast('info', 'ล็อกเป็นพนักงานแล้ว'); }}
+                        className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-amber-600 transition-colors min-h-[44px] px-2"
+                      >
+                        <Lock className="w-4 h-4" strokeWidth={1.5} /> ล็อก
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {guardEnabled && isAdmin && (
+                <button
+                  onClick={() => { trigger('light'); openModal('adminPin', { intent: 'disable' }); }}
+                  className="w-full text-left text-xs text-muted-foreground hover:text-destructive transition-colors min-h-[36px] px-1"
+                >
+                  ปิดโหมดทีม (ทุกเครื่องเป็นผู้ดูแล)
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {/* Theme Toggle */}
             <div className="flex items-center justify-between bg-card border border-border/50 p-1 rounded-lg">
@@ -275,9 +354,14 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           </h3>
           <div className="grid grid-cols-2 gap-2">
             <MenuCompactItem icon={Layers} label="สินค้า & ราคา" desc="อัปเดตรหัสวัสดุ" onClick={onOpenMaterialSummary} accentColor="indigo" />
-            <MenuCompactItem icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} accentColor="emerald" />
+            {/* ต้นทุน/กำไร = ความลับร้าน → เฉพาะผู้ดูแล (พนักงานไม่เห็นเมนูนี้) */}
+            <AdminGate>
+              <MenuCompactItem icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} accentColor="emerald" />
+            </AdminGate>
             <MenuCompactItem icon={Percent} label="จัดการส่วนลด" desc="ลดท้ายบิล / โปรโมชัน" onClick={onOpenDiscount} accentColor="emerald" />
-            <MenuCompactItem icon={ShieldCheck} label="โครงสร้างต้นทุน" desc="ค่าแรง / ค่าบริการ" onClick={onOpenProductionSettings} accentColor="primary" />
+            <AdminGate>
+              <MenuCompactItem icon={ShieldCheck} label="โครงสร้างต้นทุน" desc="ค่าแรง / ค่าบริการ" onClick={onOpenProductionSettings} accentColor="primary" />
+            </AdminGate>
           </div>
         </section>
 
