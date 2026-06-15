@@ -4,6 +4,9 @@
   "_demo_note": "Demo data ครอบทุก feature ของระบบ — import เพื่อทดสอบ Financial Dashboard, Material Summary, PDF, edge cases",
 
   "customer": {
+    "id": "demo-0001-4a1b-8c2d-000000000001",
+    "code": "C0001",
+    "docSeq": 1,
     "name": "คุณสมชาย ใจดี (Demo Customer)",
     "phone": "085-999-1234",
     "address": "123/45 ถ.สุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110",
@@ -377,7 +380,7 @@
 
   "favorites": {
     "curtain_main": [
-      { "id": "fav-cm-1", "code": "F-001", "default_price_per_m": 850, "cost_per_yard": 480, "note": "ผ้าทึบเกรด A — ลายผีเสื้อ" },
+      { "id": "fav-cm-1", "code": "F-001", "default_price_per_m": 850, "cost_per_yard": 480, "brand": "Pasaya", "model": "Eclipse", "color": "เทาควันบุหรี่", "variant": "หน้ากว้าง 2.8 ม.", "note": "ผ้าทึบเกรด A — ลายผีเสื้อ" },
       { "id": "fav-cm-2", "code": "F-002", "default_price_per_m": 950, "cost_per_yard": 550, "note": "ผ้าทึบกันยูวี" },
       { "id": "fav-cm-3", "code": "F-003", "default_price_per_m": 600, "cost_per_yard": 320, "note": "ผ้าทึบโพลีเอสเตอร์" },
       { "id": "fav-cm-4", "code": "F-VIP", "default_price_per_m": 1500, "cost_per_yard": 850, "note": "ผ้านำเข้า — VIP" }
@@ -395,7 +398,7 @@
       { "id": "fav-wb-2", "code": "WB-002", "default_price_per_m": 420, "cost_per_yard": 260, "note": "มู่ลี่ไม้โอ๊ค 50mm" }
     ],
     "roller_blind": [
-      { "id": "fav-rb-1", "code": "RB-001", "default_price_per_m": 280, "cost_per_yard": 165, "note": "Blackout สีเทา" },
+      { "id": "fav-rb-1", "code": "RB-001", "default_price_per_m": 280, "cost_per_yard": 165, "brand": "Toso", "model": "Blackout", "color": "เทา", "variant": "ทึบแสง 100%", "note": "Blackout สีเทา" },
       { "id": "fav-rb-2", "code": "RB-002", "default_price_per_m": 320, "cost_per_yard": 190, "note": "Sunscreen 5% openness" }
     ],
     "vertical_blind": [
@@ -412,30 +415,49 @@
     ]
   },
 
+  "payments": {
+    "receipts": [
+      { "id": "rcpt-1", "label": "มัดจำ 50%", "amount": 15000, "date": "2026-06-01", "note": "โอนผ่านธนาคาร" },
+      { "id": "rcpt-2", "label": "งวดที่ 2 (วันติดตั้ง)", "amount": 8000, "date": "2026-06-12" }
+    ],
+    "expenses": [
+      { "id": "exp-1", "label": "ค่าผ้า F-001 ร้าน ก.", "amount": 4200, "category": "material", "paid": true, "date": "2026-06-03" },
+      { "id": "exp-2", "label": "ค่าราง TES + ลูกล้อ", "amount": 1800, "category": "hardware", "paid": true, "date": "2026-06-03" },
+      { "id": "exp-3", "label": "ค่าเย็บช่าง", "amount": 3500, "category": "sewing", "paid": false, "date": "2026-06-10" },
+      { "id": "exp-4", "label": "ค่าขนส่ง + ติดตั้ง", "amount": 1200, "category": "install", "paid": false, "date": "2026-06-12", "note": "เหมาทั้งงาน" }
+    ]
+  },
+
   "production": {
     "laborCosts": {
-      "ลอน": { "style": "ลอน", "rate": 110, "unit": "meter", "min_price": 400 },
-      "จีบ": { "style": "จีบ", "rate": 110, "unit": "meter", "min_price": 400 },
-      "ตาไก่": { "style": "ตาไก่", "rate": 90, "unit": "meter", "min_price": 300 },
-      "พับ": { "style": "พับ", "rate": 220, "unit": "sqm", "min_price": 600 },
-      "หลุยส์": { "style": "หลุยส์", "rate": 160, "unit": "meter", "min_price": 500 },
-      "แป๊บ": { "style": "แป๊บ", "rate": 60, "unit": "meter", "min_price": 200 },
-      "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 70, "unit": "meter", "min_price": 200 }
+      "ลอน": { "style": "ลอน", "rate": 130, "unit": "meter", "min_price": 0 },
+      "จีบ": { "style": "จีบ", "rate": 130, "unit": "meter", "min_price": 0 },
+      "ตาไก่": { "style": "ตาไก่", "rate": 130, "unit": "meter", "min_price": 0 },
+      "พับ": { "style": "พับ", "rate": 300, "unit": "meter", "min_price": 0 },
+      "หลุยส์": { "style": "หลุยส์", "rate": 500, "unit": "meter", "min_price": 0 },
+      "แป๊บ": { "style": "แป๊บ", "rate": 130, "unit": "meter", "min_price": 0 },
+      "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 130, "unit": "meter", "min_price": 0 }
+    },
+    "serviceCosts": {
+      "install_point": 300,
+      "removal_per_point": 300,
+      "shipping_per_job": 800
     },
     "accessoryCosts": {
-      "rail_wave": 160,
+      "rail_wave": 130,
       "rail_pleated": 100,
       "rail_eyelet": 190,
       "rail_roman": 450,
       "rail_rod": 70,
-      "rail_louis": 650,
-      "eyelet_ring": 5,
-      "tape_wave": 10,
-      "install_point": 350,
-      "install_min": 600,
-      "transport_base": 400,
-      "transport_upcountry": 1200,
-      "fuel_diesel_liter": 32
+      "rail_louis": 650
+    },
+    "hardwareCosts": {
+      "RAIL-TES-TW14.5": 130,
+      "RAIL-LTL-M": 100,
+      "RAIL-EYELET-SHOW": 190,
+      "RAIL-ROMAN-SYS": 450,
+      "RAIL-ROD-ALU": 70,
+      "RAIL-LOUIS-BOX": 650
     },
     "fabricCosts": {
       "F-001": 480,
@@ -464,6 +486,12 @@
       "AB-001": 105,
       "PT-001": 270,
       "PS-001": 190
+    },
+    "costInclude": {
+      "labor": true,
+      "rail": true,
+      "service": true,
+      "shipping": false
     }
   }
 }

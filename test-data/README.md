@@ -13,12 +13,17 @@
 
 ## ไฟล์ในโฟลเดอร์
 
-| ไฟล์ | ขนาด | ใช้ทำอะไร |
+| ไฟล์ | เส้นทาง import | ใช้ทำอะไร |
 |---|---|---|
-| `demo-full-coverage.json` | ใหญ่สุด | **ใช้เป็นหลัก** — ครอบทุก feature, edge case ครบ |
-| `demo-favorites-only.json` | กลาง | ทดสอบ import เฉพาะ Vault (คลังผ้า) ไม่กระทบข้อมูลเดิม |
-| `demo-costs-only.json` | กลาง | ทดสอบ import เฉพาะ production costs (laborCosts, fabricCosts) |
-| `demo-minimal.json` | เล็ก | เริ่มงานใหม่จาก scratch — ลูกค้าว่าง + 1 ห้องว่าง |
+| `demo-full-coverage.json` | Upload File (restore) | **ใช้เป็นหลัก** — ครอบทุก feature: 9 item types · 7 vault ต้นทุน · costInclude · **payments (มัดจำ/จ่ายจริง)** · **SKU** · customer identity · suspended cases |
+| `demo-costs-only.json` | Upload File (restore) | เฉพาะ production costs ครบ **7 vault + costInclude** |
+| `demo-favorites-only.json` | แท็บ "คลังผ้า" | เฉพาะคลังผ้า (favorites) + SKU — auto-route `cost_per_yard` เข้า vault |
+| `demo-minimal.json` | Upload File (restore) | เริ่มงานใหม่จาก scratch — ลูกค้าว่าง + 1 ห้องว่าง |
+| `mtr-test-full-backup.json` | Upload File (restore) | backup เต็มอีกชุด (schema ปัจจุบัน — payments + 7 vault + identity) |
+| `mtr-test-cost-import.json` | แท็บ "ต้นทุน" (importSecrets) | ต้นทุน top-level ครบ 7 vault + costInclude (โค้ดชุดอื่นเพื่อทดสอบ merge) |
+| `mtr-test-favorites-import.json` | แท็บ "คลังผ้า" | category map ตรงๆ + SKU บางรายการ |
+| `mtr-test-catalog-import.json` | แท็บ "แค็ตตาล็อก" (importCatalog) | **Catalog Contract v2** — สินค้า/ราคาขาย/ทุน + SKU ครบทุกหมวด (9 สินค้า + 6 ราง) |
+| `mtr-test-customers-import.json` | ฐานลูกค้า → นำเข้า (importCustomers) | **Customer Contract v1** — ทะเบียนลูกค้า bulk (C0001…) |
 
 ## Coverage Matrix — `demo-full-coverage.json`
 
@@ -75,10 +80,28 @@
 ### 📚 Favorites — ครอบทุก 9 categories
 ทุก fabric/wallpaper/area code ใน items มีอยู่ใน favorites + cost_per_yard → ทดสอบ auto-sync เข้า fabricCosts/wallpaperCosts/areaCosts ตอน import
 
-### 💵 Production Costs — ครบหมด
-- ✅ Labor: ลอน, จีบ, ตาไก่, พับ (unit `sqm`!), หลุยส์, แป๊บ, **ผ้าโปร่ง**
-- ✅ Accessory: rail ทุกแบบ + eyelet_ring + tape_wave + install + transport
-- ✅ Fabric/Wallpaper/Area Costs ครบทุก code ที่ items อ้างถึง (ยกเว้น UNKNOWN-CODE)
+### 💵 Production Costs — ครบ 7 vault + costInclude
+- ✅ **laborCosts** (ค่าเย็บ): ลอน/จีบ/ตาไก่/แป๊บ/ผ้าโปร่ง = 130, พับ = 300, หลุยส์ = 500 (unit `meter`)
+- ✅ **serviceCosts**: install_point · removal_per_point · shipping_per_job
+- ✅ **accessoryCosts** (legacy fallback ราง): rail_wave…rail_louis
+- ✅ **hardwareCosts** (SKU ราง จาก catalog): RAIL-TES-TW14.5 ฯลฯ
+- ✅ **fabricCosts / wallpaperCosts / areaCosts** ครบทุก code ที่ items อ้างถึง (ยกเว้น UNKNOWN-CODE)
+- ✅ **costInclude**: `{ labor, rail, service, shipping }` (สวิตช์นับรวมในทุนประมาณการ)
+
+### 💸 Payments (การเงินของงาน) — มัดจำ/จ่ายจริง
+- ✅ `receipts`: มัดจำ + งวด (id/label/amount/date)
+- ✅ `expenses`: จ่ายจริง — category ∈ material/hardware/sewing/shipping/install/other · paid true/false คละ
+
+### 🆔 Customer identity + 🏷️ SKU
+- ✅ customer มี `id` (UUID) + `code` (C0001) + `docSeq` — ใช้กับ restore-fork (UUID guard)
+- ✅ favorites/catalog มี SKU `brand/model/color/variant` (สินค้าที่มีหลายยี่ห้อ/รุ่น/สี)
+
+### 📦 Catalog Contract (`mtr-test-catalog-import.json`)
+- ✅ `marnthara.catalog` v2 — entries ครบทุก category (9 สินค้า + 6 ราง `rail_*`)
+- ✅ แต่ละ entry มี `cost` + `sell_price` + unit + SKU → ทดสอบแท็บ "แค็ตตาล็อก" (route ทุน→vault + ราคาขาย→inventory)
+
+### 👥 Customer Contract (`mtr-test-customers-import.json`)
+- ✅ `marnthara.customers` v1 — 5 ลูกค้า (code C0001…) field optional คละ → ทดสอบ ฐานลูกค้า → นำเข้า
 
 ---
 
@@ -163,3 +186,18 @@ npm run test:run -- test-data-fixtures
 1. Import `demo-costs-only.json`
 2. เปิด Cost Vault (Production Settings) → เห็น labor + accessory ครบ
 3. รัน Financial Dashboard → คำนวณ cost ได้ปกติ
+
+**Scenario 5: ทดสอบ Catalog Contract import (สินค้า/ราคา/ทุน)**
+1. "จัดการข้อมูล" → "นำเข้าข้อมูลเฉพาะส่วน" → แท็บ **"แค็ตตาล็อก"** → วางเนื้อหา `mtr-test-catalog-import.json`
+2. toast "นำเข้าแค็ตตาล็อก N รายการ"
+3. เปิด "สินค้า & ราคา" (Material Summary) → เห็นรหัสครบทุกหมวด + SKU (ยี่ห้อ/รุ่น/สี) + ราคาขาย
+4. เปิด "โครงสร้างต้นทุน" → ทุนถูก route เข้า fabric/wallpaper/area/hardware vault ตามหมวด
+
+**Scenario 6: ทดสอบ Customer Contract import (ฐานลูกค้า)**
+1. เมนู → **"ฐานลูกค้า"** → ปุ่มนำเข้า → วาง/เลือกไฟล์ `mtr-test-customers-import.json`
+2. เห็นลูกค้า C0001–C0005 ในทะเบียน → กดเลือก → "เปิดงานใหม่" ให้ลูกค้านั้น (autofill ชื่อ/ที่อยู่ + ผูก code)
+
+---
+
+> **Sync note:** เมื่อล็อกอินบัญชีร้าน (Firebase) — favorites + 7 vault ต้นทุน sync ข้ามเครื่องอัตโนมัติ
+> (`shops/{uid}/settings/pricing`). ไฟล์ catalog/cost ข้างบนจึงเป็นทั้ง "เมล็ดพันธุ์" ตั้งต้น และตัวอย่างที่ระบบภายนอกจะ generate.

@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "exportDate": "2026-05-29T12:00:00.000Z",
-  "_demo_note": "Subset: เฉพาะคลังผ้า (favorites) + production costs — ทดสอบ import แค่ Vault data ไม่กระทบ rooms/customer",
+  "exportDate": "2026-06-15T08:00:00.000Z",
+  "_demo_note": "Subset: เฉพาะคลังผ้า (favorites) — ทดสอบ import แท็บ 'คลังผ้า' (auto-route cost_per_yard เข้า vault) ไม่กระทบ rooms/customer. มี SKU (brand/model/color/variant) ตัวอย่าง",
 
   "favorites": {
     "curtain_main": [
-      { "id": "fav-cm-1", "code": "F-001", "default_price_per_m": 850, "cost_per_yard": 480, "note": "ผ้าทึบเกรด A — ลายผีเสื้อ" },
+      { "id": "fav-cm-1", "code": "F-001", "default_price_per_m": 850, "cost_per_yard": 480, "brand": "Pasaya", "model": "Eclipse", "color": "เทาควันบุหรี่", "variant": "หน้ากว้าง 2.8 ม.", "note": "ผ้าทึบเกรด A — ลายผีเสื้อ" },
       { "id": "fav-cm-2", "code": "F-002", "default_price_per_m": 950, "cost_per_yard": 550, "note": "ผ้าทึบกันยูวี" },
       { "id": "fav-cm-3", "code": "F-003", "default_price_per_m": 600, "cost_per_yard": 320, "note": "ผ้าทึบโพลีเอสเตอร์" },
       { "id": "fav-cm-4", "code": "F-VIP", "default_price_per_m": 1500, "cost_per_yard": 850, "note": "ผ้านำเข้า — VIP" }
@@ -23,7 +23,7 @@
       { "id": "fav-wb-2", "code": "WB-002", "default_price_per_m": 420, "cost_per_yard": 260, "note": "มู่ลี่ไม้โอ๊ค 50mm" }
     ],
     "roller_blind": [
-      { "id": "fav-rb-1", "code": "RB-001", "default_price_per_m": 280, "cost_per_yard": 165, "note": "Blackout สีเทา" },
+      { "id": "fav-rb-1", "code": "RB-001", "default_price_per_m": 280, "cost_per_yard": 165, "brand": "Toso", "model": "Blackout", "color": "เทา", "variant": "ทึบแสง 100%", "note": "Blackout สีเทา" },
       { "id": "fav-rb-2", "code": "RB-002", "default_price_per_m": 320, "cost_per_yard": 190, "note": "Sunscreen 5% openness" }
     ],
     "vertical_blind": [

@@ -2,6 +2,9 @@
   "version": "1.0.0",
   "exportDate": "2026-04-26T10:00:00.000Z",
   "customer": {
+    "id": "demo-0002-4a1b-8c2d-000000000002",
+    "code": "C0002",
+    "docSeq": 3,
     "name": "คุณสมชาย ใจดี",
     "phone": "085-999-1234",
     "address": "456/7 หมู่บ้านกรีนวิลล์ ซ.12 ถ.แจ้งวัฒนะ เขตหลักสี่ กรุงเทพฯ 10210",
@@ -186,6 +189,15 @@
     "partition": [],
     "pleated_screen": []
   },
+  "payments": {
+    "receipts": [
+      { "id": "rcpt-b1", "label": "มัดจำ 50%", "amount": 12000, "date": "2026-04-20" }
+    ],
+    "expenses": [
+      { "id": "exp-b1", "label": "ค่าผ้า MTR-101", "amount": 3600, "category": "material", "paid": true, "date": "2026-04-22" },
+      { "id": "exp-b2", "label": "ค่าเย็บ", "amount": 2800, "category": "sewing", "paid": false, "date": "2026-04-25", "note": "รอจ่ายช่าง" }
+    ]
+  },
   "production": {
     "laborCosts": {
       "ลอน":     { "style": "ลอน",     "rate": 120, "unit": "meter", "min_price": 450 },
@@ -211,6 +223,15 @@
       "transport_upcountry": 1300,
       "fuel_diesel_liter":     33
     },
+    "serviceCosts": {
+      "install_point":     380,
+      "removal_per_point": 350,
+      "shipping_per_job":  700
+    },
+    "hardwareCosts": {
+      "RAIL-TES-TW14.5":  135,
+      "RAIL-ROMAN-SYS":   460
+    },
     "fabricCosts": {
       "MTR-101":    180,
       "MTR-205":    260,
@@ -228,6 +249,12 @@
       "RB-DIMOUT-WH": 110,
       "VB-100":        95,
       "WB-OAK-25":   165
+    },
+    "costInclude": {
+      "labor": true,
+      "rail": true,
+      "service": true,
+      "shipping": false
     }
   }
 }

@@ -23,6 +23,19 @@
     "transport_upcountry": 1400,
     "fuel_diesel_liter":     34
   },
+  "serviceCosts": {
+    "install_point":     350,
+    "removal_per_point": 320,
+    "shipping_per_job":  900
+  },
+  "hardwareCosts": {
+    "RAIL-TES-TW14.5":  140,
+    "RAIL-LTL-M":       110,
+    "RAIL-EYELET-SHOW": 200,
+    "RAIL-ROMAN-SYS":   480,
+    "RAIL-ROD-ALU":      80,
+    "RAIL-LOUIS-BOX":   680
+  },
   "fabricCosts": {
     "MTR-101":    185,
     "MTR-205":    270,
@@ -54,5 +67,11 @@
     "AL-25MM-WH":      68,
     "PT-FABRIC-01":   325,
     "PS-INSECT-STD":  152
+  },
+  "costInclude": {
+    "labor": true,
+    "rail": true,
+    "service": true,
+    "shipping": true
   }
 }

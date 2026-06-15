@@ -1,32 +1,38 @@
 {
   "version": "1.0.0",
-  "exportDate": "2026-05-29T12:00:00.000Z",
-  "_demo_note": "Subset: เฉพาะ production costs — ทดสอบ Cost Vault import ไม่กระทบ rooms/customer/favorites",
+  "exportDate": "2026-06-15T08:00:00.000Z",
+  "_demo_note": "Subset: เฉพาะ production costs (7 vault + costInclude) — ทดสอบ Cost Vault import (Upload File) ไม่กระทบ rooms/customer/favorites",
 
   "production": {
     "laborCosts": {
-      "ลอน": { "style": "ลอน", "rate": 110, "unit": "meter", "min_price": 400 },
-      "จีบ": { "style": "จีบ", "rate": 110, "unit": "meter", "min_price": 400 },
-      "ตาไก่": { "style": "ตาไก่", "rate": 90, "unit": "meter", "min_price": 300 },
-      "พับ": { "style": "พับ", "rate": 220, "unit": "sqm", "min_price": 600 },
-      "หลุยส์": { "style": "หลุยส์", "rate": 160, "unit": "meter", "min_price": 500 },
-      "แป๊บ": { "style": "แป๊บ", "rate": 60, "unit": "meter", "min_price": 200 },
-      "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 70, "unit": "meter", "min_price": 200 }
+      "ลอน": { "style": "ลอน", "rate": 130, "unit": "meter", "min_price": 0 },
+      "จีบ": { "style": "จีบ", "rate": 130, "unit": "meter", "min_price": 0 },
+      "ตาไก่": { "style": "ตาไก่", "rate": 130, "unit": "meter", "min_price": 0 },
+      "พับ": { "style": "พับ", "rate": 300, "unit": "meter", "min_price": 0 },
+      "หลุยส์": { "style": "หลุยส์", "rate": 500, "unit": "meter", "min_price": 0 },
+      "แป๊บ": { "style": "แป๊บ", "rate": 130, "unit": "meter", "min_price": 0 },
+      "ผ้าโปร่ง": { "style": "ผ้าโปร่ง", "rate": 130, "unit": "meter", "min_price": 0 }
+    },
+    "serviceCosts": {
+      "install_point": 300,
+      "removal_per_point": 300,
+      "shipping_per_job": 800
     },
     "accessoryCosts": {
-      "rail_wave": 160,
+      "rail_wave": 130,
       "rail_pleated": 100,
       "rail_eyelet": 190,
       "rail_roman": 450,
       "rail_rod": 70,
-      "rail_louis": 650,
-      "eyelet_ring": 5,
-      "tape_wave": 10,
-      "install_point": 350,
-      "install_min": 600,
-      "transport_base": 400,
-      "transport_upcountry": 1200,
-      "fuel_diesel_liter": 32
+      "rail_louis": 650
+    },
+    "hardwareCosts": {
+      "RAIL-TES-TW14.5": 130,
+      "RAIL-LTL-M": 100,
+      "RAIL-EYELET-SHOW": 190,
+      "RAIL-ROMAN-SYS": 450,
+      "RAIL-ROD-ALU": 70,
+      "RAIL-LOUIS-BOX": 650
     },
     "fabricCosts": {
       "F-001": 480,
@@ -55,6 +61,12 @@
       "AB-001": 105,
       "PT-001": 270,
       "PS-001": 190
+    },
+    "costInclude": {
+      "labor": true,
+      "rail": true,
+      "service": true,
+      "shipping": false
     }
   }
 }

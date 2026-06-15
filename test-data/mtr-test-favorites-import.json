@@ -1,6 +1,6 @@
 {
   "curtain_main": [
-    { "id": "imp-001", "code": "IMPORT-A100", "default_price_per_m": 490, "cost_per_yard": 185 },
+    { "id": "imp-001", "code": "IMPORT-A100", "default_price_per_m": 490, "cost_per_yard": 185, "brand": "WELL", "model": "A100", "color": "ครีม", "variant": "หน้ากว้าง 3 ม." },
     { "id": "imp-002", "code": "IMPORT-B200", "default_price_per_m": 720, "cost_per_yard": 275 },
     { "id": "imp-003", "code": "VELVET-DK",   "default_price_per_m": 980, "cost_per_yard": 380 },
     { "id": "imp-004", "code": "LINEN-BG",    "default_price_per_m": 560, "cost_per_yard": 210 }
@@ -14,7 +14,7 @@
     { "id": "imp-021", "code": "WP-PLAIN-GY",  "default_price_per_m": 780,  "cost_per_yard": 310 }
   ],
   "roller_blind": [
-    { "id": "imp-030", "code": "RB-SCREEN-5", "default_price_per_m": 340, "cost_per_yard": 120 },
+    { "id": "imp-030", "code": "RB-SCREEN-5", "default_price_per_m": 340, "cost_per_yard": 120, "brand": "Toso", "model": "Screen-5", "color": "เทา", "variant": "openness 5%" },
     { "id": "imp-031", "code": "RB-SOLAR",    "default_price_per_m": 420, "cost_per_yard": 155 }
   ],
   "vertical_blind": [
