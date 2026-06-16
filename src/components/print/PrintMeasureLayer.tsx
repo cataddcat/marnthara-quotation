@@ -103,6 +103,7 @@ export const PrintMeasureLayer: React.FC<Props> = ({ ctx, blocks, onMetrics }) =
           discountAmount={ctx.totals.discountAmount}
           vatAmount={ctx.totals.vatAmount}
           finalTotal={ctx.totals.finalTotal}
+          hideBreakdown={ctx.totals.hideBreakdown}
         />
         <SignatureBlock />
       </div>

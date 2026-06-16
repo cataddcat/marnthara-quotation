@@ -145,6 +145,44 @@ describe('generateSummaryText — customer', () => {
     expect(out).not.toContain('VAT');
     expect(out).toContain(`💰 *ยอดสุทธิ: ${fmtTH(5000)} บาท*`);
   });
+
+  it('เคาะราคา + ซ่อนรายการ → โชว์เฉพาะยอดสุทธิ (ราคาเดียว)', () => {
+    const out = generateSummaryText(
+      makeInput({
+        totals: {
+          grandTotal: 92400,
+          discountAmount: 2400,
+          vatAmount: 0,
+          vatRate: 0,
+          finalTotal: 90000,
+          discount: { type: 'target', value: 90000, is_enabled: true, hide_breakdown: true },
+        },
+      }),
+      'customer'
+    );
+    expect(out).not.toContain('ยอดรวมสินค้า:');
+    expect(out).not.toContain('🏷️ ส่วนลด');
+    expect(out).toContain(`💰 *ยอดสุทธิ: ${fmtTH(90000)} บาท*`);
+  });
+
+  it('เคาะราคา + แสดงรายการ → โชว์ ยอดรวม → ส่วนลด → ยอดสุทธิ', () => {
+    const out = generateSummaryText(
+      makeInput({
+        totals: {
+          grandTotal: 92400,
+          discountAmount: 2400,
+          vatAmount: 0,
+          vatRate: 0,
+          finalTotal: 90000,
+          discount: { type: 'target', value: 90000, is_enabled: true, hide_breakdown: false },
+        },
+      }),
+      'customer'
+    );
+    expect(out).toContain('ยอดรวมสินค้า:');
+    expect(out).toContain('🏷️ ส่วนลด: -' + fmtTH(2400));
+    expect(out).toContain(`💰 *ยอดสุทธิ: ${fmtTH(90000)} บาท*`);
+  });
 });
 
 // ─── seamstress ───────────────────────────────────────────────────────────────

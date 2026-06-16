@@ -44,9 +44,15 @@ export interface Customer {
 }
 
 export interface Discount {
-  type: 'amount' | 'percent';
+  /**
+   * 'amount' = ลดเป็นบาท · 'percent' = ลดเป็น % · 'target' = เคาะราคา (value = ยอดสุทธิที่ต้องการ,
+   * ระบบคิดส่วนลดย้อนให้ ยอดสุทธิ = value เป๊ะ)
+   */
+  type: 'amount' | 'percent' | 'target';
   value: number;
   is_enabled: boolean;
+  /** target mode เท่านั้น: true = ซ่อนรายการส่วนลดที่คิดย้อนบนเอกสารลูกค้า → โชว์ราคาเดียวสะอาด */
+  hide_breakdown?: boolean;
 }
 
 // --- 2. Base Inputs (Shared) ---

@@ -153,8 +153,11 @@ function customerSummary(input: SummaryInput): string {
 
   const hasDiscount = totals.discountAmount > 0;
   const hasVat = totals.vatAmount > 0;
+  // เคาะราคา + ซ่อนรายการ → ลูกค้าเห็นเฉพาะยอดสุทธิ (ราคาเดียว)
+  const hideBreakdown =
+    totals.discount.type === 'target' && !!totals.discount.hide_breakdown;
 
-  if (hasDiscount || hasVat) {
+  if (!hideBreakdown && (hasDiscount || hasVat)) {
     t += `\nยอดรวมสินค้า: ${fmtTH(totals.grandTotal)} บาท\n`;
     if (hasDiscount) {
       const label =

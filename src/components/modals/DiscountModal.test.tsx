@@ -44,13 +44,43 @@ describe('DiscountModal', () => {
     expect(store().discount.is_enabled).toBe(false);
   });
 
-  it('เริ่มจากส่วนลด percent → แสดง "%" และบันทึกคง type percent', () => {
+  it('เริ่มจากส่วนลด percent → segment "%" active และบันทึกคง type percent', () => {
     useAppStore.setState({ discount: { type: 'percent', value: 10, is_enabled: true } });
     render(<DiscountModal isOpen onClose={vi.fn()} />);
 
-    expect(screen.getByText('%')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '%' })).toHaveAttribute('aria-checked', 'true');
     fireEvent.click(screen.getByText('บันทึกการตั้งค่า'));
     expect(store().discount).toMatchObject({ type: 'percent', value: 10, is_enabled: true });
+  });
+
+  it('เคาะราคา (target): เลือกโหมด → prefill ยอดรวม, บันทึก type target + hide_breakdown default true', () => {
+    render(<DiscountModal isOpen onClose={vi.fn()} />);
+    fireEvent.click(screen.getAllByRole('checkbox')[0]); // เปิดส่วนลด
+    fireEvent.click(screen.getByRole('radio', { name: 'เคาะราคา' }));
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '900' } });
+    fireEvent.click(screen.getByText('บันทึกการตั้งค่า'));
+
+    expect(store().discount).toEqual({
+      type: 'target',
+      value: 900,
+      is_enabled: true,
+      hide_breakdown: true,
+    });
+  });
+
+  it('เคาะราคา: เปิดสวิตช์ "แสดงรายการส่วนลด" → hide_breakdown = false', () => {
+    render(<DiscountModal isOpen onClose={vi.fn()} />);
+    fireEvent.click(screen.getAllByRole('checkbox')[0]); // เปิดส่วนลด
+    fireEvent.click(screen.getByRole('radio', { name: 'เคาะราคา' }));
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '90000' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'แสดงรายการส่วนลดในเอกสารลูกค้า' }));
+    fireEvent.click(screen.getByText('บันทึกการตั้งค่า'));
+
+    expect(store().discount).toMatchObject({
+      type: 'target',
+      value: 90000,
+      hide_breakdown: false,
+    });
   });
 
   it('VAT switch (checkbox ตัวที่ 2) ปิด → baseVatRate = 0', () => {

@@ -110,6 +110,41 @@ describe('useCalculations — sync path (discount + VAT)', () => {
     expect(result.current.finalTotal).toBe(1000);
   });
 
+  it('เคาะราคา (target) VAT 0% → คิดส่วนลดย้อน, ยอดสุทธิ = ราคาที่เคาะเป๊ะ', () => {
+    seed({ items: [1000], vat: 0, discount: { type: 'target', value: 900, is_enabled: true } });
+    const { result } = renderHook(() => useCalculations());
+    expect(result.current.grandTotal).toBe(1000);
+    expect(result.current.discountAmount).toBe(100); // 1000 - 900
+    expect(result.current.netTotal).toBe(900);
+    expect(result.current.vatAmount).toBe(0);
+    expect(result.current.finalTotal).toBe(900); // เป๊ะ
+  });
+
+  it('เคาะราคา (target) VAT 7% → ถอด VAT กลับ, ยอดสุทธิรวม VAT = ราคาที่เคาะ', () => {
+    // target 856 = 800 (ก่อน VAT) × 1.07
+    seed({ items: [1000], vat: 7, discount: { type: 'target', value: 856, is_enabled: true } });
+    const { result } = renderHook(() => useCalculations());
+    expect(result.current.netTotal).toBe(800);
+    expect(result.current.vatAmount).toBe(56);
+    expect(result.current.discountAmount).toBe(200); // 1000 - 800
+    expect(result.current.finalTotal).toBe(856); // เป๊ะ
+  });
+
+  it('เคาะราคา (target) สูงกว่ายอดรวม → ปรับราคาขึ้น (discount ติดลบ), final = target', () => {
+    seed({ items: [1000], vat: 0, discount: { type: 'target', value: 1200, is_enabled: true } });
+    const { result } = renderHook(() => useCalculations());
+    expect(result.current.discountAmount).toBe(-200); // 1000 - 1200
+    expect(result.current.netTotal).toBe(1200);
+    expect(result.current.finalTotal).toBe(1200);
+  });
+
+  it('เคาะราคา (target) แต่ is_enabled=false → ไม่คิดย้อน (เหมือนไม่มีส่วนลด)', () => {
+    seed({ items: [1000], vat: 0, discount: { type: 'target', value: 900, is_enabled: false } });
+    const { result } = renderHook(() => useCalculations());
+    expect(result.current.discountAmount).toBe(0);
+    expect(result.current.finalTotal).toBe(1000);
+  });
+
   it('ห้อง suspended → ไม่นับ items ในห้องนั้น', () => {
     seed({ items: [1000], suspendedItems: [9999] });
     const { result } = renderHook(() => useCalculations());

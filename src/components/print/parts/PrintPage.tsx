@@ -64,6 +64,7 @@ export const PrintPage: React.FC<Props> = ({ ctx, page, pageNo, pageCount }) => 
             discountAmount={totals.discountAmount}
             vatAmount={totals.vatAmount}
             finalTotal={totals.finalTotal}
+            hideBreakdown={totals.hideBreakdown}
           />
           <SignatureBlock />
         </>

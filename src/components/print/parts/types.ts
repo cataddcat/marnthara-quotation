@@ -6,6 +6,8 @@ export interface DocTotals {
   discountAmount: number;
   vatAmount: number;
   finalTotal: number;
+  /** เคาะราคา + ซ่อนรายการ → เอกสารโชว์เฉพาะยอดสุทธิ (ราคาเดียว) */
+  hideBreakdown?: boolean;
 }
 
 /** Everything a page needs that is constant across the document. */

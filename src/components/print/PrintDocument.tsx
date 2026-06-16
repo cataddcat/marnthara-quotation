@@ -47,9 +47,12 @@ const printStyles = `
 
 export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps>(
   ({ docType, onPageCount }, ref) => {
-    const { shopConfig, customer, rooms } = useAppStore((state) => state);
+    const { shopConfig, customer, rooms, discount } = useAppStore((state) => state);
     const ensureCustomerIdentity = useAppStore((state) => state.ensureCustomerIdentity);
     const { grandTotal, discountAmount, vatAmount, finalTotal } = useCalculations();
+
+    // เคาะราคา + เลือกซ่อนรายการ → เอกสารลูกค้าแสดงเฉพาะยอดสุทธิ (ราคาเดียว)
+    const hideBreakdown = discount.type === 'target' && !!discount.hide_breakdown;
 
     // "เลขที่" บนเอกสาร = รหัสเอกสารจาก identity ลูกค้า (คงที่/สืบกลับลูกค้าได้,
     // ไม่ใช่เลขสุ่มที่ regenerate ทุก render แบบเดิม). backfill id แบบ lazy ตอน mount
@@ -75,7 +78,7 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
         docType,
         docId,
         showPrices,
-        totals: { grandTotal, discountAmount, vatAmount, finalTotal },
+        totals: { grandTotal, discountAmount, vatAmount, finalTotal, hideBreakdown },
       }),
       [
         shopConfig,
@@ -87,6 +90,7 @@ export const PrintDocument = React.forwardRef<HTMLDivElement, PrintDocumentProps
         discountAmount,
         vatAmount,
         finalTotal,
+        hideBreakdown,
       ]
     );
 

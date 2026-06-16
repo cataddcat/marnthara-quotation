@@ -18,7 +18,7 @@ import {
   EXPENSE_CATEGORY_LABELS,
   type ExpenseCategory,
 } from '@/config/enums';
-import { Wallet, ClipboardCheck, Check, Trash2, Plus, Sparkles } from 'lucide-react';
+import { Wallet, ClipboardCheck, Check, Trash2, Plus, Sparkles, Percent, Coins } from 'lucide-react';
 
 const fmtDateTH = (iso: string) => {
   const d = new Date(iso);
@@ -52,6 +52,9 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
   // ฟอร์มเพิ่มรายการ — เก็บเป็น string ระหว่างพิมพ์ แปลงตอน submit
   const [receiptLabel, setReceiptLabel] = useState('');
   const [receiptAmount, setReceiptAmount] = useState('');
+  // มัดจำยืดหยุ่น — ปรับ % หรือพิมพ์ยอดบาทที่ตกลงก็ได้ (default 50%)
+  const [depositValue, setDepositValue] = useState('50');
+  const [depositUnit, setDepositUnit] = useState<'percent' | 'amount'>('percent');
   const [expenseLabel, setExpenseLabel] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState<ExpenseCategory>(
@@ -74,11 +77,18 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
     setReceiptAmount('');
   };
 
-  const handleQuickDeposit = () => {
-    if (jobPrice <= 0) return;
+  // ยอดมัดจำที่จะบันทึก — จาก % ของราคางาน หรือยอดบาทที่พิมพ์ตรงๆ
+  const depositAmount =
+    depositUnit === 'percent'
+      ? Math.round((jobPrice * toNum(depositValue)) / 100)
+      : Math.round(toNum(depositValue));
+
+  const handleAddDeposit = () => {
+    if (depositAmount <= 0) return;
+    trigger('success');
     addReceipt({
-      label: 'มัดจำ 50%',
-      amount: Math.round(jobPrice / 2),
+      label: depositUnit === 'percent' ? `มัดจำ ${toNum(depositValue)}%` : 'มัดจำ',
+      amount: depositAmount,
       date: localDateISO(),
     });
   };
@@ -170,15 +180,104 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
           </div>
         ))}
 
-        {/* quick-add มัดจำ 50% — โชว์เมื่อรู้ราคางานและยังไม่มีเงินรับ */}
+        {/* มัดจำยืดหยุ่น — โชว์เมื่อรู้ราคางานและยังไม่มีเงินรับ; ปรับ % หรือพิมพ์ยอดบาทที่ตกลงก็ได้ */}
         {jobPrice > 0 && receipts.length === 0 && (
-          <button
-            onClick={handleQuickDeposit}
-            className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-200/50 dark:border-emerald-800/50 rounded-xl px-3 py-2.5 active:scale-[0.99] transition-transform"
-          >
-            <Plus className="w-4 h-4" strokeWidth={1.5} />
-            มัดจำ 50% = ฿{fmtTH(Math.round(jobPrice / 2))}
-          </button>
+          <div className="space-y-2 bg-emerald-500/5 border border-emerald-200/50 dark:border-emerald-800/50 rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                มัดจำ
+              </span>
+              {/* สลับหน่วย % ↔ บาท */}
+              <div className="flex gap-0.5 p-0.5 rounded-lg bg-muted/60 border border-border">
+                {(['percent', 'amount'] as const).map((unit) => {
+                  const active = depositUnit === unit;
+                  const Icon = unit === 'percent' ? Percent : Coins;
+                  return (
+                    <button
+                      key={unit}
+                      onClick={() => {
+                        trigger('selection');
+                        setDepositUnit(unit);
+                      }}
+                      aria-label={unit === 'percent' ? 'คิดเป็นเปอร์เซ็นต์' : 'คิดเป็นบาท'}
+                      aria-pressed={active}
+                      className={cn(
+                        'flex items-center justify-center w-9 h-9 rounded-md transition-all',
+                        active
+                          ? 'bg-card text-emerald-600 border border-emerald-300/50 shadow-sm'
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      <Icon className="w-4 h-4" strokeWidth={1.5} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ชิป % ด่วน — เฉพาะโหมดเปอร์เซ็นต์ */}
+            {depositUnit === 'percent' && (
+              <div className="flex gap-1.5">
+                {['30', '50'].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => {
+                      trigger('light');
+                      setDepositValue(p);
+                    }}
+                    aria-pressed={depositValue === p}
+                    className={cn(
+                      'min-h-[44px] flex-1 rounded-lg text-sm font-semibold transition-all active:scale-95',
+                      depositValue === p
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-300/50'
+                        : 'bg-card border border-border text-muted-foreground'
+                    )}
+                  >
+                    {p}%
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <Input
+                  size="sm"
+                  inputMode="decimal"
+                  placeholder={depositUnit === 'percent' ? '50' : '0'}
+                  suffix={depositUnit === 'percent' ? '%' : '฿'}
+                  value={depositValue}
+                  onChange={(e) => setDepositValue(e.target.value)}
+                />
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleAddDeposit}
+                className="shrink-0"
+              >
+                <Plus className="w-4 h-4" strokeWidth={1.5} />
+                เพิ่มมัดจำ
+              </Button>
+            </div>
+
+            {depositAmount > 0 && (
+              <div className="text-xs text-muted-foreground">
+                {depositUnit === 'percent' ? (
+                  <>
+                    = <span className="font-mono tabular-nums font-bold text-emerald-600">฿{fmtTH(depositAmount)}</span>{' '}
+                    จากยอดงาน ฿{fmtTH(jobPrice)}
+                  </>
+                ) : (
+                  jobPrice > 0 && (
+                    <>
+                      ≈ {Math.round((depositAmount / jobPrice) * 100)}% ของยอดงาน ฿{fmtTH(jobPrice)}
+                    </>
+                  )
+                )}
+              </div>
+            )}
+          </div>
         )}
 
         <div className="flex items-center gap-2">

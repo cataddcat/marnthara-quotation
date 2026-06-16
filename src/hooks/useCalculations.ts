@@ -130,9 +130,27 @@ export const useCalculations = (): CalculationResult => {
 // export: ใช้ซ้ำในสรุปเงินต่องาน (job-summary.ts) — สูตรส่วนลด/VAT เดียวกับหน้าหลัก
 export const performFinalAdjustments = (
   rawTotal: number,
-  discount: { type: 'amount' | 'percent'; value: number; is_enabled?: boolean },
+  discount: { type: 'amount' | 'percent' | 'target'; value: number; is_enabled?: boolean },
   vatRate: number
 ) => {
+  // โหมด target (เคาะราคา): value = ยอดสุทธิที่ต้องการ → คิดส่วนลดย้อนให้ finalTotal === value เป๊ะ
+  if (discount.is_enabled && discount.type === 'target' && discount.value >= 0) {
+    const finalTarget = discount.value;
+    // VAT เปิด → target คือยอดรวม VAT แล้ว, ถอด VAT กลับเพื่อหายอดก่อนภาษี
+    const afterDiscount = vatRate > 0 ? finalTarget / (1 + vatRate / 100) : finalTarget;
+    const vatAmt = finalTarget - afterDiscount;
+    // discountAmt อาจติดลบได้ถ้าเคาะราคา > ยอดรวมสินค้า (ปัดราคาขึ้น) — ปล่อยให้จอ guard เอง
+    const discountAmt = rawTotal - afterDiscount;
+
+    return {
+      grandTotal: Math.round(rawTotal * 100) / 100,
+      discountAmount: Math.round(discountAmt * 100) / 100,
+      netTotal: Math.round(afterDiscount * 100) / 100,
+      vatAmount: Math.round(vatAmt * 100) / 100,
+      finalTotal: Math.round(finalTarget * 100) / 100,
+    };
+  }
+
   // 1. Apply Discount
   let discountAmt = 0;
   if (discount.is_enabled && discount.value > 0) {

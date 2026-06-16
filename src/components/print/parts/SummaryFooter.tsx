@@ -10,6 +10,8 @@ interface Props {
   discountAmount: number;
   vatAmount: number;
   finalTotal: number;
+  /** เคาะราคา + ซ่อนรายการ → ข้ามแถวยอดรวม/ส่วนลด/VAT แสดงเฉพาะยอดสุทธิ (ราคาเดียว) */
+  hideBreakdown?: boolean;
 }
 
 /** Conditions / bank / amount-in-words + the totals box — last page only. */
@@ -20,6 +22,7 @@ export const SummaryFooter: React.FC<Props> = ({
   discountAmount,
   vatAmount,
   finalTotal,
+  hideBreakdown,
 }) => (
   <div className="mt-4">
     <div className="flex items-start border-t-2 border-slate-800 pt-3 gap-6">
@@ -68,30 +71,34 @@ export const SummaryFooter: React.FC<Props> = ({
 
       {showPrices && (
         <div className="w-[260px] text-sm">
-          <div className="space-y-1 border-b border-slate-300 pb-2 mb-2">
-            <div className="flex justify-between text-slate-600">
-              <span>รวมเป็นเงิน</span>
-              <span className="font-mono font-medium text-[13px]">{fmtNum(grandTotal)}</span>
-            </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-emerald-700">
-                <span>ส่วนลด</span>
-                <span className="font-mono font-medium text-[13px]">-{fmtNum(discountAmount)}</span>
+          {!hideBreakdown && (
+            <div className="space-y-1 border-b border-slate-300 pb-2 mb-2">
+              <div className="flex justify-between text-slate-600">
+                <span>รวมเป็นเงิน</span>
+                <span className="font-mono font-medium text-[13px]">{fmtNum(grandTotal)}</span>
               </div>
-            )}
-            {shopConfig.baseVatRate > 0 && (
-              <>
-                <div className="flex justify-between text-slate-600 text-xs">
-                  <span>หลังหักส่วนลด</span>
-                  <span className="font-mono">{fmtNum(grandTotal - discountAmount)}</span>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-700">
+                  <span>ส่วนลด</span>
+                  <span className="font-mono font-medium text-[13px]">
+                    -{fmtNum(discountAmount)}
+                  </span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>VAT {shopConfig.baseVatRate}%</span>
-                  <span className="font-mono">{fmtNum(vatAmount)}</span>
-                </div>
-              </>
-            )}
-          </div>
+              )}
+              {shopConfig.baseVatRate > 0 && (
+                <>
+                  <div className="flex justify-between text-slate-600 text-xs">
+                    <span>หลังหักส่วนลด</span>
+                    <span className="font-mono">{fmtNum(grandTotal - discountAmount)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>VAT {shopConfig.baseVatRate}%</span>
+                    <span className="font-mono">{fmtNum(vatAmount)}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           <div className="flex justify-between items-center text-black p-3 rounded shadow-sm">
             <span className="font-bold">ยอดสุทธิ</span>
             <span className="font-bold text-xl font-mono">{fmtNum(finalTotal)}</span>
