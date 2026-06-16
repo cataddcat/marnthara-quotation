@@ -25,7 +25,7 @@ export default defineConfig(({ command }) => ({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate', // อัปเดตเงียบๆ เมื่อมีเน็ต แล้วรอ User เปิดแอปใหม่
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'], // ไฟล์ที่ต้อง Cache ชัวร์ๆ
+      includeAssets: ['favicon.png', 'apple-touch-icon.png'], // ไฟล์ static ที่ต้อง precache (icons pwa-*.png plugin ใส่ให้เอง)
       manifest: {
         name: 'MTR Quotation',
         short_name: 'Marnthara',
