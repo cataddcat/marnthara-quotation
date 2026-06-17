@@ -175,6 +175,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
                   return (
                     <button
                       key={m.key}
+                      type="button"
                       role="radio"
                       aria-checked={active}
                       onClick={() => handleModeChange(m.key)}

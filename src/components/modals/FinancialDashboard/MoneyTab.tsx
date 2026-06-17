@@ -93,6 +93,21 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
     });
   };
 
+  // สลับหน่วย % ↔ บาท — แปลงค่าให้อัตโนมัติ (ไม่ตีความเลขเดิมผิดหน่วย)
+  const handleDepositUnit = (next: 'percent' | 'amount') => {
+    if (next === depositUnit) return;
+    trigger('selection');
+    const v = toNum(depositValue);
+    if (jobPrice > 0 && v > 0) {
+      setDepositValue(
+        next === 'amount'
+          ? String(Math.round((jobPrice * v) / 100)) // % → บาท
+          : String(Math.round((v / jobPrice) * 100)) // บาท → %
+      );
+    }
+    setDepositUnit(next);
+  };
+
   const handleAddExpense = () => {
     const amount = toNum(expenseAmount);
     if (amount <= 0) return;
@@ -195,10 +210,8 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                   return (
                     <button
                       key={unit}
-                      onClick={() => {
-                        trigger('selection');
-                        setDepositUnit(unit);
-                      }}
+                      type="button"
+                      onClick={() => handleDepositUnit(unit)}
                       aria-label={unit === 'percent' ? 'คิดเป็นเปอร์เซ็นต์' : 'คิดเป็นบาท'}
                       aria-pressed={active}
                       className={cn(
@@ -221,6 +234,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                 {['30', '50'].map((p) => (
                   <button
                     key={p}
+                    type="button"
                     onClick={() => {
                       trigger('light');
                       setDepositValue(p);
