@@ -298,7 +298,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
         <div className="flex-1 min-w-0">
         {/* Header body */}
-        <div className="p-5 pb-3">
+        <div className="p-4 pb-3">
           <div className="flex items-start gap-3">
             {/* Avatar */}
             <div
@@ -391,7 +391,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         </div>
 
         {/* Stats footer — KPI strip: สถานะ (count/ครบ) ซ้าย · ยอดรวมห้อง (emerald hero) ขวา */}
-        <div className="px-5 py-3 border-t border-border/30 bg-muted/20 flex items-end justify-between gap-3">
+        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-end justify-between gap-3">
           <div className="flex flex-col gap-1 min-w-0">
             <span className="text-xs font-medium tracking-wide text-muted-foreground">สถานะ</span>
             <div className="flex items-center gap-2 text-sm min-w-0">
@@ -458,7 +458,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             }
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fade-in pb-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fade-in">
             {room.items.map((item, idx) => (
               <ItemCard
                 key={item.id}
@@ -498,10 +498,10 @@ export const RoomCardSkeleton: React.FC = () => (
               <Skeleton className="h-5 w-20 rounded-full" />
             </div>
           </div>
-          <Skeleton className="w-7 h-7 rounded-lg shrink-0" />
+          <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
         </div>
       </div>
-      <div className="px-5 py-3 border-t border-border/30 bg-muted/20 flex items-end justify-between">
+      <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-end justify-between">
         <Skeleton className="h-7 w-20" />
         <Skeleton className="h-7 w-24" />
       </div>

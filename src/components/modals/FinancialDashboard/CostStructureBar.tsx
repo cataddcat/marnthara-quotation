@@ -28,7 +28,7 @@ export const CostStructureBar = ({ fabric, labor, rail, total }: CostStructureBa
         {lp > 0 && <div style={{ width: `${lp}%` }} className={COST_BUCKET_DOT.labor} />}
         {rp > 0 && <div style={{ width: `${rp}%` }} className={`${COST_BUCKET_DOT.hardware} rounded-r-full`} />}
       </div>
-      <div className="flex gap-4 text-xs text-muted-foreground">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className={`w-2 h-2 rounded-full shrink-0 ${COST_BUCKET_DOT.material}`} />
           ผ้า {fp}% · {fmtTH(fabric)}

@@ -113,7 +113,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
       title="ส่วนลด & ภาษี (Discount & Tax)"
       variant="drawer" // ✅ เพิ่มบรรทัดนี้: เปลี่ยนเป็นลิ้นชักดึงขึ้น
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* --- 1. Discount Section (Hero) --- */}
         <div
           className={cn(
@@ -269,7 +269,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* --- 3. Live Preview (The Invoice) --- */}
-        <div className="bg-primary text-primary-foreground/80 rounded-xl p-5 space-y-3">
+        <div className="bg-primary text-primary-foreground/80 rounded-xl p-4 space-y-3">
           <div className="flex justify-between text-sm">
             <span>ยอดรวมสินค้า</span>
             <span className="font-mono tabular-nums text-primary-foreground">{fmtTH(grandTotal)}</span>
@@ -279,7 +279,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
           {isEnabled && type !== 'target' && preview.discountAmt > 0 && (
             <div className="flex justify-between text-sm text-success animate-fade-in font-medium">
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-3 h-3" strokeWidth={1.5} /> ส่วนลด (
+                <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ส่วนลด (
                 {type === 'percent' ? `${valueStr}%` : 'ระบุเอง'})
               </span>
               <span className="font-mono tabular-nums font-bold">-{fmtTH(preview.discountAmt)}</span>
@@ -290,7 +290,7 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
           {isEnabled && type === 'target' && preview.discountAmt > 0.5 && (
             <div className="flex justify-between text-sm text-success animate-fade-in font-medium">
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-3 h-3" strokeWidth={1.5} /> ส่วนลด (เคาะราคา)
+                <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ส่วนลด (เคาะราคา)
               </span>
               <span className="font-mono tabular-nums font-bold">-{fmtTH(preview.discountAmt)}</span>
             </div>

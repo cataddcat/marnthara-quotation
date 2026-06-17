@@ -295,7 +295,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         <div className="h-px bg-border my-2" />
 
         {/* 🔵 ZONE 2: IMPORT JSON TEXT (NEW FEATURE) */}
-        <div className="bg-warning/5 border border-warning/20 rounded-xl p-5 space-y-4">
+        <div className="bg-warning/5 border border-warning/20 rounded-xl p-4 space-y-4">
           <div className="flex items-center gap-2">
             <Upload className="w-5 h-5 text-warning" strokeWidth={1.5} />
             <h4 className="font-bold text-foreground">นำเข้าข้อมูลเฉพาะส่วน (JSON)</h4>
@@ -376,7 +376,7 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
         <div className="h-px bg-border my-2" />
 
         {/* 🔵 ZONE 3: NEW PROJECT (OPERATION) */}
-        <div className="bg-info/10 border border-info/20 rounded-xl p-5 space-y-3">
+        <div className="bg-info/10 border border-info/20 rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-card rounded-xl border border-info/20">
               <FilePlus className="w-6 h-6 text-info" strokeWidth={1.5} />

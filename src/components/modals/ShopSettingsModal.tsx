@@ -207,11 +207,11 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                <label className="text-sm font-medium text-foreground mb-1 block">
                   ที่อยู่ร้านค้า
                 </label>
                 <textarea
-                  className="w-full p-3 border border-slate-200 rounded-xl text-[16px] focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none h-20"
+                  className="w-full p-3 border border-border rounded-xl text-[16px] focus:outline-none focus:ring-2 focus:ring-ring resize-none h-20"
                   value={shopData.address}
                   onChange={(e) => handleShopChange('address', e.target.value)}
                 />
@@ -245,11 +245,11 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
                   onChange={(e) => handlePdfChange('paymentTerms', e.target.value)}
                 />
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     3. หมายเหตุเพิ่มเติม (ขึ้นบรรทัดใหม่เพื่อเพิ่มข้อ)
                   </label>
                   <textarea
-                    className="w-full p-3 border border-slate-200 rounded-xl text-[16px] focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none h-24"
+                    className="w-full p-3 border border-border rounded-xl text-[16px] focus:outline-none focus:ring-2 focus:ring-ring resize-none h-24"
                     placeholder="เช่น ราคานี้รวมค่าติดตั้งแล้ว..."
                     value={shopData.pdf?.notes?.join('\n') || ''}
                     onChange={(e) => handleNotesChange(e.target.value)}

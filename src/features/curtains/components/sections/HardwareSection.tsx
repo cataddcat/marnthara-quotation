@@ -83,17 +83,17 @@ const PillButton: React.FC<PillButtonProps> = ({
       )}
     >
       <Icon
-        className={cn('w-6 h-6 mb-1', isSelected ? 'text-foreground' : 'text-slate-400')}
+        className={cn('w-6 h-6 mb-1', isSelected ? 'text-foreground' : 'text-muted-foreground/70')}
         strokeWidth={1.5}
       />
-      <span className="text-xs font-semibold leading-tight text-center">{label}</span>
+      <span className="text-xs font-semibold text-center">{label}</span>
       {description && (
         <span className="text-xs text-muted-foreground/80 mt-0.5 text-center">
           {description}
         </span>
       )}
       {isSelected && (
-        <div className="absolute top-1 right-1 bg-primary text-white rounded-full p-0.5">
+        <div className="absolute top-1 right-1 bg-foreground text-background rounded-full p-0.5">
           <Check className="w-2 h-2" strokeWidth={3} />
         </div>
       )}

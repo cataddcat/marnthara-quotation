@@ -26,7 +26,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
 
   return (
     <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <Input
           label="กว้าง (W)"
           placeholder="0.00"

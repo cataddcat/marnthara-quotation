@@ -85,10 +85,10 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
             leaveFrom="opacity-100 scale-100 translate-y-0"
             leaveTo="opacity-0 scale-95 translate-y-4"
           >
-            <DialogPanel className="w-full max-w-6xl h-[100dvh] sm:h-[90vh] bg-slate-100 rounded-none sm:rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <DialogPanel className="w-full max-w-6xl h-[100dvh] sm:h-[90vh] bg-background rounded-none sm:rounded-xl shadow-2xl flex flex-col overflow-hidden">
               {/* Toolbar */}
-              <div className="bg-white border-b border-slate-200 p-4 pt-[calc(1rem+var(--safe-top))] sm:pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
-                <div className="flex p-1 bg-slate-100 rounded-xl w-full sm:w-auto overflow-x-auto">
+              <div className="bg-card border-b border-border p-4 pt-[calc(1rem+var(--safe-top))] sm:pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
+                <div className="flex p-1 bg-muted rounded-xl w-full sm:w-auto overflow-x-auto">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = docType === tab.id;
@@ -99,8 +99,8 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                         className={cn(
                           'flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all whitespace-nowrap',
                           isActive
-                            ? 'bg-white text-slate-900 shadow-sm font-semibold'
-                            : 'text-slate-500 hover:text-slate-700'
+                            ? 'bg-card text-foreground shadow-sm font-semibold'
+                            : 'text-muted-foreground hover:text-foreground'
                         )}
                       >
                         <Icon className="w-4 h-4" />
@@ -113,7 +113,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                 <div className="flex gap-3 w-full sm:w-auto items-center">
                   {/* โหมดละเอียด: show the computed page count before handing off to the browser. */}
                   {isDetail && pageCount > 0 && (
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-slate-500 font-mono whitespace-nowrap">
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground font-mono whitespace-nowrap">
                       <FileText className="w-4 h-4" strokeWidth={1.5} />
                       {pageCount} หน้า
                     </span>
@@ -123,7 +123,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
                   </Button>
                   <Button
                     onClick={() => handlePrint()}
-                    className="flex-1 sm:flex-none bg-slate-900 text-white hover:bg-slate-800"
+                    className="flex-1 sm:flex-none bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} /> พิมพ์เอกสาร
                   </Button>
@@ -132,7 +132,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
 
               {/* Preview Area — paginated stack of A4 sheets (each sheet carries its
                   own shadow); scaled down for on-screen visibility. */}
-              <div className="flex-1 overflow-y-auto bg-slate-500/10 p-4 sm:p-8 pb-[calc(1rem+var(--safe-bottom))] sm:pb-8 flex justify-center items-start">
+              <div className="flex-1 overflow-y-auto bg-muted p-4 sm:p-8 pb-[calc(1rem+var(--safe-bottom))] sm:pb-8 flex justify-center items-start">
                 <div
                   className={cn(
                     'origin-top transition-all duration-300',

@@ -212,7 +212,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
               tone="cost"
             />
             <Metric
-              label="ส่วนต่างจากทุนที่รู้"
+              label="ส่วนต่าง"
               value={`${analysis.profitAmount >= 0 ? '+' : ''}฿${fmtTH(analysis.profitAmount)}`}
               tone={analysis.profitAmount >= 0 ? 'money' : 'cost'}
               align="right"

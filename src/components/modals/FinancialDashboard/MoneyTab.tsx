@@ -149,7 +149,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* ── 1. เงินรับจากลูกค้า ── */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
@@ -404,7 +404,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
               <Sparkles className="w-3.5 h-3.5" strokeWidth={1.5} />
               เติมจากประมาณการ (สร้างเป็น "ยังไม่จ่าย" — แก้ยอดจริงทีหลังได้)
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               {estimateChips.map((chip) => (
                 <button
                   key={chip.category}

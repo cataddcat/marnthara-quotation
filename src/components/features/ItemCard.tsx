@@ -215,7 +215,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     >
       {/* Collapsed header — always visible, clickable */}
       <div
-        className="flex flex-col gap-3 p-4 cursor-pointer select-none transition-transform duration-100 active:scale-[0.99]"
+        className="flex flex-col gap-2.5 p-4 cursor-pointer select-none transition-transform duration-100 active:scale-[0.99]"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
         {/* Row 1: Index chip + Title + status + Chevron */}

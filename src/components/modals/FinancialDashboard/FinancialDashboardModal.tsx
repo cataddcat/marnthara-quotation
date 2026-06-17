@@ -150,19 +150,19 @@ export const FinancialDashboardModal: React.FC<{
   ];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="การเงินของงาน" variant="fullscreen">
+    <Modal isOpen={isOpen} onClose={onClose} title="การเงินของงาน" variant="fullscreen" appShell>
       <div className="flex flex-col h-full bg-background pb-safe-area overflow-hidden">
         {/* ── 1. เงินสดจริง (ความจริงเดียวที่ชัวร์ 100%) ── */}
-        <div className="bg-muted/30 border-b border-border/50 shrink-0 px-4 pt-3 pb-3 space-y-3">
+        <div className="bg-muted/30 border-b border-border/50 shrink-0 px-4 pt-3 pb-3 space-y-2.5">
           <div className="flex items-start justify-between gap-2">
-            <div className="grid grid-cols-3 gap-2.5 flex-1">
-              <div className="bg-card border border-border/50 rounded-2xl p-3">
+            <div className="grid grid-cols-3 gap-2 flex-1">
+              <div className="bg-card border border-border/50 rounded-2xl p-2.5">
                 <Metric label="รับแล้ว" value={mask(totals.received)} tone="money" size="md" />
               </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-3">
+              <div className="bg-card border border-border/50 rounded-2xl p-2.5">
                 <Metric label="จ่ายแล้ว" value={mask(totals.paidOut)} tone="cost" size="md" />
               </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-3">
+              <div className="bg-card border border-border/50 rounded-2xl p-2.5">
                 <Metric
                   label="คงเหลือในมือ"
                   value={mask(totals.onHand)}

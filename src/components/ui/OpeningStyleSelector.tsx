@@ -33,7 +33,7 @@ export const OpeningStyleSelector: React.FC<OpeningStyleSelectorProps> = ({
   return (
     <div className="space-y-2 pt-2">
       <label className="text-sm font-medium text-muted-foreground ml-1">{label}</label>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {OPTIONS.map((opt) => {
           const isSelected = activeBucket === opt.bucket;
           return (
@@ -42,7 +42,7 @@ export const OpeningStyleSelector: React.FC<OpeningStyleSelectorProps> = ({
               type="button"
               onClick={() => onChange(opt.value)}
               className={cn(
-                'relative flex flex-col items-center justify-center h-20 rounded-xl border-2 transition-all active:scale-95',
+                'relative flex flex-col items-center justify-center h-16 rounded-xl border-2 transition-all active:scale-95',
                 isSelected
                   ? 'border-foreground bg-accent text-foreground'
                   : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-foreground/40'
@@ -50,7 +50,7 @@ export const OpeningStyleSelector: React.FC<OpeningStyleSelectorProps> = ({
             >
               <opt.icon
                 className={cn(
-                  'w-8 h-8 mb-1',
+                  'w-7 h-7 mb-1',
                   // token แทน palette ตรง (DESIGN.md: monochrome chrome) — เดิม text-slate-400
                   isSelected ? 'text-foreground' : 'text-muted-foreground/70',
                   isSelected && 'animate-bounce-short'

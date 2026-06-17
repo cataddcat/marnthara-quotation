@@ -198,7 +198,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
           rows={18}
           aria-label="ข้อความสรุป (แก้ไขได้)"
           spellCheck={false}
-          className="w-full flex-1 min-h-[55vh] rounded-xl border border-border bg-background p-3 text-[13px] leading-relaxed font-mono whitespace-pre-wrap resize-y focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full flex-1 min-h-[55vh] rounded-xl border border-border bg-background p-3 text-sm leading-relaxed font-mono whitespace-pre-wrap resize-y focus:outline-none focus:ring-1 focus:ring-primary"
         />
 
         <p className="text-sm text-muted-foreground/80 px-1 shrink-0">

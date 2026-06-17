@@ -110,7 +110,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             scrolled ? 'shadow-sm' : ''
           )}
         >
-          <div className="max-w-3xl mx-auto h-14 px-6 flex items-center justify-between">
+          <div className="max-w-3xl mx-auto h-14 px-4 sm:px-6 flex items-center justify-between">
             {/* Left: Logo / Brand (→ เมนู) + ชื่อลูกค้างานปัจจุบัน (→ สลับงาน) */}
             <div className="flex flex-col items-start justify-center min-w-0">
               <button

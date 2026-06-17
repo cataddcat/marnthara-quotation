@@ -50,7 +50,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onDismiss: (id: string) => void
           <p className="text-sm font-semibold leading-snug">{toast.title}</p>
           {toast.message && (
             // [THEME CHANGE] text-white/70 -> text-primary-foreground/70
-            <p className="text-[12px] text-primary-foreground/70 mt-0.5 truncate max-w-[240px]">
+            <p className="text-[12px] text-primary-foreground/70 mt-0.5 truncate">
               {toast.message}
             </p>
           )}
