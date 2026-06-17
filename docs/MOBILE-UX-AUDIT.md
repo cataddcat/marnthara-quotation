@@ -1,8 +1,29 @@
 # 📱 Mobile UX/UI Audit — iPhone 13 (390×844)
 
 > **เลนส์:** "ชัดเจน + ใช้ทุก pixel ให้คุ้ม" บนจอเล็ก (งบเนื้อหา ~600–700px หลังหัก chrome+safe-area)
-> **สถานะ:** Stage 1 — รายงานเพื่อรีวิว (ยังไม่แตะโค้ด). เจ้าของติ๊กเลือกข้อที่จะทำ แล้วผมแก้ใน Stage 2.
 > **วิธีตรวจ:** design-reviewer (ถัง 2–5, read-only) + ตรวจเอง (shell/primitives) เทียบ DESIGN.md §1–§8.
+
+## ✅ สถานะ (อัปเดต 2026-06-17 — ทดสอบบนมือถือผ่านแล้ว)
+
+**ทำเสร็จ + ขึ้น main แล้ว: 27/32 ข้อ** (commit `5ba818a` รอบแรก #1/#3/#13/#30 · `e12089e` รอบสอง ที่เหลือ).
+gate เขียวทุกครั้ง (lint · build · vitest 667). owner verify บนมือถือจริงแล้ว: PdfPreview notch /
+FinancialDashboard appShell scroll / ตัวเลขเงินในการ์ด 3 ช่อง — **ผ่าน**.
+
+**✅ ทำแล้วทุกข้อ ยกเว้น 5 ข้อด้านล่าง.**
+
+**⏳ ค้างไว้ตั้งใจ (ยังไม่ทำ — รอ owner ตัดสิน/วัด Probe):**
+| # | เรื่อง | เหตุผลที่เก็บไว้ |
+|---|---|---|
+| #5 | MainLayout บล็อกซ้าย (ชื่อร้าน+ลูกค้า) | เป็นข้อสังเกต ไม่มีการเปลี่ยนจริง |
+| #11 | RoomCard type pills (ผ้าม่าน×2·วอลล์×1) | เก็บไว้ — info-bearing ช่วย scan ชนิดสินค้าหน้างาน |
+| #12 | ItemCard ย้าย status pill ลง meta row | เพิ่มความสูง (สวนเป้า) + ต้องวัด Probe ว่า title truncate จริงไหม |
+| #15 | CollapsibleSection hint → inline badge | ได้แค่ ~12px แต่แตะ primitive ร่วม — เสี่ยงเกินคุ้ม |
+| #31 | Modal drawer header ลด padding | ได้แค่ ~2-10px บน primitive ร่วม — เสี่ยงเกินคุ้ม |
+
+**▶ Session หน้าเริ่มตรงนี้ได้:** 5 ข้อข้างบน (ถ้า owner เอา) + surface ใหม่ที่ยังไม่ audit
+(MainMenuModal, SmartNavigator, Catalog/CodeDetail modals, print parts). อ่านคู่กับ DESIGN.md.
+
+---
 
 ## วิธีอ่าน — ธงต่อข้อ
 - 🔴 **ต้องแก้** — ผิด hard floor (text <12px/>18px, ทัช <44×44, overflow 390px, safe-area, โครงผิด)

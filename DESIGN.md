@@ -7,6 +7,10 @@
 > Foundations it builds on (read once, then defer here): **[HANDOFF.md §1.6](./HANDOFF.md)** (Apple HIG +
 > NN/g ergonomics) and **§1.7** (Geist-aligned visual language). This file is the *applied, enforceable*
 > layer on top of them.
+>
+> **📱 Mobile audit worklog:** the ongoing iPhone-13 (390×844) density · safe-area · touch · token pass —
+> with its **done/remaining status** — lives in **[docs/MOBILE-UX-AUDIT.md](./docs/MOBILE-UX-AUDIT.md)**.
+> Read it (with this file) when continuing mobile UX work.
 
 ---
 

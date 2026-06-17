@@ -15,6 +15,7 @@ The single entry point to every doc in this repo. Read the 🔴 tier always; dro
 | **[CONTEXT.md](CONTEXT.md)** | Domain **glossary** — ผ้าทึบ, DOUBLE, Style, ลอน… Use these exact terms; no code/paths. | discussing any feature/bug ("what is X?") |
 | **[HANDOFF.md](HANDOFF.md)** | Deep **technical** handoff — design philosophy (save-first, cost priority chain), system map, invariants, cost/catalog model, bug history. | architectural / pricing / save-flow / multi-file changes ("how & why is it built?") |
 | **[DESIGN.md](DESIGN.md)** | The **design system & UI** requirements ("the document is the designer") — typography, colour (*colourful data · monochrome chrome · high contrast*), spacing, the Design Probe, enforcement. | any UI/UX change ("how should it look?") |
+| **[docs/MOBILE-UX-AUDIT.md](docs/MOBILE-UX-AUDIT.md)** | 📱 iPhone-13 (390×844) mobile UX/UI audit — 32 findings (density · safe-area · touch · tokens) flagged 🔴/🟢/🟡 + a **done/remaining status header**. The worklog/seam for the ongoing mobile-density pass. | **continuing mobile UX / density work** (read with DESIGN.md) |
 | **[COMMANDS.md](COMMANDS.md)** | Every project **command** + the verification gate (lint 0-warn · test · build) + expected output. | running anything / before handoff |
 
 ## 🟢 Reference — situational (not normally read)
