@@ -8,14 +8,16 @@ export type AlertVariant = 'info' | 'warning' | 'success' | 'destructive';
 // the sanctioned exception to monochrome). Dark text shade keeps it readable (AA);
 // the vivid semantic tokens are too light for body text, so the alert palette
 // uses the darker -700/-300 steps consistently across all four variants.
+// eeert: crisper full-opacity -300 borders so the notice separates clearly on the
+// grey-page / white-card surfaces (text is already -800 = AAA on EEERT).
 const VARIANT_STYLES: Record<AlertVariant, string> = {
-  info: 'bg-sky-50 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-800/50 text-sky-800 dark:text-sky-300',
+  info: 'bg-sky-50 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-800/50 text-sky-800 dark:text-sky-300 eeert:border-sky-300',
   warning:
-    'bg-amber-50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/50 text-amber-800 dark:text-amber-300',
+    'bg-amber-50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 eeert:border-amber-300',
   success:
-    'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300',
+    'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 eeert:border-emerald-300',
   destructive:
-    'bg-rose-50 dark:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/50 text-rose-800 dark:text-rose-300',
+    'bg-rose-50 dark:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/50 text-rose-800 dark:text-rose-300 eeert:border-rose-300',
 };
 
 const VARIANT_ICON: Record<AlertVariant, LucideIcon> = {

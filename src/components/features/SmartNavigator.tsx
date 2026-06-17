@@ -105,7 +105,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                 <div className="min-w-0 flex-1">
                   <div
                     className={cn(
-                      'truncate text-[15px] font-semibold leading-tight text-foreground',
+                      'truncate text-base font-semibold leading-normal text-foreground',
                       room.is_suspended && 'text-muted-foreground line-through'
                     )}
                   >

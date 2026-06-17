@@ -136,7 +136,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
           {!isPlaceholder && (
             <button
               onClick={handleOpenCatalog}
-              className="w-full flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors active:scale-95"
+              className="w-full flex items-center justify-center gap-1.5 h-11 rounded-lg bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors active:scale-95"
             >
               {entry || cost > 0 ? (
                 <>
@@ -144,7 +144,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
                 </>
               ) : (
                 <>
-                  <Plus className="w-3.5 h-3.5" /> เพิ่มใน ราคา & รหัส
+                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} /> เพิ่มใน ราคา & รหัส
                 </>
               )}
             </button>
@@ -154,13 +154,13 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
         {/* ── จุดที่ใช้รหัสนี้ (where-used) ── */}
         <div>
           <div className="flex items-center gap-1.5 px-1 mb-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            <MapPin className="w-3.5 h-3.5" />
+            <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
             ใช้ใน {usages.length} จุด
           </div>
 
           {usages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center gap-2 text-muted-foreground">
-              <Package className="w-8 h-8 opacity-30" />
+              <Package className="w-8 h-8 opacity-30" strokeWidth={1.5} />
               <p className="text-sm">ยังไม่มีจุดที่ใช้รหัสนี้</p>
             </div>
           ) : (

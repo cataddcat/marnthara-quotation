@@ -276,7 +276,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Floating Dock — wide horizontal capsule */}
       <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 mb-safe-bottom w-full max-w-[440px] px-4">
-        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-md border border-border/60">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-lg border border-border">
           <DockPill
             icon={Home}
             label="หน้าหลัก"

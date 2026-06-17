@@ -17,6 +17,7 @@ import {
   HardHat,
   ClipboardList,
   Gem,
+  Contrast,
   FolderKanban,
   User,
   Lock,
@@ -60,23 +61,13 @@ const MenuCompactItem = ({
   label,
   desc,
   onClick,
-  accentColor = 'primary',
 }: {
   icon: React.ElementType;
   label: string;
   desc?: string;
   onClick: () => void;
-  accentColor?: 'primary' | 'emerald' | 'orange' | 'rose' | 'indigo';
 }) => {
   const { trigger } = useHaptic();
-
-  const colors = {
-    primary: 'bg-muted text-foreground group-hover:bg-muted/80',
-    emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/20',
-    orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 group-hover:bg-orange-500/20',
-    rose: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 group-hover:bg-rose-500/20',
-    indigo: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-500/20',
-  };
 
   return (
     <button
@@ -86,11 +77,11 @@ const MenuCompactItem = ({
       }}
       className="group flex items-center gap-3 p-2.5 rounded-xl border border-border bg-card hover:bg-muted/30 transition-all duration-200 active:scale-[0.98] col-span-1 shadow-sm"
     >
-      <div className={cn('p-2 rounded-lg shrink-0 transition-colors', colors[accentColor])}>
+      <div className="p-2 rounded-lg shrink-0 transition-colors bg-muted text-foreground group-hover:bg-muted/80">
         <Icon className="w-4 h-4" strokeWidth={1.5} />
       </div>
       <div className="text-left flex-1 min-w-0">
-        <div className="font-semibold text-foreground text-sm leading-tight truncate">{label}</div>
+        <div className="font-semibold text-foreground text-sm leading-snug truncate">{label}</div>
         {desc && (
           <div className="text-xs text-muted-foreground mt-0.5 font-medium truncate">
             {desc}
@@ -135,6 +126,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
     { id: 'light' as const, label: 'สว่าง', icon: Sun, active: theme === 'light' },
     { id: 'dark' as const, label: 'มืด', icon: Moon, active: theme === 'dark' },
     { id: 'signature' as const, label: 'Signature', icon: Gem, active: theme === 'signature' },
+    { id: 'eeert' as const, label: 'EEERT', icon: Contrast, active: theme === 'eeert' },
   ];
 
   // โหมดงาน (ไม่ใช่อุปกรณ์): หน้างาน = วัด/จดให้ครบ · ละเอียด = ราคา/ทุน/กำไร/จัดเรียง
@@ -154,7 +146,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
     >
       <div className="space-y-5 pb-safe-area">
         
-        {/* ── Top Section: Greeting & Display Settings (Compact) ── */}
+        {/* ── บัญชี & ตั้งค่า (บนสุด — โปรไฟล์ร้าน · บัญชี · ธีม/โหมด) ── */}
         <div className="bg-muted/30 p-3 rounded-xl border border-border/50 space-y-3">
           <div className="flex items-center justify-between px-1">
             <div className="flex flex-col">
@@ -267,7 +259,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
                       <button
                         onClick={() => { trigger('light'); openModal('adminPin', { intent: 'setup' }); }}
                         aria-label="เปลี่ยน PIN"
-                        className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors min-h-[44px]"
+                        className="inline-flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors min-h-[44px] min-w-[44px]"
                       >
                         <KeyRound className="w-4 h-4" strokeWidth={1.5} />
                       </button>
@@ -285,7 +277,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
               {guardEnabled && isAdmin && (
                 <button
                   onClick={() => { trigger('light'); openModal('adminPin', { intent: 'disable' }); }}
-                  className="w-full text-left text-xs text-muted-foreground hover:text-destructive transition-colors min-h-[36px] px-1"
+                  className="w-full text-left text-xs text-muted-foreground hover:text-destructive transition-colors min-h-[44px] px-1"
                 >
                   ปิดโหมดทีม (ทุกเครื่องเป็นผู้ดูแล)
                 </button>
@@ -294,8 +286,8 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Theme Toggle */}
-            <div className="flex items-center justify-between bg-card border border-border/50 p-1 rounded-lg">
+            {/* Theme Toggle — 2×2 grid: 4 themes never overflow the half-width cell */}
+            <div className="grid grid-cols-2 gap-1 bg-card border border-border/50 p-1 rounded-lg">
               {themes.map((opt) => (
                 <button
                   key={opt.id}
@@ -338,12 +330,12 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             <span className="w-1 h-3 bg-indigo-500 rounded-full"></span> นำเสนอ & ขาย
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <MenuCompactItem icon={FolderKanban} label="งานทั้งหมด" desc="สลับงาน · ดูความคืบหน้าทุกงาน" onClick={onOpenJobs} accentColor="indigo" />
-            <MenuCompactItem icon={FileText} label="ใบเสนอราคา" desc="พิมพ์ใบเสนอราคา / ส่งของ" onClick={onOpenPdf} accentColor="primary" />
-            <MenuCompactItem icon={MessageSquareText} label="คัดลอกสรุป" desc="ส่ง LINE คุยลูกค้า/ช่าง" onClick={onOpenCopySummary} accentColor="emerald" />
-            <MenuCompactItem icon={BookOpen} label="Lookbook" desc="แคตตาล็อกโชว์ผลงาน" onClick={onOpenLookbook} accentColor="indigo" />
-            <MenuCompactItem icon={Users} label="ฐานลูกค้า" desc="เลือกลูกค้า · เปิดงานใหม่" onClick={onOpenCustomerDirectory} accentColor="orange" />
-            <MenuCompactItem icon={User} label="ลูกค้างานนี้" desc="แก้ชื่อ/ที่อยู่บนเอกสาร" onClick={onOpenCustomer} accentColor="orange" />
+            <MenuCompactItem icon={FolderKanban} label="งานทั้งหมด" desc="สลับงาน · ดูความคืบหน้าทุกงาน" onClick={onOpenJobs} />
+            <MenuCompactItem icon={FileText} label="ใบเสนอราคา" desc="พิมพ์ใบเสนอราคา / ส่งของ" onClick={onOpenPdf} />
+            <MenuCompactItem icon={MessageSquareText} label="คัดลอกสรุป" desc="ส่ง LINE คุยลูกค้า/ช่าง" onClick={onOpenCopySummary} />
+            <MenuCompactItem icon={BookOpen} label="Lookbook" desc="แคตตาล็อกโชว์ผลงาน" onClick={onOpenLookbook} />
+            <MenuCompactItem icon={Users} label="ฐานลูกค้า" desc="เลือกลูกค้า · เปิดงานใหม่" onClick={onOpenCustomerDirectory} />
+            <MenuCompactItem icon={User} label="ลูกค้างานนี้" desc="แก้ชื่อ/ที่อยู่บนเอกสาร" onClick={onOpenCustomer} />
           </div>
         </section>
 
@@ -353,14 +345,14 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             <span className="w-1 h-3 bg-emerald-500 rounded-full"></span> สินค้า & การเงิน
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <MenuCompactItem icon={Layers} label="สินค้า & ราคา" desc="อัปเดตรหัสวัสดุ" onClick={onOpenMaterialSummary} accentColor="indigo" />
+            <MenuCompactItem icon={Layers} label="สินค้า & ราคา" desc="อัปเดตรหัสวัสดุ" onClick={onOpenMaterialSummary} />
             {/* ต้นทุน/กำไร = ความลับร้าน → เฉพาะผู้ดูแล (พนักงานไม่เห็นเมนูนี้) */}
             <AdminGate>
-              <MenuCompactItem icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} accentColor="emerald" />
+              <MenuCompactItem icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} />
             </AdminGate>
-            <MenuCompactItem icon={Percent} label="จัดการส่วนลด" desc="ลดท้ายบิล / โปรโมชัน" onClick={onOpenDiscount} accentColor="emerald" />
+            <MenuCompactItem icon={Percent} label="จัดการส่วนลด" desc="ลดท้ายบิล / โปรโมชัน" onClick={onOpenDiscount} />
             <AdminGate>
-              <MenuCompactItem icon={ShieldCheck} label="โครงสร้างต้นทุน" desc="ค่าแรง / ค่าบริการ" onClick={onOpenProductionSettings} accentColor="primary" />
+              <MenuCompactItem icon={ShieldCheck} label="โครงสร้างต้นทุน" desc="ค่าแรง / ค่าบริการ" onClick={onOpenProductionSettings} />
             </AdminGate>
           </div>
         </section>
@@ -371,9 +363,9 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             <span className="w-1 h-3 bg-orange-500 rounded-full"></span> จัดการระบบ
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <MenuCompactItem icon={Settings} label="ตั้งค่าร้านค้า" desc="โลโก้ / ข้อมูลติดต่อ" onClick={onOpenShopSettings} accentColor="primary" />
-            <MenuCompactItem icon={Calculator} label="อธิบายสูตร" desc="ตรวจสอบวิธีคิดเงิน" onClick={onOpenFormulaDocs} accentColor="primary" />
-            <MenuCompactItem icon={Database} label="สำรองข้อมูล" desc="นำเข้า / ส่งออกข้อมูล" onClick={onOpenData} accentColor="orange" />
+            <MenuCompactItem icon={Settings} label="ตั้งค่าร้านค้า" desc="โลโก้ / ข้อมูลติดต่อ" onClick={onOpenShopSettings} />
+            <MenuCompactItem icon={Calculator} label="อธิบายสูตร" desc="ตรวจสอบวิธีคิดเงิน" onClick={onOpenFormulaDocs} />
+            <MenuCompactItem icon={Database} label="สำรองข้อมูล" desc="นำเข้า / ส่งออกข้อมูล" onClick={onOpenData} />
           </div>
         </section>
 

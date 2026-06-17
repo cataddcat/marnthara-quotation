@@ -53,13 +53,13 @@ npm run preview       # Serve the production build locally (after `npm run build
 `useIsMobile` ตัดสินจากความกว้าง viewport (<768px) อย่างเดียว → หน้าต่างแคบ = โหมดมือถือแท้ 100%.
 
 **ทางหลัก (1 คลิก):** `npm run dev` → กดปุ่ม **"จอมือถือ"** (DevInspector, มุมล่างซ้าย) →
-เปิด popup หน้าต่างจริงขนาด 393×852 — แอปในนั้นเข้าโหมดมือถือแท้. ปุ่ม **"Notch"** = จำลองระยะ
+เปิด popup หน้าต่างจริงขนาด iPhone 13 (390×844) — แอปในนั้นเข้าโหมดมือถือแท้. ปุ่ม **"Notch"** = จำลองระยะ
 safe-area iPhone (บน 59px / ล่าง 34px) — *เว้นระยะอย่างเดียว ไม่บีบจอ* ใช้คู่กับปุ่มจอมือถือ.
 
 **ทางเลือก (หน้าต่างไร้ chrome / ทำ Desktop shortcut):** Brave app window:
 
 ```
-"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe" --app=http://localhost:3000 --window-size=393,880
+"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe" --app=http://localhost:3000 --window-size=390,872
 ```
 
 - **Swipe/gesture:** เมาส์ไม่สร้าง touch event — ทดสอบ swipe ผ่าน DevTools Device Toolbar

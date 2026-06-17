@@ -1,16 +1,18 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-type Theme = 'light' | 'dark' | 'signature';
+type Theme = 'light' | 'dark' | 'signature' | 'eeert';
 
-// Order also defines the toggle cycle (light → dark → signature → light).
-const THEME_CLASSES: Theme[] = ['light', 'dark', 'signature'];
+// Order also defines the toggle cycle (light → dark → signature → eeert → light).
+const THEME_CLASSES: Theme[] = ['light', 'dark', 'signature', 'eeert'];
 
-// Mobile browser status-bar color per theme. Signature ≈ the light surface.
+// Mobile browser status-bar color per theme. Signature ≈ the light surface;
+// eeert ≈ its medium-grey page (hsl 216 16% 80%).
 const META_COLOR: Record<Theme, string> = {
   light: '#E4E8EE',
   dark: '#0D0814',
   signature: '#FCFCFD',
+  eeert: '#C4CAD4',
 };
 
 interface ThemeState {

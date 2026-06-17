@@ -216,7 +216,7 @@ export const Modal: React.FC<ModalProps> = ({
                     <div className="min-w-0">
                       <DialogTitle
                         as="h3"
-                        className="text-base font-bold leading-tight text-foreground truncate"
+                        className="text-base font-bold leading-snug text-foreground truncate"
                       >
                         {title}
                       </DialogTitle>

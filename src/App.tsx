@@ -109,7 +109,7 @@ function App() {
   // Theme Initialization
   const theme = useThemeStore((state) => state.theme);
   useEffect(() => {
-    document.documentElement.classList.remove('light', 'dark', 'signature');
+    document.documentElement.classList.remove('light', 'dark', 'signature', 'eeert');
     document.documentElement.classList.add(theme);
   }, [theme]);
 

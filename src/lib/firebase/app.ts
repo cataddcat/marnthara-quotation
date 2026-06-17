@@ -46,6 +46,10 @@ if (isFirebaseConfigured) {
     // item data มีฟิลด์ undefined ได้บ่อย — กัน setDoc throw (เก็บ bundle เป็น JSON string อยู่แล้ว
     // แต่ customers เก็บแบบ structured จึงต้องเปิดตัวนี้)
     ignoreUndefinedProperties: true,
+    // บาง network/extension บล็อกการ stream WebChannel (อาการ net::ERR_BLOCKED_BY_CLIENT
+    // จาก ad blocker / proxy / firewall) → ให้ Firestore ตรวจเองแล้วถอยไปใช้ long-polling
+    // (ปลอดภัยกับ connection ปกติ — ไม่ได้บังคับ ใช้ auto-detect)
+    experimentalAutoDetectLongPolling: true,
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
   });
   authInstance = getAuth(app);

@@ -3,9 +3,10 @@ import { Room, ItemData } from '@/types';
 import { RoomCard } from './RoomCard';
 import { RoomDashboard, type DashboardDensity } from './RoomDashboard';
 import { OverviewSidebar } from './OverviewSidebar';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useAppStore } from '@/store/useAppStore';
 import { cn } from '@/lib/utils';
 
 interface RoomSliderProps {
@@ -37,6 +38,7 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
 }) => {
   const { trigger } = useHaptic();
   const { isField } = useExperienceMode();
+  const addRoom = useAppStore((s) => s.addRoom);
   // overview เป็นของโหมดละเอียด (detail — รวมมือถือ) — โหมดหน้างาน (field) ใช้ focus ทีละห้อง
   // และดูสรุปผ่าน "All Rooms Summary" (ProjectOverviewModal) จาก dock "ภาพรวม" แทน
   const effectiveViewMode = isField ? 'focus' : viewMode;
@@ -109,62 +111,73 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
             disabled={!canNavigate}
             aria-label="ห้องก่อนหน้า"
             className={cn(
-              'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
+              'inline-flex items-center justify-center h-11 w-11 rounded-full border transition-all outline-none shrink-0',
               canNavigate
                 ? 'border-border bg-card text-foreground shadow-sm hover:bg-muted hover:shadow-md active:scale-95 active:shadow-sm'
                 : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
           >
-            <ChevronLeft className="w-4 h-4" />
-            ก่อนหน้า
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
-          {useDots ? (
-            <div className="flex items-center min-w-0">
-              {/* จุด visual เล็กเท่าเดิม แต่ hit area สูง 44px (h-11) — แตะง่ายขึ้นโดยไม่บวมสายตา */}
-              {rooms.map((room, i) => (
-                <button
-                  key={room.id}
-                  onClick={() => {
-                    if (i !== activeIndex) {
-                      trigger('light');
-                      setDirection(i > activeIndex ? 'next' : 'prev');
-                      onSetActiveRoom(room.id);
-                    }
-                  }}
-                  aria-label={room.name}
-                  className="group flex h-11 w-6 items-center justify-center outline-none"
-                >
-                  <span
-                    className={cn(
-                      'rounded-full transition-all duration-200',
-                      i === activeIndex
-                        ? 'w-5 h-2 bg-primary'
-                        : 'w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60 group-active:scale-90'
-                    )}
-                  />
-                </button>
-              ))}
-            </div>
-          ) : (
-            <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
-              {activeIndex + 1} / {rooms.length}
-            </span>
-          )}
+          <div className="flex items-center gap-1 min-w-0">
+            {useDots ? (
+              <div className="flex items-center min-w-0">
+                {/* จุด visual เล็กเท่าเดิม แต่ hit area สูง 44px (h-11) — แตะง่ายขึ้นโดยไม่บวมสายตา */}
+                {rooms.map((room, i) => (
+                  <button
+                    key={room.id}
+                    onClick={() => {
+                      if (i !== activeIndex) {
+                        trigger('light');
+                        setDirection(i > activeIndex ? 'next' : 'prev');
+                        onSetActiveRoom(room.id);
+                      }
+                    }}
+                    aria-label={room.name}
+                    className="group flex h-11 w-6 items-center justify-center outline-none"
+                  >
+                    <span
+                      className={cn(
+                        'rounded-full transition-all duration-200',
+                        i === activeIndex
+                          ? 'w-5 h-2 bg-primary'
+                          : 'w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60 group-active:scale-90'
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
+                {activeIndex + 1} / {rooms.length}
+              </span>
+            )}
+
+            {/* + เพิ่มห้อง — "แท็บใหม่" ต่อท้ายจุดห้อง (addRoom → App auto-โฟกัสห้องใหม่) */}
+            <button
+              onClick={() => { trigger('medium'); addRoom(); }}
+              aria-label="เพิ่มห้อง"
+              className="group flex h-11 items-center justify-center px-1 shrink-0 outline-none"
+            >
+              <span className="flex w-7 h-7 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground transition-colors group-hover:border-foreground/40 group-hover:text-foreground group-active:scale-90">
+                <Plus className="w-4 h-4" strokeWidth={1.5} />
+              </span>
+            </button>
+          </div>
 
           <button
             onClick={navigateNext}
             disabled={!canNavigate}
             aria-label="ห้องถัดไป"
             className={cn(
-              'inline-flex items-center gap-1 h-11 px-4 rounded-full border text-sm font-medium transition-all outline-none shrink-0',
+              'inline-flex items-center justify-center h-11 w-11 rounded-full border transition-all outline-none shrink-0',
               canNavigate
                 ? 'border-border bg-card text-foreground shadow-sm hover:bg-muted hover:shadow-md active:scale-95 active:shadow-sm'
                 : 'border-border/50 text-muted-foreground/30 cursor-not-allowed'
             )}
           >
-            ถัดไป
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 

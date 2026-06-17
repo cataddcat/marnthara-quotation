@@ -100,11 +100,11 @@ export const DevInspector = () => {
   }, [simNotch]);
 
   // "จอมือถือ" — เปิดแอปใน popup window ขนาดโทรศัพท์ (หน้าต่างจริงแยกต่างหาก →
-  // useIsMobile เห็น innerWidth ~393 → แอปเข้าโหมดมือถือแท้ 100%) ใช้คู่กับ Notch ได้
+  // useIsMobile เห็น innerWidth ~390 → แอปเข้าโหมดมือถือแท้ 100%) ใช้คู่กับ Notch ได้
   // (sim-notch แชร์ผ่าน localStorage เดียวกัน). ในตัว popup เองซ่อนปุ่มนี้ (กัน popup ซ้อน popup)
   const isPopup = !!window.opener;
   const openPhoneWindow = () => {
-    window.open(window.location.href, 'mtr-phone', 'width=393,height=852,resizable=yes');
+    window.open(window.location.href, 'mtr-phone', 'width=390,height=844,resizable=yes');
   };
 
   const showFlash = useCallback((msg: string) => {
@@ -238,7 +238,7 @@ export const DevInspector = () => {
             type="button"
             onClick={openPhoneWindow}
             onPointerDown={(e) => e.stopPropagation()}
-            title="จอมือถือ — เปิดแอปในหน้าต่างขนาดโทรศัพท์ (393×852) viewport แคบจริง แอปเข้าโหมดมือถือแท้"
+            title="จอมือถือ — เปิดแอปในหน้าต่างขนาด iPhone 13 (390×844) viewport แคบจริง แอปเข้าโหมดมือถือแท้"
             style={devCircleBtn(false)}
           >
             <Smartphone size={16} />

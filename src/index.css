@@ -12,6 +12,13 @@
    without touching Light/Dark. Mutually exclusive with `.dark`. */
 @custom-variant signature (&:where(.signature, .signature *));
 
+/* `eeert:` variant — targets the EEERT theme class so the colourful-data layer
+   (DATA_TONE_PLATE · JOB_STATUS_CHIP · Input[isDimension]) can ship AAA plates
+   purpose-tuned for its grey-page / white-card surfaces, without touching the
+   other themes. Like `.signature`, it is NOT `.dark` (falls back to light plates
+   unless an `eeert:` override is given). */
+@custom-variant eeert (&:where(.eeert, .eeert *));
+
 /* ── Geist Mono (Vercel) — เลเยอร์ตัวเลข/รหัส (HANDOFF §1.7) ──
    self-host เพื่อออฟไลน์ (PWA); variable woff2 (100–900).
    ถ้าไฟล์หาย → fallback ลง ui-monospace อัตโนมัติ (degrade ปลอดภัย) */
@@ -469,6 +476,93 @@
     --shadow-lg: 0 12px 24px -6px hsl(215 28% 25% / 0.2);
   }
 
+  /* === EEERT THEME — "blueprint/studio" · ลูกผสม สว่าง/กลาง/มืด · AAA ===
+     Three tonal zones used in full: a MEDIUM grey page, LIGHT white cards that
+     lift off it (real elevation + crisp slate borders), and near-black DARK ink/
+     CTA. Sharper (8px) radii read "engineered"; a cobalt focus ring is its
+     signature (vs Signature's gold). Heavier icon stroke + a snappier pulse give
+     a distinct line/motion personality. IBM Plex Sans Thai (shared w/ Signature).
+     Colourful-data plates are tuned for AAA via the `eeert:` variant (dataTones). */
+  .eeert {
+    /* UI font — numbers stay Geist Mono via --font-mono */
+    --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system,
+      'Segoe UI', Roboto, sans-serif;
+
+    /* Radii — crisp / technical (tighter than Signature 16px, Light 12px) */
+    --radius: 0.5rem;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.625rem;
+
+    /* Surface stack — light/medium/dark used in full */
+    --background: 216 16% 80%; /* MEDIUM — grey page */
+    --foreground: 222 40% 10%; /* DARK — near-black ink (AAA) */
+    --card: 0 0% 100%; /* LIGHT — white card floats on the grey page */
+    --card-foreground: 222 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 40% 10%;
+    --muted: 216 18% 90%; /* soft fill between page and card */
+    --muted-foreground: 217 24% 24%; /* strong secondary — AAA (≥7:1) on grey page AND white card */
+    --secondary: 216 16% 86%;
+    --secondary-foreground: 222 40% 12%;
+    --accent: 214 60% 90%; /* cobalt hover wash */
+    --accent-foreground: 215 80% 22%;
+    --subtle: 216 14% 74%;
+    --subtle-foreground: 217 24% 24%;
+
+    /* primary = CTA / selected only — near-black slate (dark zone) */
+    --primary: 222 45% 12%;
+    --primary-foreground: 210 40% 98%;
+
+    /* crisp visible borders — the "blueprint line" (≈ slate-500) */
+    --border: 216 18% 56%;
+    --input: 216 18% 56%;
+
+    /* cobalt focus accent — EEERT signature (distinct from Signature gold) */
+    --ring: 214 90% 42%;
+
+    /* status — deepened for AAA on white */
+    --destructive: 0 72% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 72% 30%;
+    --warning: 30 90% 36%;
+    --info: 206 90% 36%;
+
+    /* brand data hues — deepened for legibility on the mono chrome */
+    --brand-curtain: 222 55% 34%;
+    --brand-wallpaper: 22 90% 40%;
+    --brand-wood: 28 80% 36%;
+    --brand-roller: 187 80% 28%;
+    --brand-vertical: 200 90% 32%;
+    --brand-alum: 216 20% 34%;
+    --brand-partition: 142 72% 28%;
+    --brand-screen: 330 70% 42%;
+    --brand-removal: 0 72% 42%;
+
+    --highlight: 214 90% 42% / 0.14;
+    --highlight-foreground: 214 80% 24%;
+
+    /* real elevation — cool slate, stronger than Light so white cards lift off grey */
+    --shadow-2xs: 0 1px 2px 0 hsl(216 40% 16% / 0.1);
+    --shadow-xs: 0 1px 2px 0 hsl(216 40% 16% / 0.12), 0 1px 1px -1px hsl(216 40% 16% / 0.1);
+    --shadow-sm: 0 1px 3px 0 hsl(216 40% 16% / 0.15), 0 1px 2px -1px hsl(216 40% 16% / 0.11);
+    --shadow-md: 0 4px 10px -2px hsl(216 40% 16% / 0.18), 0 2px 6px -2px hsl(216 40% 16% / 0.12);
+    --shadow-lg: 0 12px 28px -6px hsl(216 40% 16% / 0.24);
+
+    /* snappier motion (var reach is limited — see plan §F) */
+    --duration-fast: 0.12s;
+    --duration-base: 0.18s;
+    --duration-slow: 0.3s;
+  }
+
+  /* Heavier icon stroke = EEERT "new icon feel". lucide ships strokeWidth as an
+     SVG presentation attribute, which CSS overrides — so this restyles every
+     icon app-wide with no per-component edits. */
+  .eeert svg {
+    stroke-width: 2;
+  }
+
   * {
     @apply border-border outline-ring/50;
     scrollbar-width: thin;
@@ -606,6 +700,13 @@ html.sim-notch.dark body::after {
     animation: var(--animate-pulse-subtle);
   }
 
+  /* EEERT — snappier, deeper "needs-attention" blink (vs the shallow 3s default).
+     Same layer + higher specificity so it wins; honours prefers-reduced-motion
+     via the global reduce media query below. */
+  .eeert .animate-pulse-subtle {
+    animation: eeert-pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
   .animate-fade-in {
     animation: var(--animate-fade-in);
   }
@@ -644,6 +745,17 @@ html.sim-notch.dark body::after {
   .scrollbar-hide {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+  }
+}
+
+/* EEERT pulse — deeper/snappier than the default pulse-subtle */
+@keyframes eeert-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
   }
 }
 
@@ -722,6 +834,11 @@ html.sim-notch.dark body::after {
   .dark {
     --border: 217 19% 40%;
     --muted-foreground: 215 20.2% 90%;
+  }
+
+  .eeert {
+    --border: 216 24% 44%;
+    --muted-foreground: 217 28% 20%;
   }
 }
 

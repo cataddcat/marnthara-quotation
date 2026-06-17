@@ -70,7 +70,7 @@ const InlineCostEditor = ({
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 min-h-[44px]">
         <span className="text-xs text-muted-foreground">฿</span>
         <input
           type="number"
@@ -94,7 +94,7 @@ const InlineCostEditor = ({
     <button
       onClick={startEdit}
       className={cn(
-        'flex items-center gap-1 shrink-0 rounded px-1.5 py-0.5 transition-colors hover:bg-muted/50',
+        'flex items-center gap-1 shrink-0 rounded px-1.5 min-h-[44px] transition-colors hover:bg-muted/50',
         value > 0
           ? 'text-emerald-600 dark:text-emerald-400'
           : 'text-muted-foreground/50 hover:text-muted-foreground'
@@ -104,11 +104,11 @@ const InlineCostEditor = ({
         <>
           <span className="text-sm font-mono font-semibold">฿{fmtTH(value)}</span>
           <span className="text-xs text-muted-foreground/70">/{unit}</span>
-          <Pencil className="w-2.5 h-2.5 opacity-40" />
+          <Pencil className="w-2.5 h-2.5 opacity-40" strokeWidth={1.5} />
         </>
       ) : (
         <>
-          <Plus className="w-3 h-3" />
+          <Plus className="w-3 h-3" strokeWidth={1.5} />
           <span className="text-xs italic">ตั้งราคาทุน</span>
         </>
       )}
@@ -261,13 +261,13 @@ const InventoryItemRow = ({
           title="ดูจุดที่ใช้รหัสนี้"
           className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
         >
-          <MapPin className="w-3.5 h-3.5" />
+          <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
         </button>
         <button
           onClick={startEdit}
           className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
         >
-          <Pencil className="w-3.5 h-3.5" />
+          <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
         </button>
         {confirmDel ? (
           <button
@@ -282,7 +282,7 @@ const InventoryItemRow = ({
             onBlur={() => setTimeout(() => setConfirmDel(false), 200)}
             className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted/50 transition-colors"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
           </button>
         )}
       </div>
@@ -437,7 +437,7 @@ const CatalogCategoryView = ({
             items.length > 0 ? 'mt-3' : 'mt-0'
           )}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4" strokeWidth={1.5} />
           เพิ่มรหัสสินค้า
         </button>
       )}
@@ -560,7 +560,7 @@ const FabricCard = ({
             <span className={cn('font-mono font-bold text-sm', hasUnknownCode ? 'text-muted-foreground' : accent)}>
               {code}
             </span>
-            {hasUnknownCode && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />}
+            {hasUnknownCode && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" strokeWidth={1.5} />}
             <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
               {entries.length} รายการ
             </span>
@@ -576,7 +576,7 @@ const FabricCard = ({
             </span>
           )}
         </div>
-        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
+        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} strokeWidth={1.5} />
       </button>
 
       {open && (
@@ -662,7 +662,7 @@ const WallpaperCostCard = ({
             </span>
           )}
         </div>
-        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
+        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} strokeWidth={1.5} />
       </button>
 
       {open && (
@@ -743,7 +743,7 @@ const AreaCostCard = ({
             </span>
           )}
         </div>
-        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
+        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} strokeWidth={1.5} />
       </button>
 
       {open && (
@@ -806,7 +806,7 @@ const RailCard = ({
         <div className={cn('font-mono font-bold text-sm shrink-0', isRoman ? 'text-foreground' : MATERIAL_ACCENT.hardware)}>
           {isRoman ? `${totalSets} ชุด` : `${fmtTH(totalLength)} ม.`}
         </div>
-        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} />
+        <ChevronDown className={cn('w-4 h-4 text-muted-foreground/60 transition-transform shrink-0', open && 'rotate-180')} strokeWidth={1.5} />
       </button>
       {open && (
         <div className="border-t border-border/50 bg-muted/20 px-3 py-1 divide-y divide-border/60">
@@ -1040,7 +1040,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
           onClick={handleCopy}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
         >
-          {copied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-500" strokeWidth={1.5} /> : <Copy className="w-3.5 h-3.5" strokeWidth={1.5} />}
           <span>{copied ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
         </button>
       }
@@ -1057,7 +1057,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                 onClick={() => setActiveTab('fabric')}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
                 กลับ
               </button>
               <div className="px-4 pt-2 pb-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
@@ -1296,9 +1296,9 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       key={cat.id}
                       onClick={() => setCatalogCat(cat.id)}
                       className={cn(
-                        'shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                        'shrink-0 inline-flex items-center gap-1.5 px-3 min-h-[44px] rounded-full text-xs font-medium transition-colors',
                         catalogCat === cat.id
-                          ? 'bg-primary text-primary-foreground'
+                          ? 'bg-foreground text-background'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       )}
                     >
@@ -1318,6 +1318,10 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   </span>
                   <span className="text-xs text-muted-foreground">· ราคาทุนต่อ {activeCatalogDef.costUnit}</span>
                 </div>
+
+                <p className="text-xs text-muted-foreground mb-3 px-0.5">
+                  ตั้งทุนที่นี่หรือที่การ์ดสรุปก็ได้ — เป็นค่าเดียวกัน ใช้ทุกงานที่อ้างรหัสนี้
+                </p>
 
                 <CatalogCategoryView
                   key={catalogCat}
@@ -1346,7 +1350,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   )}
                 >
                   <div className="relative">
-                    <tab.icon className="w-5 h-5" />
+                    <tab.icon className="w-5 h-5" strokeWidth={1.5} />
                     {tab.badge !== undefined && tab.badge > 0 && (
                       <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 bg-foreground text-background text-xs font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
                         {tab.badge}
