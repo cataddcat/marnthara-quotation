@@ -160,7 +160,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
                   onClick={() => handleSelectRailFormat(f)}
                   aria-pressed={railFormat === f}
                   className={cn(
-                    'px-3 py-1 text-[12px] font-semibold rounded-md transition-all',
+                    'px-3 min-h-[44px] flex items-center justify-center text-xs font-semibold rounded-md transition-all',
                     railFormat === f
                       ? 'bg-card shadow-sm text-foreground'
                       : 'text-muted-foreground hover:text-foreground'

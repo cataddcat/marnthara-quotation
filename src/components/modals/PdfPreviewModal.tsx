@@ -75,7 +75,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
         </TransitionChild>
 
-        <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 flex items-center justify-center p-0 sm:p-6">
           <TransitionChild
             as={React.Fragment}
             enter="ease-out duration-300"
@@ -85,9 +85,9 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
             leaveFrom="opacity-100 scale-100 translate-y-0"
             leaveTo="opacity-0 scale-95 translate-y-4"
           >
-            <DialogPanel className="w-full max-w-6xl h-[90vh] bg-slate-100 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <DialogPanel className="w-full max-w-6xl h-[100dvh] sm:h-[90vh] bg-slate-100 rounded-none sm:rounded-xl shadow-2xl flex flex-col overflow-hidden">
               {/* Toolbar */}
-              <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
+              <div className="bg-white border-b border-slate-200 p-4 pt-[calc(1rem+var(--safe-top))] sm:pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
                 <div className="flex p-1 bg-slate-100 rounded-xl w-full sm:w-auto overflow-x-auto">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -132,7 +132,7 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
 
               {/* Preview Area — paginated stack of A4 sheets (each sheet carries its
                   own shadow); scaled down for on-screen visibility. */}
-              <div className="flex-1 overflow-y-auto bg-slate-500/10 p-4 sm:p-8 flex justify-center items-start">
+              <div className="flex-1 overflow-y-auto bg-slate-500/10 p-4 sm:p-8 pb-[calc(1rem+var(--safe-bottom))] sm:pb-8 flex justify-center items-start">
                 <div
                   className={cn(
                     'origin-top transition-all duration-300',

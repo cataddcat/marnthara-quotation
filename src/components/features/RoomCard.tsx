@@ -347,7 +347,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   <>
                     <h2
                       className={cn(
-                        'text-lg font-bold leading-tight truncate',
+                        'text-lg font-bold leading-normal truncate',
                         room.is_suspended && 'line-through text-muted-foreground'
                       )}
                     >

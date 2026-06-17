@@ -3,6 +3,7 @@ import { Lock } from 'lucide-react';
 import { Switch } from './Switch';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
+import { useTierSize } from '@/hooks/useExperienceMode';
 import { STATUS_DOT } from '@/lib/status-style';
 import { DATA_TONE_TEXT, DATA_TONE_PLATE } from '@/config/dataTones';
 import type { CostBreakdown } from '@/lib/pricing/CostEngine';
@@ -69,6 +70,8 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   showStatus = false,
   proSlot,
 }) => {
+  // ความหนาแน่นตามโหมด (field โปร่ง p-4 · detail แน่น p-3.5) — ให้การ์ดสรุปมี rhythm ตรงกับ FormSection
+  const { section } = useTierSize();
   const pulse = status === 'warning' || status === 'loss';
 
   // สีของ plate ไล่ตามสถานะ — override ชนะ loss ชนะค่าปกติ
@@ -79,7 +82,13 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
       : totalClass;
 
   return (
-    <div className="bg-card border border-border p-5 rounded-2xl space-y-4 relative overflow-hidden">
+    <div
+      className={cn(
+        'bg-card border border-border rounded-2xl relative overflow-hidden',
+        section.pad,
+        section.stack
+      )}
+    >
       {title && (
         <div className={cn('flex items-center gap-2 font-bold border-b border-border pb-3', titleClass)}>
           {TitleIcon && <TitleIcon className="w-5 h-5" />}
@@ -128,7 +137,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
           >
             <div className="min-w-0">
               <div className="text-sm font-medium text-foreground">กำหนดราคาเอง</div>
-              <div className="text-xs text-muted-foreground leading-tight mt-0.5">
+              <div className="text-xs text-muted-foreground mt-0.5">
                 ตั้งราคาคงที่ ข้ามการคำนวณอัตโนมัติ
               </div>
             </div>

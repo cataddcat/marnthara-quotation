@@ -33,7 +33,7 @@ export const CurtainCostAnalysis: React.FC<CurtainCostAnalysisProps> = ({
             <BarChart3 className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
             วิเคราะห์ต้นทุน
           </div>
-          <div className="text-xs text-muted-foreground leading-tight mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             ดูทุนที่รู้ ส่วนต่าง และราคาแนะนำ
           </div>
         </div>

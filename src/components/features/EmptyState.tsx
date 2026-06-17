@@ -41,7 +41,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
       <p
         className={cn(
-          'font-semibold text-foreground tracking-tight',
+          'font-semibold text-foreground',
           compact ? 'text-base' : 'text-lg'
         )}
       >

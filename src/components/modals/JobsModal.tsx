@@ -241,7 +241,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                     <Menu as="div" className="relative shrink-0">
                       <MenuButton
                         aria-label="ตัวเลือกงาน"
-                        className="p-2 -mr-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-90"
+                        className="p-2 -mr-1 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-90"
                       >
                         <MoreHorizontal className="w-4 h-4" strokeWidth={1.5} />
                       </MenuButton>

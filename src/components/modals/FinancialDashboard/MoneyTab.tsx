@@ -187,7 +187,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                 trigger('warning');
                 removeReceipt(r.id);
               }}
-              className="p-2 -mr-1 text-muted-foreground/50 hover:text-destructive transition-colors"
+              className="p-2 -mr-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground/50 hover:text-destructive transition-colors"
               aria-label={`ลบ ${r.label}`}
             >
               <Trash2 className="w-4 h-4" strokeWidth={1.5} />
@@ -215,7 +215,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                       aria-label={unit === 'percent' ? 'คิดเป็นเปอร์เซ็นต์' : 'คิดเป็นบาท'}
                       aria-pressed={active}
                       className={cn(
-                        'flex items-center justify-center w-9 h-9 rounded-md transition-all',
+                        'flex items-center justify-center w-11 h-11 rounded-md transition-all',
                         active
                           ? 'bg-card text-emerald-600 border border-emerald-300/50 shadow-sm'
                           : 'text-muted-foreground'
@@ -389,7 +389,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                 trigger('warning');
                 removeExpense(e.id);
               }}
-              className="p-2 -mr-1 text-muted-foreground/50 hover:text-destructive transition-colors"
+              className="p-2 -mr-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground/50 hover:text-destructive transition-colors"
               aria-label={`ลบ ${e.label}`}
             >
               <Trash2 className="w-4 h-4" strokeWidth={1.5} />

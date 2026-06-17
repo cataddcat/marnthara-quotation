@@ -66,7 +66,7 @@ export const LayerSelector: React.FC<LayerSelectorProps> = ({ value, onChange, a
             )}
           >
             <opt.icon className={cn("w-5 h-5 mb-1.5", isSelected && "animate-pulse-once")} strokeWidth={1.5} />
-            <span className="text-xs font-bold leading-none">{opt.label}</span>
+            <span className="text-xs font-bold">{opt.label}</span>
             {/* Active Indicator Dot */}
             {isSelected && (
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-foreground rounded-full" />

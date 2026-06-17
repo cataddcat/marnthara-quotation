@@ -131,7 +131,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
                       String(Math.max(1, toNum(formData.quantity) - 1))
                     )
                   }
-                  className="w-10 h-10 rounded-l-xl bg-muted text-muted-foreground hover:bg-accent flex items-center justify-center border-y border-l border-input"
+                  className="w-12 h-12 rounded-l-xl bg-muted text-muted-foreground hover:bg-accent flex items-center justify-center border-y border-l border-input"
                 >
                   -
                 </button>
@@ -140,14 +140,14 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
                   inputMode="numeric"
                   value={formData.quantity}
                   onChange={(e) => handleNumberChange('quantity', e.target.value)}
-                  className="w-full h-10 text-center border-y border-input bg-background text-foreground font-bold"
+                  className="w-full h-12 text-center border-y border-input bg-background text-foreground font-bold"
                 />
                 <button
                   type="button"
                   onClick={() =>
                     handleNumberChange('quantity', String(toNum(formData.quantity) + 1))
                   }
-                  className="w-10 h-10 rounded-r-xl bg-muted text-muted-foreground hover:bg-accent flex items-center justify-center border-y border-r border-input"
+                  className="w-12 h-12 rounded-r-xl bg-muted text-muted-foreground hover:bg-accent flex items-center justify-center border-y border-r border-input"
                 >
                   +
                 </button>

@@ -173,7 +173,7 @@ export const FinancialDashboardModal: React.FC<{
             </div>
             <button
               onClick={() => setBlind((p) => !p)}
-              className="text-muted-foreground hover:text-foreground transition-colors p-1.5 mt-1"
+              className="text-muted-foreground hover:text-foreground transition-colors p-1.5 mt-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="ซ่อน/แสดงตัวเลข"
             >
               {blind ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}

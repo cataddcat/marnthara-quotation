@@ -47,7 +47,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onDismiss: (id: string) => void
         <div className="shrink-0 flex items-center">{icons[toast.type]}</div>
 
         <div className="flex-1 min-w-0 text-center sm:text-left mr-2">
-          <p className="text-[14px] font-semibold leading-tight tracking-tight">{toast.title}</p>
+          <p className="text-sm font-semibold leading-snug">{toast.title}</p>
           {toast.message && (
             // [THEME CHANGE] text-white/70 -> text-primary-foreground/70
             <p className="text-[12px] text-primary-foreground/70 mt-0.5 truncate max-w-[240px]">
@@ -68,7 +68,7 @@ export const ToastContainer = () => {
 
   // [Layout] Center Top Position
   return createPortal(
-    <div className="fixed top-6 left-0 right-0 z-[100] flex flex-col items-center pointer-events-none px-4">
+    <div className="fixed top-safe-top pt-3 left-0 right-0 z-[100] flex flex-col items-center pointer-events-none px-4">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={removeToast} />
       ))}

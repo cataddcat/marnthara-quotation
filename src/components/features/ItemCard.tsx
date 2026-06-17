@@ -282,7 +282,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               <span
                 key={i}
                 className={cn(
-                'text-xs leading-tight px-2.5 py-1 rounded-full font-medium',
+                'text-xs leading-normal px-2.5 py-1 rounded-full font-medium',
                 theme.badge
               )}
               >

@@ -120,7 +120,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   onOpenMainMenu?.();
                 }}
               >
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[120px] sm:max-w-[220px]">
+                <h1 className="text-base sm:text-lg font-bold text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[120px] sm:max-w-[220px]">
                   {shopConfig.name || 'ม่านธารา'}
                 </h1>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
@@ -351,7 +351,7 @@ const DockPill = ({
       />
       <span
         className={cn(
-          'text-[12px] font-semibold tracking-tight whitespace-nowrap transition-colors',
+          'text-xs font-semibold whitespace-nowrap transition-colors',
           active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
         )}
       >
