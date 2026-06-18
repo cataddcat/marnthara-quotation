@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { WallpaperItemInput } from '@/types';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { toNum } from '@/utils/formatters';
+import { newUuid } from '@/lib/id';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
@@ -55,6 +56,25 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.WALLPAPER);
+
+  // Stable keys per wall-width row. `widths` is a plain string[] with no id, so
+  // an index key would glue each row's transient <Input> state (the cm→m
+  // conversion badge + its "undo" action) to a POSITION, not a wall — deleting a
+  // wall above a pending badge would leave that badge/undo bound to the wrong row.
+  // Keys are updated in lockstep with the add/remove handlers below (the editable
+  // flow this guards); the `?? i` fallback covers any external length change.
+  const [widthKeys, setWidthKeys] = useState<string[]>(() =>
+    formData.widths.map(() => newUuid())
+  );
+
+  const handleAddWidth = () => {
+    setWidthKeys((k) => [...k, newUuid()]);
+    addWidthField();
+  };
+  const handleRemoveWidth = (i: number) => {
+    setWidthKeys((k) => k.filter((_, idx) => idx !== i));
+    removeWidthField(i);
+  };
 
   // ── Inventory suggestions from favorites ──────────────────────────────────
   const rawSuggestions = useMemo(
@@ -126,7 +146,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
               ความกว้างผนัง (ม.)
             </label>
             {formData.widths.map((w, i) => (
-              <div key={i} className="flex gap-2">
+              <div key={widthKeys[i] ?? i} className="flex gap-2">
                 <Input
                   placeholder={`ผนังที่ ${i + 1}`}
                   value={w}
@@ -138,7 +158,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
                 {formData.widths.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => removeWidthField(i)}
+                    onClick={() => handleRemoveWidth(i)}
                     className="p-3 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -148,7 +168,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             ))}
             <button
               type="button"
-              onClick={addWidthField}
+              onClick={handleAddWidth}
               className="text-sm text-foreground font-medium flex items-center gap-1 px-1 hover:underline"
             >
               <Plus className="w-4 h-4" /> เพิ่มผนัง
