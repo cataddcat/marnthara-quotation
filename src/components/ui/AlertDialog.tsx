@@ -45,22 +45,22 @@ export const AlertDialog = () => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-lg transition-all">
+              <DialogPanel className="w-full max-w-sm transform overflow-hidden rounded-xl border border-border bg-card p-6 text-left align-middle shadow-lg transition-all">
                 <div className="flex items-center gap-4 mb-4">
                   {variant === 'destructive' && (
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                      <AlertTriangle className="w-5 h-5 text-red-600" strokeWidth={1.5} />
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <AlertTriangle className="w-5 h-5 text-destructive" strokeWidth={1.5} />
                     </div>
                   )}
                   <div>
-                    <DialogTitle as="h3" className="text-lg font-bold leading-6 text-slate-900">
+                    <DialogTitle as="h3" className="text-lg font-bold leading-6 text-foreground">
                       {title}
                     </DialogTitle>
                   </div>
                 </div>
 
                 <div className="mt-2">
-                  <p className="text-sm text-slate-500">{description}</p>
+                  <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
 
                 <div className="mt-6 flex gap-3 justify-end">

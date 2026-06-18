@@ -439,15 +439,15 @@
     /* Surface stack — light/medium/dark used in full */
     --background: 216 16% 80%; /* MEDIUM — grey page */
     --foreground: 222 40% 10%; /* DARK — near-black ink (AAA) */
-    --card: 0 0% 100%; /* LIGHT — white card floats on the grey page */
+    --card: 214 22% 93%; /* LIGHT — off-white นวล (ไม่ขาวจ้า) ยังลอยเหนือพื้นเทา */
     --card-foreground: 222 40% 10%;
-    --popover: 0 0% 100%;
+    --popover: 214 22% 93%;
     --popover-foreground: 222 40% 10%;
-    --muted: 216 18% 90%; /* soft fill between page and card */
-    --muted-foreground: 217 24% 24%; /* strong secondary — AAA (≥7:1) on grey page AND white card */
-    --secondary: 216 16% 86%;
+    --muted: 216 18% 87%; /* fill นวลระหว่างพื้นเทากับการ์ด */
+    --muted-foreground: 217 24% 24%; /* strong secondary — AAA (≥7:1) on card + grey page */
+    --secondary: 216 16% 84%;
     --secondary-foreground: 222 40% 12%;
-    --accent: 214 60% 90%; /* cobalt hover wash */
+    --accent: 214 38% 86%; /* cobalt hover wash — หรี่ให้นวล ไม่จ้า */
     --accent-foreground: 215 80% 22%;
     --subtle: 216 14% 74%;
     --subtle-foreground: 217 24% 24%;
