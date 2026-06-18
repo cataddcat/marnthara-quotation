@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
-import { fmtTH } from '@/utils/formatters';
+import { fmtTH, fmtSize, toNum } from '@/utils/formatters';
 import { ITEM_CONFIG } from '@/config/constants';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ItemData } from '@/types';
@@ -106,6 +106,12 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
   };
 
   const renderSpec = (item: ItemData) => {
+    // ตัวเลขขนาดล้วน (ตัด "กว้าง/สูง", บังคับ xx.xx) — ใช้ fmtSize canonical (×); ชนิดไม่มีมิติเดี่ยว
+    // (วอลเปเปอร์ widths[] / รื้อถอน) ใช้สเปคสรุปเดิม
+    const rec = item as unknown as Record<string, unknown>;
+    const w = toNum(rec.width_m as string | number | null | undefined);
+    const h = toNum(rec.height_m as string | number | null | undefined);
+    if (w > 0 && h > 0) return `${fmtSize(w, h)} ม.`;
     const specs = PricingEngine.getItemSpecs(item);
     return specs.length > 0 ? specs[0] : '';
   };
@@ -126,7 +132,6 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
       onClose={onClose}
       variant="drawer"
       title="สรุปรายการ"
-      description={`มูลค่าโครงการ ${fmtTH(grandTotal)}`}
     >
       <div className="space-y-4 pb-safe-area">
         {/* Grand Total Card — project KPI (มูลค่า emerald hero · count neutral) */}

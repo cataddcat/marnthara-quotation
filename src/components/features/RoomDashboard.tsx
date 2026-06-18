@@ -9,6 +9,7 @@ import { itemTypeBreakdown } from '@/lib/item-display';
 import { getRoomAccent } from '@/lib/room-accents';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
+import { NUM_TONE_EEERT } from '@/config/dataTones';
 import { Metric } from '@/components/ui/Metric';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import {
@@ -237,7 +238,7 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
             ภาพรวมโครงการ
           </span>
           <div className="flex items-center gap-2 text-sm min-w-0">
-            <span className="font-semibold text-foreground tabular-nums shrink-0">
+            <span className={cn('font-semibold text-foreground tabular-nums shrink-0', NUM_TONE_EEERT.count)}>
               {totalItems} จุด
             </span>
             {incompleteCount > 0 && (

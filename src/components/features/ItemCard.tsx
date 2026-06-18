@@ -10,7 +10,8 @@ import { isItemIncomplete, incompleteLabel, requiresOpeningStyle } from '@/lib/i
 import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
-import { DATA_TONE_TEXT, MATERIAL_ACCENT } from '@/config/dataTones';
+import { DATA_TONE_TEXT, DATA_TONE_PILL, MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
+import { useThemeStore } from '@/store/useThemeStore';
 import { getItemTheme } from '@/lib/theme-utils';
 import {
   ChevronDown,
@@ -43,6 +44,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
 
   // สี brand ประจำชนิดสินค้า (ทะเบียน §2.1 ชั้น Identity) — ใช้กับชิปสเปค ให้ตรงหัว section ของฟอร์ม
   const theme = getItemTheme(item.type);
+
+  // EEERT pilot: ตัวเลขขนาด/วัสดุ สวม pill โทนนุ่ม (text สี AAA+ จากทะเบียน) — ธีมอื่นไม่เปลี่ยน
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  const pillCls = (bg: string) => (isEeert ? cn('rounded-full px-2 py-0.5', bg) : undefined);
 
   const priceResult = useMemo(() => PricingEngine.calculateDetailedPrice(item), [item]);
 
@@ -111,7 +116,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     if (w <= 0 && h <= 0) return '';
     const wStr = w > 0 ? w.toFixed(2) : '—';
     const hStr = h > 0 ? h.toFixed(2) : '—';
-    return `${wStr} x ${hStr}`;
+    return `${wStr} × ${hStr}`;
   }, [item, width, height]);
 
   // แถวขนาดบนการ์ด — สินค้ามีมิติใช้ dimNumbers (รูปแบบใหม่เสมอ), งานรื้อถอนใช้ spec สรุป
@@ -257,6 +262,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               icon={<Ruler className="w-3.5 h-3.5" strokeWidth={1.5} />}
               value={dimLine}
               tone="dimension"
+              plate
             />
           ) : (
             // งานรื้อถอน/ไม่มีมิติ — ยังคงโชว์รายละเอียดสรุปไว้ฝั่งซ้ายแบบเงียบ
@@ -310,7 +316,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {hasSize && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">ขนาด</span>
-                <span className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension)}>
+                <span
+                  className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension, pillCls(DATA_TONE_PILL.dimension))}
+                >
                   {width.toFixed(2)} × {height.toFixed(2)} ม.
                 </span>
               </div>
@@ -323,7 +331,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                   ผ้าทึบ
                   {item.code && renderCodeButton(item.code, FAVORITE_CATEGORIES.CURTAIN_MAIN)}
                 </span>
-                <span className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.fabric)}>
+                <span
+                  className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.fabric, pillCls(MATERIAL_PILL.fabric))}
+                >
                   {fabricYards.toFixed(2)}
                 </span>
               </div>
@@ -337,7 +347,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                   {item.sheer_code &&
                     renderCodeButton(item.sheer_code, FAVORITE_CATEGORIES.CURTAIN_SHEER)}
                 </span>
-                <span className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.sheer)}>
+                <span
+                  className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.sheer, pillCls(MATERIAL_PILL.sheer))}
+                >
                   {sheerYards.toFixed(2)}
                 </span>
               </div>
@@ -347,7 +359,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {item.type === ITEM_TYPES.WALLPAPER && rolls > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">จำนวนม้วน</span>
-                <span className={cn('font-semibold font-mono', MATERIAL_ACCENT.wallpaper)}>{Math.ceil(rolls)} ม้วน</span>
+                <span
+                  className={cn('font-semibold font-mono', MATERIAL_ACCENT.wallpaper, pillCls(MATERIAL_PILL.wallpaper))}
+                >
+                  {Math.ceil(rolls)} ม้วน
+                </span>
               </div>
             )}
 
@@ -355,7 +371,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {isAreaType && (areaSqm > 0 || areaSqyd > 0) && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">พื้นที่</span>
-                <span className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension)}>
+                <span
+                  className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension, pillCls(DATA_TONE_PILL.dimension))}
+                >
                   {areaSqm > 0 && `${areaSqm.toFixed(2)} ตร.ม.`}
                   {areaSqm > 0 && areaSqyd > 0 && ' · '}
                   {areaSqyd > 0 && `${areaSqyd.toFixed(2)} ตร.ล.`}

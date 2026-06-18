@@ -4,7 +4,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
 import { MATERIAL_ACCENT } from '@/config/dataTones';
-import { fmtTH } from '@/utils/formatters';
+import { fmtTH, fmtSize } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
   Layers,
@@ -687,7 +687,7 @@ const WallpaperCostCard = ({
                   <>
                     <SpecChip>ผนัง</SpecChip>
                     <SpecDims>
-                      {e.wallWidth.toFixed(1)} × {e.height.toFixed(1)} ม.
+                      {fmtSize(e.wallWidth, e.height)} ม.
                     </SpecDims>
                   </>
                 }
@@ -768,7 +768,7 @@ const AreaCostCard = ({
                   onJump={() => onJumpItem(e.roomId, e.itemId)}
                   spec={
                     <SpecDims>
-                      {e.width.toFixed(1)} × {e.height.toFixed(1)} ม.
+                      {fmtSize(e.width, e.height)} ม.
                     </SpecDims>
                   }
                 />

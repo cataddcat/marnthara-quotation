@@ -15,10 +15,22 @@ export type DataTone = 'money' | 'cost' | 'dimension' | 'neutral' | 'muted';
 export const DATA_TONE_TEXT: Record<DataTone, string> = {
   money: 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800',
   cost: 'text-rose-600 dark:text-rose-400 eeert:text-rose-800',
-  dimension: 'text-blue-700 dark:text-blue-400 eeert:text-blue-800',
+  // dimension eeert pushed to -900: max contrast (AAA+) on the soft blue pill (EEERT pilot)
+  dimension: 'text-blue-700 dark:text-blue-400 eeert:text-blue-900',
   neutral: 'text-foreground',
   muted: 'text-muted-foreground',
 };
+
+// ── Round 4: number-colour taxonomy — เลิกกฎ "monochrome chrome" ────────────────────
+// ทุก "ประเภทตัวเลข" มีสีเฉพาะ เพื่อให้ผู้ใช้กวาดตาแล้วรู้ความหมายทันที. ตัวเลขที่เคยเป็นสีเทา
+// (จำนวน/นับ · เลขเงิน-ทุนอ้างอิง) ได้โทนหมวดของมัน. คุมเป็น "EEERT-first": overlay แค่ตัวแปร eeert:
+// ทับสีฐานเดิม → light/dark/signature เหมือนเดิมเป๊ะ, โผล่สีเฉพาะใน EEERT. graduate = เลื่อนสีลง base.
+// hue ตรงกับทะเบียน (เงิน=emerald · ทุน=rose) ส่วน count=slate (โทนใหม่ "นับจำนวน" — เงียบแต่แยกออก).
+export const NUM_TONE_EEERT = {
+  count: 'eeert:text-slate-700', // จำนวน/นับ: N รายการ · จุด · ผนัง · ม้วน · เส้น · ชุด
+  money: 'eeert:text-emerald-800', // เลขเงิน/ราคาอ้างอิงที่เคยเทา (เช่น ราคางาน)
+  cost: 'eeert:text-rose-800', // เลขทุนอ้างอิงที่เคยเทา (เช่น ทุนที่รู้)
+} as const;
 
 // pill ฮีโร่ค่าตัวเลข (EEERT pilot) — พื้นโทนนุ่ม "ไร้ขอบ" แบบเดียวกับชิป (rounded-full bg-500/10)
 // แทน plate กรอบ; สี text มาจาก DATA_TONE_TEXT (-700/-800 ใน eeert) → contrast AAA บนพื้น -500/10.
@@ -48,13 +60,24 @@ export const DIMENSION_INPUT_CLASS =
 /** หมวดวัสดุ (DESIGN.md §2.1 ชั้น Material) — ผ้า=violet · วอลเปเปอร์=orange · พื้นที่=teal · อุปกรณ์=sky */
 export type MaterialKind = 'fabric' | 'sheer' | 'wallpaper' | 'area' | 'hardware';
 
-// eeert: ดันลึกขึ้นให้ accent วัสดุอ่านชัด (AAA) บน chrome เทา-ขาว
+// eeert: ดันลึกขึ้นให้ accent วัสดุอ่านชัด บน chrome เทา-ขาว — ดันถึง AAA+ (ตัวเลขวัสดุบน pill นำร่อง
+// EEERT): fabric -900 (เดิม -700 ≈ 6.6:1 ตก AAA), sheer/wallpaper/area -800. base (ธีมอื่น) คงเดิม.
 export const MATERIAL_ACCENT: Record<MaterialKind, string> = {
-  fabric: 'text-violet-500 eeert:text-violet-700',
-  sheer: 'text-violet-400 eeert:text-violet-600',
-  wallpaper: 'text-orange-500 eeert:text-orange-600',
-  area: 'text-teal-600 dark:text-teal-400 eeert:text-teal-700',
+  fabric: 'text-violet-500 eeert:text-violet-900',
+  sheer: 'text-violet-400 eeert:text-violet-800',
+  wallpaper: 'text-orange-500 eeert:text-orange-800',
+  area: 'text-teal-600 dark:text-teal-400 eeert:text-teal-800',
   hardware: 'text-sky-600 dark:text-sky-400 eeert:text-sky-700',
+};
+
+/** pill วัสดุ (EEERT pilot) — พื้นโทนนุ่มไร้ขอบ คู่กับ MATERIAL_ACCENT (text) บนตัวเลขวัสดุใน ItemCard.
+ *  คุมการมองเห็นด้วย runtime flag (theme==='eeert') ที่ caller จึงเป็นคลาสล้วน. */
+export const MATERIAL_PILL: Record<MaterialKind, string> = {
+  fabric: 'bg-violet-500/10',
+  sheer: 'bg-violet-500/10',
+  wallpaper: 'bg-orange-500/10',
+  area: 'bg-teal-500/10',
+  hardware: 'bg-sky-500/10',
 };
 
 /** จุดนำหน้า (dot) คู่กับ MATERIAL_ACCENT */

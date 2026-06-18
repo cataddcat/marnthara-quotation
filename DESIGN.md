@@ -76,16 +76,19 @@ and the Probe both read it.
 
 ## 2. 🎨 Color & contrast
 
-> **Evolved 2026-06 — "colourful data · monochrome chrome · high contrast".** This is a field tool for
+> **Evolved 2026-06-18 — "every number is colour-coded by type · high contrast".** This is a field tool for
 > **ageing eyes used outdoors**, so the palette is deliberately **vivid + high-contrast + clearly
-> separated** — *not* soft/minimal/near-white. (Supersedes the earlier "monochrome-first" framing.)
+> separated** — *not* soft/minimal/near-white. (Supersedes the earlier "monochrome-first" *and* the
+> "monochrome chrome" framings — the latter is **retired**: numbers no longer sit grey by default.)
 
-- **Colour-code the DATA; keep the CHROME monochrome.** Meaning-bearing numbers/labels are **vividly
-  coloured by role** — money = **green**, dimension = **blue** (a true blue, *never* cyan/sky, so it never
-  reads as green), cost = **red** — plus per-category **brand** colours + per-room **accents**
-  ([`Metric.tsx`](./src/components/ui/Metric.tsx) · [`room-accents.ts`](./src/lib/room-accents.ts)).
-  Containers, nav and generic body text stay `text-foreground` / `text-muted-foreground`, so colour always
-  *carries meaning*, never decorates.
+- **Colour-code EVERY number by its type.** Each kind of number carries its **category tone** so the eye
+  recognizes meaning at a glance — money = **emerald**, cost = **rose**, dimension = **blue** (a true blue,
+  *never* cyan/sky), material hues (violet/orange/teal/sky/fuchsia), **count/นับ = slate**, pending/ค้าง =
+  **amber**, % follows its subject (full table → §2.1). The old "keep counts/%/refs grey" rule is **gone**.
+  Only true **chrome** — containers, nav, section labels, body prose — stays `text-foreground` /
+  `text-muted-foreground`. Hue still always *carries meaning*, never decorates; one hue = one meaning.
+  *(Rollout is **EEERT-first** during the pilot via the `eeert:` overlays in
+  [`dataTones.ts`](./src/config/dataTones.ts) `NUM_TONE_EEERT`; graduate by promoting them to the base tones.)*
 - **Contrast: WCAG AA minimum, AAA where practical.** Surfaces must separate by a clear **lightness gap**
   (grey page · white cards) **+ visible borders** — never near-white-on-white flatness.
 - **`primary` = CTA only.** `bg-primary text-primary-foreground` fills are for the real CTA / selected
@@ -102,7 +105,8 @@ and the Probe both read it.
 
 **หนึ่งสีมีเจ้าของเดียวทั้งแอพ** — ผู้ใช้เห็นสีแล้วรู้ความหมายทันทีโดยไม่ต้องอ่าน. Machine-readable
 mirror: [`src/config/dataTones.ts`](./src/config/dataTones.ts) (`DATA_TONE_TEXT` · `DATA_TONE_PLATE` ·
-`MATERIAL_ACCENT` · `MATERIAL_DOT` · `DIMENSION_INPUT_CLASS`) — `Metric`, `Input[isDimension]`, vault
+`DATA_TONE_PILL` · `MATERIAL_ACCENT` · `MATERIAL_PILL` · `MATERIAL_DOT` · `DIMENSION_INPUT_CLASS` ·
+`NUM_TONE_EEERT` = EEERT-first overlays สำหรับเลขที่เคยเทา/นับ) — `Metric`, `Input[isDimension]`, vault
 และทุก component อ่านจากไฟล์นี้ ห้าม hardcode hue ซ้ำเอง.
 
 | ชั้น | ความหมาย | Hue (light / dark) | ใช้ที่ |
@@ -110,11 +114,14 @@ mirror: [`src/config/dataTones.ts`](./src/config/dataTones.ts) (`DATA_TONE_TEXT`
 | **Data tone** | เงิน / ราคาขาย | `emerald-700` / `-400` | Metric · ItemSummaryCard · ยอดสรุปทุกที่ |
 | | ทุน / รื้อถอน / ขาดทุน | `rose-600` / `-400` | CostReadout · FinancialDashboard · Removal |
 | | มิติ / ขนาด / พื้นที่ | `blue-700` / `-400` — **true blue, ห้าม sky/cyan เด็ดขาด** | Metric · `Input[isDimension]` · แถวขนาดทุกที่ |
+| | ค้างเก็บ / รอเก็บ (pending) | `amber-600` / `-400` — = status-amber (เงินที่ยังไม่เก็บ) | FinancialDashboard · MoneyTab |
 | **Material** | ผ้าทึบ / ผ้าโปร่ง | `violet-500` / `violet-400` | FabricSection · ItemCard · MaterialSummary · คลังรหัส |
 | | วอลเปเปอร์ (ม้วน) | `orange-500` | เดียวกัน — orange เป็นของวอลเปเปอร์ผู้เดียว |
 | | วัสดุพื้นที่ (ตร.ม./ตร.ล.) | `teal-600` / `-400` | คลังรหัส · สรุปวัสดุ |
 | | อุปกรณ์ / ราง | `sky-600` / `-400` — sky ถูกยกให้ hardware ผู้เดียว (ห้ามใช้กับมิติ) | คลังรหัส · แท็บราง/อุปกรณ์ใน MaterialSummary · ถังต้นทุนอุปกรณ์ |
 | | ค่าแรง / บริการ (ถังต้นทุน) | `fuchsia-500` | CostStructureBar · CostRow ใน FinancialDashboard |
+| **Count** | จำนวน / นับ | `slate-600` / `-300` (eeert `-800`) — โทน "นับจำนวน" เงียบแต่แยกออกจากเนื้อหา | N รายการ · จุด · ผนัง · ม้วน · เส้น · ชุด |
+| **Ratio** | อัตราส่วน / % | **ตามหมวดที่มันอธิบาย** — margin%→กำไร(emerald/amber) · discount%→amber · มัดจำ%→money | FinancialDashboard · DiscountModal · CostReadout |
 | **Identity** | ชนิดสินค้า (9 ชนิด) | `--brand-*` ([`index.css`](./src/index.css)) via `getItemTheme()` | หัว section ② ของฟอร์ม · ชิป ItemCard |
 | | ห้อง | room-accents (stripe/avatar/tag — ไม่มี sky) | RoomCard · All-Rooms summary |
 | **Status** | เตือน / ค้าง / ยังไม่ครบ | `amber` | ชิป "ยังไม่ใส่ผ้า" · validation warning |

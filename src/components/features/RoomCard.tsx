@@ -27,6 +27,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { getRoomAccent } from '@/lib/room-accents';
+import { NUM_TONE_EEERT } from '@/config/dataTones';
 import { Metric } from '@/components/ui/Metric';
 
 interface RoomCardProps {
@@ -400,7 +401,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               <span className="text-xs font-medium tracking-wide text-muted-foreground">สถานะ</span>
             )}
             <div className="flex items-center gap-2 text-sm min-w-0">
-              <span className="font-semibold text-foreground shrink-0">{itemCount} รายการ</span>
+              <span className={cn('font-semibold text-foreground shrink-0', NUM_TONE_EEERT.count)}>
+                {itemCount} รายการ
+              </span>
               {incompleteCount > 0 ? (
                 <>
                   <span className="text-muted-foreground/30">·</span>

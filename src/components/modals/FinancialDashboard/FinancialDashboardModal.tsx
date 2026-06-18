@@ -15,6 +15,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useCalculations } from '@/hooks/useCalculations';
 import { ITEM_CONFIG } from '@/config/constants';
 import { cn } from '@/lib/utils';
+import { NUM_TONE_EEERT } from '@/config/dataTones';
 import { Metric } from '@/components/ui/Metric';
 import { Alert } from '@/components/ui/Alert';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -185,7 +186,7 @@ export const FinancialDashboardModal: React.FC<{
           <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
             <span>
               ราคางาน{' '}
-              <span className="font-mono tabular-nums font-bold text-foreground">
+              <span className={cn('font-mono tabular-nums font-bold text-foreground', NUM_TONE_EEERT.money)}>
                 ฿{mask(finalTotal)}
               </span>
             </span>
@@ -209,7 +210,7 @@ export const FinancialDashboardModal: React.FC<{
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.5} />
             <div className="leading-relaxed">
               ทุนที่รู้ ≈{' '}
-              <span className="font-mono tabular-nums font-bold text-foreground">
+              <span className={cn('font-mono tabular-nums font-bold text-foreground', NUM_TONE_EEERT.cost)}>
                 ฿{mask(totals.knownCost)}
               </span>{' '}
               · รู้ทุน {totals.knownCount}/{rows.length} รายการ
