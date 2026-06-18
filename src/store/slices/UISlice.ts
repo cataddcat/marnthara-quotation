@@ -51,6 +51,8 @@ export type ModalPropsMap = {
   jobs: undefined;
   customerDirectory: undefined;
   signIn: undefined;
+  // ประวัติการแก้ไข (timeline ย้อนได้ — zundo)
+  undoHistory: undefined;
 };
 
 export type ModalType = keyof ModalPropsMap;

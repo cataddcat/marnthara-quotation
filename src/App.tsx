@@ -10,6 +10,7 @@ import { useUIStore } from '@/store/useUIStore';
 import { startSync, stopSync } from '@/lib/sync/syncEngine';
 import { shouldRemindBackup, daysSinceBackup } from '@/lib/backup-reminder';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
+import { useUndoRedoShortcuts } from '@/hooks/useUndoRedo';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
@@ -29,6 +30,9 @@ function App() {
   const fabricCosts = useAppStore((state) => state.fabricCosts);
   const batchUpdateFabricCosts = useAppStore((state) => state.batchUpdateFabricCosts);
   const { isField } = useExperienceMode();
+
+  // คีย์ลัด Undo/Redo ทั้งแอป (Ctrl/Cmd+Z · Ctrl+Shift+Z / Ctrl+Y) — ไม่จับตอนพิมพ์ในช่องกรอก
+  useUndoRedoShortcuts();
 
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     () => (rooms.length > 0 ? rooms[0].id : null)

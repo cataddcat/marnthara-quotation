@@ -26,6 +26,7 @@ import { JobsModal } from '@/components/modals/JobsModal';
 import { SignInModal } from '@/components/modals/SignInModal';
 import { CustomerDirectoryModal } from '@/components/modals/CustomerDirectoryModal';
 import { AdminPinModal } from '@/components/modals/AdminPinModal';
+import { UndoHistoryModal } from '@/components/modals/UndoHistoryModal';
 
 export const ModalManager: React.FC = () => {
   const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
@@ -157,6 +158,12 @@ export const ModalManager: React.FC = () => {
         onClose={closeModal}
         intent={adminPinProps?.intent ?? 'unlock'}
         onSuccess={adminPinProps?.onSuccess}
+      />
+
+      <UndoHistoryModal
+        key={isVisible('undoHistory') ? 'undo-open' : 'undo-closed'}
+        isOpen={isVisible('undoHistory')}
+        onClose={closeModal}
       />
 
       <MainMenuModal

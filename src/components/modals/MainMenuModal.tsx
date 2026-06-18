@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Percent,
   Database,
+  History,
   Calculator,
   Layers,
   HardHat,
@@ -366,6 +367,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
             <MenuCompactItem icon={Settings} label="ตั้งค่าร้านค้า" desc="โลโก้ / ข้อมูลติดต่อ" onClick={onOpenShopSettings} />
             <MenuCompactItem icon={Calculator} label="อธิบายสูตร" desc="ตรวจสอบวิธีคิดเงิน" onClick={onOpenFormulaDocs} />
             <MenuCompactItem icon={Database} label="สำรองข้อมูล" desc="นำเข้า / ส่งออกข้อมูล" onClick={onOpenData} />
+            <MenuCompactItem icon={History} label="ประวัติการแก้ไข" desc="ย้อน/ทำซ้ำการแก้ไขงานนี้" onClick={() => openModal('undoHistory')} />
           </div>
         </section>
 
