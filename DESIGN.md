@@ -130,6 +130,20 @@ mirror: [`src/config/dataTones.ts`](./src/config/dataTones.ts) (`DATA_TONE_TEXT`
 กติกา: data tone ลงที่ **ตัวเลข/ค่า** ไม่ใช่ chrome (label/หัวข้อ = `text-foreground`/muted ยกเว้นป้ายหมวด
 วัสดุที่ทำหน้าที่ระบุชั้นวัสดุ เช่น "ผ้าทึบ"). hue เดียวกันห้ามมีสองความหมายบน surface เดียวกัน.
 
+#### Number-contrast contract — กัน "สีกลืน" ด้วย plate (Round 5)
+
+แต่ละโทนมี 2 การแสดงผลที่ปลอดภัย: **`text`** (เฉดเข้ม ≥ AAA สำหรับวางโล่งบนการ์ด) + **`plate`** (pill
+`bg-tone-500/10` คู่กับ text `-700/-800`). แบ่งโทนเป็น 2 ชั้น เพื่อไม่ให้กลายเป็น "พิลล์เต็มจอ":
+
+- **Self-safe** (เข้มพอ อ่านโล่งได้) — เงิน · ทุน · มิติ · นับ: ใส่ plate **เฉพาะตอนเป็น hero** ของ surface.
+- **Plate-required** (โทนกลาง กลืนถ้าโล่ง) — **วัสดุทุกชนิด** (violet/orange/teal/sky) **+ amber**: **ใส่ plate เสมอ**
+  (`MATERIAL_PILL`/`DATA_TONE_PILL` + text `-700/-800`). mirror: `PLATE_REQUIRED_MATERIALS` ใน
+  [`dataTones.ts`](./src/config/dataTones.ts).
+- **กฎสากล:** ตัวเลข "สี" บนพื้นมีสี/ tint ใดๆ → **ใส่ plate เสมอ** (ห้ามสีทับ tint แบบโล่ง).
+
+plate กันกลืนได้เพราะ (1) text เข้มผ่าน AAA + (2) กล่อง tint ให้ตัวเลขมี "พื้นของตัวเอง" แยกจากของข้างเคียง —
+*ตัว `bg-500/10` อย่างเดียวไม่ได้เพิ่ม contrast ของ text มากนัก, ตัวเข้มของ text ต่างหากที่ทำให้ผ่าน.*
+
 ---
 
 ## 3. 📱 Spacing, radii & touch

@@ -80,6 +80,21 @@ export const MATERIAL_PILL: Record<MaterialKind, string> = {
   hardware: 'bg-sky-500/10',
 };
 
+// ── Round 5: number-contrast contract — กัน "สีกลืน" ด้วย plate ────────────────────────
+// โทนตัวเลขแบ่ง 2 ชั้นตามความปลอดภัยของ contrast:
+//  • self-safe (เข้มพอ อ่านโล่งๆ ได้): money · cost · dimension · count → ใส่ plate เฉพาะตอนเป็น hero
+//  • PLATE-REQUIRED (โทนกลาง กลืนถ้าวางโล่ง): วัสดุทุกชนิด + amber → ใส่ plate "เสมอ"
+//    (pill = MATERIAL_PILL/ DATA_TONE_PILL  bg-tone-500/10  คู่กับ text -700/-800)
+// กฎสากล: ตัวเลข "สี" ที่วางบนพื้นมีสี/ tint ใดๆ → ใส่ plate เสมอ (ห้ามสีทับ tint แบบโล่ง).
+// plate กัน "กลืน" ได้เพราะ (1) text เข้ม -700/-800 ผ่าน AAA + (2) กล่อง tint ให้ตัวเลขมี "พื้นของตัวเอง".
+export const PLATE_REQUIRED_MATERIALS: readonly MaterialKind[] = [
+  'fabric',
+  'sheer',
+  'wallpaper',
+  'area',
+  'hardware',
+];
+
 /** จุดนำหน้า (dot) คู่กับ MATERIAL_ACCENT */
 export const MATERIAL_DOT: Record<MaterialKind, string> = {
   fabric: 'bg-violet-500',

@@ -8,6 +8,7 @@ import { ItemData } from '@/types';
 import { ItemTypeKey } from '@/config/enums';
 import { cn } from '@/lib/utils';
 import { getRoomAccent } from '@/lib/room-accents';
+import { NUM_TONE_EEERT } from '@/config/dataTones';
 import { Metric } from '@/components/ui/Metric';
 import {
   Package,
@@ -146,7 +147,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
             label="รายการทั้งหมด"
             value={
               <>
-                {totalItemCount}
+                <span className={NUM_TONE_EEERT.count}>{totalItemCount}</span>
                 <span className="ml-1 text-sm font-normal text-muted-foreground">จุด</span>
               </>
             }

@@ -3,7 +3,8 @@ import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
-import { MATERIAL_ACCENT } from '@/config/dataTones';
+import { MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
+import { useThemeStore } from '@/store/useThemeStore';
 import { fmtTH, fmtSize } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
@@ -485,35 +486,49 @@ const UsageRow = ({
   roomName,
   qty,
   qtyClass,
+  qtyPill,
   spec,
   onJump,
 }: {
   roomName: string;
   qty: string;
   qtyClass: string;
+  /** MATERIAL_PILL.x — plate กัน "สีกลืน" สำหรับเลขวัสดุ (plate-required); โผล่ใน EEERT */
+  qtyPill?: string;
   spec?: React.ReactNode;
   onJump: () => void;
-}) => (
-  <button
-    onClick={onJump}
-    className="w-full px-1 py-2 hover:bg-muted/40 transition-colors group text-left"
-  >
-    <div className="flex justify-between items-center gap-2">
-      <span className="flex items-center gap-1.5 min-w-0">
-        <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-        <span className="text-sm font-medium text-foreground truncate">{roomName}</span>
-      </span>
-      <span className="flex items-center gap-1 shrink-0">
-        <span className={cn('text-sm font-mono tabular-nums', qtyClass)}>{qty}</span>
-        <ArrowRight
-          className="w-3.5 h-3.5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-          strokeWidth={1.5}
-        />
-      </span>
-    </div>
-    {spec && <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-2.5 mt-0.5">{spec}</div>}
-  </button>
-);
+}) => {
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  return (
+    <button
+      onClick={onJump}
+      className="w-full px-1 py-2 hover:bg-muted/40 transition-colors group text-left"
+    >
+      <div className="flex justify-between items-center gap-2">
+        <span className="flex items-center gap-1.5 min-w-0">
+          <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+          <span className="text-sm font-medium text-foreground truncate">{roomName}</span>
+        </span>
+        <span className="flex items-center gap-1 shrink-0">
+          <span
+            className={cn(
+              'text-sm font-mono tabular-nums',
+              isEeert && qtyPill && cn('rounded-full px-2 py-0.5', qtyPill),
+              qtyClass
+            )}
+          >
+            {qty}
+          </span>
+          <ArrowRight
+            className="w-3.5 h-3.5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            strokeWidth={1.5}
+          />
+        </span>
+      </div>
+      {spec && <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-2.5 mt-0.5">{spec}</div>}
+    </button>
+  );
+};
 
 /** ขนาด กว้าง×สูง — ชั้นข้อมูล #1 ของช่างหน้างาน: mono น้ำเงิน 14px (tone "dimension") */
 const SpecDims = ({ children }: { children: React.ReactNode }) => (
@@ -531,6 +546,7 @@ const FabricCard = ({
   entries,
   unit,
   accent,
+  accentPill,
   costLookup,
   onCostSave,
   onJumpItem,
@@ -540,6 +556,7 @@ const FabricCard = ({
   entries: FabricEntry[];
   unit: string;
   accent: string;
+  accentPill?: string;
   costLookup: Record<string, number>;
   onCostSave: (code: string, cost: number) => void;
   onJumpItem: (roomId: string, itemId: string) => void;
@@ -596,6 +613,7 @@ const FabricCard = ({
                 roomName={e.roomName}
                 qty={`${fmtTH(e.yards)} ${unit}`}
                 qtyClass={accent}
+                qtyPill={accentPill}
                 onJump={() => onJumpItem(e.roomId, e.itemId)}
                 spec={
                   <>
@@ -682,6 +700,7 @@ const WallpaperCostCard = ({
                 roomName={e.roomName}
                 qty={`${Math.ceil(e.rolls)} ม้วน`}
                 qtyClass={MATERIAL_ACCENT.wallpaper}
+                qtyPill={MATERIAL_PILL.wallpaper}
                 onJump={() => onJumpItem(e.roomId, e.itemId)}
                 spec={
                   <>
@@ -765,6 +784,7 @@ const AreaCostCard = ({
                   roomName={e.roomName}
                   qty={`${fmtTH(entryQty)} ${group.unit}`}
                   qtyClass="text-teal-600 dark:text-teal-400"
+                  qtyPill={MATERIAL_PILL.area}
                   onJump={() => onJumpItem(e.roomId, e.itemId)}
                   spec={
                     <SpecDims>
@@ -1134,6 +1154,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         entries={v.entries}
                         unit="หลา"
                         accent={MATERIAL_ACCENT.fabric}
+                        accentPill={MATERIAL_PILL.fabric}
                         costLookup={fabricCosts}
                         onCostSave={updateFabricCost}
                         onJumpItem={handleJumpItem}
@@ -1159,6 +1180,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         entries={v.entries}
                         unit="หลา"
                         accent={MATERIAL_ACCENT.sheer}
+                        accentPill={MATERIAL_PILL.sheer}
                         costLookup={fabricCosts}
                         onCostSave={updateFabricCost}
                         onJumpItem={handleJumpItem}
