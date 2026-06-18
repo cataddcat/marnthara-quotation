@@ -166,12 +166,6 @@
   --color-brand-screen: hsl(var(--brand-screen));
   --color-brand-removal: hsl(var(--brand-removal));
 
-  /* Brand gold (logo/wordmark ink) + money/profit accent — from the design-system
-     bundle. Additive utilities (text-brand-gold / bg-brand-gold / text-money); the
-     Signature theme uses gold for its focus ring. */
-  --color-brand-gold: #bfa76a;
-  --color-money: #059669;
-
   /* --- 4. Extended Color Palette (Eye-Friendly Subtle Tones) --- */
   --color-subtle: hsl(var(--subtle));
   --color-subtle-foreground: hsl(var(--subtle-foreground));
@@ -181,8 +175,6 @@
   /* --- 5. Animation & Transitions (Optimized for Comfort) --- */
   --animate-fade-in: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-fade-out: fade-out 0.2s ease-in forwards;
-  --animate-zoom-in: zoom-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-pulse-subtle: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-room-flash: room-flash 0.7s ease-out forwards;
 
@@ -203,28 +195,6 @@
     }
     to {
       opacity: 0;
-    }
-  }
-
-  @keyframes zoom-in {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
     }
   }
 
@@ -271,16 +241,10 @@
   --font-size-3xl: 1.875rem; /* 30px */
   --font-size-4xl: 2.25rem; /* 36px */
 
-  /* Line heights optimized for reading */
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-
   /* --- Elevation (soft, eye-care) — Geist-style subtle shadows for eye-guidance ---
      Slate-tinted (cool, hsl 222 47% 11%) + low opacity so surfaces lift gently, never harshly.
      Use DIFFERENTIALLY (DESIGN.md §2): ghost=flat → secondary/outline=xs → buttons/cards=sm → CTA/popover=md/lg.
      Dark mode leans on borders — these read weakly on OLED, by design. */
-  --shadow-2xs: 0 1px 2px 0 hsl(222 47% 11% / 0.04);
   --shadow-xs: 0 1px 2px 0 hsl(222 47% 11% / 0.05), 0 1px 1px -1px hsl(222 47% 11% / 0.04);
   --shadow-sm: 0 1px 3px 0 hsl(222 47% 11% / 0.07), 0 1px 2px -1px hsl(222 47% 11% / 0.05);
   --shadow-md: 0 4px 8px -2px hsl(222 47% 11% / 0.09), 0 2px 4px -2px hsl(222 47% 11% / 0.06);
@@ -347,28 +311,6 @@
     --highlight-foreground: 32 95% 44%;
 
     --radius: 0.75rem;
-
-    /* 8. Design-system token vocabulary — formalized from the Marnthara bundle
-       (DESIGN.md §1/§3). Additive: not consumed by Tailwind utilities, so no
-       visual change — documents the standard + available for ad-hoc use. */
-    --control-sm: 36px; /* dense / secondary control */
-    --control-md: 48px; /* STANDARD control height */
-    --control-lg: 56px; /* Lite tier / hero */
-    --control-icon: 48px; /* square icon button */
-    --touch-min: 44px; /* HIG minimum hit area */
-    --press-scale: 0.98; /* :active press feedback */
-    --duration-fast: 0.2s;
-    --duration-base: 0.3s;
-    --duration-slow: 0.5s;
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* signature easing */
-    --text-display: 1.125rem; /* 18px — hero (the cap; emphasize via colour/bg, not size) */
-    --text-title: 1rem; /* 16px — card/room/item titles */
-    --text-body: 1rem; /* 16px — primary text (dense floor 14px) */
-    --text-label: 0.875rem; /* 14px — secondary labels */
-    --text-meta: 0.75rem; /* 12px — META ONLY (dates/counts/units) */
-    --content-min-px: 12px; /* nothing readable below this */
-    --content-max-px: 18px; /* nothing on-screen above this (print exempt) */
-    --body-min-px: 14px; /* body never below */
   }
 
   .dark {
@@ -469,7 +411,6 @@
     --ring: 43 40% 52%;
 
     /* Real elevation — replace the soft Eye-Care shadows so surfaces lift clearly */
-    --shadow-2xs: 0 1px 2px 0 hsl(215 28% 25% / 0.1);
     --shadow-xs: 0 1px 2px 0 hsl(215 28% 25% / 0.12), 0 1px 1px -1px hsl(215 28% 25% / 0.1);
     --shadow-sm: 0 1px 3px 0 hsl(215 28% 25% / 0.14), 0 1px 2px -1px hsl(215 28% 25% / 0.1);
     --shadow-md: 0 4px 10px -2px hsl(215 28% 25% / 0.16), 0 2px 6px -2px hsl(215 28% 25% / 0.1);
@@ -544,16 +485,10 @@
     --highlight-foreground: 214 80% 24%;
 
     /* real elevation — cool slate, stronger than Light so white cards lift off grey */
-    --shadow-2xs: 0 1px 2px 0 hsl(216 40% 16% / 0.1);
     --shadow-xs: 0 1px 2px 0 hsl(216 40% 16% / 0.12), 0 1px 1px -1px hsl(216 40% 16% / 0.1);
     --shadow-sm: 0 1px 3px 0 hsl(216 40% 16% / 0.15), 0 1px 2px -1px hsl(216 40% 16% / 0.11);
     --shadow-md: 0 4px 10px -2px hsl(216 40% 16% / 0.18), 0 2px 6px -2px hsl(216 40% 16% / 0.12);
     --shadow-lg: 0 12px 28px -6px hsl(216 40% 16% / 0.24);
-
-    /* snappier motion (var reach is limited — see plan §F) */
-    --duration-fast: 0.12s;
-    --duration-base: 0.18s;
-    --duration-slow: 0.3s;
   }
 
   /* Heavier icon stroke = EEERT "new icon feel". lucide ships strokeWidth as an
@@ -723,29 +658,6 @@ html.sim-notch.dark body::after {
     animation: var(--animate-room-flash);
   }
 
-  /* Text Utilities */
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .text-pretty {
-    text-wrap: pretty;
-  }
-
-  /* Enhanced focus styles */
-  .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
-  }
-
-  /* Scrollbar Utilities */
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
 }
 
 /* EEERT pulse — deeper/snappier than the default pulse-subtle */
@@ -851,11 +763,6 @@ html.sim-notch.dark body::after {
 
 /* --- 17. Typography Enhancements for Readability --- */
 @layer utilities {
-  .text-readable {
-    line-height: var(--line-height-relaxed);
-    letter-spacing: 0.01em;
-  }
-
   .text-heading {
     letter-spacing: -0.02em;
     font-weight: 600;

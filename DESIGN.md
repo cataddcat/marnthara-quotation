@@ -95,7 +95,7 @@ and the Probe both read it.
   surface with `border-border` + a bg shift, **and add soft, slate-tinted elevation to lift interactive
   surfaces and guide the eye.** Use it **differentially** so hierarchy stays legible: ghost = flat →
   secondary/outline = `shadow-xs` + visible border → buttons/cards = `shadow-sm` → primary CTA / popovers
-  = `shadow-md`. Tuned scale (`--shadow-2xs…lg`) lives in [`index.css`](./src/index.css) `@theme`. Keep it
+  = `shadow-md`. Tuned scale (`--shadow-xs…lg`) lives in [`index.css`](./src/index.css) `@theme`. Keep it
   subtle; dark mode leans on borders (soft shadows read weakly on OLED).
 
 ### 2.1 📐 ทะเบียนสีความหมาย — semantic colour registry (one hue = one meaning)
