@@ -20,6 +20,17 @@ export const DATA_TONE_TEXT: Record<DataTone, string> = {
   muted: 'text-muted-foreground',
 };
 
+// pill ฮีโร่ค่าตัวเลข (EEERT pilot) — พื้นโทนนุ่ม "ไร้ขอบ" แบบเดียวกับชิป (rounded-full bg-500/10)
+// แทน plate กรอบ; สี text มาจาก DATA_TONE_TEXT (-700/-800 ใน eeert) → contrast AAA บนพื้น -500/10.
+// คุมการมองเห็นด้วย runtime flag (theme==='eeert') ใน Metric ไม่ใช่ eeert: variant จึงเป็นคลาสล้วน.
+export const DATA_TONE_PILL: Record<DataTone, string> = {
+  money: 'bg-emerald-500/10',
+  cost: 'bg-rose-500/10',
+  dimension: 'bg-blue-500/10',
+  neutral: 'bg-muted',
+  muted: 'bg-muted/60',
+};
+
 // plate ฮีโร่ (Metric size="lg") — เน้นด้วย bg+border สีโทนเดียวกัน แทนการขยายขนาด (18px cap).
 // eeert: ขอบเข้มขึ้น (-300) ให้ plate แยกขอบชัดบนการ์ดขาว/หน้ากระดาษเทา (คู่กับ text -800).
 export const DATA_TONE_PLATE: Record<DataTone, string> = {

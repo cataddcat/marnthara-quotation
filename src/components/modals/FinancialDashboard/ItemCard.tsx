@@ -215,6 +215,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
               label="ส่วนต่าง"
               value={`${analysis.profitAmount >= 0 ? '+' : ''}฿${fmtTH(analysis.profitAmount)}`}
               tone={analysis.profitAmount >= 0 ? 'money' : 'cost'}
+              plate
               align="right"
             />
           </div>

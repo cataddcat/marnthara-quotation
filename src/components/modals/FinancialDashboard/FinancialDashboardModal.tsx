@@ -168,6 +168,7 @@ export const FinancialDashboardModal: React.FC<{
                   value={mask(totals.onHand)}
                   tone={totals.onHand >= 0 ? 'money' : 'cost'}
                   size="md"
+                  plate
                 />
               </div>
             </div>

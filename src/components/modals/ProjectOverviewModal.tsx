@@ -135,7 +135,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
             <div className="p-2.5 bg-muted rounded-xl text-foreground shrink-0">
               <TrendingUp className="w-5 h-5" strokeWidth={1.5} />
             </div>
-            <Metric label="มูลค่าโครงการ" value={fmtTH(grandTotal)} tone="money" size="md" />
+            <Metric label="มูลค่าโครงการ" value={fmtTH(grandTotal)} tone="money" size="md" plate />
           </div>
           <Metric
             label="รายการทั้งหมด"

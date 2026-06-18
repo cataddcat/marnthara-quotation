@@ -256,6 +256,7 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
             value={fmtTH(grandTotal)}
             tone="money"
             size="sm"
+            plate
             align="right"
           />
           <div className="hidden sm:block h-9 w-px bg-border/60" />

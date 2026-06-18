@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { useAppStore } from '@/store/useAppStore';
+import { useThemeStore } from '@/store/useThemeStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { getRoomAccent } from '@/lib/room-accents';
 import { Metric } from '@/components/ui/Metric';
@@ -58,6 +59,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   const toggleRoomSuspension = useAppStore((state) => state.toggleRoomSuspension);
   const updateRoom = useAppStore((state) => state.updateRoom);
   const { confirm } = useConfirm();
+  // EEERT pilot: collapse the footer to one line (drop the "สถานะ"/"ยอดรวมห้อง" labels).
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   const accent = getRoomAccent(room.id);
 
@@ -393,7 +396,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         {/* Stats footer — KPI strip: สถานะ (count/ครบ) ซ้าย · ยอดรวมห้อง (emerald hero) ขวา */}
         <div className="px-4 py-2.5 border-t border-border/30 bg-muted/20 flex items-end justify-between gap-3">
           <div className="flex flex-col gap-1 min-w-0">
-            <span className="text-xs font-medium tracking-wide text-muted-foreground">สถานะ</span>
+            {!isEeert && (
+              <span className="text-xs font-medium tracking-wide text-muted-foreground">สถานะ</span>
+            )}
             <div className="flex items-center gap-2 text-sm min-w-0">
               <span className="font-semibold text-foreground shrink-0">{itemCount} รายการ</span>
               {incompleteCount > 0 ? (
@@ -423,7 +428,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             </div>
           </div>
           <Metric
-            label="ยอดรวมห้อง"
+            label={isEeert ? undefined : 'ยอดรวมห้อง'}
             value={fmtTH(roomTotal)}
             tone="money"
             size="lg"

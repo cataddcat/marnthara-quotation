@@ -269,6 +269,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             value={fmtTH(priceResult.total)}
             tone="money"
             size="sm"
+            plate
             align="right"
             struck={item.is_suspended}
             className="shrink-0"
