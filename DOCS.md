@@ -45,6 +45,7 @@ restate. **If two docs disagree, the owner wins — fix the other.**
 | Reading order / doc map | **DOCS.md** (this file) | CLAUDE.md links here — doesn't keep its own order |
 | Product scope · what to build/refuse | **PRINCIPLES.md** | — |
 | Domain vocabulary | **CONTEXT.md** | use the terms verbatim |
+| Copy / microcopy / voice (คำที่ผู้ใช้เห็น · คำต้องห้าม) | **CONTEXT.md** (คำ + การ render + anti-terms §6) | tone = PRINCIPLES §2.5; decision เฉพาะ → MEMORY |
 | Architecture · pricing · invariants · "why" · bug history | **HANDOFF.md** | — |
 | Standing preferences · latest decisions | **MEMORY.md** *(agent store)* | — |
 

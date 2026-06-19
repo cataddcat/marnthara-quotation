@@ -115,6 +115,7 @@
 - ❌ **Native mobile app (iOS/Android)** — PWA ครอบคลุมพอ ไม่ทำซ้ำ
 - ❌ **Notification / reminder** — แอพไม่ run background
 - ❌ **Internationalization (i18n)** — ภาษาไทยอย่างเดียว เจ้าของร้านอยู่ไทย
+- ❌ **Full a11y / screen-reader / ARIA / keyboard-only** — internal single-user tool; ทำแค่ contrast (DESIGN §2 WCAG AA→AAA) + touch ≥ 44 + focus-visible/2.4.11 (DESIGN §3) ตามภารกิจ readability; ไม่ลงทุน SR/ARIA เต็มรูปจนกว่าจะมี requirement จริง (เจ้าของไม่ได้ใช้ screen reader)
 
 ---
 
