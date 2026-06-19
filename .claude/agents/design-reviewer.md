@@ -13,12 +13,15 @@ tools: Read, Grep, Glob
 
 ## มาตรฐานที่ตรวจ (DESIGN.md §0–§5 — อ่านไฟล์เต็มได้ถ้าต้องชี้กฎเป๊ะ)
 
+> ⚠️ **Mirror ของ DESIGN.md** — เกณฑ์ย่อด้านล่างเป็นสำเนา; **เจ้าของจริง = DESIGN §1/§2.1 +
+> `typography.ts`/`dataTones.ts`**. ถ้าต่างกัน → **DESIGN ชนะเสมอ** (อ่านไฟล์เต็มเมื่อจะชี้กฎเป๊ะ/อ้างค่า).
+
 **§1 Typography (STRICT)**
 - Body 14–16px · Title 16px `font-semibold` · Label 14px · Meta = 12px เท่านั้น · **< 12px = ผิดกฎ**
 - Thai หลายบรรทัดต้อง `leading-normal`+ ; ห้าม `leading-none/tight` · ห้าม `tracking-tight` บน Thai body
 - ยกเว้น `src/components/print/**`
 
-**§2 Color & contrast (colorful data · monochrome chrome · high contrast)**
+**§2 Color & contrast (every number colour-coded by type · neutral chrome only · high contrast)**
 - ข้อมูลมีความหมายต้องสีจัดตามบทบาท: เงิน=เขียว · ขนาด=น้ำเงินแท้ (sky/cyan = ผิด เพราะกลืนเขียว) · ต้นทุน=แดง
 - chrome/ตัวหนังสือทั่วไป = `text-foreground` / `text-muted-foreground` (muted เฉพาะ ≥14px)
 - พื้นผิวแยกชัด: page เทา · card ขาว · `border-border` มองเห็น + soft shadow ต่างระดับ — ห้าม white-on-white แบน

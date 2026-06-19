@@ -74,8 +74,8 @@ Thai market 2025 prices are baked into `DEFAULT_LABOR_COSTS`, `DEFAULT_SERVICE_C
 The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen Norman Group usability heuristics, mapped to this codebase's primitives. **New or changed UI must satisfy all five before merge.**
 
 1. **Visual hierarchy & clarity.** Drive the eye with typography (weight / size / line-height) and contrast. **Reserve the `primary` color exclusively for the primary CTA** — don't tint secondary affordances, nav chevrons, or decorative icons with `primary` where it competes with the real action.
-2. **Touch targets & ergonomics (HIG ≥ 44×44).** Every interactive element gets a ≥ 44×44px hit area. Reuse `Button` (`size="icon"` / `"md"` = 48px) or apply `h-11 w-11` (44px) + a centered icon — never ship a bare icon with only `p-1.5`. Drive control size by tier via `useTierSize().control` (Lite = lg/56px); never hardcode input heights per tier.
-3. **Minimize cognitive load (NN/g).** Group related fields by the Law of Proximity; use universal `lucide` icons; apply progressive disclosure via `AdvancedSection` (installation-spec fields collapse in Lite). Don't surface every field at once.
+2. **Touch targets & ergonomics (HIG ≥ 44×44).** Every interactive element gets a ≥ 44×44px hit area. Reuse `Button` (`size="icon"` / `"md"` = 48px) or apply `h-11 w-11` (44px) + a centered icon — never ship a bare icon with only `p-1.5`. Drive control size by mode via `useTierSize().control` (field/หน้างาน = lg/56px · detail/ละเอียด = md/48px — the Lite/Full axis was renamed to field/detail, see §10); never hardcode input heights per mode.
+3. **Minimize cognitive load (NN/g).** Group related fields by the Law of Proximity; use universal `lucide` icons; apply progressive disclosure via `AdvancedSection` (installation-spec fields collapse in field/หน้างาน mode). Don't surface every field at once.
 4. **System status & fluid feedback.** Every control ships the full state set — `hover`, `active`, `focus-visible` (NOT `focus`, which also fires on mouse click), plus `loading` / `disabled` where applicable. `Button` already encodes these; custom controls must match.
 5. **Error prevention & forgiveness (NN/g).** Prevent mistakes with smart constraints + input formatting (smart-parse). Irreversible actions use the `destructive` variant + an explicit confirm. **Coexists with §1.1 Save-First:** autosave makes *closing a form* non-destructive (no confirm needed), so reserve confirmations for true data deletion (delete room / item / cost entry), never for navigation.
 
@@ -85,7 +85,7 @@ The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen 
 
 > 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, the gated `<12px` lint guard).
 >
-> ⚠️ **Colour & contrast EVOLVED (2026-06) — DESIGN.md §2 supersedes the stance below.** The current law is **"colourful data · monochrome chrome · high contrast · clear surface separation"** (vivid colour-coded values; grey page + white cards + visible borders + real elevation). Read §1.7 below as **historical Geist rationale**: the *monochrome chrome*, numeric layer, radii, and icon discipline still hold — but its **"monochrome-first / Eye-Care-soft / flatness-is-the-gap / borders-over-shadows"** framing is **outdated**. When in doubt, DESIGN.md §2 wins.
+> ⚠️ **Colour & contrast EVOLVED (2026-06) — DESIGN.md §2 supersedes the stance below.** The current law is **"every number colour-coded by type · high contrast · clear surface separation"** (vivid colour-coded values; grey page + white cards + visible borders + real elevation; only *true chrome* — containers/nav/section-labels/body-prose — stays neutral). Read §1.7 below as **historical Geist rationale**: the neutral-chrome discipline, numeric layer, radii, and icon discipline still hold — but its **"monochrome-first / monochrome chrome / Eye-Care-soft / flatness-is-the-gap / borders-over-shadows"** framings are **retired** (DESIGN §2 explicitly retired "monochrome chrome" — numbers no longer sit grey by default). When in doubt, DESIGN.md §2 wins.
 
 We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standing visual language, synthesized from §1.6 and Vercel's **Geist** design system, mapped to our tokens/primitives. It decides look-and-feel so we don't have to re-litigate per screen. **§1.7 layers on top of §1.6 — never overrides §1.6's ergonomics.**
 
@@ -97,7 +97,7 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
 4. **Geist Mono = the numeric layer.** `--font-mono` is **Geist Mono** (self-hosted `public/fonts/GeistMono-Variable.woff2`, precached for offline). Every `font-mono` (prices, dims, codes, units — ~72 sites) renders in it; being monospaced it aligns numbers into columns for free. Use `font-mono` for any number/code the eye scans or compares. Body text keeps the system Thai sans (Geist has no Thai glyphs).
 5. **Icon discipline (keep lucide).** `lucide` everywhere, but Geist-tuned: `strokeWidth={1.5}`, sizes on a 16px grid (`w-3.5`/`w-4`/`w-5`), `currentColor` only (monochrome — see #1). Do **not** migrate icon libraries; tuned lucide ≈ Geist look at zero churn.
 6. **Restrained accent + clear focus.** Keep `focus-visible:ring-ring` (NOT `:focus`). Accents (status / brand / amber prices / emerald profit) are *accents* — text/border/dot, not full fills.
-7. **Keep §1.6#2 ergonomics — do NOT adopt Geist's desktop density.** 44×44 hit areas, `useTierSize().control` (Lite = 56px), 16px base stay. Geist is desktop-dense; we are mobile/on-site first.
+7. **Keep §1.6#2 ergonomics — do NOT adopt Geist's desktop density.** 44×44 hit areas, `useTierSize().control` (field = 56px — Lite/Full renamed to field/detail, §10), 16px base stay. Geist is desktop-dense; we are mobile/on-site first.
 8. **Motion: subtle + fast.** Keep the existing `cubic-bezier(0.16,1,0.3,1)` easings; drop gradient/glow flourishes (they read "2021", not Geist).
 
 **Rollout:** apply per screen when you touch it (don't sweep all 14 modals at once). Reference application = `ProductionSettingsModal` ("ตั้งค่าต้นทุน").
@@ -213,24 +213,24 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 - `src/components/modals/FinancialDashboardModal.tsx`
 - Sort: loss → warning → unknown → profit (worst first)
 - Each item expandable: fabric breakdown (main + sheer) with clickable `CodeJumpButton`
-- Cost structure bar: violet (fabric) / blue (labor) / orange (rail+acc)
+- Cost structure bar (`COST_BUCKET_DOT` in `dataTones.ts`): violet (ผ้า/fabric) / **fuchsia** (แรง/labor) / **sky** (ราง/rail) — per the DESIGN §2.1 colour registry (blue is dimension-only; don't use blue/orange here)
 
 ### Material Summary (NEW)
 - `src/components/modals/MaterialSummaryModal.tsx`
 - 3 tabs: ผ้า / ราง / อุปกรณ์
 - Accessory formulas (see `src/components/modals/MaterialSummaryModal.tsx`):
-  - Brackets: `ceil(width / 1.2) + 1`, ×1.3 for DOUBLE
+  - Brackets (style-dependent — see §11.4): ลอน `ceil(width / 0.6)` (DOUBLE = same count) · ตาไก่/generic `ceil(width / 1.2) + 1` (×1.3 for DOUBLE) · แป๊บ/rod fixed 4/set
   - Eyelet rings: `ceil(width × 2.7 / 0.10)` (only ตาไก่)
   - Pin hooks: `ceil(width × 2.7 / 0.14) + 4` (only จีบ)
   - Wave tape: `width × 2.7` meters (only ลอน)
   - Roman sets: 1 per window (only พับ)
 - Copy-to-clipboard button generates text shopping list
 
-### Formula Studio
-- `src/store/slices/FormulaSlice.ts` — FormulaConfig + updateFormula + resetFormulas
-- `src/components/modals/FormulaStudioModal.tsx`
-- Input validation: `MUST_BE_POSITIVE` fields reject ≤ 0; all fields reject negative
-- Multipliers default: ลอน 2.7, จีบ 2.7, ตาไก่ 2.7, Roman offset 0.45m, hem 0.30m, yard_conversion 1.11
+### Formula Docs (read-only — Formula Studio ลบแล้ว)
+- Multipliers/offsets are **compile-time constants** in `src/config/formulas.ts` (single source; no persist/undo drift).
+- `src/components/modals/FormulaDocsModal.tsx` — read-only viewer of the current values (cannot edit in UI).
+- Defaults: ลอน 2.7, จีบ 2.7, ตาไก่ 2.7, Roman offset 0.45m, hem 0.30m, yard_conversion 1.11.
+- *(Deleted 2026-05 / PR #8: `FormulaSlice` + `FormulaStudioModal` — values are deterministic, so no in-UI editor. See §6.)*
 
 ### Inventory Manager (คลังรหัสผ้าและต้นทุน)
 - `src/components/modals/InventoryManagerModal.tsx`
@@ -340,16 +340,20 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ## 7. ⚙️ Workflow & Dev Notes
 
-### Verification policy (updated 2026-06-03)
-- After changes, verify with `npm run lint` (zero-warnings is a hard gate), `npm run test:run`, and `npm run build`. Skipping tests previously let a regression slip through (the `ItemCard` title test), so verification is expected — not optional.
-- *(Superseded: an earlier note said "do not run build/test — user runs manually." That preference is retired.)*
+### Verification policy (updated 2026-06-18)
+- The gate (lint zero-warnings + test + build) — its **command + expected output live in COMMANDS.md** (the owner; don't re-type them here). This section owns only the *policy* below.
+- **Ownership (2026-06-18): the USER runs the gate.** An AI agent edits then **stops** — it does NOT run the gate (not even `build`) unless explicitly asked. *(History: husky pre-commit auto-runs lint+vitest; a 2026-06-03 note had the agent run the gate when delegated — now retired. An even earlier "user runs manually" note had been retired before that, then reinstated.)*
+- `vitest` must run via **PowerShell**, not the git-bash Bash tool (it fails every suite with "failed to find current suite").
 - **Config files:** `vite.config.ts` / `vitest.config.ts` are the source of truth. `tsc -b` (via `tsconfig.node.json`) emits to `node_modules/.tmp/config` so it never drops `.js`/`.d.ts` into the project root — those would shadow the `.ts` because Vite/Vitest resolve `.js` first.
 
 ### Persistence
-- Zustand `persist` key: `marnthara.input.v6.4` (localStorage), **`version: 3`**
-- `migrate` (`src/store/migrations.ts`), idempotent, all in `migrateLegacyState`:
+- Zustand `persist` key: `marnthara.input.v6.4` (localStorage), **`version: 6`** (truth = `useAppStore.ts`)
+- `migrate` (`src/store/migrations.ts`), idempotent. `migrateLegacyState` (shared with `backup.ts`) covers v1→v5; v5→v6 runs in the persist migrate only:
   - **v1→v2** `migrateLegacyItem` — normalizes legacy curtains (`type: 'set'` + old field names `fabric_code`/`sheer_fabric_code`/`track_color`, missing `layer_mode`) into the current curtain schema.
-  - **v2→v3** `migrateCostVaults` — moves service keys (`install_*`/`transport_*`/`fuel_*`/`removal_per_point`) out of `accessoryCosts` into `serviceCosts` (doesn't overwrite a key the user already set in `serviceCosts`).
+  - **v2→v3** `migrateCostVaults` — moves service keys (`install_*`/`transport_*`/`fuel_*`/`removal_per_point`) out of `accessoryCosts` into `serviceCosts` (doesn't overwrite a key the user already set).
+  - **v3→v4** `migrateShopName` — default shop name `'Marnthara Smart Quotation'` → `'ม่านธารา'`, only when still the old default (never touches a user-set name).
+  - **v4→v5** `migrateShippingDefaults` — backfills `serviceCosts.shipping_per_job: 0` + `costInclude.shipping: false` for stores persisted before shipping existed.
+  - **v5→v6** `adoptCurrentJobIntoRegistry` — seeds the live working copy into `jobs[]` / `currentJobId` on first multi-job launch. **persist-migrate only** (NOT in `migrateLegacyState` — `backup.ts` shares it, and a backup file is one job, not a registry).
 - Zundo `temporal` limit: 20 undo states; its `partialize` now also tracks `serviceCosts` + `hardwareCosts` (so undo/redo covers all 7 vaults).
 - `omitTransientState` excludes: `activeModal`, `modalProps`, `modalStack`
 - `factoryReset` (ProjectSlice) resets in-memory state clean **first**, then `localStorage.clear()` + reload — clears all 3 persist keys, avoids the persist-rewrites-just-cleared-key race (see §11 / commit a043368).
@@ -444,7 +448,7 @@ src/components/modals/
   MaterialSummaryModal.tsx            — BOM / shopping list (NEW)
   ProductionSettingsModal.tsx         — Cost Vault (redesigned)
   InventoryManagerModal.tsx           — Fabric code registry (renamed)
-  FormulaStudioModal.tsx              — Multipliers config (validation added)
+  FormulaDocsModal.tsx                — Formula reference (read-only; FormulaStudioModal + FormulaSlice deleted)
   DataModal.tsx                       — Import/Export (formulas added)
   MainMenuModal.tsx                   — Drawer menu (materialSummary button added)
   LookbookModal.tsx                   — A4 lookbook: paginate + PDF/PNG-zip export + type filter (NEW)
@@ -469,7 +473,7 @@ src/types.ts                          — ItemData discriminated union + all inp
 |---|---|
 | Change a pricing formula | `src/features/<type>/logic/<Type>Strategy.ts` |
 | Change a cost calculation | `src/lib/pricing/CostEngine.ts` |
-| Change multipliers / conversions | `src/store/slices/FormulaSlice.ts` (config) + `FormulaStudioModal` (UI) |
+| Change multipliers / conversions | `src/config/formulas.ts` (compile-time; FormulaSlice/Studio deleted — `FormulaDocsModal` only views) |
 | Change default labor/accessory rates | `src/store/slices/CostDataSlice.ts` constants |
 | Add a form field | `src/features/<type>/components/<Type>Form.tsx` + `schemas.ts` |
 | Add a new item type | See section 7 "When Adding a New Item Type" |
@@ -503,15 +507,16 @@ src/types.ts                          — ItemData discriminated union + all inp
 The app forks into **field/หน้างาน** (on-site measuring) and **detail/ละเอียด** (office-grade quoting — desktop *or* mobile) — see `useExperienceMode()` and `useTierSize()`. PR19–24 brought all 8 forms to a consistent baseline; the 2026-06 pass unified the shared chrome.
 
 ### Shared primitives (one source each)
+> The form **anatomy / ordering / visual standard** (① ขนาด → ② รหัส&ราคา → … → ⑤ สรุป) is owned by **DESIGN §8** — read it there, don't restate the section spec here. Below is only the **architecture** (which primitive does what).
 - **`AdvancedSection`** — the single disclosure model. `expanded={isFull}` → Full renders children inline; Lite wraps them in a collapsible that is *always expandable* (the escape hatch). Replaces the old per-form `showAdvancedLite` toggle.
-- **`ItemSummaryCard`** — summary for the 7 non-curtain forms: breakdown rows + ราคาสุทธิ + override switch + (Full) traffic-light dot + `proSlot`.
+- **`ItemSummaryCard`** — summary for **all 8 forms** (Phase C 2026-06-12 brought curtains in too): breakdown rows + ราคาสุทธิ + override switch + (detail) traffic-light dot + `proSlot`.
 - **`CostReadout`** — read-only cost/profit panel used in `proSlot` for area/wallpaper (these types have no per-item `_cost_*` fields, so no editable Pro Mode).
 - **`useCostStatus`** — generic `CostEngine.analyze` for any `ItemData`. Replaced the curtain-only `useSmartPrice` (deleted).
 
 ### Rules / invariants (do not break)
 1. **Disclosure split by intent, not by "advanced".** Installation-spec fields (ฝั่งดึง / เก็บใบ / รูปแบบการเปิด / ตำแหน่งดึง) → wrap in `AdvancedSection`. Catalog/cost tooling (จัดการรายการ, save-to-catalog ⭐, Pro Mode) → stay `{isFull && ...}` (office-only, no escape hatch).
 2. **Honest profit signal.** Traffic-light dot + `CostReadout` render only when `isFull && analysis.totalCost > 0`. Removal (cost always 0) never shows a dot; area/wallpaper need a vault-cost code. Don't show a green dot when cost is unknown.
-3. **Curtains keep their richer `PriceSummary`** (editable Pro Mode via `_cost_*`) as the Tier-1 reference. Only the cost hook was converged to `useCostStatus`. Do **not** downgrade it into `ItemSummaryCard`.
+3. **Curtains use the shared `ItemSummaryCard` like every form** (Phase C 2026-06-12 **deleted** the curtain-only `PriceSummary`). Its editable Pro Mode (`_cost_*`) moved into `CurtainCostAnalysis` in `ItemSummaryCard`'s `proSlot`; the good state-plate + override-row design was lifted up to `ItemSummaryCard` for all 8 forms. Cost hook = `useCostStatus`. *(Supersedes the old "keep PriceSummary, don't downgrade" rule — PriceSummary no longer exists. See DESIGN §8.)*
 4. **ItemModal footer = capsule (`rounded-full`) `size="md"` (48px) buttons, never full-width.** *(Redesigned 2026-06-10; supersedes the old full-width "บันทึก & เพิ่มจุดถัดไป / บันทึก & ปิด" row.)* When the form has no minimum data yet (`isFormEmpty`, tracked from `hasMinimumItemData`) the footer is a **single "ปิด"** (close-only) button — and `handleSubmit`'s add+close path bails on empty — so an **empty item is never created** (this was the root cause of phantom items + false room "ครบ"). Once started: right side = **ยกเลิก** (`outline`) + **บันทึก** (primary, close intent); add mode also gets a left **"บันทึก → ถัดไป"** (`secondary`, rapid multi-point flow, `submitIntentRef='next'`). Container `flex flex-wrap justify-between`. Don't revert to stacked/full-width, and don't drop the empty→"ปิด" guard.
 5. **Touch ergonomics via `useTierSize().control`** → passed to `<Input size>` (Lite = lg/56px). Don't hardcode input heights per tier.
 
@@ -645,4 +650,4 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 
 **Last refactor:** 2026-06-15 (Sync status + conflict guard + iOS offline §12.4) · 2026-06-14 (Multi-job + Firebase sync §12) · 2026-06 (Cost/Catalog split §11) · 2026-06 (Two-Tier unification) · 2026-04 (core refactor)  
 **Persistence key:** `marnthara.input.v6.4` (persist **v6**) · tier override: `marnthara-experience` · บทบาท: `marnthara-role` (ต่ออุปกรณ์) · sync status: `useSyncStore` (ไม่ persist)  
-**App version:** `vite-refactor/6.7.0-strict-mode`
+**App version:** see the constant in `src/config/constants.ts` (not duplicated in docs)

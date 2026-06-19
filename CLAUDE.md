@@ -5,14 +5,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > **🗺️ Full documentation map → [`DOCS.md`](./DOCS.md)** — the single index of every doc (incl.
 > `PRINCIPLES.md` · `CONTEXT.md`) + when to read each.
 >
-> **📖 Required reading for any AI agent (in order):**
-> 1. **`CLAUDE.md`** (this file) — project instructions, rules, command index, architecture map. Auto-loaded.
-> 2. **[`HANDOFF.md`](./HANDOFF.md)** — deep architectural handoff: design philosophy, system map, critical
+> **📖 Required reading for any AI agent** — start with this file, then read in the order
+> **[DOCS.md](./DOCS.md)** prescribes (DOCS.md owns the reading order). The depth docs:
+> - **[`HANDOFF.md`](./HANDOFF.md)** — deep architectural handoff: design philosophy, system map, critical
 >    invariants, cost/catalog model, bug history. The "why" behind the codebase shape.
-> 3. **[`DESIGN.md`](./DESIGN.md)** — the canonical **design system & UI requirements** ("the document is the
->    designer"): typography standard (Body 14–16px · 12px Meta-only · <12px banned · **18px cap**), color/contrast, the
->    Design Probe, the `Text` primitive, enforcement. Read before any UI/UX change.
-> 4. **[`COMMANDS.md`](./COMMANDS.md)** — every project command + the verification gate.
+> - **[`DESIGN.md`](./DESIGN.md)** — the canonical **design system & UI requirements** ("the document is the
+>    designer"): typography · colour/contrast · the Design Probe · the `Text` primitive · enforcement.
+>    *(The actual values — sizes, hues — live there + `typography.ts`/`dataTones.ts`; don't copy them here.)*
+>    Read before any UI/UX change.
+> - **[`COMMANDS.md`](./COMMANDS.md)** — every project command + the verification gate.
 >
 > Cross-session memory (`MEMORY.md` + `memory/`) is loaded automatically and records standing preferences,
 > project state, and decisions. This file is intentionally brief — the docs above hold the depth.
@@ -29,18 +30,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 All commands + expected output → **[`COMMANDS.md`](./COMMANDS.md)** (the single source). Dev server: `npm run dev` (port 3000).
 
-**Verification gate (before handoff):** `npm run lint && npm run test:run && npm run build` — all must pass.
+**Verification gate:** the gate command + expected output live in **[`COMMANDS.md`](./COMMANDS.md)**. Ownership (MEMORY 2026-06-18): **the user runs it** — an AI agent edits then stops, and does not run the gate (not even `build`) unless explicitly asked.
 
 ## 🏗️ Architecture
 
 ### State Management (Zustand)
 
-`useAppStore` composes 6 slices with three middleware layers in order:
+`useAppStore` composes 9 slices with three middleware layers in order:
 1. `temporal` (Zundo, limit 20) — undo/redo
-2. `persist` — localStorage under key `"marnthara.input.v6.4"` (**version 4**; see `migrations.ts`)
+2. `persist` — localStorage under key `"marnthara.input.v6.4"` (**version 6**; see `migrations.ts`)
 3. `partialize` — excludes modal/UI state from persistence and undo history
 
-Slices: `ProjectSlice` (rooms + items), `CustomerSlice`, `ShopProfileSlice`, `InventorySlice` (code registry + catalog import/export), `UISlice` (modal stack), `CostDataSlice` (7 cost vaults: labor/service/accessory/hardware/fabric/wallpaper/area — see HANDOFF §11). Pricing formulas are compile-time constants in `src/config/formulas.ts` (the old `FormulaSlice` was removed).
+Slices: `ProjectSlice` (rooms + items), `CustomerSlice`, `ShopProfileSlice`, `InventorySlice` (code registry + catalog import/export), `UISlice` (modal stack), `CostDataSlice` (7 cost vaults: labor/service/accessory/hardware/fabric/wallpaper/area — see HANDOFF §11), `PaymentSlice` (มัดจำ/จ่าย/คงเหลือ), `JobsSlice` + `CustomerRegistrySlice` (multi-job switcher + customer directory — see HANDOFF §12). Pricing formulas are compile-time constants in `src/config/formulas.ts` (the old `FormulaSlice` was removed).
 
 ### Feature Module Pattern
 
@@ -81,7 +82,7 @@ All modals are routed through `components/managers/ModalManager.tsx`. Modal stat
 
 **Canonical → [`DESIGN.md`](./DESIGN.md)** (owns typography · colour · spacing · the Design Probe · the gated `<12px` + `>18px` lint guards) + **[`HANDOFF.md`](./HANDOFF.md) §1.6** (HIG + NN/g ergonomics contract; ref impl `src/components/ui/Modal.tsx`). **Read DESIGN.md before any UI change.**
 
-The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load (chunk to ≤ ~7 — Miller's Law, DESIGN.md §0) · status/feedback on every control · error-prevention**. Current law (DESIGN.md §2): typography Body 14–16 / Meta-12 / **<12px banned** / **18px cap — emphasis via colour/plate, never size** · **colourful data on monochrome chrome · high contrast · clear surface separation** · `primary` colour = CTA only · measure with the **Design Probe** first.
+The 5-pillar baseline in one line: **visual hierarchy · ≥44×44 taps (`useTierSize().control`) · low cognitive load (chunk to ≤ ~7 — Miller's Law) · status/feedback on every control · error-prevention**. The actual law + values are owned by **DESIGN.md** — typography in **§1** (+ `typography.ts`: `<12px`/`>18px` both lint-guarded), colour in **§2/§2.1** (+ `dataTones.ts`: every number colour-coded by type, `primary` = CTA only), philosophy in **§0**. Don't restate the numbers/hues here — measure with the **Design Probe** (DESIGN §6) and read DESIGN before any UI change.
 
 ## ✅ TypeScript & Linting
 

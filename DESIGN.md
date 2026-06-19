@@ -54,7 +54,7 @@ layer is the emphasis tool; see the `Metric` hero *plate*).
 | **Body** / เนื้อหา | **16px** (dense: **14px floor**) | `text-base` / `text-sm` | primary reading text — **never < 14px** |
 | **Label** / รอง | 14px | `text-sm` | secondary labels, specs |
 | **Meta** / ป้ายเล็ก | **12px — META ONLY** | `text-xs` | dates / counts / units only |
-| **Numeric** / ตัวเลข | mono, **14–16px** | `font-mono tabular-nums` | card/list/overview data (`Metric`) = **14px**; summary / document totals (`ItemSummaryCard` · `PriceSummary` · `DiscountModal` · margin %) = **16px + tone plate**. Plate/colour is the real emphasis — size adds at most one coarse 14→16 step |
+| **Numeric** / ตัวเลข | mono, **14–16px** | `font-mono tabular-nums` | card/list/overview data (`Metric`) = **14px**; summary / document totals (`ItemSummaryCard` · `DiscountModal` · margin %) = **16px + tone plate**. Plate/colour is the real emphasis — size adds at most one coarse 14→16 step |
 
 **Hard rules**
 - ❌ No `text-[9px] / text-[10px] / text-[11px]` (or any < 12px) on content. (Enforced — §6.)
@@ -238,7 +238,7 @@ rendered UI changed**. **Phase 2 is complete:**
   sizes too. Unit-tested in [`src/config/typography.test.ts`](./src/config/typography.test.ts).
 - **Numeric layer settled at 14–16px (2026-06-11, probe pass)** — after the cap, a Probe sweep pulled
   numbers down and the owner fixed a deliberate two-step: **card / list / overview data (`Metric`,
-  all sizes) = 14px**; **summary / document totals (`ItemSummaryCard` · `PriceSummary` · `RemovalForm` ·
+  all sizes) = 14px**; **summary / document totals (`ItemSummaryCard` · `RemovalForm` ·
   `DiscountModal` · `FinancialRing` & target margin %) = 16px + tone plate**. Emphasis is the
   tone-tinted plate + colour + weight; size only separates "everyday data" (14) from "the headline total"
   (16) by one coarse step. Only *text headings* (Display role) keep the 18px ceiling (`text-lg`,

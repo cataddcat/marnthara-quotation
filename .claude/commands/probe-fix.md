@@ -12,15 +12,18 @@ $ARGUMENTS
 
 ## มาตรฐานที่ต้องบังคับ (ย่อจาก DESIGN.md §1 · §2 · §4)
 
+> ⚠️ **Mirror ของ DESIGN.md** — ค่าด้านล่างเป็นสำเนาย่อเพื่อความสะดวก; **เจ้าของจริง = DESIGN §1/§2.1 +
+> `typography.ts`/`dataTones.ts`**. ถ้าต่างกัน → **DESIGN ชนะเสมอ** (อย่ายึดตัวเลข/สีในไฟล์นี้ถ้าขัดกับ DESIGN).
+
 **ตัวอักษร (§1 — STRICT)**
-- Body **14–16px** · Title 16px `font-semibold` · Label 14px · Display 20–24px `font-bold`
+- Body **14–16px** · Title 16px `font-semibold` · Label 14px · Display **18px (เพดาน)** `font-bold` — เน้นด้วยสี/plate ไม่ใช่ขนาด
 - **12px = Meta เท่านั้น** (วันที่/จำนวน/หน่วย/micro-label) · **< 12px = ห้ามเด็ดขาด** (lint จะ fail)
 - Thai body `leading-normal`+ (≥1.5) — ห้าม `leading-none` / `leading-tight` บน Thai หลายบรรทัด
   · `tracking-tight` เฉพาะ Latin heading / ตัวเลข ห้ามใช้กับ Thai body
 - ใช้ `Text` primitive (`src/components/ui/Text.tsx`) เมื่อทำได้ แทน `text-*` ดิบ
 - ยกเว้น `src/components/print/**` (สื่อสิ่งพิมพ์มี sizing ของตัวเอง)
 
-**สี & contrast (§2 — colorful data · monochrome chrome)**
+**สี & contrast (§2 — every number colour-coded by type · neutral chrome only · high contrast)**
 - ข้อมูลมีความหมาย = สีจัดตามบทบาท (ผ่าน `Metric` / tone): **เงิน = เขียว (emerald) · ขนาด = น้ำเงินแท้
   (blue — ห้าม sky/cyan เพราะจะกลืนกับเขียว) · ต้นทุน = แดง (rose)**
 - chrome / ตัวหนังสือทั่วไป = `text-foreground` / `text-muted-foreground` (muted เฉพาะข้อความรอง ≥ 14px)

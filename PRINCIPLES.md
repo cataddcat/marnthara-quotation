@@ -10,7 +10,7 @@
 
 แอพนี้มีผู้ใช้คนเดียว: **เจ้าของร้าน**
 
-- ใช้คนเดียว เป็นทั้งเจ้าของและผู้ใช้แอพ ไม่มีทีม ไม่มีลูกค้าที่เข้าถึงระบบ
+- ใช้คนเดียวเป็นหลัก (เจ้าของร้าน = ผู้ใช้) — ถ้ามีทีมช่วยงานจะ **แชร์บัญชีร้านเดียวกัน** + การ์ดบทบาท (ดู §2.1); ลูกค้าไม่เข้าถึงระบบ (เห็นแค่ PDF)
 - ทำงาน **2 บริบท** สลับกันทุกวัน:
   - **บนหน้างาน** (มือถือ) — วัดขนาด ถ่ายรูป กรอกข้อมูลเบื้องต้น
   - **ในร้าน** (แท็บเล็ต/คอม) — สรุปใบเสนอราคา ตรวจสอบ margin คุยกับลูกค้า
@@ -27,18 +27,23 @@
 
 ## 2. หลักการ 5 ข้อ (Non-Negotiable)
 
-### 2.1 Single-User, Internal Only
+### 2.1 Internal tool — ร้านเดียว (บัญชีร่วมแบบเลือกได้)
 
-แอพไม่เปิดให้คนอื่นใช้ ดังนั้นไม่มี และจะไม่มี:
+แอพเป็นเครื่องมือภายในของร้านเดียว ไม่ใช่ SaaS หลายร้าน และไม่เปิดให้ลูกค้าเข้าระบบ ดังนั้น **ไม่มีและจะไม่มี:**
 
-- ❌ Authentication / sign-up / login
-- ❌ Multi-tenancy / workspace / team
+- ❌ Public sign-up / self-service onboarding หลายร้าน (multi-tenant SaaS)
+- ❌ Customer-facing access — ลูกค้าเห็นแค่ PDF (ดู §2.5)
 - ❌ Rate limiting
-- ❌ Role-based / attribute-based access control
-- ❌ Audit logs / activity feed
-- ❌ Password reset / email verification
+- ❌ Server-side RBAC / attribute-based access control **จริง**
+- ❌ Analytics / audit logs / activity feed
 
-**ผลที่ตามมา:** Privacy boundary = device boundary ข้อมูลทั้งหมดอยู่ใน localStorage ของอุปกรณ์นั้นเครื่องเดียว ใครเข้าถึงอุปกรณ์ได้ก็เข้าถึงข้อมูลได้ ยอมรับ trade-off นี้ ไม่ต้อง over-engineer
+**แต่ตั้งแต่ 2026-06-14 (พลิก non-goal เดิม — ดู §3 + HANDOFF §12):** มี **บัญชีร้าน (email/password) แบบเลือกได้**
+เพื่อเปิด cloud sync ข้ามอุปกรณ์ และ **การ์ดบทบาท admin/พนักงานแบบ client-side** สำหรับทีมที่ใช้บัญชีร้านร่วมกัน —
+เป็น *guard กันพลาด ไม่ใช่ access control จริง* (บัญชีร่วม = แยกสิทธิ์ระดับ server ไม่ได้; ดู HANDOFF §12.8)
+
+**ผลที่ตามมา (privacy):** **Local-first เสมอ** — ถ้าไม่ตั้งค่า Firebase ข้อมูลอยู่ใน localStorage ของอุปกรณ์นั้น
+เครื่องเดียวเหมือนเดิม (privacy boundary = device boundary). ถ้าเปิด sync ข้อมูลจะอยู่ใน Firestore แยกตามบัญชี
+(`uid == shopId`) ด้วย ใครเข้าถึงอุปกรณ์/บัญชีได้ก็เข้าถึงข้อมูลได้ — ยอมรับ trade-off นี้ ไม่ over-engineer
 
 ### 2.2 ยึดหลัก QOL (Quality of Life)
 
@@ -58,7 +63,8 @@
 - Material Summary copy-to-clipboard (-3 นาทีต่อใบสั่งของ)
 
 **ตัวอย่างไม่ผ่าน QOL:**
-- เพิ่ม theme switcher 5 themes (ไม่ลด time/load/error)
+- เพิ่ม theme switcher แบบ cosmetic (สวย/ตามใจ) — ไม่ลด time/load/error *(ต่างจาก theme เพื่อ readability เช่น
+  คอนทราสต์สูงสำหรับสายตาสูงวัย — Light/Signature/EEERT, DESIGN §2 — ที่ลด error/load จริง อันนั้นผ่าน)*
 - เพิ่ม animation transitions (เพิ่ม time)
 - เพิ่ม sortable column ทุก field (เพิ่ม decision)
 

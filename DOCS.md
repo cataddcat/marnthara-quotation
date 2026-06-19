@@ -14,7 +14,7 @@ The single entry point to every doc in this repo. Read the 🔴 tier always; dro
 | **[PRINCIPLES.md](PRINCIPLES.md)** | Product decision principles — the single-shop-owner persona, the 5 non-negotiables, the QOL Decision Test. | adding / changing a **feature** ("should we?") |
 | **[CONTEXT.md](CONTEXT.md)** | Domain **glossary** — ผ้าทึบ, DOUBLE, Style, ลอน… Use these exact terms; no code/paths. | discussing any feature/bug ("what is X?") |
 | **[HANDOFF.md](HANDOFF.md)** | Deep **technical** handoff — design philosophy (save-first, cost priority chain), system map, invariants, cost/catalog model, bug history. | architectural / pricing / save-flow / multi-file changes ("how & why is it built?") |
-| **[DESIGN.md](DESIGN.md)** | The **design system & UI** requirements ("the document is the designer") — typography, colour (*colourful data · monochrome chrome · high contrast*), spacing, the Design Probe, enforcement. | any UI/UX change ("how should it look?") |
+| **[DESIGN.md](DESIGN.md)** | The **design system & UI** requirements ("the document is the designer") — typography · colour/contrast · spacing · the Design Probe · enforcement (the law + its values live here). | any UI/UX change ("how should it look?") |
 | **[docs/MOBILE-UX-AUDIT.md](docs/MOBILE-UX-AUDIT.md)** | 📱 iPhone-13 (390×844) mobile UX/UI audit — 32 findings (density · safe-area · touch · tokens) flagged 🔴/🟢/🟡 + a **done/remaining status header**. The worklog/seam for the ongoing mobile-density pass. | **continuing mobile UX / density work** (read with DESIGN.md) |
 | **[COMMANDS.md](COMMANDS.md)** | Every project **command** + the verification gate (lint 0-warn · test · build) + expected output. | running anything / before handoff |
 
@@ -31,10 +31,18 @@ The single entry point to every doc in this repo. Read the 🔴 tier always; dro
 To keep docs from drifting/contradicting, **each topic has exactly one owner**. Other files **link**, never
 restate. **If two docs disagree, the owner wins — fix the other.**
 
+> **Mirror rule (added 2026-06-19, after a drift sweep):** the few copies that *must* exist (CLAUDE.md
+> auto-load index · `.claude/` tooling) are **mirrors** — they may carry **labels + pointers only**, never the
+> owner's **volatile values** (typography numbers, colour names, the gate command, ordered lists). Volatile
+> values live once at the owner (+ its machine mirror: `typography.ts`, `dataTones.ts`). Tag any necessary
+> copy `mirror of <owner>`. *(This was the root cause of the "monochrome chrome" / persist-version / Formula
+> Studio drift.)*
+
 | Topic | Owner (canonical) | Everyone else |
 |---|---|---|
 | Commands · verification gate · expected output | **COMMANDS.md** | link; **never** hardcode test counts/versions |
-| UI · typography · **colour** · spacing · elevation | **DESIGN.md** | link. §2 = current colour law (*colourful data · monochrome chrome · high contrast*) — **supersedes** HANDOFF §1.7 "monochrome-first / borders-over-shadows / Eye-Care-soft" |
+| UI · typography · **colour** · spacing · elevation | **DESIGN.md** (+ `typography.ts` / `dataTones.ts` mirrors) | link; never copy the numbers/hues. §2 **supersedes & retires** HANDOFF §1.7 framings (incl. "monochrome chrome") |
+| Reading order / doc map | **DOCS.md** (this file) | CLAUDE.md links here — doesn't keep its own order |
 | Product scope · what to build/refuse | **PRINCIPLES.md** | — |
 | Domain vocabulary | **CONTEXT.md** | use the terms verbatim |
 | Architecture · pricing · invariants · "why" · bug history | **HANDOFF.md** | — |
