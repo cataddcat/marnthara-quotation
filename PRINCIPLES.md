@@ -111,7 +111,7 @@
 - ❌ **Analytics / telemetry / tracking** — ไม่มีคนเก็บข้อมูล privacy issue สำหรับ user คนเดียว
 - ❌ **Billing / payment / e-commerce** — เก็บเงินนอกแอพ
 - ❌ **AI-generated quotations** — ราคาต้องคำนวณจากสูตรที่ตรวจสอบได้ AI ใช้ช่วยกรอกข้อมูลได้แต่ไม่ใช่ตัดสินราคา
-- ❌ **Backend server / API / database** — ทุกอย่างใน browser ใช้ localStorage
+- ❌ **Custom backend / API server ของเราเอง** — ไม่มี server ที่เราเขียนเอง; การคำนวณอยู่ใน browser, ข้อมูลหลักใน localStorage. *(cloud sync ใช้ Firebase/Firestore = managed BaaS แบบ optional — ดู ✅ Cloud sync ด้านบน + HANDOFF §12)*
 - ❌ **Native mobile app (iOS/Android)** — PWA ครอบคลุมพอ ไม่ทำซ้ำ
 - ❌ **Notification / reminder** — แอพไม่ run background
 - ❌ **Internationalization (i18n)** — ภาษาไทยอย่างเดียว เจ้าของร้านอยู่ไทย
