@@ -417,13 +417,14 @@
     --shadow-lg: 0 12px 24px -6px hsl(215 28% 25% / 0.2);
   }
 
-  /* === EEERT THEME — "blueprint/studio" · ลูกผสม สว่าง/กลาง/มืด · AAA ===
-     Three tonal zones used in full: a MEDIUM grey page, LIGHT white cards that
-     lift off it (real elevation + crisp slate borders), and near-black DARK ink/
-     CTA. Sharper (8px) radii read "engineered"; a cobalt focus ring is its
-     signature (vs Signature's gold). Heavier icon stroke + a snappier pulse give
-     a distinct line/motion personality. IBM Plex Sans Thai (shared w/ Signature).
-     Colourful-data plates are tuned for AAA via the `eeert:` variant (dataTones). */
+  /* === EEERT THEME — "Colorful Studio" · cobalt-tinted chrome · AAA ===
+     COLORFUL chrome on a high-contrast base: a cobalt-tinted page, near-white
+     cobalt-tinted cards that lift off it (real elevation + crisp cobalt borders),
+     a VIVID COBALT CTA (--primary) — colour carries action. Near-black ink stays
+     (AAA on the light cards), and the data/nav/brand layer is colour-coded
+     (multi-hue via the `eeert:` variant in dataTones), so the whole theme reads
+     colourful yet legible. Sharper (8px) radii read "engineered"; cobalt focus
+     ring; heavier icon stroke + snappier pulse; IBM Plex Sans Thai. */
   .eeert {
     /* UI font — numbers stay Geist Mono via --font-mono */
     --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system,
@@ -436,29 +437,30 @@
     --radius-lg: 0.5rem;
     --radius-xl: 0.625rem;
 
-    /* Surface stack — light/medium/dark used in full */
-    --background: 216 16% 80%; /* MEDIUM — grey page */
-    --foreground: 222 40% 10%; /* DARK — near-black ink (AAA) */
-    --card: 214 22% 93%; /* LIGHT — off-white นวล (ไม่ขาวจ้า) ยังลอยเหนือพื้นเทา */
+    /* Surface stack — COLORFUL: cobalt-tinted canvas/chrome; light cards keep AAA ink.
+       (ฉีดสีเข้า chrome แต่หมึก/การ์ดคงคอนทราสต์ — colorful + อ่านง่าย, DESIGN §0/§2) */
+    --background: 214 34% 82%; /* COLORFUL — cobalt page (was neutral grey) */
+    --foreground: 222 40% 10%; /* DARK — near-black ink (AAA) — UNCHANGED */
+    --card: 214 30% 96%; /* near-white cobalt tint — data ยัง pop */
     --card-foreground: 222 40% 10%;
-    --popover: 214 22% 93%;
+    --popover: 214 30% 96%;
     --popover-foreground: 222 40% 10%;
-    --muted: 216 18% 87%; /* fill นวลระหว่างพื้นเทากับการ์ด */
-    --muted-foreground: 217 24% 24%; /* strong secondary — AAA (≥7:1) on card + grey page */
-    --secondary: 216 16% 84%;
+    --muted: 214 26% 89%; /* cobalt-tinted fill ระหว่างพื้นกับการ์ด */
+    --muted-foreground: 217 24% 24%; /* strong secondary — AAA (≥7:1) on card */
+    --secondary: 214 24% 87%;
     --secondary-foreground: 222 40% 12%;
-    --accent: 214 38% 86%; /* cobalt hover wash — หรี่ให้นวล ไม่จ้า */
+    --accent: 214 55% 86%; /* cobalt hover wash — สดขึ้น */
     --accent-foreground: 215 80% 22%;
-    --subtle: 216 14% 74%;
+    --subtle: 214 22% 76%;
     --subtle-foreground: 217 24% 24%;
 
-    /* primary = CTA / selected only — near-black slate (dark zone) */
-    --primary: 222 45% 12%;
-    --primary-foreground: 210 40% 98%;
+    /* primary = CTA / selected only — VIVID COBALT (สี = การกระทำ; was near-black) */
+    --primary: 214 86% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    /* crisp visible borders — the "blueprint line" (≈ slate-500) */
-    --border: 216 18% 56%;
-    --input: 216 18% 56%;
+    /* crisp visible borders — cobalt "blueprint line" */
+    --border: 214 28% 56%;
+    --input: 214 28% 56%;
 
     /* cobalt focus accent — EEERT signature (distinct from Signature gold) */
     --ring: 214 90% 42%;

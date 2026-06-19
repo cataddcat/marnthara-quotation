@@ -12,7 +12,7 @@ const META_COLOR: Record<Theme, string> = {
   light: '#E4E8EE',
   dark: '#0D0814',
   signature: '#FCFCFD',
-  eeert: '#C4CAD4',
+  eeert: '#C2CFE1',
 };
 
 interface ThemeState {

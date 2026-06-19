@@ -80,6 +80,17 @@ export const MATERIAL_PILL: Record<MaterialKind, string> = {
   hardware: 'bg-sky-500/10',
 };
 
+// contrast plate วัสดุ (Round 6 — DESIGN §2) — bordered + bg -50 ที่ "รีเซ็ตสีพื้น" สำหรับพื้นสี
+// (Colorful EEERT) ที่พิลล์โปร่ง (MATERIAL_PILL) กลืน. คู่กับ DATA_TONE_PLATE; ใช้แทน pill เมื่อวางบนพื้น tint
+// (hue เลข ≈ hue พื้น). แยกตัวด้วย ขอบ + bg ทึบ + text เข้ม ไม่ใช่ tint บาง ๆ.
+export const MATERIAL_PLATE: Record<MaterialKind, string> = {
+  fabric: 'bg-violet-50 border-violet-200 dark:bg-violet-950/40 dark:border-violet-900 eeert:border-violet-300',
+  sheer: 'bg-violet-50 border-violet-200 dark:bg-violet-950/40 dark:border-violet-900 eeert:border-violet-300',
+  wallpaper: 'bg-orange-50 border-orange-200 dark:bg-orange-950/40 dark:border-orange-900 eeert:border-orange-300',
+  area: 'bg-teal-50 border-teal-200 dark:bg-teal-950/40 dark:border-teal-900 eeert:border-teal-300',
+  hardware: 'bg-sky-50 border-sky-200 dark:bg-sky-950/40 dark:border-sky-900 eeert:border-sky-300',
+};
+
 // ── Round 5: number-contrast contract — กัน "สีกลืน" ด้วย plate ────────────────────────
 // โทนตัวเลขแบ่ง 2 ชั้นตามความปลอดภัยของ contrast:
 //  • self-safe (เข้มพอ อ่านโล่งๆ ได้): money · cost · dimension · count → ใส่ plate เฉพาะตอนเป็น hero
@@ -139,4 +150,37 @@ export const JOB_STATUS_DOT: Record<string, string> = {
   confirmed: 'bg-indigo-500',
   production: 'bg-violet-500',
   done: 'bg-emerald-500',
+};
+
+// ── เมนูหลัก (nav): icon tile + หัวกลุ่ม "ลงสีตามหมวด" — nav ก็มีสี ไม่ใช่ chrome เทา (DESIGN §2) ──
+// ทุกแถวเมนูมีไอคอน "สีสด" ตามกลุ่ม (ไม่ใช่ bg-muted): tile = pill tint + icon accent · text = หัวกลุ่ม ·
+// bar = แถบหน้าหัวกลุ่ม. eeert: ดัน text ลึกให้ AAA บนหน้ากระดาษเทา/การ์ดขาว. (label/desc ของรายการคงนิวทรัล)
+export type MenuGroup = 'jobs' | 'deliver' | 'money' | 'system';
+// หัวกลุ่ม (h3): แถบ + ข้อความ สีประจำกลุ่ม
+export const MENU_GROUP_TONE: Record<MenuGroup, { bar: string; text: string }> = {
+  jobs: { bar: 'bg-indigo-500', text: 'text-indigo-700 dark:text-indigo-400 eeert:text-indigo-800' },
+  deliver: { bar: 'bg-sky-500', text: 'text-sky-700 dark:text-sky-400 eeert:text-sky-700' },
+  money: { bar: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800' },
+  system: { bar: 'bg-orange-500', text: 'text-orange-700 dark:text-orange-400 eeert:text-orange-800' },
+};
+
+// icon tile "ต่อรายการ" — สีตามความหมาย (per-item semantic): หมวด "ราคา & เงิน" ใช้ data tone จริงตาม §2.1
+// (วัสดุ=violet · ส่วนลด=amber · เงิน=emerald · ทุน=rose) เพื่อให้ "เงิน=เขียว · ทุน=แดง" กวาดตาแล้วรู้ทันที;
+// กลุ่มอื่นใช้สี identity ประจำกลุ่ม (ไม่หลอกตาว่าเครื่องมือระบบสำคัญ). eeert: ดันลึกให้ AAA.
+export type MenuIconTone =
+  | 'jobs'
+  | 'deliver'
+  | 'system' // identity ประจำกลุ่ม A/B/D
+  | 'material'
+  | 'discount'
+  | 'money'
+  | 'cost'; // semantic data tone (§2.1) — กลุ่ม C
+export const MENU_ICON_TONE: Record<MenuIconTone, string> = {
+  jobs: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 eeert:text-indigo-800',
+  deliver: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 eeert:text-sky-700',
+  system: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 eeert:text-orange-800',
+  material: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 eeert:text-violet-800',
+  discount: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 eeert:text-amber-800',
+  money: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 eeert:text-emerald-800',
+  cost: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 eeert:text-rose-800',
 };

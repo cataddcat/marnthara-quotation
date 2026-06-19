@@ -21,6 +21,7 @@ import {
   Contrast,
   FolderKanban,
   User,
+  ChevronRight,
   Lock,
   Unlock,
   KeyRound,
@@ -36,6 +37,7 @@ import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useRole } from '@/hooks/useRole';
 import { AdminGate } from '@/components/ui/AdminGate';
+import { MENU_GROUP_TONE, MENU_ICON_TONE, type MenuIconTone } from '@/config/dataTones';
 import { Cloud, CloudOff, LogOut } from 'lucide-react';
 
 interface MainMenuModalProps {
@@ -62,11 +64,13 @@ const MenuCompactItem = ({
   label,
   desc,
   onClick,
+  tone,
 }: {
   icon: React.ElementType;
   label: string;
   desc?: string;
   onClick: () => void;
+  tone: MenuIconTone;
 }) => {
   const { trigger } = useHaptic();
 
@@ -76,9 +80,9 @@ const MenuCompactItem = ({
         trigger('light');
         onClick();
       }}
-      className="group flex items-center gap-3 p-2.5 rounded-xl border border-border bg-card hover:bg-muted/30 transition-all duration-200 active:scale-[0.98] col-span-1 shadow-sm"
+      className="group flex w-full items-center gap-3 px-3 py-2 min-h-[48px] rounded-xl border border-border bg-card hover:bg-muted/30 transition-all duration-200 active:scale-[0.98] shadow-sm"
     >
-      <div className="p-2 rounded-lg shrink-0 transition-colors bg-muted text-foreground group-hover:bg-muted/80">
+      <div className={cn('p-2 rounded-lg shrink-0 transition-colors', MENU_ICON_TONE[tone])}>
         <Icon className="w-4 h-4" strokeWidth={1.5} />
       </div>
       <div className="text-left flex-1 min-w-0">
@@ -89,6 +93,7 @@ const MenuCompactItem = ({
           </div>
         )}
       </div>
+      <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
     </button>
   );
 };
@@ -150,9 +155,9 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
         {/* ── บัญชี & ตั้งค่า (บนสุด — โปรไฟล์ร้าน · บัญชี · ธีม/โหมด) ── */}
         <div className="bg-muted/30 p-3 rounded-xl border border-border/50 space-y-3">
           <div className="flex items-center justify-between px-1">
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">ร้านของคุณ</span>
-              <span className="text-base font-bold leading-tight text-foreground truncate max-w-[150px]">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider shrink-0">ร้านของคุณ</span>
+              <span className="text-base font-bold leading-tight text-foreground truncate">
                 {shopName || 'ม่านธารา'}
               </span>
             </div>
@@ -325,49 +330,58 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           </div>
         </div>
 
-        {/* ── 1. นำเสนอ & ขาย (Sales & Customer) ── */}
+        {/* ── A · งาน & ลูกค้า (สิ่งที่กำลังทำ — ใช้บ่อยสุด) ── */}
         <section className="space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1 flex items-center gap-2">
-            <span className="w-1 h-3 bg-indigo-500 rounded-full"></span> นำเสนอ & ขาย
+          <h3 className={cn('text-xs font-bold uppercase tracking-widest px-1 flex items-center gap-2', MENU_GROUP_TONE.jobs.text)}>
+            <span className={cn('w-1 h-3 rounded-full', MENU_GROUP_TONE.jobs.bar)}></span> งาน &amp; ลูกค้า
           </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <MenuCompactItem icon={FolderKanban} label="งานทั้งหมด" desc="สลับงาน · ดูความคืบหน้าทุกงาน" onClick={onOpenJobs} />
-            <MenuCompactItem icon={FileText} label="ใบเสนอราคา" desc="พิมพ์ใบเสนอราคา / ส่งของ" onClick={onOpenPdf} />
-            <MenuCompactItem icon={MessageSquareText} label="คัดลอกสรุป" desc="ส่ง LINE คุยลูกค้า/ช่าง" onClick={onOpenCopySummary} />
-            <MenuCompactItem icon={BookOpen} label="Lookbook" desc="แคตตาล็อกโชว์ผลงาน" onClick={onOpenLookbook} />
-            <MenuCompactItem icon={Users} label="ฐานลูกค้า" desc="เลือกลูกค้า · เปิดงานใหม่" onClick={onOpenCustomerDirectory} />
-            <MenuCompactItem icon={User} label="ลูกค้างานนี้" desc="แก้ชื่อ/ที่อยู่บนเอกสาร" onClick={onOpenCustomer} />
+          <div className="space-y-1.5">
+            <MenuCompactItem tone="jobs" icon={FolderKanban} label="งานทั้งหมด" desc="สลับงาน · ดูความคืบหน้าทุกงาน" onClick={onOpenJobs} />
+            <MenuCompactItem tone="jobs" icon={User} label="ลูกค้างานนี้" desc="แก้ชื่อ/ที่อยู่บนเอกสาร" onClick={onOpenCustomer} />
+            <MenuCompactItem tone="jobs" icon={Users} label="ฐานลูกค้า" desc="เลือกลูกค้า · เปิดงานใหม่" onClick={onOpenCustomerDirectory} />
           </div>
         </section>
 
-        {/* ── 2. สินค้า & การเงิน (Products & Finance) ── */}
+        {/* ── B · ส่งให้ลูกค้า (ผลงาน/เอกสารส่งออก) ── */}
         <section className="space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1 flex items-center gap-2">
-            <span className="w-1 h-3 bg-emerald-500 rounded-full"></span> สินค้า & การเงิน
+          <h3 className={cn('text-xs font-bold uppercase tracking-widest px-1 flex items-center gap-2', MENU_GROUP_TONE.deliver.text)}>
+            <span className={cn('w-1 h-3 rounded-full', MENU_GROUP_TONE.deliver.bar)}></span> ส่งให้ลูกค้า
           </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <MenuCompactItem icon={Layers} label="สินค้า & ราคา" desc="อัปเดตรหัสวัสดุ" onClick={onOpenMaterialSummary} />
+          <div className="space-y-1.5">
+            <MenuCompactItem tone="deliver" icon={FileText} label="ใบเสนอราคา" onClick={onOpenPdf} />
+            <MenuCompactItem tone="deliver" icon={MessageSquareText} label="คัดลอกสรุป" desc="ส่ง LINE คุยลูกค้า/ช่าง" onClick={onOpenCopySummary} />
+            <MenuCompactItem tone="deliver" icon={BookOpen} label="Lookbook" desc="แคตตาล็อกโชว์ผลงาน" onClick={onOpenLookbook} />
+          </div>
+        </section>
+
+        {/* ── C · ราคา & เงิน (ตั้งราคา/ดูเงิน — ต้นทุน/กำไรเฉพาะผู้ดูแล) ── */}
+        <section className="space-y-2.5">
+          <h3 className={cn('text-xs font-bold uppercase tracking-widest px-1 flex items-center gap-2', MENU_GROUP_TONE.money.text)}>
+            <span className={cn('w-1 h-3 rounded-full', MENU_GROUP_TONE.money.bar)}></span> ราคา &amp; เงิน
+          </h3>
+          <div className="space-y-1.5">
+            <MenuCompactItem tone="material" icon={Layers} label="สินค้า & ราคา" desc="อัปเดตรหัสวัสดุ" onClick={onOpenMaterialSummary} />
+            <MenuCompactItem tone="discount" icon={Percent} label="จัดการส่วนลด" desc="ลดท้ายบิล / โปรโมชัน" onClick={onOpenDiscount} />
             {/* ต้นทุน/กำไร = ความลับร้าน → เฉพาะผู้ดูแล (พนักงานไม่เห็นเมนูนี้) */}
             <AdminGate>
-              <MenuCompactItem icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} />
+              <MenuCompactItem tone="money" icon={TrendingUp} label="การเงินของงาน" desc="มัดจำ · จ่ายจริง · คงเหลือ · ทุนที่รู้" onClick={onOpenCostDashboard} />
             </AdminGate>
-            <MenuCompactItem icon={Percent} label="จัดการส่วนลด" desc="ลดท้ายบิล / โปรโมชัน" onClick={onOpenDiscount} />
             <AdminGate>
-              <MenuCompactItem icon={ShieldCheck} label="โครงสร้างต้นทุน" desc="ค่าแรง / ค่าบริการ" onClick={onOpenProductionSettings} />
+              <MenuCompactItem tone="cost" icon={ShieldCheck} label="โครงสร้างต้นทุน" desc="ค่าแรง / ค่าบริการ" onClick={onOpenProductionSettings} />
             </AdminGate>
           </div>
         </section>
 
-        {/* ── 3. ระบบร้าน (System Admin) ── */}
+        {/* ── D · ระบบ & ร้าน (ตั้งค่า/ดูแล — ใช้นาน ๆ ครั้ง) ── */}
         <section className="space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1 flex items-center gap-2">
-            <span className="w-1 h-3 bg-orange-500 rounded-full"></span> จัดการระบบ
+          <h3 className={cn('text-xs font-bold uppercase tracking-widest px-1 flex items-center gap-2', MENU_GROUP_TONE.system.text)}>
+            <span className={cn('w-1 h-3 rounded-full', MENU_GROUP_TONE.system.bar)}></span> ระบบ &amp; ร้าน
           </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <MenuCompactItem icon={Settings} label="ตั้งค่าร้านค้า" desc="โลโก้ / ข้อมูลติดต่อ" onClick={onOpenShopSettings} />
-            <MenuCompactItem icon={Calculator} label="อธิบายสูตร" desc="ตรวจสอบวิธีคิดเงิน" onClick={onOpenFormulaDocs} />
-            <MenuCompactItem icon={Database} label="สำรองข้อมูล" desc="นำเข้า / ส่งออกข้อมูล" onClick={onOpenData} />
-            <MenuCompactItem icon={History} label="ประวัติการแก้ไข" desc="ย้อน/ทำซ้ำการแก้ไขงานนี้" onClick={() => openModal('undoHistory')} />
+          <div className="space-y-1.5">
+            <MenuCompactItem tone="system" icon={Settings} label="ตั้งค่าร้านค้า" onClick={onOpenShopSettings} />
+            <MenuCompactItem tone="system" icon={Calculator} label="อธิบายสูตร" desc="ตรวจสอบวิธีคิดเงิน" onClick={onOpenFormulaDocs} />
+            <MenuCompactItem tone="system" icon={Database} label="สำรองข้อมูล" desc="นำเข้า / ส่งออกข้อมูล" onClick={onOpenData} />
+            <MenuCompactItem tone="system" icon={History} label="ประวัติการแก้ไข" desc="ย้อน/ทำซ้ำการแก้ไขงานนี้" onClick={() => openModal('undoHistory')} />
           </div>
         </section>
 
