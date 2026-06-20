@@ -24,6 +24,12 @@
    is only for the rare case a tone must differ from plain Dark; not required for the base theme. */
 @custom-variant dark-vivid (&:where(.dark-vivid, .dark-vivid *));
 
+/* `colorful:` variant — both EEERT-family themes (mirrors isColorfulTheme() in useThemeStore).
+   Use ONLY for chrome that de-frosts via theme variables (--background/--card/--border +
+   backdrop-blur-none) so each theme supplies its own colour. Do NOT use for EEERT's hardcoded
+   light-page tones (those stay `eeert:` — they'd misfire on dark-vivid's dark canvas). */
+@custom-variant colorful (&:where(.eeert, .eeert *, .dark-vivid, .dark-vivid *));
+
 /* ── Geist Mono (Vercel) — เลเยอร์ตัวเลข/รหัส (HANDOFF §1.7) ──
    self-host เพื่อออฟไลน์ (PWA); variable woff2 (100–900).
    ถ้าไฟล์หาย → fallback ลง ui-monospace อัตโนมัติ (degrade ปลอดภัย) */
