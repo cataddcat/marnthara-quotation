@@ -488,16 +488,16 @@
     --warning: 30 90% 36%;
     --info: 206 90% 36%;
 
-    /* brand data hues — deepened for legibility on the mono chrome */
+    /* brand data hues — deepened to AAA (≥7:1) on EEERT near-white card (vivid theme = extra clarity) */
     --brand-curtain: 222 55% 34%;
-    --brand-wallpaper: 22 90% 40%;
-    --brand-wood: 28 80% 36%;
-    --brand-roller: 187 80% 28%;
-    --brand-vertical: 200 90% 32%;
+    --brand-wallpaper: 22 90% 30%;
+    --brand-wood: 28 80% 28%;
+    --brand-roller: 187 80% 22%;
+    --brand-vertical: 200 90% 27%;
     --brand-alum: 216 20% 34%;
-    --brand-partition: 142 72% 28%;
-    --brand-screen: 330 70% 42%;
-    --brand-removal: 0 72% 42%;
+    --brand-partition: 142 72% 22%;
+    --brand-screen: 330 70% 36%;
+    --brand-removal: 0 72% 38%;
 
     --highlight: 214 90% 42% / 0.14;
     --highlight-foreground: 214 80% 24%;
@@ -569,8 +569,8 @@
     --brand-vertical: 200 95% 64%;
     --brand-alum: 215 28% 74%;
     --brand-partition: 142 66% 58%;
-    --brand-screen: 330 90% 72%;
-    --brand-removal: 0 80% 64%;
+    --brand-screen: 330 90% 76%;
+    --brand-removal: 0 80% 77%;
 
     --highlight: 214 90% 60% / 0.16;
     --highlight-foreground: 214 80% 80%;

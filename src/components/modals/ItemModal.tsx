@@ -340,7 +340,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           key={autoSavedTick}
           className={cn(
             'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold',
-            'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+            'bg-emerald-50 text-emerald-700 eeert:text-emerald-800 border border-emerald-200/60',
             'dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/40',
             'animate-in fade-in zoom-in-95 duration-300'
           )}

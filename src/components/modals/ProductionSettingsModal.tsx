@@ -372,13 +372,13 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               <div className="grid grid-cols-2 gap-3 p-3 bg-muted/40 rounded-lg">
                 <div className="space-y-1">
                   <label className={labelCls}>
-                    ค่าแรง / หน่วย <span className="text-amber-500">฿</span>
+                    ค่าแรง / หน่วย <span className="text-amber-700 dark:text-amber-400 eeert:text-amber-900">฿</span>
                   </label>
                   <input
                     type="number"
                     min="0"
                     step="any"
-                    className={cn(fieldCls, 'font-mono font-bold text-amber-600')}
+                    className={cn(fieldCls, 'font-mono font-bold text-amber-700 dark:text-amber-400 eeert:text-amber-900')}
                     value={form.cost}
                     onChange={(e) => setForm({ ...form, cost: e.target.value })}
                     autoFocus={isEditMode}
@@ -415,13 +415,13 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
               </div>
               <div className="space-y-1 p-3 bg-muted/40 rounded-lg">
                 <label className={labelCls}>
-                  ต้นทุน / จุด <span className="text-amber-500">฿</span>
+                  ต้นทุน / จุด <span className="text-amber-700 dark:text-amber-400 eeert:text-amber-900">฿</span>
                 </label>
                 <input
                   type="number"
                   min="0"
                   step="any"
-                  className={cn(fieldCls, 'font-mono font-bold text-amber-600')}
+                  className={cn(fieldCls, 'font-mono font-bold text-amber-700 dark:text-amber-400 eeert:text-amber-900')}
                   value={form.cost}
                   onChange={(e) => setForm({ ...form, cost: e.target.value })}
                   autoFocus={isEditMode}
@@ -491,11 +491,11 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
 
           {/* Price */}
           <div className="text-right shrink-0">
-            <div className="font-mono font-bold text-sm text-amber-600 dark:text-amber-400">
+            <div className="font-mono font-bold text-sm text-amber-700 dark:text-amber-400 eeert:text-amber-900">
               ฿{fmtTH(item.cost)}
             </div>
             {toNum(item.priceRef) > 0 && (
-              <div className="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-mono">
+              <div className="text-xs text-emerald-700/70 dark:text-emerald-400/70 font-mono">
                 ขาย ฿{fmtTH(item.priceRef ?? 0)}
               </div>
             )}

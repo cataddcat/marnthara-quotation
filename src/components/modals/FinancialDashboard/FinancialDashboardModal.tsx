@@ -196,7 +196,9 @@ export const FinancialDashboardModal: React.FC<{
                 <span
                   className={cn(
                     'font-mono tabular-nums font-bold',
-                    totals.uncollected > 0 ? 'text-amber-600' : 'text-emerald-600'
+                    totals.uncollected > 0
+                      ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900'
+                      : 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
                   )}
                 >
                   ฿{mask(totals.uncollected)}
@@ -218,7 +220,7 @@ export const FinancialDashboardModal: React.FC<{
                 <span className="text-muted-foreground/80"> (รวมขนส่งเหมา ฿{mask(totals.shippingEstimate)})</span>
               )}
               {costInclude.shipping && totals.shippingEstimate === 0 && (
-                <span className="block mt-0.5 text-amber-600">
+                <span className="block mt-0.5 text-amber-700 dark:text-amber-400 eeert:text-amber-900">
                   เปิดนับค่าขนส่งแล้ว แต่ยังไม่ตั้งอัตรา — ตั้งใน โครงสร้างต้นทุน → บริการ
                 </span>
               )}

@@ -304,7 +304,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                       {sum.received > 0 && (
                         <span className="text-muted-foreground">
                           รับแล้ว{' '}
-                          <span className="font-mono tabular-nums font-bold text-emerald-700 dark:text-emerald-400">
+                          <span className="font-mono tabular-nums font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
                             ฿{fmtTH(sum.received)}
                           </span>
                         </span>
@@ -312,7 +312,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                       {sum.balance > 0 && (
                         <span className="text-muted-foreground">
                           ค้างเก็บ{' '}
-                          <span className="font-mono tabular-nums font-bold text-amber-600 dark:text-amber-400">
+                          <span className="font-mono tabular-nums font-bold text-amber-700 dark:text-amber-400 eeert:text-amber-900">
                             ฿{fmtTH(sum.balance)}
                           </span>
                         </span>
@@ -327,7 +327,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                         {sum.roomCount} ห้อง · {sum.itemCount} จุด
                       </span>
                       {sum.incompleteCount > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 font-medium whitespace-nowrap">
+                        <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 eeert:text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 font-medium whitespace-nowrap">
                           ค้าง {sum.incompleteCount} จุด
                         </span>
                       )}

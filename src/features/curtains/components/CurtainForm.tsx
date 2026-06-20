@@ -175,7 +175,7 @@ export const CurtainForm: React.FC<CurtainFormProps> = ({
             title="รายละเอียดสินค้า"
             defaultOpen={mode === 'edit'}
             badge={
-              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums mr-1">
+              <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 tabular-nums mr-1">
                 ฿{fmtTH(pricePreview.total)}
               </span>
             }

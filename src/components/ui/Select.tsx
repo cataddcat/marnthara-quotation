@@ -66,7 +66,7 @@ export const Select = ({
         </select>
 
         {/* Custom Arrow Icon */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
           <ChevronDown className="h-4 w-4" />
         </div>
       </div>

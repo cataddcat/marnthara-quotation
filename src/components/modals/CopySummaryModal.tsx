@@ -175,7 +175,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
 
         {/* --- เตือน: ทิศเปิดยังไม่ครบ → เอกสารผลิตจะออก "แยกกลาง" ผิด ๆ — บล็อกจนกว่าจะเลือก --- */}
         {blockedByOpening && (
-          <div className="shrink-0 rounded-xl border border-amber-200/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/40 p-3 text-sm text-amber-700 dark:text-amber-400">
+          <div className="shrink-0 rounded-xl border border-amber-200/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/40 p-3 text-sm text-amber-700 dark:text-amber-400 eeert:text-amber-900">
             <div className="flex items-center gap-1.5 font-semibold mb-1">
               <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={1.5} />
               ยังไม่เลือกทิศเปิด {missingOpening.length} รายการ — ต้องครบก่อนออกเอกสารผลิต

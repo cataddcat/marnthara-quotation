@@ -117,7 +117,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                     {incompleteCount > 0 && (
                       <>
                         <span className="text-muted-foreground/30">·</span>
-                        <span className="font-semibold text-amber-600 dark:text-amber-400">
+                        <span className="font-semibold text-amber-700 dark:text-amber-400 eeert:text-amber-900">
                           ค้าง {incompleteCount}
                         </span>
                       </>
@@ -125,7 +125,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
                     {room.is_suspended && (
                       <>
                         <span className="text-muted-foreground/30">·</span>
-                        <span className="text-amber-500">พัก</span>
+                        <span className="text-amber-700 dark:text-amber-400 eeert:text-amber-900">พัก</span>
                       </>
                     )}
                   </div>

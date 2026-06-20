@@ -82,7 +82,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
               ราคา & รหัส
             </span>
             {cost > 0 ? (
-              <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="text-sm font-mono font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
                 ทุน ฿{fmtTH(cost)}/{costUnit}
               </span>
             ) : (
@@ -103,7 +103,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
             </div>
           ) : (
             !isPlaceholder && (
-              <div className="text-xs text-amber-700 dark:text-amber-400">
+              <div className="text-xs text-amber-700 dark:text-amber-400 eeert:text-amber-900">
                 ยังไม่อยู่ใน ราคา & รหัส
               </div>
             )

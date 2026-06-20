@@ -33,7 +33,7 @@ const PriceStatusIndicator = ({ status, masterPrice, onSync }: PriceStatusIndica
 
   return (
     <div className="mt-1.5 flex items-center justify-between gap-2 animate-fade-in">
-      <span className="text-xs font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-2 py-1 rounded-md border border-amber-200/60 flex items-center gap-1">
+      <span className="text-xs font-semibold text-amber-700 eeert:text-amber-900 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-2 py-1 rounded-md border border-amber-200/60 flex items-center gap-1">
         <AlertTriangle className="w-3 h-3" />
         คลัง: {fmtTH(masterPrice)}
       </span>
@@ -256,7 +256,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       className={cn(
                         'w-full text-right font-mono transition-all',
                         mainSyncStatus === 'mismatch'
-                          ? 'text-amber-600 bg-amber-50 border-amber-200 focus:ring-amber-500'
+                          ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50 border-amber-200 focus:ring-amber-500'
                           : errors.price_per_m_raw
                             ? 'border-destructive'
                             : 'border-border'
@@ -273,7 +273,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       className={cn(
                         'h-[42px] w-[42px] p-0 shrink-0 border-dashed transition-all',
                         mainSyncStatus === 'mismatch'
-                          ? 'border-amber-400 text-amber-500 hover:bg-amber-50'
+                          ? 'border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50'
                           : 'border-border text-muted-foreground hover:text-violet-500'
                       )}
                       onClick={() =>
@@ -286,7 +286,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       title="บันทึกราคานี้เป็นมาตรฐานใหม่"
                     >
                       {justSaved === FAVORITE_CATEGORIES.CURTAIN_MAIN ? (
-                        <Check className="w-5 h-5 text-emerald-600 animate-in zoom-in" />
+                        <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 animate-in zoom-in" />
                       ) : (
                         <Star
                           className={cn(
@@ -391,7 +391,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       className={cn(
                         'w-full text-right font-mono transition-all',
                         sheerSyncStatus === 'mismatch'
-                          ? 'text-amber-600 bg-amber-50 border-amber-200 focus:ring-amber-500'
+                          ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50 border-amber-200 focus:ring-amber-500'
                           : errors.sheer_price_per_m
                             ? 'border-destructive'
                             : 'border-border'
@@ -408,7 +408,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       className={cn(
                         'h-[42px] w-[42px] p-0 shrink-0 border-dashed transition-all',
                         sheerSyncStatus === 'mismatch'
-                          ? 'border-amber-400 text-amber-500 hover:bg-amber-50'
+                          ? 'border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50'
                           : 'border-border text-muted-foreground hover:text-violet-400'
                       )}
                       onClick={() =>
@@ -421,7 +421,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       title="บันทึกราคานี้เป็นมาตรฐานใหม่"
                     >
                       {justSaved === FAVORITE_CATEGORIES.CURTAIN_SHEER ? (
-                        <Check className="w-5 h-5 text-emerald-600 animate-in zoom-in" />
+                        <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 animate-in zoom-in" />
                       ) : (
                         <Star
                           className={cn(

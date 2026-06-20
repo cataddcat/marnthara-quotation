@@ -82,7 +82,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
           </div>
 
           {/* ── 🧵 ผ้าม่าน ── */}
-          <Section title="🧵 ผ้าม่าน (Curtain)" icon={Layers} iconColor="text-emerald-500">
+          <Section title="🧵 ผ้าม่าน (Curtain)" icon={Layers} iconColor="text-emerald-600 dark:text-emerald-400">
             <div>
               <p className="font-semibold text-foreground mb-1">ปริมาณผ้าที่ต้องสั่ง (Production Yards)</p>
               <Formula>
@@ -153,7 +153,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
           </Section>
 
           {/* ── 📜 วอลเปเปอร์ ── */}
-          <Section title="📜 วอลเปเปอร์ (Wallpaper)" icon={Scroll} iconColor="text-violet-500">
+          <Section title="📜 วอลเปเปอร์ (Wallpaper)" icon={Scroll} iconColor="text-violet-600 dark:text-violet-400">
             <Formula>
               แผ่นต่อม้วน = floor({w.roll_length} / (สูง + {w.waste_margin}))
               <br />
@@ -172,7 +172,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
           </Section>
 
           {/* ── 📐 พื้นที่ (มู่ลี่/ฉาก/มุ้ง) ── */}
-          <Section title="📐 พื้นที่ (มู่ลี่/ฉาก/มุ้ง)" icon={Square} iconColor="text-blue-600">
+          <Section title="📐 พื้นที่ (มู่ลี่/ฉาก/มุ้ง)" icon={Square} iconColor="text-blue-600 dark:text-blue-400">
             <Formula>
               พื้นที่ (ตร.ม.) = กว้าง × สูง
               <br />
@@ -188,7 +188,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
           </Section>
 
           {/* ── 🔧 วัสดุ BOM ── */}
-          <Section title="🔧 วัสดุ (Bill of Materials)" icon={Wrench} iconColor="text-amber-500">
+          <Section title="🔧 วัสดุ (Bill of Materials)" icon={Wrench} iconColor="text-amber-600 dark:text-amber-400">
             <div>
               <p className="font-semibold text-foreground mb-1">ขาแขวน (Brackets)</p>
               <Formula>
@@ -293,7 +293,7 @@ export const FormulaDocsModal: React.FC<FormulaDocsModalProps> = ({ isOpen, onCl
           </Section>
 
           {/* ── 💰 ภาษี + ส่วนต่างจากทุนที่รู้ ── */}
-          <Section title="💰 ภาษี / ส่วนลด / ส่วนต่างจากทุนที่รู้" icon={DollarSign} iconColor="text-rose-500">
+          <Section title="💰 ภาษี / ส่วนลด / ส่วนต่างจากทุนที่รู้" icon={DollarSign} iconColor="text-rose-600 dark:text-rose-400">
             <div>
               <p className="font-semibold text-foreground mb-1">ภาษีมูลค่าเพิ่ม (VAT)</p>
               <Formula>

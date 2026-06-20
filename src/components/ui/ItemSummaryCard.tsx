@@ -43,7 +43,7 @@ const PLATE_SHAPE =
   'inline-flex items-center gap-1 text-base font-bold font-mono tabular-nums border rounded-lg px-2 py-1';
 // สถานะ "กำหนดราคาเอง" = amber (ราคามือ ไม่ใช่คำนวณ — สื่อด้วยสี ไม่ใช่ขนาด)
 const OVERRIDE_PLATE =
-  'text-amber-600 dark:text-amber-400 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900';
+  'text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900';
 
 /**
  * Summary card แบบ layered ที่ทั้ง 8 ประเภทใช้ร่วมกัน:
@@ -60,7 +60,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
   totalClass = cn(PLATE_SHAPE, DATA_TONE_TEXT.money, DATA_TONE_PLATE.money),
   title,
   titleIcon: TitleIcon,
-  titleClass = 'text-emerald-600 dark:text-emerald-400',
+  titleClass = 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800',
   rows = [],
   enableSetPrice,
   onToggleSetPrice,
@@ -155,7 +155,7 @@ export const ItemSummaryCard: React.FC<ItemSummaryCardProps> = ({
               autoFocus
               value={setPriceValue || ''}
               onChange={(e) => onSetPriceChange(e.target.value)}
-              className="w-full text-right font-mono font-bold text-sm rounded-lg px-3 py-2 text-amber-600 dark:text-amber-500 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 animate-in slide-in-from-top-1 fade-in duration-200"
+              className="w-full text-right font-mono font-bold text-sm rounded-lg px-3 py-2 text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 animate-in slide-in-from-top-1 fade-in duration-200"
             />
           )}
         </div>

@@ -276,7 +276,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             {/* Price + Chevron */}
             <div className="flex items-center gap-1.5 shrink-0">
               {incompleteCount > 0 && !room.is_suspended && (
-                <span className="inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+                <span className="inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 eeert:text-amber-900 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
                   ค้าง {incompleteCount}
                 </span>
               )}
@@ -285,7 +285,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   'text-sm font-semibold font-mono tabular-nums',
                   room.is_suspended
                     ? 'text-muted-foreground line-through'
-                    : 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
                 )}
               >
                 {fmtTH(roomTotal)}
@@ -455,7 +455,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               {incompleteCount > 0 ? (
                 <>
                   <span className="text-muted-foreground/30">·</span>
-                  <span className="text-amber-600 dark:text-amber-400 font-semibold shrink-0">
+                  <span className="text-amber-700 dark:text-amber-400 eeert:text-amber-900 font-semibold shrink-0">
                     ค้าง {incompleteCount} จุด
                   </span>
                 </>
@@ -464,7 +464,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 !room.is_suspended && (
                   <>
                     <span className="text-muted-foreground/30">·</span>
-                    <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400 shrink-0">
+                    <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 shrink-0">
                       <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} /> ครบ
                     </span>
                   </>
@@ -473,7 +473,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               {suspendedCount > 0 && (
                 <>
                   <span className="text-muted-foreground/30">·</span>
-                  <span className="text-amber-500 shrink-0">{suspendedCount} พัก</span>
+                  <span className="text-amber-700 dark:text-amber-400 eeert:text-amber-900 shrink-0">{suspendedCount} พัก</span>
                 </>
               )}
             </div>

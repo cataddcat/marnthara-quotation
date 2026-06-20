@@ -230,7 +230,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
               {' · '}
               {typeSummary[activeFilter]} จุด
             </span>
-            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 pr-2">
+            <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 pr-2">
               {fmtTH(filteredTotal)}
             </span>
           </div>
@@ -280,7 +280,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                       <span className="truncate">{room.name}</span>
                     </h3>
                   )}
-                  <span className="text-sm font-mono font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <span className="text-sm font-mono font-semibold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 shrink-0">
                     {fmtTH(roomTotal)}
                   </span>
                 </div>
@@ -309,7 +309,7 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-sm font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                          <span className="text-sm font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
                             {fmtTH(PricingEngine.calculatePrice(item))}
                           </span>
                           <ChevronRight className="w-4 h-4 text-muted-foreground/30" strokeWidth={1.5} />

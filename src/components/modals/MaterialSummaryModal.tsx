@@ -97,7 +97,7 @@ const InlineCostEditor = ({
       className={cn(
         'flex items-center gap-1 shrink-0 rounded px-1.5 min-h-[44px] transition-colors hover:bg-muted/50',
         value > 0
-          ? 'text-emerald-600 dark:text-emerald-400'
+          ? 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
           : 'text-muted-foreground/50 hover:text-muted-foreground'
       )}
     >
@@ -468,7 +468,7 @@ const SectionHeader = ({
         {fmtTH(count)} {unit}
       </span>
       {totalCost !== undefined && totalCost > 0 && (
-        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+        <span className="text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
           ทุน ฿{fmtTH(totalCost)}
         </span>
       )}
@@ -577,7 +577,7 @@ const FabricCard = ({
             <span className={cn('font-mono font-bold text-sm', hasUnknownCode ? 'text-muted-foreground' : accent)}>
               {code}
             </span>
-            {hasUnknownCode && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" strokeWidth={1.5} />}
+            {hasUnknownCode && <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" strokeWidth={1.5} />}
             <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
               {entries.length} รายการ
             </span>
@@ -588,7 +588,7 @@ const FabricCard = ({
             {fmtTH(total)} {unit}
           </span>
           {totalCost > 0 && (
-            <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ทุน ฿{fmtTH(totalCost)}
             </span>
           )}
@@ -675,7 +675,7 @@ const WallpaperCostCard = ({
         <div className="flex flex-col items-end gap-0.5 shrink-0">
           <span className={cn('font-mono font-bold text-sm', MATERIAL_ACCENT.wallpaper)}>{Math.ceil(total)} ม้วน</span>
           {totalCost > 0 && (
-            <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ทุน ฿{fmtTH(totalCost)}
             </span>
           )}
@@ -743,7 +743,7 @@ const AreaCostCard = ({
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-sm text-foreground">{group.typeName}</span>
             {group.code && (
-              <span className="font-mono text-xs text-teal-600 dark:text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded-full">
+              <span className="font-mono text-xs text-teal-700 dark:text-teal-400 eeert:text-teal-800 bg-teal-500/10 px-1.5 py-0.5 rounded-full">
                 {group.code}
               </span>
             )}
@@ -753,11 +753,11 @@ const AreaCostCard = ({
           </div>
         </div>
         <div className="flex flex-col items-end gap-0.5 shrink-0">
-          <span className="font-mono font-bold text-sm text-teal-600 dark:text-teal-400">
+          <span className="font-mono font-bold text-sm text-teal-700 dark:text-teal-400 eeert:text-teal-800">
             {fmtTH(costQty)} {group.unit}
           </span>
           {totalCost > 0 && (
-            <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ทุน ฿{fmtTH(totalCost)}
             </span>
           )}
@@ -783,7 +783,7 @@ const AreaCostCard = ({
                   key={i}
                   roomName={e.roomName}
                   qty={`${fmtTH(entryQty)} ${group.unit}`}
-                  qtyClass="text-teal-600 dark:text-teal-400"
+                  qtyClass="text-teal-700 dark:text-teal-400 eeert:text-teal-800"
                   qtyPill={MATERIAL_PILL.area}
                   onJump={() => onJumpItem(e.roomId, e.itemId)}
                   spec={
@@ -1060,7 +1060,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
           onClick={handleCopy}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
         >
-          {copied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-500" strokeWidth={1.5} /> : <Copy className="w-3.5 h-3.5" strokeWidth={1.5} />}
+          {copied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} /> : <Copy className="w-3.5 h-3.5" strokeWidth={1.5} />}
           <span>{copied ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
         </button>
       }
@@ -1215,7 +1215,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                       <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         🪟 มู่ลี่ / ฉาก / มุ้ง ({areaByKey.size} รายการ)
                       </span>
-                      <span className="text-xs font-mono font-bold text-teal-600 dark:text-teal-400">
+                      <span className="text-xs font-mono font-bold text-teal-700 dark:text-teal-400 eeert:text-teal-800">
                         {fmtTH([...areaByKey.values()].reduce((s, g) => s + g.totalSqm, 0))} ตร.ม.
                       </span>
                     </div>

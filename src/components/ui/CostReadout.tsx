@@ -32,12 +32,14 @@ export const CostReadout: React.FC<{ analysis: CostBreakdown }> = ({ analysis })
           <span
             className={cn(
               'tabular-nums',
-              lowMargin ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'
+              lowMargin
+                ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900'
+                : 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
             )}
           >
             {analysis.marginPercent.toFixed(1)}%
           </span>
-          <span className="tabular-nums text-emerald-600 dark:text-emerald-400">
+          <span className="tabular-nums text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
             +{fmtTH(analysis.profitAmount)}
           </span>
         </span>

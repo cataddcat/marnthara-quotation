@@ -145,8 +145,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     'flex items-center justify-center gap-1.5 min-w-11 pl-3 pr-2.5 transition-colors active:opacity-80',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
                     isField
-                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
-                      : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400'
+                      ? 'bg-amber-50 text-amber-700 eeert:text-amber-900 dark:bg-amber-950/40 dark:text-amber-400'
+                      : 'bg-indigo-50 text-indigo-700 eeert:text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-400'
                   )}
                 >
                   {isField ? (
@@ -177,13 +177,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       </span>
                       <span className="text-foreground"> จุด</span>
                       {fieldStatus.incomplete > 0 ? (
-                        <span className="text-amber-600 dark:text-amber-400">
+                        <span className="text-amber-700 dark:text-amber-400 eeert:text-amber-900">
                           {' '}
                           · ค้าง{' '}
                           <span className="font-mono tabular-nums">{fieldStatus.incomplete}</span>
                         </span>
                       ) : fieldStatus.total > 0 ? (
-                        <span className="text-emerald-600 dark:text-emerald-400"> · ครบ</span>
+                        <span className="text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800"> · ครบ</span>
                       ) : null}
                     </span>
                   ) : (
@@ -202,7 +202,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                           'font-mono tabular-nums text-sm font-bold leading-none whitespace-nowrap',
                           hasDiscount || hasVat
                             ? 'text-foreground'
-                            : 'text-emerald-700 dark:text-emerald-400'
+                            : 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
                         )}
                       >
                         {fmtTH(finalTotal)}
@@ -238,7 +238,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     'text-sm font-mono tabular-nums font-bold leading-none transition-colors',
                     hasDiscount || hasVat
                       ? 'text-foreground'
-                      : 'text-emerald-700 dark:text-emerald-400'
+                      : 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
                   )}
                 >
                   {fmtTH(finalTotal)}

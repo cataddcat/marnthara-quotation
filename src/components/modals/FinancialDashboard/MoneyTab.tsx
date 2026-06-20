@@ -158,7 +158,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
             เงินรับจากลูกค้า ({receipts.length})
           </div>
           {receipts.length > 0 && (
-            <span className="text-xs font-mono tabular-nums font-bold text-emerald-600">
+            <span className="text-xs font-mono tabular-nums font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ฿{fmtTH(receipts.reduce((s, r) => s + r.amount, 0))}
             </span>
           )}
@@ -179,7 +179,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
               <div className="text-sm font-medium text-foreground truncate">{r.label}</div>
               <div className="text-xs text-muted-foreground">{fmtDateTH(r.date)}</div>
             </div>
-            <span className="font-mono tabular-nums text-sm font-bold text-emerald-600 shrink-0">
+            <span className="font-mono tabular-nums text-sm font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 shrink-0">
               ฿{fmtTH(r.amount)}
             </span>
             <button
@@ -199,7 +199,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
         {jobPrice > 0 && receipts.length === 0 && (
           <div className="space-y-2 bg-emerald-500/5 border border-emerald-200/50 dark:border-emerald-800/50 rounded-xl p-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 uppercase tracking-wider">
                 มัดจำ
               </span>
               {/* สลับหน่วย % ↔ บาท */}
@@ -217,7 +217,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                       className={cn(
                         'flex items-center justify-center w-11 h-11 rounded-md transition-all',
                         active
-                          ? 'bg-card text-emerald-600 border border-emerald-300/50 shadow-sm'
+                          ? 'bg-card text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 border border-emerald-300/50 shadow-sm'
                           : 'text-muted-foreground'
                       )}
                     >
@@ -243,7 +243,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
                     className={cn(
                       'min-h-[44px] flex-1 rounded-lg text-sm font-semibold transition-all active:scale-95',
                       depositValue === p
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-300/50'
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 border border-emerald-300/50'
                         : 'bg-card border border-border text-muted-foreground'
                     )}
                   >
@@ -279,7 +279,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
               <div className="text-xs text-muted-foreground">
                 {depositUnit === 'percent' ? (
                   <>
-                    = <span className="font-mono tabular-nums font-bold text-emerald-600">฿{fmtTH(depositAmount)}</span>{' '}
+                    = <span className="font-mono tabular-nums font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">฿{fmtTH(depositAmount)}</span>{' '}
                     จากยอดงาน ฿{fmtTH(jobPrice)}
                   </>
                 ) : (
@@ -329,7 +329,7 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
           {expenses.length > 0 && (
             <span className="text-xs font-mono tabular-nums text-muted-foreground">
               จ่ายแล้ว{' '}
-              <span className="font-bold text-rose-600">฿{fmtTH(paidTotal)}</span>
+              <span className="font-bold text-rose-600 dark:text-rose-400 eeert:text-rose-800 dark-vivid:text-rose-300">฿{fmtTH(paidTotal)}</span>
               {expenseTotal > paidTotal && <> / ฿{fmtTH(expenseTotal)}</>}
             </span>
           )}
@@ -379,7 +379,9 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
             <span
               className={cn(
                 'font-mono tabular-nums text-sm font-bold shrink-0',
-                e.paid ? 'text-rose-600' : 'text-muted-foreground'
+                e.paid
+                  ? 'text-rose-600 dark:text-rose-400 eeert:text-rose-800 dark-vivid:text-rose-300'
+                  : 'text-muted-foreground'
               )}
             >
               ฿{fmtTH(e.amount)}

@@ -244,7 +244,7 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
             {incompleteCount > 0 && (
               <>
                 <span className="text-muted-foreground/30">·</span>
-                <span className="font-semibold text-amber-600 dark:text-amber-400 shrink-0">
+                <span className="font-semibold text-amber-700 dark:text-amber-400 eeert:text-amber-900 shrink-0">
                   ค้าง {incompleteCount}
                 </span>
               </>
@@ -595,7 +595,7 @@ const CompactRoomCard: React.FC<CompactRoomCardProps> = ({
           รายการ
         </span>
         {incompleteCount > 0 && (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 eeert:text-amber-900 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
             <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
             ค้าง {incompleteCount}
           </span>
@@ -733,7 +733,7 @@ const SortableRoomCard: React.FC<SortableRoomCardProps> = ({
             'shrink-0 font-mono font-semibold text-sm tabular-nums',
             room.is_suspended
               ? 'text-muted-foreground line-through'
-              : 'text-emerald-600 dark:text-emerald-400'
+              : 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
           )}
         >
           {fmtTH(roomTotal)}

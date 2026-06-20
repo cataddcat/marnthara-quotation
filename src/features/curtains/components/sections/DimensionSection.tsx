@@ -51,7 +51,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
           className={cn(
             'mt-2 flex items-start gap-1.5 text-sm leading-snug',
             advice.kind === 'rotate'
-              ? 'text-amber-700 dark:text-amber-400'
+              ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900'
               : 'text-muted-foreground'
           )}
         >

@@ -14,7 +14,7 @@ export type DataTone = 'money' | 'cost' | 'dimension' | 'neutral' | 'muted';
 // eeert: ดันลึกอีกขั้น (-800) ให้ตัวอักษรข้อมูล/ตัวเลขถึง AAA (≥7:1) บนการ์ดขาว + plate -50.
 export const DATA_TONE_TEXT: Record<DataTone, string> = {
   money: 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800',
-  cost: 'text-rose-600 dark:text-rose-400 eeert:text-rose-800',
+  cost: 'text-rose-600 dark:text-rose-400 eeert:text-rose-800 dark-vivid:text-rose-300',
   // dimension eeert pushed to -900: max contrast (AAA+) on the soft blue pill (EEERT pilot)
   dimension: 'text-blue-700 dark:text-blue-400 eeert:text-blue-900',
   neutral: 'text-foreground',
@@ -63,11 +63,13 @@ export type MaterialKind = 'fabric' | 'sheer' | 'wallpaper' | 'area' | 'hardware
 // eeert: ดันลึกขึ้นให้ accent วัสดุอ่านชัด บน chrome เทา-ขาว — ดันถึง AAA+ (ตัวเลขวัสดุบน pill นำร่อง
 // EEERT): fabric -900 (เดิม -700 ≈ 6.6:1 ตก AAA), sheer/wallpaper/area -800. base (ธีมอื่น) คงเดิม.
 export const MATERIAL_ACCENT: Record<MaterialKind, string> = {
-  fabric: 'text-violet-500 eeert:text-violet-900',
-  sheer: 'text-violet-400 eeert:text-violet-800',
-  wallpaper: 'text-orange-500 eeert:text-orange-800',
-  area: 'text-teal-600 dark:text-teal-400 eeert:text-teal-800',
-  hardware: 'text-sky-600 dark:text-sky-400 eeert:text-sky-700',
+  // base -600/-700 + dark: ให้ผ่าน AA บน plate -50 ในธีม light/signature (เดิม -500/-400 = 2.5–3.9:1 ตก;
+  // pilot EEERT ถูกจูนไว้แล้วแต่ default light ตกหล่น). คง fabric เข้มกว่า sheer (ทึบ/โปร่ง). dot/pill คง -500/-400.
+  fabric: 'text-violet-700 dark:text-violet-400 eeert:text-violet-900',
+  sheer: 'text-violet-600 dark:text-violet-300 eeert:text-violet-800',
+  wallpaper: 'text-orange-700 dark:text-orange-400 eeert:text-orange-900',
+  area: 'text-teal-700 dark:text-teal-400 eeert:text-teal-800',
+  hardware: 'text-sky-700 dark:text-sky-400 eeert:text-sky-800',
 };
 
 /** pill วัสดุ (EEERT pilot) — พื้นโทนนุ่มไร้ขอบ คู่กับ MATERIAL_ACCENT (text) บนตัวเลขวัสดุใน ItemCard.

@@ -25,7 +25,7 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', siz
     // [THEME CHANGE] bg-red-100 -> bg-destructive/10 | text-red-600 -> text-destructive
     destructive: 'bg-destructive/10 text-destructive border-transparent hover:bg-destructive/20',
     // [THEME CHANGE] bg-green-100 -> bg-emerald-500/10 | text-green-700 -> text-emerald-600
-    success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-transparent',
+    success: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 border-transparent',
   };
 
   return (

@@ -253,12 +253,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             {title}
           </span>
           {incomplete ? (
-            <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+            <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 eeert:text-amber-900 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
               <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
               {incompleteLabel(item)}
             </span>
           ) : needsOpening ? (
-            <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
+            <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 eeert:text-amber-900 border border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/40">
               <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />
               เลือกทิศเปิด
             </span>
