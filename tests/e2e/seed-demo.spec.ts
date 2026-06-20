@@ -41,8 +41,10 @@ test.describe('Seeded state', () => {
     await page.goto('/');
 
     // ห้องที่ seed โผล่ (dot ใช้ aria-label = ชื่อห้อง) + ไม่ใช่หน้า empty
+    // exact: true — เลี่ยง strict-mode ชนกับ aria-label ที่ "มีชื่อห้องเป็นส่วนหนึ่ง"
+    // (RoomCard "ห้องนั่งเล่น — เลื่อนขึ้นบน" / RoomDashboard "เปิดห้อง ห้องนั่งเล่น")
     await expect(page.getByText('เริ่มโครงการใหม่')).toHaveCount(0);
-    await expect(page.getByLabel('ห้องนั่งเล่น')).toBeVisible();
+    await expect(page.getByLabel('ห้องนั่งเล่น', { exact: true })).toBeVisible();
     // ItemCard ของรายการผ้าม่าน — scope เข้า <main> กันชน subtitle "ผ้าม่าน & ของตกแต่ง"
     // ใน header ซึ่งซ่อนบนจอแคบ (hidden sm:block) ตั้งแต่รีดีไซน์ header 2026-06-10
     await expect(page.locator('main').getByText('ผ้าม่าน').first()).toBeVisible();

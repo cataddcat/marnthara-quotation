@@ -31,7 +31,7 @@ test.describe('Accessibility (axe on real browser)', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'เพิ่มห้องแรก' }).click();
     await page.getByRole('button', { name: 'เมนูนำทาง' }).click();
-    await page.getByRole('button', { name: 'เมนู', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'เมนู', exact: true }).click();
     await expect(page.getByText('เมนูหลัก')).toBeVisible();
 
     const results = await new AxeBuilder({ page })
