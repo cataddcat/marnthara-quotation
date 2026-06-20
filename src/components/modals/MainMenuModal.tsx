@@ -15,6 +15,7 @@ import {
   History,
   Calculator,
   Layers,
+  LayoutDashboard,
   HardHat,
   ClipboardList,
   Gem,
@@ -44,6 +45,7 @@ import { Cloud, CloudOff, LogOut } from 'lucide-react';
 interface MainMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenOverview?: () => void;
   onOpenJobs: () => void;
   onOpenSignIn: () => void;
   onOpenCustomerDirectory: () => void;
@@ -102,6 +104,7 @@ const MenuCompactItem = ({
 export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   isOpen,
   onClose,
+  onOpenOverview,
   onOpenJobs,
   onOpenSignIn,
   onOpenCustomerDirectory,
@@ -339,6 +342,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           </h3>
           <div className="space-y-1.5">
             <MenuCompactItem tone="jobs" icon={FolderKanban} label="งานทั้งหมด" desc="สลับงาน · ดูความคืบหน้าทุกงาน" onClick={onOpenJobs} />
+            <MenuCompactItem tone="jobs" icon={LayoutDashboard} label="ภาพรวมห้อง" desc="ดูทุกห้องแบบแดชบอร์ด" onClick={() => { onClose(); onOpenOverview?.(); }} />
             <MenuCompactItem tone="jobs" icon={User} label="ลูกค้างานนี้" desc="แก้ชื่อ/ที่อยู่บนเอกสาร" onClick={onOpenCustomer} />
             <MenuCompactItem tone="jobs" icon={Users} label="ฐานลูกค้า" desc="เลือกลูกค้า · เปิดงานใหม่" onClick={onOpenCustomerDirectory} />
           </div>

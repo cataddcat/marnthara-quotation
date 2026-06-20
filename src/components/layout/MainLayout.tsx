@@ -3,16 +3,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
-import {
-  Menu,
-  LayoutDashboard,
-  ChevronRight,
-  Layers,
-  Home,
-  HardHat,
-  ClipboardList,
-  User,
-} from 'lucide-react';
+import { ChevronRight, HardHat, ClipboardList, User } from 'lucide-react';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
@@ -25,8 +16,6 @@ interface MainLayoutProps {
   onOpenMainMenu?: () => void;
   onOpenJobs?: () => void;
   onOpenDiscount?: () => void;
-  onOpenOverview?: () => void;
-  onGoHome?: () => void;
   activeRoomId: string | null;
   onNavigateRoom: (roomId: string) => void;
   viewMode: 'focus' | 'overview';
@@ -38,8 +27,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onOpenMainMenu,
   onOpenJobs,
   onOpenDiscount,
-  onOpenOverview,
-  onGoHome,
   activeRoomId,
   onNavigateRoom,
   viewMode,
@@ -274,35 +261,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {children}
       </main>
 
-      {/* Floating Dock — wide horizontal capsule */}
-      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 mb-safe-bottom w-full max-w-[440px] px-4">
-        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-lg border border-border colorful:bg-card colorful:backdrop-blur-none">
-          <DockPill
-            icon={Home}
-            label="หน้าหลัก"
-            hapticType="medium"
-            onClick={onGoHome}
-          />
-          <DockPill
-            icon={Layers}
-            label="ห้อง"
-            hapticType="medium"
-            onClick={() => setIsSmartNavOpen(true)}
-          />
-          <DockPill
-            icon={LayoutDashboard}
-            label="ภาพรวม"
-            onClick={onOpenOverview}
-            active={wideContent}
-          />
-          <DockPill
-            icon={Menu}
-            label="เมนู"
-            onClick={onOpenMainMenu}
-          />
-        </div>
-      </div>
-
       <SmartNavigator
         isOpen={isSmartNavOpen}
         onClose={() => setIsSmartNavOpen(false)}
@@ -311,52 +269,5 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onSetViewMode={onSetViewMode}
       />
     </div>
-  );
-};
-
-const DockPill = ({
-  icon: Icon,
-  label,
-  onClick,
-  hapticType = 'light',
-  active = false,
-}: {
-  icon: React.ElementType;
-  label: string;
-  onClick?: () => void;
-  hapticType?: 'light' | 'medium' | 'selection';
-  active?: boolean;
-}) => {
-  const { trigger } = useHaptic();
-
-  return (
-    <button
-      onClick={() => {
-        trigger(hapticType);
-        onClick?.();
-      }}
-      aria-label={label}
-      aria-pressed={active}
-      className={cn(
-        'group flex flex-1 min-w-0 items-center justify-center gap-1.5 h-11 px-2 rounded-full transition-all duration-200 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
-        active ? 'bg-muted' : 'hover:bg-muted'
-      )}
-    >
-      <Icon
-        className={cn(
-          'w-4 h-4 shrink-0 transition-colors',
-          active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
-        )}
-        strokeWidth={1.5}
-      />
-      <span
-        className={cn(
-          'text-xs font-semibold whitespace-nowrap transition-colors',
-          active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
-        )}
-      >
-        {label}
-      </span>
-    </button>
   );
 };

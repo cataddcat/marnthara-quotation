@@ -2,9 +2,10 @@
 // ItemCard — collapsed/expanded, edit/duplicate/suspend actions (store-driven)
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ItemCard } from './ItemCard';
 import { useAppStore } from '@/store/useAppStore';
+import { useUIStore } from '@/store/useUIStore';
 import { asItemData, makeCurtain } from '@/test/factories';
 
 const store = () => useAppStore.getState();
@@ -49,11 +50,14 @@ describe('ItemCard — actions', () => {
     expect(onEdit).toHaveBeenCalledTimes(1);
   });
 
-  it('ปุ่มคัดลอก → duplicateItem (items เพิ่มเป็น 2)', () => {
+  it('ปุ่มคัดลอก → ถามยืนยัน → ยืนยัน → duplicateItem (items เพิ่มเป็น 2)', async () => {
     renderCard();
     fireEvent.click(screen.getByText(TITLE));
     fireEvent.click(screen.getByTitle('คัดลอก'));
-    expect(store().rooms[0].items).toHaveLength(2);
+    // คัดลอกถามยืนยันก่อน (useConfirm → alert ใน UI store) — กดยืนยัน
+    expect(useUIStore.getState().alertConfig.isOpen).toBe(true);
+    useUIStore.getState().alertConfig.onConfirm();
+    await waitFor(() => expect(store().rooms[0].items).toHaveLength(2));
   });
 
   it('ปุ่มพัก → updateItem ตั้ง is_suspended = true', () => {

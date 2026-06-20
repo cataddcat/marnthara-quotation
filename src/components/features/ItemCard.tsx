@@ -11,8 +11,8 @@ import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
 import { DATA_TONE_TEXT, DATA_TONE_PILL, MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
+import { isSqmPriced } from '@/lib/vault';
 import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
-import { getItemTheme } from '@/lib/theme-utils';
 import {
   ChevronDown,
   Edit2,
@@ -25,6 +25,21 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Type-chip plate — พื้น = สี @theme `brand-*` ต่อชนิด (คลาส static → Tailwind สแกนเจอ จึง render จริง;
+// arbitrary `bg-[hsl(var(--brand-…)/…)]` ใน theme-utils สร้างจาก template literal → scan ไม่เจอ = พื้นไม่ขึ้น).
+// ตัวอักษร = text-foreground (เข้ม) เพื่อคอนทราสต์ผ่าน AA — ถ้า text สีแบรนด์เดียวกับพื้น tint คอนทราสต์ไม่พอ.
+const TYPE_CHIP_PLATE: Record<string, string> = {
+  [ITEM_TYPES.CURTAIN]: 'bg-brand-curtain/25',
+  [ITEM_TYPES.WALLPAPER]: 'bg-brand-wallpaper/25',
+  [ITEM_TYPES.ROLLER_BLIND]: 'bg-brand-roller/25',
+  [ITEM_TYPES.WOODEN_BLIND]: 'bg-brand-wood/25',
+  [ITEM_TYPES.VERTICAL_BLIND]: 'bg-brand-vertical/25',
+  [ITEM_TYPES.ALUMINUM_BLIND]: 'bg-brand-alum/25',
+  [ITEM_TYPES.PARTITION]: 'bg-brand-partition/25',
+  [ITEM_TYPES.PLEATED_SCREEN]: 'bg-brand-screen/25',
+  [ITEM_TYPES.REMOVAL]: 'bg-brand-removal/25',
+};
 
 interface ItemCardProps {
   item: ItemData;
@@ -42,8 +57,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // สี brand ประจำชนิดสินค้า (ทะเบียน §2.1 ชั้น Identity) — ใช้กับชิปสเปค ให้ตรงหัว section ของฟอร์ม
-  const theme = getItemTheme(item.type);
 
   // Colorful themes (EEERT + Dark Vivid): ตัวเลขขนาด/วัสดุ สวม pill โทนนุ่ม (text สี AAA+ จากทะเบียน) — ธีมอื่นไม่เปลี่ยน
   const isColorful = useThemeStore((s) => isColorfulTheme(s.theme));
@@ -85,9 +98,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     onEdit();
   };
 
-  const handleDuplicate = (e: React.MouseEvent) => {
+  const handleDuplicate = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    duplicateItem(roomId, item.id);
+    const isConfirmed = await confirm({
+      title: 'คัดลอกรายการนี้?',
+      description: `สร้างสำเนา "${title}" เพิ่มในห้องนี้ใช่หรือไม่?`,
+      confirmLabel: 'คัดลอก',
+    });
+    if (isConfirmed) duplicateItem(roomId, item.id);
   };
 
   // Extract breakdown values safely
@@ -185,7 +203,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
     <button
       key={`${category}-${code}`}
       onClick={(e) => handleOpenCodeDetail(e, code, category)}
-      className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-foreground hover:underline underline-offset-2 active:opacity-70"
+      className="inline-flex items-center gap-0.5 rounded-md border border-border bg-muted px-1.5 py-0.5 text-sm font-mono font-semibold text-foreground hover:bg-muted/70 active:opacity-70"
       title={`ดูรายละเอียด/จุดที่ใช้รหัส ${code}`}
     >
       {code}
@@ -289,8 +307,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               <span
                 key={i}
                 className={cn(
-                'text-xs leading-normal px-2.5 py-1 rounded-full font-medium',
-                theme.badge
+                'text-xs leading-normal px-2.5 py-1 rounded-md font-medium text-foreground',
+                TYPE_CHIP_PLATE[item.type] ?? 'bg-muted'
               )}
               >
                 {chip}
@@ -312,18 +330,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
           {/* Detail rows */}
           <div className="space-y-2 mb-4">
-            {/* ขนาด */}
-            {hasSize && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">ขนาด</span>
-                <span
-                  className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension, pillCls(DATA_TONE_PILL.dimension))}
-                >
-                  {width.toFixed(2)} × {height.toFixed(2)} ม.
-                </span>
-              </div>
-            )}
-
             {/* ผ้าม่าน: ผ้าหลัก — รหัสเกาะข้าง label */}
             {item.type === ITEM_TYPES.CURTAIN && fabricYards > 0 && (
               <div className="flex justify-between items-center text-sm gap-3">
@@ -334,7 +340,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                 <span
                   className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.fabric, pillCls(MATERIAL_PILL.fabric))}
                 >
-                  {fabricYards.toFixed(2)}
+                  {fabricYards.toFixed(2)} ล.
                 </span>
               </div>
             )}
@@ -350,7 +356,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
                 <span
                   className={cn('font-semibold font-mono shrink-0', MATERIAL_ACCENT.sheer, pillCls(MATERIAL_PILL.sheer))}
                 >
-                  {sheerYards.toFixed(2)}
+                  {sheerYards.toFixed(2)} ล.
                 </span>
               </div>
             )}
@@ -367,23 +373,27 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
               </div>
             )}
 
-            {/* สินค้าพื้นที่: ตร.ม. · ตร.ล. (บรรทัดเดียว) */}
+            {/* สินค้าพื้นที่: รหัส (ซ้าย) + จำนวนหน่วยขาย ตร.ม./ตร.ล. (ขวา) บรรทัดเดียว — แบบเดียวกับแถวผ้าม่าน.
+                หน่วยตามที่สินค้านั้นขาย (isSqmPriced → ตร.ม. ไม่งั้น ตร.ล.) อย่างใดอย่างหนึ่ง ตรงกับทุน/สรุปวัสดุ */}
             {isAreaType && (areaSqm > 0 || areaSqyd > 0) && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">พื้นที่</span>
+              <div className="flex justify-between items-center text-sm gap-3">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5 min-w-0">
+                  พื้นที่
+                  {codeRefs.map((ref) => renderCodeButton(ref.code, ref.category))}
+                </span>
                 <span
-                  className={cn('font-semibold font-mono', DATA_TONE_TEXT.dimension, pillCls(DATA_TONE_PILL.dimension))}
+                  className={cn('font-semibold font-mono shrink-0', DATA_TONE_TEXT.dimension, pillCls(DATA_TONE_PILL.dimension))}
                 >
-                  {areaSqm > 0 && `${areaSqm.toFixed(2)} ตร.ม.`}
-                  {areaSqm > 0 && areaSqyd > 0 && ' · '}
-                  {areaSqyd > 0 && `${areaSqyd.toFixed(2)} ตร.ล.`}
+                  {isSqmPriced(item.type)
+                    ? `${areaSqm.toFixed(2)} ตร.ม.`
+                    : `${areaSqyd.toFixed(2)} ตร.ล.`}
                 </span>
               </div>
             )}
 
-            {/* รหัสสินค้า (non-curtain) — กดเพื่อดูรายละเอียด/จุดที่ใช้รหัสนี้ทั้งโครงการ
-                ผ้าม่านย้ายรหัสไปเกาะข้างผ้าทึบ/ผ้าโปร่งแล้ว */}
-            {item.type !== ITEM_TYPES.CURTAIN && codeRefs.length > 0 && (
+            {/* รหัสสินค้า (non-curtain, non-area) — กดเพื่อดูรายละเอียด/จุดที่ใช้รหัสนี้ทั้งโครงการ
+                ผ้าม่าน → เกาะข้างผ้าทึบ/ผ้าโปร่ง · สินค้าพื้นที่ → เกาะข้างแถว "พื้นที่" */}
+            {item.type !== ITEM_TYPES.CURTAIN && !isAreaType && codeRefs.length > 0 && (
               <div className="flex justify-between items-center text-sm gap-3">
                 <span className="text-muted-foreground shrink-0">รหัส</span>
                 <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-0">
@@ -404,24 +414,24 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
           </div>
 
           {/* Action buttons — touch targets ≥ 44px (HIG) */}
-          <div className="flex gap-2 pt-3 border-t border-border/40">
+          <div className="flex gap-2 pt-2 border-t border-border/40">
             <button
               onClick={handleEdit}
-              className="flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-[background-color,transform] active:scale-[0.97]"
+              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-[background-color,transform] active:scale-[0.97]"
             >
               <Edit2 className="w-4 h-4" strokeWidth={1.5} />
               แก้ไข
             </button>
             <button
               onClick={handleDuplicate}
-              className="flex items-center justify-center h-11 w-11 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
+              className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
               title="คัดลอก"
             >
               <Copy className="w-4 h-4" strokeWidth={1.5} />
             </button>
             <button
               onClick={handleToggleSuspension}
-              className="flex items-center justify-center h-11 w-11 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
+              className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted transition-[background-color,transform] active:scale-90"
               title={item.is_suspended ? 'เปิดใช้งาน' : 'พักรายการ (ไม่นับยอด)'}
             >
               {item.is_suspended ? (
@@ -432,7 +442,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
             </button>
             <button
               onClick={handleDelete}
-              className="flex items-center justify-center h-11 w-11 rounded-xl text-destructive hover:bg-destructive/10 transition-[background-color,transform] active:scale-90"
+              className="flex items-center justify-center h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10 transition-[background-color,transform] active:scale-90"
               title="ลบรายการ"
             >
               <Trash2 className="w-4 h-4" strokeWidth={1.5} />

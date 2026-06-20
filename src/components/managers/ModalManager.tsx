@@ -28,7 +28,7 @@ import { CustomerDirectoryModal } from '@/components/modals/CustomerDirectoryMod
 import { AdminPinModal } from '@/components/modals/AdminPinModal';
 import { UndoHistoryModal } from '@/components/modals/UndoHistoryModal';
 
-export const ModalManager: React.FC = () => {
+export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpenOverview }) => {
   const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
 
@@ -169,6 +169,7 @@ export const ModalManager: React.FC = () => {
       <MainMenuModal
         isOpen={isVisible('mainMenu')}
         onClose={closeModal}
+        onOpenOverview={onOpenOverview}
         onOpenJobs={() => openModal('jobs')}
         onOpenSignIn={() => openModal('signIn')}
         onOpenCustomerDirectory={() => openModal('customerDirectory')}

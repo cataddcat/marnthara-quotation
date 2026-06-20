@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Room, ItemData } from '@/types';
 import { ItemCard } from './ItemCard';
 import { EmptyState } from './EmptyState';
@@ -11,6 +11,7 @@ import { ITEM_CONFIG } from '@/config/constants';
 import { isItemIncomplete, isItemReady, displayIndexes } from '@/lib/item-status';
 import {
   ChevronRight,
+  ChevronUp,
   Plus,
   Trash2,
   Copy,
@@ -63,6 +64,27 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   // Colorful themes (EEERT + Dark Vivid): collapse the footer to one line (drop the
   // "สถานะ"/"ยอดรวมห้อง" labels).
   const isColorful = useThemeStore((s) => isColorfulTheme(s.theme));
+
+  // Collapsing header — เมื่อหัวการ์ดเลื่อนพ้นเส้น fold (ใต้ app header) → โชว์แถบบาง "ลำดับ+ชื่อ" แทน
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    if (isCompact) return;
+    const el = headerRef.current;
+    if (!el) return;
+    // resolve --content-top (calc + safe-area) → px สำหรับ rootMargin
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--content-top)';
+    document.body.appendChild(probe);
+    const topPx = probe.offsetHeight;
+    probe.remove();
+    const io = new IntersectionObserver(([e]) => setCollapsed(!e.isIntersecting), {
+      rootMargin: `-${topPx}px 0px 0px 0px`,
+      threshold: 0,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [isCompact]);
 
   const accent = getRoomAccent(room.id);
 
@@ -282,8 +304,36 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   // ─── FOCUS MODE (full) ───────────────────────────────────────────────────────
   return (
     <div id={`room-${room.id}`} className={cn('flex flex-col gap-2', className)}>
+      {/* Compact sticky header — เมื่อ scroll ลง: โชว์แค่ลำดับ+ชื่อห้อง (ไม่เปลืองพื้นที่). แตะ = เลื่อนขึ้นบน.
+          fixed → ไม่ดันเนื้อหา (ไม่ jump); z-30 < app header(40); กว้างตรง content (max-w-3xl โหมด focus).
+          wrapper pointer-events-none + button pointer-events-auto → พื้นที่ว่างข้างแคปซูลคลิกทะลุได้ */}
+      <div
+        className={cn(
+          'pointer-events-none fixed left-0 right-0 top-[var(--content-top)] z-30 transition-all duration-200',
+          collapsed ? 'translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'
+        )}
+      >
+        <div className="mx-auto flex max-w-3xl items-center justify-end px-4 sm:px-6">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label={`${room.name} — เลื่อนขึ้นบน`}
+            tabIndex={collapsed ? 0 : -1}
+            className="pointer-events-auto flex h-11 items-center gap-2 rounded-full border border-border bg-card/95 px-3.5 shadow-sm backdrop-blur transition-colors hover:bg-muted active:scale-95 colorful:bg-card colorful:backdrop-blur-none"
+          >
+            {roomIndex !== undefined && totalRooms !== undefined && (
+              <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                {roomIndex + 1}/{totalRooms}
+              </span>
+            )}
+            <span className="max-w-[55vw] truncate text-sm font-bold text-foreground">{room.name}</span>
+            <ChevronUp className="w-4 h-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+          </button>
+        </div>
+      </div>
+
       {/* Room Header Card */}
       <div
+        ref={headerRef}
         className={cn(
           'relative rounded-2xl border bg-card overflow-hidden transition-[border-color] duration-300 flex',
           room.is_suspended
@@ -375,10 +425,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   {typeBreakdown.map(([label, count]) => (
                     <span
                       key={label}
-                      className={cn(
-                        'text-xs px-2 py-0.5 rounded-full font-medium',
-                        accent.tag
-                      )}
+                      className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground"
                     >
                       {label}
                       {count > 1 ? ` ×${count}` : ''}
@@ -477,16 +524,6 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 onEdit={() => onEditItem(room.id, item)}
               />
             ))}
-            {/* เพิ่มสินค้า — action ที่กดบ่อยที่สุดหน้างาน: แตะ ≥44px (h-11) + ป้าย 14px */}
-            <button
-              onClick={() => onAddItem(room.id)}
-              className="sm:col-span-2 group flex items-center justify-center gap-1.5 h-11 rounded-xl border border-dashed border-border/50 hover:border-foreground/30 hover:bg-muted/20 transition-[border-color,background-color,transform] active:scale-[0.99]"
-            >
-              <Plus className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
-                เพิ่มสินค้า
-              </span>
-            </button>
           </div>
         ))}
     </div>

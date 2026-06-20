@@ -164,7 +164,7 @@ function App() {
     });
   };
 
-  // หน้าหลัก — กลับไปจุดเริ่มต้นของใบเสนอราคา: โหมดโฟกัสห้องแรก + เลื่อนขึ้นบนสุด
+  // หน้าหลัก — กลับไปจุดเริ่มต้น: โหมดโฟกัสห้องแรก + เลื่อนขึ้นบนสุด
   const handleGoHome = () => {
     setViewMode('focus');
     if (rooms.length > 0) setActiveRoomId(rooms[0].id);
@@ -195,8 +195,6 @@ function App() {
         onOpenMainMenu={handleOpenMainMenu}
         onOpenJobs={handleOpenJobs}
         onOpenDiscount={handleOpenDiscount}
-        onOpenOverview={handleOpenOverview}
-        onGoHome={handleGoHome}
         activeRoomId={activeRoomId}
         onNavigateRoom={setActiveRoomId}
         viewMode={viewMode}
@@ -213,6 +211,9 @@ function App() {
             onSetDashboardDensity={setDashboardDensity}
             onAddItem={handleAddItem}
             onEditItem={handleEditItem}
+            onGoHome={handleGoHome}
+            onOpenMainMenu={handleOpenMainMenu}
+            onOpenOverview={handleOpenOverview}
           />
         ) : (
           <EmptyState
@@ -228,7 +229,7 @@ function App() {
           />
         )}
       </MainLayout>
-      <ModalManager />
+      <ModalManager onOpenOverview={handleOpenOverview} />
       <ConflictBanner />
       <ToastContainer />
       <AlertDialog />
