@@ -304,16 +304,18 @@
     --warning: 38 92% 50%;
     --info: 199 89% 48%;
 
-    /* 6. Product Brand Colors (Eye-Friendly Variants) */
+    /* 6. Product Brand Colors — L% tuned for AA on white card (text-brand-* = valueClass/section icon).
+       hue/sat คงเดิม; ลด L จนคอนทราสต์บนพื้นขาว ≥4.5:1 (curtain ผ่านอยู่แล้วที่ 40%). themes พื้นมืด/
+       colorful นิยาม --brand-* ของตัวเองในบล็อกถัดไป จึงไม่กระทบ. กระทบเฉพาะ light + signature (สืบทอด). */
     --brand-curtain: 222 47% 40%; /* Muted Slate */
-    --brand-wallpaper: 24 95% 53%; /* Soft Orange */
-    --brand-wood: 28 87% 52%; /* Warm Brown */
-    --brand-roller: 187 85% 43%; /* Soft Teal */
-    --brand-vertical: 199 89% 48%; /* Sky Blue */
-    --brand-alum: 215 25% 65%; /* Light Slate */
-    --brand-partition: 142 71% 45%; /* Leaf Green */
-    --brand-screen: 330 81% 60%; /* Rose */
-    --brand-removal: 0 84.2% 60.2%; /* Soft Red */
+    --brand-wallpaper: 24 95% 40%; /* Deep Orange */
+    --brand-wood: 28 87% 38%; /* Warm Brown */
+    --brand-roller: 187 85% 31%; /* Teal */
+    --brand-vertical: 199 89% 37%; /* Sky Blue */
+    --brand-alum: 215 25% 49%; /* Slate */
+    --brand-partition: 142 71% 31%; /* Leaf Green */
+    --brand-screen: 330 81% 48%; /* Rose */
+    --brand-removal: 0 84% 50%; /* Red */
 
     /* 7. Extended Palette (Eye-Care Optimized) */
     --subtle: 210 40% 96%; /* Slightly darker than background */
@@ -373,7 +375,7 @@
     --brand-alum: 215 25% 75%;
     --brand-partition: 142 70% 60%;
     --brand-screen: 330 100% 75%;
-    --brand-removal: 0 84.2% 60.2%;
+    --brand-removal: 0 84.2% 66%; /* L↑ → AA-text บนพื้น dark card (เดิม 60.2% = 3.94:1) */
 
     /* 7. Extended Palette (Dark Mode) */
     --subtle: 222 47% 13%;
