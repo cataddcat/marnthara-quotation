@@ -178,7 +178,7 @@ export const Modal: React.FC<ModalProps> = ({
                   isFullscreen
                     ? 'w-full h-[100dvh] rounded-none'
                     : cn(
-                        `w-full ${maxWidthClass} rounded-xl my-4 border border-border/50`,
+                        `w-full ${maxWidthClass} rounded-xl my-4 border border-border/50 eeert:border-border`,
                         // 🖥️ Desktop: office app-shell gets a STABLE fixed height (no resize when
                         // switching inner tabs); ordinary dialogs size to content (capped 90vh).
                         appShell ? 'h-[88vh]' : 'max-h-[90vh]'
@@ -188,7 +188,7 @@ export const Modal: React.FC<ModalProps> = ({
                 {/* Header — title 16px; ปุ่มมี hit area 44px (HIG); เว้นขอบตามมาตรฐาน section (p-3.5) */}
                 <div
                   className={cn(
-                    'px-4 py-3.5 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors',
+                    'px-4 py-3.5 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors eeert:bg-card eeert:backdrop-blur-none',
                     scrolled ? 'border-border' : 'border-transparent',
                     isFullscreen && 'pt-safe-top' // Safe Area for notch
                   )}

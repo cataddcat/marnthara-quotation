@@ -19,6 +19,11 @@
    unless an `eeert:` override is given). */
 @custom-variant eeert (&:where(.eeert, .eeert *));
 
+/* `dark-vivid:` variant — Dark Vivid runs as `.dark .dark-vivid` together, so the entire
+   `dark:` data-tone layer already fires (bright tones, correct on a dark canvas). This variant
+   is only for the rare case a tone must differ from plain Dark; not required for the base theme. */
+@custom-variant dark-vivid (&:where(.dark-vivid, .dark-vivid *));
+
 /* ── Geist Mono (Vercel) — เลเยอร์ตัวเลข/รหัส (HANDOFF §1.7) ──
    self-host เพื่อออฟไลน์ (PWA); variable woff2 (100–900).
    ถ้าไฟล์หาย → fallback ลง ui-monospace อัตโนมัติ (degrade ปลอดภัย) */
@@ -423,27 +428,30 @@
      a VIVID COBALT CTA (--primary) — colour carries action. Near-black ink stays
      (AAA on the light cards), and the data/nav/brand layer is colour-coded
      (multi-hue via the `eeert:` variant in dataTones), so the whole theme reads
-     colourful yet legible. Sharper (8px) radii read "engineered"; cobalt focus
-     ring; heavier icon stroke + snappier pulse; IBM Plex Sans Thai. */
+     colourful yet legible. คมชัด: tight 4px-control / 6px-card radii read "engineered",
+     hardened cobalt borders, whiter cards on a deeper page (crisper separation), tighter
+     "sharp-edge" shadows, and OPAQUE de-frosted chrome (no backdrop-blur — see the eeert:
+     overrides on the header/dock/modal); cobalt focus ring; heavier icon stroke; IBM Plex Sans Thai. */
   .eeert {
     /* UI font — numbers stay Geist Mono via --font-mono */
     --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system,
       'Segoe UI', Roboto, sans-serif;
 
-    /* Radii — crisp / technical (tighter than Signature 16px, Light 12px) */
-    --radius: 0.5rem;
-    --radius-sm: 0.25rem;
-    --radius-md: 0.375rem;
-    --radius-lg: 0.5rem;
-    --radius-xl: 0.625rem;
+    /* Radii — คมชัด "engineered" scale: rounded-lg→4px controls, rounded-xl→6px cards/modal
+       (md buttons/inputs + cards share rounded-xl → both 6px). Tighter than Signature 16px / Light 12px. */
+    --radius: 0.375rem; /* 6px base */
+    --radius-sm: 0.125rem; /* 2px */
+    --radius-md: 0.1875rem; /* 3px */
+    --radius-lg: 0.25rem; /* 4px — sm controls */
+    --radius-xl: 0.375rem; /* 6px — md controls + cards + modal */
 
     /* Surface stack — COLORFUL: cobalt-tinted canvas/chrome; light cards keep AAA ink.
        (ฉีดสีเข้า chrome แต่หมึก/การ์ดคงคอนทราสต์ — colorful + อ่านง่าย, DESIGN §0/§2) */
-    --background: 214 34% 82%; /* COLORFUL — cobalt page (was neutral grey) */
+    --background: 214 36% 80%; /* คมชัด — deeper, more saturated cobalt page (was 34% 82%) */
     --foreground: 222 40% 10%; /* DARK — near-black ink (AAA) — UNCHANGED */
-    --card: 214 30% 96%; /* near-white cobalt tint — data ยัง pop */
+    --card: 214 33% 98%; /* คมชัด — nearly pure white, wider page↔card gap (was 30% 96%) */
     --card-foreground: 222 40% 10%;
-    --popover: 214 30% 96%;
+    --popover: 214 33% 98%;
     --popover-foreground: 222 40% 10%;
     --muted: 214 26% 89%; /* cobalt-tinted fill ระหว่างพื้นกับการ์ด */
     --muted-foreground: 217 24% 24%; /* strong secondary — AAA (≥7:1) on card */
@@ -458,9 +466,9 @@
     --primary: 214 86% 40%;
     --primary-foreground: 0 0% 100%;
 
-    /* crisp visible borders — cobalt "blueprint line" */
-    --border: 214 28% 56%;
-    --input: 214 28% 56%;
+    /* คมชัด — hardened cobalt "blueprint line" (darker; also crisps every derived /30–/60 border) */
+    --border: 214 32% 46%;
+    --input: 214 32% 46%;
 
     /* cobalt focus accent — EEERT signature (distinct from Signature gold) */
     --ring: 214 90% 42%;
@@ -486,17 +494,91 @@
     --highlight: 214 90% 42% / 0.14;
     --highlight-foreground: 214 80% 24%;
 
-    /* real elevation — cool slate, stronger than Light so white cards lift off grey */
-    --shadow-xs: 0 1px 2px 0 hsl(216 40% 16% / 0.12), 0 1px 1px -1px hsl(216 40% 16% / 0.1);
-    --shadow-sm: 0 1px 3px 0 hsl(216 40% 16% / 0.15), 0 1px 2px -1px hsl(216 40% 16% / 0.11);
-    --shadow-md: 0 4px 10px -2px hsl(216 40% 16% / 0.18), 0 2px 6px -2px hsl(216 40% 16% / 0.12);
-    --shadow-lg: 0 12px 28px -6px hsl(216 40% 16% / 0.24);
+    /* คมชัด — crisp "sharp-edge" lift: tighter blur/offset + a touch more opacity (not a soft halo) */
+    --shadow-xs: 0 1px 1px 0 hsl(216 45% 14% / 0.16);
+    --shadow-sm: 0 1px 2px 0 hsl(216 45% 14% / 0.2);
+    --shadow-md: 0 2px 6px -1px hsl(216 45% 14% / 0.22);
+    --shadow-lg: 0 6px 16px -4px hsl(216 45% 14% / 0.28);
   }
 
-  /* Heavier icon stroke = EEERT "new icon feel". lucide ships strokeWidth as an
+  /* === DARK VIVID THEME — EEERT's dark sibling · "Deep indigo studio" ===
+     Built as an OVERLAY on .dark (applied as `class="dark dark-vivid"`), so the whole
+     `dark:` data-tone layer (dataTones.ts) fires unchanged — bright emerald/rose/blue/violet
+     that read correctly on a dark canvas. This block overrides only the CHROME: a saturated
+     deep-indigo page (colour carries into the chrome, like EEERT but dark), cards that lift
+     with a ~6% L gap, a VIVID COBALT CTA, crisp cobalt borders, and bright near-white ink.
+     Placed AFTER .dark so its single-class rules win on shared vars in source order.
+     IBM Plex Sans Thai + crisp radii + heavy icons keep it in the EEERT family. */
+  .dark-vivid {
+    /* UI font — numbers stay Geist Mono via --font-mono */
+    --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, -apple-system,
+      'Segoe UI', Roboto, sans-serif;
+
+    /* Radii — crisp / technical (same family as EEERT) */
+    --radius: 0.5rem;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.625rem;
+
+    /* Surfaces — saturated deep-indigo canvas; cards lift with a ~6% L gap */
+    --background: 234 44% 12%; /* deep indigo PAGE — chrome carries colour */
+    --foreground: 220 30% 96%; /* bright near-white ink */
+    --card: 232 36% 18%; /* indigo-tinted slate — lifts off the page */
+    --card-foreground: 220 30% 96%;
+    --popover: 232 36% 18%;
+    --popover-foreground: 220 30% 96%;
+    --muted: 232 28% 24%;
+    --muted-foreground: 222 22% 74%; /* bright readable secondary */
+    --secondary: 232 28% 22%;
+    --secondary-foreground: 220 30% 96%;
+    --accent: 234 45% 28%; /* indigo hover wash */
+    --accent-foreground: 220 40% 96%;
+    --subtle: 234 40% 16%;
+    --subtle-foreground: 222 22% 74%;
+
+    /* primary = CTA / selected only — VIVID COBALT (colour = action) */
+    --primary: 214 88% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    /* crisp cobalt borders + focus ring */
+    --border: 232 24% 34%;
+    --input: 232 24% 34%;
+    --ring: 214 90% 60%;
+
+    /* status — brightened for the dark canvas */
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 64% 52%;
+    --warning: 38 92% 58%;
+    --info: 206 90% 60%;
+
+    /* brand data hues — bright/saturated so they pop on dark */
+    --brand-curtain: 220 60% 78%;
+    --brand-wallpaper: 24 95% 66%;
+    --brand-wood: 28 95% 64%;
+    --brand-roller: 187 90% 56%;
+    --brand-vertical: 200 95% 64%;
+    --brand-alum: 215 28% 74%;
+    --brand-partition: 142 66% 58%;
+    --brand-screen: 330 90% 72%;
+    --brand-removal: 0 80% 64%;
+
+    --highlight: 214 90% 60% / 0.16;
+    --highlight-foreground: 214 80% 80%;
+
+    /* deep shadows — dark leans on borders, so kept subtle (navy-tinted) */
+    --shadow-xs: 0 1px 2px 0 hsl(234 50% 4% / 0.4), 0 1px 1px -1px hsl(234 50% 4% / 0.35);
+    --shadow-sm: 0 1px 3px 0 hsl(234 50% 4% / 0.45), 0 1px 2px -1px hsl(234 50% 4% / 0.4);
+    --shadow-md: 0 4px 10px -2px hsl(234 50% 4% / 0.5), 0 2px 6px -2px hsl(234 50% 4% / 0.4);
+    --shadow-lg: 0 12px 28px -6px hsl(234 50% 4% / 0.55);
+  }
+
+  /* Heavier icon stroke = EEERT family "new icon feel". lucide ships strokeWidth as an
      SVG presentation attribute, which CSS overrides — so this restyles every
      icon app-wide with no per-component edits. */
-  .eeert svg {
+  .eeert svg,
+  .dark-vivid svg {
     stroke-width: 2;
   }
 

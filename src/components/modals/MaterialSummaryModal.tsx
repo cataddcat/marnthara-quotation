@@ -4,7 +4,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
 import { MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
-import { useThemeStore } from '@/store/useThemeStore';
+import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
 import { fmtTH, fmtSize } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
@@ -498,7 +498,7 @@ const UsageRow = ({
   spec?: React.ReactNode;
   onJump: () => void;
 }) => {
-  const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  const isColorful = useThemeStore((s) => isColorfulTheme(s.theme));
   return (
     <button
       onClick={onJump}
@@ -513,7 +513,7 @@ const UsageRow = ({
           <span
             className={cn(
               'text-sm font-mono tabular-nums',
-              isEeert && qtyPill && cn('rounded-full px-2 py-0.5', qtyPill),
+              isColorful && qtyPill && cn('rounded-full px-2 py-0.5', qtyPill),
               qtyClass
             )}
           >

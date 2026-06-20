@@ -97,19 +97,23 @@ export default defineConfig(({ command }) => ({
     emptyOutDir: true,
     sourcemap: false,
     // [ARCHITECT] Optimization: Split Chunks to improve load performance
+    // Vite 8 / Rolldown ตัด object-form `manualChunks` ออก → ใช้ function form (ยังรองรับผ่าน
+    // compat layer). กลุ่ม vendor-* เหมือนเดิมทุกประการ. id ใช้ POSIX slash เสมอแม้บน Windows.
+    // (เมื่อ Vite ตัด function manualChunks ในอนาคต → ย้ายไป output.codeSplitting)
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React
-          'vendor-react': ['react', 'react-dom'],
+        manualChunks: (id) => {
+          if (!id.includes('/node_modules/')) return;
+          // Heavy Libraries (PDF Printing) — เช็คก่อน react กัน "react-to-print" หลุดเข้า vendor-react
+          if (/\/node_modules\/react-to-print\//.test(id)) return 'vendor-print';
+          // Core React (+ scheduler runtime)
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react';
           // UI Libraries (Icons, HeadlessUI)
-          'vendor-ui': ['@headlessui/react', 'lucide-react'],
-          // State Management & Utils (removed date-fns)
-          'vendor-utils': ['zustand', 'zundo', 'clsx', 'tailwind-merge'],
-          // Heavy Libraries (PDF Printing)
-          'vendor-print': ['react-to-print'],
+          if (/\/node_modules\/(@headlessui\/react|lucide-react)\//.test(id)) return 'vendor-ui';
+          // State Management & Utils
+          if (/\/node_modules\/(zustand|zundo|clsx|tailwind-merge)\//.test(id)) return 'vendor-utils';
           // Firebase (cloud sync) — แยกก้อน: โหลดคู่ขนาน + cache ดี, ไม่ทำให้ main bundle บวม
-          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          if (/\/node_modules\/@?firebase\//.test(id)) return 'vendor-firebase';
         },
       },
     },

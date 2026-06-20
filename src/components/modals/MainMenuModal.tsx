@@ -19,6 +19,7 @@ import {
   ClipboardList,
   Gem,
   Contrast,
+  Sparkles,
   FolderKanban,
   User,
   ChevronRight,
@@ -133,6 +134,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
     { id: 'dark' as const, label: 'มืด', icon: Moon, active: theme === 'dark' },
     { id: 'signature' as const, label: 'Signature', icon: Gem, active: theme === 'signature' },
     { id: 'eeert' as const, label: 'EEERT', icon: Contrast, active: theme === 'eeert' },
+    { id: 'dark-vivid' as const, label: 'Dark Vivid', icon: Sparkles, active: theme === 'dark-vivid' },
   ];
 
   // โหมดงาน (ไม่ใช่อุปกรณ์): หน้างาน = วัด/จดให้ครบ · ละเอียด = ราคา/ทุน/กำไร/จัดเรียง
@@ -292,7 +294,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Theme Toggle — 2×2 grid: 4 themes never overflow the half-width cell */}
+            {/* Theme Toggle — 2-col grid: themes wrap cleanly in the half-width cell */}
             <div className="grid grid-cols-2 gap-1 bg-card border border-border/50 p-1 rounded-lg">
               {themes.map((opt) => (
                 <button

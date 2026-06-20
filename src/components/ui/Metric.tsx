@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { DATA_TONE_TEXT, DATA_TONE_PLATE, DATA_TONE_PILL, type DataTone } from '@/config/dataTones';
-import { useThemeStore } from '@/store/useThemeStore';
+import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
 
 /**
  * Metric — the canonical "labelled number" block of the dashboard redesign.
@@ -76,10 +76,10 @@ export const Metric: React.FC<MetricProps> = ({
   struck = false,
   className,
 }) => {
-  // EEERT pilot: heroes wear the soft tone PILL. Other themes keep the legacy framed
-  // PLATE on size="lg" only, so nothing outside the pilot moves. (Graduate → drop this gate.)
-  const isEeert = useThemeStore((s) => s.theme === 'eeert');
-  const usePill = isEeert && plate;
+  // Colorful themes (EEERT + Dark Vivid): heroes wear the soft tone PILL. Other themes keep
+  // the legacy framed PLATE on size="lg" only, so nothing outside the pilot moves.
+  const isColorful = useThemeStore((s) => isColorfulTheme(s.theme));
+  const usePill = isColorful && plate;
   const useFramed = !usePill && size === 'lg';
 
   return (

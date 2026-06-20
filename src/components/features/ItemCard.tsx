@@ -11,7 +11,7 @@ import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
 import { DATA_TONE_TEXT, DATA_TONE_PILL, MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
-import { useThemeStore } from '@/store/useThemeStore';
+import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
 import { getItemTheme } from '@/lib/theme-utils';
 import {
   ChevronDown,
@@ -45,9 +45,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   // สี brand ประจำชนิดสินค้า (ทะเบียน §2.1 ชั้น Identity) — ใช้กับชิปสเปค ให้ตรงหัว section ของฟอร์ม
   const theme = getItemTheme(item.type);
 
-  // EEERT pilot: ตัวเลขขนาด/วัสดุ สวม pill โทนนุ่ม (text สี AAA+ จากทะเบียน) — ธีมอื่นไม่เปลี่ยน
-  const isEeert = useThemeStore((s) => s.theme === 'eeert');
-  const pillCls = (bg: string) => (isEeert ? cn('rounded-full px-2 py-0.5', bg) : undefined);
+  // Colorful themes (EEERT + Dark Vivid): ตัวเลขขนาด/วัสดุ สวม pill โทนนุ่ม (text สี AAA+ จากทะเบียน) — ธีมอื่นไม่เปลี่ยน
+  const isColorful = useThemeStore((s) => isColorfulTheme(s.theme));
+  const pillCls = (bg: string) => (isColorful ? cn('rounded-full px-2 py-0.5', bg) : undefined);
 
   const priceResult = useMemo(() => PricingEngine.calculateDetailedPrice(item), [item]);
 

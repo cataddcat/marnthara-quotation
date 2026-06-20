@@ -100,13 +100,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className="relative min-h-[100dvh] bg-background text-foreground">
       {/* iOS Status Bar Backdrop */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-safe-top bg-background/80 backdrop-blur-md border-b border-transparent transition-all duration-300" />
+      <div className="fixed top-0 left-0 right-0 z-50 h-safe-top bg-background/80 backdrop-blur-md border-b border-transparent transition-all duration-300 eeert:bg-background eeert:backdrop-blur-none" />
 
       {/* App Header */}
       <header className="fixed top-0 left-0 right-0 z-40 pt-safe-top transition-all duration-300">
         <div
           className={cn(
-            'bg-background/80 backdrop-blur-md border-b border-border/50 transition-all duration-500',
+            'bg-background/80 backdrop-blur-md border-b border-border/50 transition-all duration-500 eeert:bg-background eeert:backdrop-blur-none eeert:border-border',
             scrolled ? 'shadow-sm' : ''
           )}
         >
@@ -276,7 +276,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Floating Dock — wide horizontal capsule */}
       <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 mb-safe-bottom w-full max-w-[440px] px-4">
-        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-lg border border-border">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-card/95 backdrop-blur-xl shadow-lg border border-border eeert:bg-card eeert:backdrop-blur-none">
           <DockPill
             icon={Home}
             label="หน้าหลัก"

@@ -1,18 +1,35 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-type Theme = 'light' | 'dark' | 'signature' | 'eeert';
+export type Theme = 'light' | 'dark' | 'signature' | 'eeert' | 'dark-vivid';
 
-// Order also defines the toggle cycle (light → dark → signature → eeert → light).
-const THEME_CLASSES: Theme[] = ['light', 'dark', 'signature', 'eeert'];
+// Order also defines the toggle cycle (light → dark → signature → eeert → dark-vivid → light).
+// Also the atomic class-removal list: every class we may have put on <html> appears here
+// (dark-vivid's base 'dark' is already a member, so remove(...THEME_CLASSES) clears everything).
+export const THEME_CLASSES: Theme[] = ['light', 'dark', 'signature', 'eeert', 'dark-vivid'];
+
+// Classes applied to <html> per theme. 'dark-vivid' layers on the .dark token base so every
+// `dark:` data tone (dataTones.ts) fires for free, while .dark-vivid overlays only the chrome.
+export const THEME_DOM_CLASSES: Record<Theme, string[]> = {
+  light: ['light'],
+  dark: ['dark'],
+  signature: ['signature'],
+  eeert: ['eeert'],
+  'dark-vivid': ['dark', 'dark-vivid'],
+};
+
+// "Colorful" themes share the pill/plate hero treatment (EEERT pilot behaviour). Gated at runtime
+// in Metric/ItemCard/RoomCard/MaterialSummaryModal rather than via a CSS variant.
+export const isColorfulTheme = (t: Theme) => t === 'eeert' || t === 'dark-vivid';
 
 // Mobile browser status-bar color per theme. Signature ≈ the light surface;
-// eeert ≈ its medium-grey page (hsl 216 16% 80%).
+// eeert ≈ its medium-grey page (hsl 216 16% 80%); dark-vivid ≈ its deep-indigo canvas.
 const META_COLOR: Record<Theme, string> = {
   light: '#E4E8EE',
   dark: '#0D0814',
   signature: '#FCFCFD',
   eeert: '#C2CFE1',
+  'dark-vivid': '#14162E',
 };
 
 interface ThemeState {
@@ -50,7 +67,7 @@ export const useThemeStore = create<ThemeState>()(
 const updateDomClass = (theme: Theme) => {
   const root = window.document.documentElement;
   root.classList.remove(...THEME_CLASSES);
-  root.classList.add(theme);
+  root.classList.add(...THEME_DOM_CLASSES[theme]);
 
   // Update Mobile Browser Status Bar
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');

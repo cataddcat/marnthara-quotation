@@ -4,7 +4,7 @@ import { RoomSlider } from '@/components/features/RoomSlider';
 import { type DashboardDensity } from '@/components/features/RoomDashboard';
 import { EmptyState } from '@/components/features/EmptyState';
 import { useAppStore } from '@/store/useAppStore';
-import { useThemeStore } from '@/store/useThemeStore';
+import { useThemeStore, THEME_CLASSES, THEME_DOM_CLASSES } from '@/store/useThemeStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 import { startSync, stopSync } from '@/lib/sync/syncEngine';
@@ -113,8 +113,9 @@ function App() {
   // Theme Initialization
   const theme = useThemeStore((state) => state.theme);
   useEffect(() => {
-    document.documentElement.classList.remove('light', 'dark', 'signature', 'eeert');
-    document.documentElement.classList.add(theme);
+    const root = document.documentElement;
+    root.classList.remove(...THEME_CLASSES);
+    root.classList.add(...THEME_DOM_CLASSES[theme]);
   }, [theme]);
 
   // Migration Logic: Transfer legacy costs from favorites to fabricCosts vault
