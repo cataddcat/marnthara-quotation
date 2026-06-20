@@ -1,60 +1,37 @@
 import { ITEM_TYPES } from '@/config/enums';
 import { cn } from '@/lib/utils';
 
+/**
+ * โทนสี brand ต่อชนิดสินค้า — ใช้กับ valueClass (ตัวเลข) + iconClass (ไอคอน section) ในฟอร์ม.
+ */
 export type ThemeStyle = {
-  container: string;
-  iconWrapper: string;
-  title: string;
-  icon: string;
-  hover: string;
-  badge: string;
+  /** สีตัวเลข/ค่า (valueClass) */
   text: string;
-  bgSoft: string;
-  border: string;
-  ring: string; // Added ring support
+  /** สีไอคอน section (iconClass) */
+  icon: string;
 };
 
-// Helper to construct dynamic Tailwind classes using CSS Variables
-const createSemanticTheme = (brandVar: string): ThemeStyle => ({
-  // Container: Light mode uses 5% opacity, Dark mode needs more visibility (e.g. 10%)
-  // Using 'bg-[hsl(var(--name)/0.05)]' syntax for Tailwind arbitrary values with opacity
-  container: `bg-[hsl(var(${brandVar})_/_0.05)] dark:bg-[hsl(var(${brandVar})_/_0.1)] border-[hsl(var(${brandVar})_/_0.2)]`,
-
-  // Icon Wrapper: Clean separation
-  iconWrapper: `bg-white dark:bg-[hsl(var(${brandVar})_/_0.15)] text-[hsl(var(${brandVar}))] shadow-sm`,
-
-  title: `text-foreground font-semibold`,
-
-  icon: `text-[hsl(var(${brandVar}))]`,
-
-  // Hover: Gentle glow effect
-  hover: `hover:border-[hsl(var(${brandVar})_/_0.5)] hover:bg-[hsl(var(${brandVar})_/_0.08)] dark:hover:bg-[hsl(var(${brandVar})_/_0.15)]`,
-
-  badge: `bg-[hsl(var(${brandVar})_/_0.1)] text-[hsl(var(${brandVar}))]`,
-
-  text: `text-[hsl(var(${brandVar}))]`,
-
-  bgSoft: `bg-[hsl(var(${brandVar})_/_0.1)]`,
-
-  border: `border-[hsl(var(${brandVar}))]`,
-
-  ring: `focus:ring-[hsl(var(${brandVar}))]`,
-});
-
-const SEMANTIC_THEMES: Record<string, ThemeStyle> = {
-  [ITEM_TYPES.CURTAIN]: createSemanticTheme('--brand-curtain'),
-  [ITEM_TYPES.WALLPAPER]: createSemanticTheme('--brand-wallpaper'),
-  [ITEM_TYPES.ROLLER_BLIND]: createSemanticTheme('--brand-roller'),
-  [ITEM_TYPES.WOODEN_BLIND]: createSemanticTheme('--brand-wood'),
-  [ITEM_TYPES.VERTICAL_BLIND]: createSemanticTheme('--brand-vertical'),
-  [ITEM_TYPES.ALUMINUM_BLIND]: createSemanticTheme('--brand-alum'),
-  [ITEM_TYPES.PARTITION]: createSemanticTheme('--brand-partition'),
-  [ITEM_TYPES.PLEATED_SCREEN]: createSemanticTheme('--brand-screen'),
-  [ITEM_TYPES.REMOVAL]: createSemanticTheme('--brand-removal'),
+/**
+ * ⚠️ ต้องเป็น string literal **static** เท่านั้น (เช่น `'text-brand-curtain'`) — ห้ามประกอบจาก template var.
+ * Tailwind v4 สแกนซอร์สแบบ static: คลาสที่สร้างจากตัวแปร (`text-[hsl(var(${x}))]`) ไม่เคยปรากฏเป็นคลาสเต็ม
+ * → scanner มองไม่เห็น → ไม่ generate CSS → สีตายเงียบ. (ดู memory `tailwind-dynamic-class-gotcha`
+ * + แพทเทิร์น `TYPE_CHIP_PLATE` ใน ItemCard.tsx). สี `brand-*` ลงทะเบียนเป็น `@theme` ใน src/index.css.
+ */
+const BRAND_TEXT: Record<string, string> = {
+  [ITEM_TYPES.CURTAIN]: 'text-brand-curtain',
+  [ITEM_TYPES.WALLPAPER]: 'text-brand-wallpaper',
+  [ITEM_TYPES.ROLLER_BLIND]: 'text-brand-roller',
+  [ITEM_TYPES.WOODEN_BLIND]: 'text-brand-wood',
+  [ITEM_TYPES.VERTICAL_BLIND]: 'text-brand-vertical',
+  [ITEM_TYPES.ALUMINUM_BLIND]: 'text-brand-alum',
+  [ITEM_TYPES.PARTITION]: 'text-brand-partition',
+  [ITEM_TYPES.PLEATED_SCREEN]: 'text-brand-screen',
+  [ITEM_TYPES.REMOVAL]: 'text-brand-removal',
 };
 
 export const getItemTheme = (type: string): ThemeStyle => {
-  return SEMANTIC_THEMES[type] || createSemanticTheme('--foreground');
+  const brand = BRAND_TEXT[type] ?? 'text-foreground';
+  return { text: brand, icon: brand };
 };
 
 /* ── Segmented / option toggle — recipe เดียวทุกฟอร์ม ───────────────────────── */
