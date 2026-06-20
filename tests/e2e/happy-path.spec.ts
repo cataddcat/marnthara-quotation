@@ -12,7 +12,8 @@ test.describe('Happy path', () => {
     await page.getByRole('button', { name: 'เพิ่มห้องแรก' }).click();
     await expect(page.getByText('เริ่มโครงการใหม่')).toHaveCount(0);
 
-    // 3. เปิดเมนูหลักผ่าน dock → drawer แสดงหัวข้อ "เมนูหลัก"
+    // 3. เปิดเมนูหลักผ่าน dropdown "เมนูนำทาง" (ยุบ หน้าหลัก/เมนู/ภาพรวม) → drawer แสดงหัวข้อ "เมนูหลัก"
+    await page.getByRole('button', { name: 'เมนูนำทาง' }).click();
     await page.getByRole('button', { name: 'เมนู', exact: true }).click();
     await expect(page.getByText('เมนูหลัก')).toBeVisible();
     await expect(page.getByText('การเงินของงาน')).toBeVisible();

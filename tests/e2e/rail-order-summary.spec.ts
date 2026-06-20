@@ -41,6 +41,7 @@ const seed = async (page: Page) => {
 };
 
 const openCopySummary = async (page: Page) => {
+  await page.getByRole('button', { name: 'เมนูนำทาง' }).click();
   await page.getByRole('button', { name: 'เมนู', exact: true }).click();
   await page.getByRole('button', { name: /คัดลอกสรุป/ }).click();
   await expect(page.getByLabel('ข้อความสรุป (แก้ไขได้)')).toBeVisible();

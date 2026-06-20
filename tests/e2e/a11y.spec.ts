@@ -30,6 +30,7 @@ test.describe('Accessibility (axe on real browser)', () => {
   test('main menu drawer ไม่มี serious/critical violation', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'เพิ่มห้องแรก' }).click();
+    await page.getByRole('button', { name: 'เมนูนำทาง' }).click();
     await page.getByRole('button', { name: 'เมนู', exact: true }).click();
     await expect(page.getByText('เมนูหลัก')).toBeVisible();
 
