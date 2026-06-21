@@ -8,7 +8,7 @@ import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
-import { isItemIncomplete } from '@/lib/item-status';
+import { isItemPending } from '@/lib/item-status';
 import { SmartNavigator } from '@/components/features/SmartNavigator';
 
 interface MainLayoutProps {
@@ -60,7 +60,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       room.items.forEach((item) => {
         if (item.is_suspended) return;
         total += 1;
-        if (isItemIncomplete(item)) incomplete += 1;
+        if (isItemPending(item)) incomplete += 1;
       });
     });
     return { total, incomplete };

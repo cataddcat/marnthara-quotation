@@ -75,9 +75,23 @@ export const isItemIncomplete = (item: ItemData): boolean => {
   }
 };
 
-/** ป้ายบอกสิ่งที่ยังขาด (ใช้กับ chip บน ItemCard) */
-export const incompleteLabel = (item: ItemData): string =>
-  item.type === ITEM_TYPES.CURTAIN ? 'ยังไม่ใส่ผ้า' : 'ยังไม่ใส่ราคา';
+/**
+ * ขนาด/ข้อมูลวัด "ครบ" หรือยัง — กว้าง×สูง (ส่วนใหญ่) · วอลล์=ผนังแรก+สูง · รื้อถอน=มีรายละเอียด
+ * แหล่งเดียวของเกณฑ์ "ขนาดครบ" ใช้ร่วมโดย isItemReady + incompleteLabel
+ */
+const hasCompleteMeasurement = (item: ItemData): boolean => {
+  if (item.type === ITEM_TYPES.WALLPAPER)
+    return toNum(item.widths?.[0]) > 0 && toNum(item.height_m) > 0;
+  if (item.type === ITEM_TYPES.REMOVAL) return !!(item.description && item.description.trim());
+  return toNum(item.width_m) > 0 && toNum(item.height_m) > 0;
+};
+
+/** ป้ายบอกสิ่งที่ยังขาด (ใช้กับ chip บน ItemCard) — ขนาดยังไม่ครบมาก่อน แล้วค่อยผ้า/ราคา */
+export const incompleteLabel = (item: ItemData): string => {
+  if (!hasCompleteMeasurement(item))
+    return item.type === ITEM_TYPES.REMOVAL ? 'ยังไม่ใส่รายละเอียด' : 'ยังไม่ใส่ขนาด';
+  return item.type === ITEM_TYPES.CURTAIN ? 'ยังไม่ใส่ผ้า' : 'ยังไม่ใส่ราคา';
+};
 
 /** "ว่างเปล่า" = ยังไม่มีข้อมูลขั้นต่ำ (ตรงข้ามกับ hasMinimumItemData) — ไม่ควรนับ/ไม่ควรให้เลขลำดับ */
 export const isItemEmpty = (item: ItemData): boolean =>
@@ -88,13 +102,16 @@ export const isItemEmpty = (item: ItemData): boolean =>
  * กันเคสที่ `isItemIncomplete` คืน false ตอนขนาดยังไม่ครบ (เช่น มีกว้างแต่ยังไม่ใส่สูง)
  * ทำให้ห้องขึ้น "ครบ" ทั้งที่รายการยังกรอกไม่จบ
  */
-export const isItemReady = (item: ItemData): boolean => {
-  if (isItemEmpty(item) || isItemIncomplete(item)) return false;
-  if (item.type === ITEM_TYPES.WALLPAPER)
-    return toNum(item.widths?.[0]) > 0 && toNum(item.height_m) > 0;
-  if (item.type === ITEM_TYPES.REMOVAL) return !!(item.description && item.description.trim());
-  return toNum(item.width_m) > 0 && toNum(item.height_m) > 0;
-};
+export const isItemReady = (item: ItemData): boolean =>
+  !isItemEmpty(item) && !isItemIncomplete(item) && hasCompleteMeasurement(item);
+
+/**
+ * "ค้าง" (ต้องตามเก็บให้ครบ) = เริ่มแล้ว (ไม่ว่าง) แต่ยัง "ไม่พร้อม" — กระจกเงาของ isItemReady
+ * ครอบคลุมทั้งขาดผ้า/ราคา (isItemIncomplete) และ "กรอกกว้างแต่ลืมสูง" ที่ isItemIncomplete มองข้าม
+ * ใช้กับป้าย "ค้าง N จุด" (ห้อง/งาน) + ชิปบน ItemCard ให้ตรงกับเกณฑ์ "ครบ" เสมอ
+ */
+export const isItemPending = (item: ItemData): boolean =>
+  !isItemEmpty(item) && !isItemReady(item);
 
 /** ลำดับแสดง (0-based) เฉพาะรายการที่ "ไม่ว่าง"; รายการว่าง = -1 (ItemCard จะไม่โชว์เลข ⌗) */
 export const displayIndexes = (items: ItemData[]): number[] => {

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   isItemIncomplete,
+  isItemPending,
   hasMinimumItemData,
   incompleteLabel,
   isItemEmpty,
@@ -179,6 +180,29 @@ describe('incompleteLabel', () => {
   });
   it('ประเภทอื่น → "ยังไม่ใส่ราคา"', () => {
     expect(incompleteLabel(area({}))).toBe('ยังไม่ใส่ราคา');
+  });
+  it('ขนาดยังไม่ครบ (มีกว้าง+ผ้า แต่ลืมสูง) → "ยังไม่ใส่ขนาด" (ไม่ใช่ "ยังไม่ใส่ผ้า")', () => {
+    expect(incompleteLabel(curtain({ height_m: '', code: 'CT-001' }))).toBe('ยังไม่ใส่ขนาด');
+  });
+});
+
+describe('isItemPending (ป้าย "ค้าง N จุด" — กระจกเงาของ isItemReady)', () => {
+  it('ขนาดครบ + ใส่ผ้าแล้ว → ไม่ค้าง', () => {
+    expect(isItemPending(curtain({ code: 'CT-001' }))).toBe(false);
+  });
+  it('ขนาดครบแต่ยังไม่ใส่ผ้า → ค้าง', () => {
+    expect(isItemPending(curtain({}))).toBe(true);
+  });
+  it('รายการว่าง (ยังไม่เริ่ม) → ไม่ค้าง', () => {
+    expect(isItemPending(curtain({ width_m: '', height_m: '' }))).toBe(false);
+  });
+  it('ม่านกรอกกว้าง+ผ้าแต่ลืมสูง → ค้าง (เดิม isItemIncomplete มองข้าม = limbo)', () => {
+    expect(isItemPending(curtain({ height_m: '', code: 'CT-001' }))).toBe(true);
+    // ยืนยันว่าเคสนี้คือ "ช่องโหว่เดิม": isItemIncomplete คืน false
+    expect(isItemIncomplete(curtain({ height_m: '', code: 'CT-001' }))).toBe(false);
+  });
+  it('สินค้าพื้นที่: ใส่ราคาแต่ลืมสูง → ค้าง', () => {
+    expect(isItemPending(area({ height_m: '', price_sqyd: '350' }))).toBe(true);
   });
 });
 

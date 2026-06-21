@@ -8,7 +8,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { ITEM_CONFIG } from '@/config/constants';
-import { isItemIncomplete, isItemReady, displayIndexes } from '@/lib/item-status';
+import { isItemPending, isItemReady, displayIndexes } from '@/lib/item-status';
 import {
   ChevronRight,
   ChevronUp,
@@ -109,7 +109,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   const itemCount = room.items.length;
   const suspendedCount = room.items.filter((i) => i.is_suspended).length;
   const activeItems = room.items.filter((i) => !i.is_suspended);
-  const incompleteCount = activeItems.filter(isItemIncomplete).length;
+  const incompleteCount = activeItems.filter(isItemPending).length;
   // "ครบ" = มีรายการที่ใช้งาน + ทุกรายการพร้อมจริง (ไม่ว่าง/ขนาดครบ/มีราคา) — กัน false "ครบ" จาก item ว่าง
   const allReady = activeItems.length > 0 && activeItems.every(isItemReady);
   // เลขลำดับ NN — รายการว่าง = -1 (ItemCard ไม่โชว์เลข) ให้รายการจริงนับต่อเนื่อง

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { isItemIncomplete } from '@/lib/item-status';
+import { isItemPending } from '@/lib/item-status';
 import { cn } from '@/lib/utils';
 import { Plus, ChevronRight } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -80,7 +80,7 @@ export const SmartNavigator: React.FC<SmartNavigatorProps> = ({
             const isActive = room.id === activeRoomId;
             const itemCount = room.items.length;
             const incompleteCount = room.items.filter(
-              (i) => !i.is_suspended && isItemIncomplete(i)
+              (i) => !i.is_suspended && isItemPending(i)
             ).length;
 
             return (

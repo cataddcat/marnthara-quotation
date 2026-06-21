@@ -4,7 +4,7 @@ import { ItemCard } from './ItemCard';
 import { useAppStore } from '@/store/useAppStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { isItemIncomplete, displayIndexes } from '@/lib/item-status';
+import { isItemPending, displayIndexes } from '@/lib/item-status';
 import { itemTypeBreakdown } from '@/lib/item-display';
 import { getRoomAccent } from '@/lib/room-accents';
 import { fmtTH } from '@/utils/formatters';
@@ -129,7 +129,7 @@ export const RoomDashboard: React.FC<RoomDashboardProps> = ({
     .flatMap((r) => r.items.filter((i) => !i.is_suspended));
   const grandTotal = visibleItems.reduce((s, i) => s + PricingEngine.calculatePrice(i), 0);
   const totalItems = visibleItems.length;
-  const incompleteCount = visibleItems.filter(isItemIncomplete).length;
+  const incompleteCount = visibleItems.filter(isItemPending).length;
 
   const handleDragStart = (e: DragStartEvent) => {
     const t = e.active.data.current?.type;
@@ -524,7 +524,7 @@ const CompactRoomCard: React.FC<CompactRoomCardProps> = ({
 
   const accent = getRoomAccent(room.id);
   const activeItems = items.filter((i) => !i.is_suspended);
-  const incompleteCount = room.is_suspended ? 0 : activeItems.filter(isItemIncomplete).length;
+  const incompleteCount = room.is_suspended ? 0 : activeItems.filter(isItemPending).length;
 
   // สรุป "ชนิด ×N" — โควตาบรรทัด: เกิน → แสดง (MAX-1) ชนิดแรก + ปิดท้ายด้วย "+N ชนิด"
   const breakdown = itemTypeBreakdown(items);

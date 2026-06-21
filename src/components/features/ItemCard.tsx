@@ -6,7 +6,7 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
-import { isItemIncomplete, incompleteLabel, requiresOpeningStyle } from '@/lib/item-status';
+import { isItemPending, incompleteLabel, requiresOpeningStyle } from '@/lib/item-status';
 import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
@@ -65,7 +65,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const priceResult = useMemo(() => PricingEngine.calculateDetailedPrice(item), [item]);
 
   // "ยังไม่เสร็จ" — มีขนาดแล้วแต่ยังไม่ได้ใส่ผ้า/รายละเอียดที่จำเป็น
-  const incomplete = useMemo(() => !item.is_suspended && isItemIncomplete(item), [item]);
+  const incomplete = useMemo(() => !item.is_suspended && isItemPending(item), [item]);
 
   const { title, dimSpec } = useMemo(() => {
     const rawSpecs = PricingEngine.getItemSpecs(item);

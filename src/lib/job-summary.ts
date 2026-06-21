@@ -2,12 +2,12 @@
 // ────────────────────────────────────────────────────────────────────────────
 // สรุปเงิน + ความคืบหน้าของ "งานหนึ่งก้อน" สำหรับการ์ดในกระดาน "งานทั้งหมด"
 // คำนวณสด (งานมีไม่กี่งาน → ถูกกว่าเก็บ snapshot ที่ค้าง). สูตรเงิน = เดียวกับหน้าหลัก
-// (PricingEngine + performFinalAdjustments) ป้าย "ค้าง N จุด" = isItemIncomplete เดียวกับ header
+// (PricingEngine + performFinalAdjustments) ป้าย "ค้าง N จุด" = isItemPending เดียวกับ header
 // ────────────────────────────────────────────────────────────────────────────
 
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { performFinalAdjustments } from '@/hooks/useCalculations';
-import { isItemIncomplete } from '@/lib/item-status';
+import { isItemPending } from '@/lib/item-status';
 import type { JobBundle } from '@/lib/job-bundle';
 
 export interface JobSummary {
@@ -35,7 +35,7 @@ export const summarizeJob = (b: JobBundle, vatRate: number): JobSummary => {
     for (const item of room.items) {
       if (item.is_suspended) continue;
       itemCount += 1;
-      if (isItemIncomplete(item)) incompleteCount += 1;
+      if (isItemPending(item)) incompleteCount += 1;
       raw += PricingEngine.calculatePrice(item);
     }
   }
