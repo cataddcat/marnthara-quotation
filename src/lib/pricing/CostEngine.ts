@@ -181,6 +181,7 @@ export const CostEngine = {
           if (sheerLaborData) {
             let sheerLabor = calcLaborAmount(sheerLaborData, sheerYardsForLabor);
             if (sheerLaborData.min_price && sheerLabor < sheerLaborData.min_price) {
+              isLaborMinApplied = true; // ผ้าโปร่งติดค่าแรงขั้นต่ำ → ติดธงด้วย (เดิมเงียบ เห็นเฉพาะผ้าทึบ)
               sheerLabor = sheerLaborData.min_price;
             }
             laborCost += sheerLabor;
