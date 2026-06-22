@@ -15,7 +15,6 @@ import {
   HardDrive,
   Star,
   DollarSign,
-  Package,
 } from 'lucide-react';
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
@@ -31,7 +30,7 @@ interface DataModalProps {
 }
 
 export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
-  const { createJob, factoryReset, importFavorites, importSecrets, importCatalog } = useAppStore();
+  const { createJob, factoryReset, importFavorites, importSecrets } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
   const { confirm } = useConfirm();
   const requireAdmin = useRequireAdmin();
@@ -39,14 +38,11 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
   const [resetInput, setResetInput] = useState('');
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [importInput, setImportInput] = useState('');
-  const [activeImportTab, setActiveImportTab] = useState<'favorites' | 'cost' | 'catalog'>(
-    'favorites'
-  );
+  const [activeImportTab, setActiveImportTab] = useState<'favorites' | 'cost'>('favorites');
 
   const TAB_LABEL: Record<typeof activeImportTab, string> = {
     favorites: 'คลังผ้า',
     cost: 'ต้นทุน',
-    catalog: 'แค็ตตาล็อก',
   };
 
   const handleExport = () => {
@@ -167,26 +163,6 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
     }
 
     try {
-      // ── แค็ตตาล็อก (Catalog Contract) — parse object ก่อนส่ง importCatalog ──
-      if (activeImportTab === 'catalog') {
-        let data: unknown;
-        try {
-          data = JSON.parse(importInput);
-        } catch {
-          addToast('error', 'JSON ไม่ถูกต้อง');
-          return;
-        }
-        const res = importCatalog(data);
-        if (res.ok) {
-          addToast('success', `นำเข้าแค็ตตาล็อก ${res.imported} รายการ`);
-          setImportInput('');
-          onClose();
-        } else {
-          addToast('error', `แค็ตตาล็อกไม่ถูกต้อง: ${res.errors[0] ?? ''}`);
-        }
-        return;
-      }
-
       const success =
         activeImportTab === 'favorites'
           ? importFavorites(importInput)
@@ -330,28 +306,12 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
                 ต้นทุน (Cost)
               </div>
             </button>
-            <button
-              className={cn(
-                'flex-1 py-2 text-sm font-medium border-b-2 transition-colors',
-                activeImportTab === 'catalog'
-                  ? 'border-warning text-warning'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => setActiveImportTab('catalog')}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Package className="w-4 h-4" />
-                แค็ตตาล็อก
-              </div>
-            </button>
           </div>
 
           <p className="text-sm text-muted-foreground">
             {activeImportTab === 'favorites'
               ? 'วางโค้ด JSON ของคลังผ้า (รหัส ราคาขาย ราคาทุน) ที่คัดลอกมาจากระบบอื่น'
-              : activeImportTab === 'catalog'
-                ? 'วาง Catalog Contract (marnthara.catalog) — ผ้า/ราง/ฮาร์ดแวร์ พร้อมยี่ห้อ/รุ่น/สี'
-                : 'วางโค้ด JSON ของการตั้งค่าต้นทุน (Labor, Service, Accessory, Fabric)'}
+              : 'วางโค้ด JSON ของการตั้งค่าต้นทุน (Labor, Service, Accessory, Fabric)'}
           </p>
 
           <textarea

@@ -1,15 +1,14 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { CurtainItemInput } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
-import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { ComboboxInput, SuggestionItem } from '@/components/ui/ComboboxInput';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FormSection } from '@/components/ui/FormSection';
 import { FAVORITE_CATEGORIES, LAYER_MODES } from '@/config/enums';
 import { MATERIAL_ACCENT } from '@/config/dataTones';
-import { Moon, Sun, AlertTriangle, RefreshCw, Check, Star, Book, Layers } from 'lucide-react';
+import { Moon, Sun, AlertTriangle, RefreshCw, Book, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toNum, fmtTH } from '@/utils/formatters';
 import { LayerSelector } from './LayerSelector';
@@ -75,13 +74,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
 }) => {
   const { openModal } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
-  const { saveToCatalog } = useSaveToCatalog();
 
   const mainFabrics = useInventory(FAVORITE_CATEGORIES.CURTAIN_MAIN);
   const sheerFabrics = useInventory(FAVORITE_CATEGORIES.CURTAIN_SHEER);
-
-  // State สำหรับแสดงเครื่องหมายถูกเมื่อบันทึกสำเร็จ
-  const [justSaved, setJustSaved] = useState<string | null>(null);
 
   // ✅ Cast Array เป็น string[] และใช้ layerMode ที่มี default
   const layerMode = data.layer_mode || LAYER_MODES.MAIN;
@@ -148,21 +143,6 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
     const found = typeof item === 'string' ? undefined : item?.data;
     if (found?.default_price_per_m && found.default_price_per_m > 0 && !data[priceField]) {
       onNumberChange(priceField, found.default_price_per_m.toString());
-    }
-  };
-
-  // 💾 Action: บันทึกราคาลงคลัง
-  // 💾 Action: บันทึกราคาลงคลัง (ใช้ hook กลาง — ยืนยันก่อนทับเสมอ)
-  const handleSaveToCatalog = async (
-    code: string | undefined,
-    price: string | number | undefined,
-    category: string
-  ) => {
-    const ok = await saveToCatalog(category, code, price);
-    if (ok) {
-      // แสดง animation เครื่องหมายถูกชั่วคราว
-      setJustSaved(category);
-      setTimeout(() => setJustSaved(null), 2000);
     }
   };
 
@@ -265,38 +245,6 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                     />
                   </div>
 
-                  {/* Save Button */}
-                  {showCatalogTools && data.code && toNum(data.price_per_m_raw) > 0 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        'h-[42px] w-[42px] p-0 shrink-0 border-dashed transition-all',
-                        mainSyncStatus === 'mismatch'
-                          ? 'border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50'
-                          : 'border-border text-muted-foreground hover:text-violet-500'
-                      )}
-                      onClick={() =>
-                        handleSaveToCatalog(
-                          data.code,
-                          data.price_per_m_raw,
-                          FAVORITE_CATEGORIES.CURTAIN_MAIN
-                        )
-                      }
-                      title="บันทึกราคานี้เป็นมาตรฐานใหม่"
-                    >
-                      {justSaved === FAVORITE_CATEGORIES.CURTAIN_MAIN ? (
-                        <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 animate-in zoom-in" />
-                      ) : (
-                        <Star
-                          className={cn(
-                            'w-5 h-5',
-                            mainSyncStatus === 'mismatch' && 'fill-amber-100 animate-pulse'
-                          )}
-                        />
-                      )}
-                    </Button>
-                  )}
                 </div>
 
                 {/* Sync Indicator — placed below input row, full width */}
@@ -400,38 +348,6 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                     />
                   </div>
 
-                  {/* Save Button */}
-                  {showCatalogTools && data.sheer_code && toNum(data.sheer_price_per_m) > 0 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        'h-[42px] w-[42px] p-0 shrink-0 border-dashed transition-all',
-                        sheerSyncStatus === 'mismatch'
-                          ? 'border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50'
-                          : 'border-border text-muted-foreground hover:text-violet-400'
-                      )}
-                      onClick={() =>
-                        handleSaveToCatalog(
-                          data.sheer_code,
-                          data.sheer_price_per_m,
-                          FAVORITE_CATEGORIES.CURTAIN_SHEER
-                        )
-                      }
-                      title="บันทึกราคานี้เป็นมาตรฐานใหม่"
-                    >
-                      {justSaved === FAVORITE_CATEGORIES.CURTAIN_SHEER ? (
-                        <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 animate-in zoom-in" />
-                      ) : (
-                        <Star
-                          className={cn(
-                            'w-5 h-5',
-                            sheerSyncStatus === 'mismatch' && 'fill-amber-100 animate-pulse'
-                          )}
-                        />
-                      )}
-                    </Button>
-                  )}
                 </div>
 
                 {/* Sync Indicator — placed below input row */}

@@ -50,6 +50,13 @@ const omitTransientState = (state: AppState): Partial<AppState> => {
   delete (newState as Partial<AppState>).activeModal;
   delete (newState as Partial<AppState>).modalProps;
   delete (newState as Partial<AppState>).modalStack;
+  // product master (SKU registry + ทุนสินค้า) = source of truth ภายนอก → ดึงจาก DB (useCatalogStore,
+  // HANDOFF §11.8) ไม่ persist ในแอป. (ค่าแรง/บริการ/accessory legacy = ของร้านเอง ยัง persist)
+  delete (newState as Partial<AppState>).favorites;
+  delete (newState as Partial<AppState>).fabricCosts;
+  delete (newState as Partial<AppState>).wallpaperCosts;
+  delete (newState as Partial<AppState>).areaCosts;
+  delete (newState as Partial<AppState>).hardwareCosts;
   return newState;
 };
 
@@ -87,6 +94,7 @@ export const useAppStore = create<AppState>()(
       limit: 20,
       partialize: (state) => {
         // Explicitly selecting what to undo/redo
+        // product master (favorites + ทุนสินค้า) = DB-owned (useCatalogStore) → ไม่อยู่ใน undo
         const {
           rooms,
           customer,
@@ -95,11 +103,6 @@ export const useAppStore = create<AppState>()(
           laborCosts,
           serviceCosts,
           accessoryCosts,
-          hardwareCosts,
-          fabricCosts,
-          wallpaperCosts,
-          areaCosts,
-          favorites,
           receipts,
           expenses,
         } = state;
@@ -111,11 +114,6 @@ export const useAppStore = create<AppState>()(
           laborCosts,
           serviceCosts,
           accessoryCosts,
-          hardwareCosts,
-          fabricCosts,
-          wallpaperCosts,
-          areaCosts,
-          favorites,
           receipts,
           expenses,
         };

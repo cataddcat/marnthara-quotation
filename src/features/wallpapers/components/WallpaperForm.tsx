@@ -2,14 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { WallpaperItemInput } from '@/types';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { toNum } from '@/utils/formatters';
 import { newUuid } from '@/lib/id';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, ScrollText, Ruler, PaintRoller, Star, Book, Plus, Trash2 } from 'lucide-react';
+import { Tag, ScrollText, Ruler, PaintRoller, Book, Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
@@ -52,7 +50,6 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   } = useWallpaperFormLogic(initialData, onSubmit);
 
   const { favorites, openModal } = useAppStore();
-  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.WALLPAPER);
@@ -224,28 +221,6 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
             onChange={(e) => handleNumberChange('price_per_roll', e.target.value)}
             prefix={<Tag className="w-4 h-4 text-muted-foreground" />}
           />
-          {isDetail && formData.wallpaper_code && toNum(formData.price_per_roll) > 0 && (
-            <button
-              type="button"
-              onClick={() =>
-                saveToCatalog(
-                  FAVORITE_CATEGORIES.WALLPAPER,
-                  formData.wallpaper_code,
-                  formData.price_per_roll
-                )
-              }
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
-            >
-              <Star
-                className={cn(
-                  'w-5 h-5 transition-colors',
-                  isInCatalog(FAVORITE_CATEGORIES.WALLPAPER, formData.wallpaper_code)
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-muted-foreground hover:text-amber-400'
-                )}
-              />
-            </button>
-          )}
         </div>
 
         <Input

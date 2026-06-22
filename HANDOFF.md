@@ -583,6 +583,28 @@ The factory `DEFAULT_*` constants are dev-owned and only seed an *empty* vault (
 - **Provenance display** — `supplier`/`captured_at` are imported + stored on the inventory item but not yet surfaced in คลังวัสดุ ("จาก ABC · อัปเดต …").
 - **Phase D (out of scope here):** IndexedDB for 10k+ SKUs, external DB / AI ingestion pipeline, physical-store split.
 
+### 11.8 🔌 External Catalog DB — app *fetches* product cost (2026-06-21)
+
+Decision: ชื่อผู้ผลิต · รหัส SKU · รายละเอียดสินค้า · **ราคาทุน → ไม่เก็บในแอป**. เป็น DB ภายนอกที่
+แอป **ดึง (fetch)** มา overlay ตอนคำนวณ (หลักร้อย–พัน SKU + churn บ่อย → เก็บในแอปไม่สเกล). แอปคงเป็น
+quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'unknown'` (เทา) ไม่ใช่ 0.
+
+- **DB = Firestore collection** `shops/{uid}/catalog/{NORMALIZED_CODE}` — **1 doc ต่อ SKU** (สเกลได้,
+  ต่างจาก `settings/pricing` ที่เป็น JSON ก้อนเดียว = ชน 1MB/doc). doc shape = `CatalogEntry`
+  ([contract.ts](src/lib/catalog/contract.ts)): `code`/`category`(ต้องตรง `CATALOG_CATEGORIES`)/`cost`/
+  `sell_price`/`unit`/`brand`/`model`/`color`/`variant`/`supplier`/`captured_at`/`note`.
+- **เขียนโดย:** AI/ingestion pipeline ภายนอก repo (อ่านใบราคาผู้ผลิตจาก LINE → JSON) ผ่าน Admin SDK
+  (service account, bypass rules). **แอป read-only** (firestore.rules: `catalog` allow read only).
+- **ฝั่งแอป (in-repo):** `src/lib/sync/catalogSync.ts` `subscribeCatalog(uid)` → `onSnapshot` →
+  validate ต่อ doc ด้วย `CatalogEntrySchema` → route cost เข้า lookup ตาม `categoryVault()` → เก็บใน
+  `useCatalogStore` (transient, **ไม่ persist เข้า localStorage**). offline = Firestore IndexedDB cache.
+  เปิด/ปิดใน `startSync`/`stopSync` (syncEngine).
+- **CostEngine** อ่านทุนสินค้า (fabric/wallpaper/area/hardware) จาก `useCatalogStore` เมื่อ
+  `status==='ready'` (มี catalog เชื่อมจริง) — มิฉะนั้น fallback persisted vault เดิม (local-only).
+  `laborCosts`/`serviceCosts`/`accessoryCosts` = ของร้านเอง คงอยู่ในแอป (ดู §11.2).
+- **นอก repo:** "จุดพักข้อมูล" (แดชบอร์ด/sheet/tool ที่รับผล AI → ตรวจ/แก้/อนุมัติ → เขียนลง DB).
+  repo นี้ส่งมอบแค่ **contract** ให้ tool นั้นเขียนให้ตรง.
+
 ---
 
 ## 12. ☁️ Multi-job switcher + Firebase cloud sync (2026-06-14)

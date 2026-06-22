@@ -9,6 +9,7 @@
 import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
+import { useCatalogStore } from '@/store/useCatalogStore';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
@@ -47,6 +48,8 @@ export const FinancialDashboardModal: React.FC<{
   const accessoryCosts = useAppStore((s) => s.accessoryCosts);
   const serviceCosts = useAppStore((s) => s.serviceCosts); // ทุนรื้อถอน (per-item) + ขนส่งเหมา/งาน
   const costInclude = useAppStore((s) => s.costInclude);
+  // ทุนสินค้าจาก DB ภายนอก (useCatalogStore) — hint ให้ recalc เมื่อ catalog อัปเดต (HANDOFF §11.8)
+  const catalogVer = useCatalogStore((s) => s.updatedAt);
   const receipts = useAppStore((s) => s.receipts);
   const expenses = useAppStore((s) => s.expenses);
   const { finalTotal } = useCalculations();
@@ -95,7 +98,7 @@ export const FinancialDashboardModal: React.FC<{
     });
     // cost maps เป็น dependency เพราะ CostEngine.analyze อ่านค่าผ่าน getState() (ไม่ได้ใช้ตรงๆ ใน memo)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, fabricCosts, wallpaperCosts, areaCosts, laborCosts, accessoryCosts, serviceCosts, costInclude]);
+  }, [rooms, fabricCosts, wallpaperCosts, areaCosts, laborCosts, accessoryCosts, serviceCosts, costInclude, catalogVer]);
 
   // ── Aggregates — ทุนที่รู้ (ประมาณการ) + เงินจริง ─────────────────────────
   const totals = useMemo(() => {

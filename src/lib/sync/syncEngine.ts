@@ -40,6 +40,7 @@ import { setJobSyncBridge, resetJobSyncBridge } from '@/lib/sync/jobSyncBridge';
 import { setCustomerSyncBridge, resetCustomerSyncBridge } from '@/lib/sync/customerSyncBridge';
 import { setSecuritySyncBridge, resetSecuritySyncBridge } from '@/lib/sync/securityBridge';
 import { consumeSuppress } from '@/lib/sync/syncFlags';
+import { subscribeCatalog, unsubscribeCatalog } from '@/lib/sync/catalogSync';
 
 // ── Firestore refs ───────────────────────────────────────────────────────────
 const jobsCol = (uid: string) => collection(db!, 'shops', uid, 'jobs');
@@ -166,6 +167,9 @@ export function startSync(uid: string): void {
 
   // เก็บงานปัจจุบันลงชั้นวางก่อน reconcile (จะได้ถูกรวม/ดันขึ้น cloud)
   useAppStore.getState().saveCurrentJob();
+
+  // ดึงแค็ตตาล็อกสินค้า+ราคาทุนจาก DB ภายนอก (read-only) → useCatalogStore (ดู catalogSync.ts)
+  subscribeCatalog(uid);
 
   // bridges: mutation ของ JobsSlice/Registry → Firestore
   setJobSyncBridge({
@@ -304,17 +308,13 @@ export function startSync(uid: string): void {
     // cache + ไม่มี data → รอ server
   });
 
-  // ── pricing auto-save: แก้ favorites/vault/costInclude (ไม่ใช่ hydrate) → debounce → push ──
+  // ── pricing auto-save: แก้ค่าแรง/บริการ/accessory/costInclude (ไม่ใช่ hydrate) → debounce → push ──
+  // (product master = favorites + ทุนสินค้า ย้ายไป DB ภายนอกแล้ว — ไม่ sync ผ่าน pricing doc, HANDOFF §11.8)
   unsubPricingSave = useAppStore.subscribe((state, prev) => {
     if (
-      state.favorites === prev.favorites &&
       state.laborCosts === prev.laborCosts &&
       state.serviceCosts === prev.serviceCosts &&
       state.accessoryCosts === prev.accessoryCosts &&
-      state.hardwareCosts === prev.hardwareCosts &&
-      state.fabricCosts === prev.fabricCosts &&
-      state.wallpaperCosts === prev.wallpaperCosts &&
-      state.areaCosts === prev.areaCosts &&
       state.costInclude === prev.costInclude
     ) {
       return;
@@ -344,6 +344,7 @@ export function startSync(uid: string): void {
 
 /** หยุด sync เมื่อ sign-out — unsub + คืน bridge เป็น no-op (กลับสู่ local-only) */
 export function stopSync(): void {
+  unsubscribeCatalog();
   unsubJobs?.();
   unsubCustomers?.();
   unsubSecurity?.();

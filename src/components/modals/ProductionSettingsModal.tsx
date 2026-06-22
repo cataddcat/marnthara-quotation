@@ -32,15 +32,14 @@ import { fmtTH, toNum } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { LaborCost } from '@/store/slices/CostDataSlice';
-import { isCatalogContract } from '@/lib/catalog/contract';
 
 interface ProductionSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// ชนิดรายการต้นทุนที่แก้มือได้ (Vault = ของร้านเอง) — ค่าเย็บ + บริการ
-// ทุนสินค้า (ผ้า/ราง/ฮาร์ดแวร์) ย้ายไปจัดการที่ "คลังวัสดุ" (catalog) แล้ว
+// ชนิดรายการต้นทุนที่แก้มือได้ (ของร้านเอง) — ค่าเย็บ + บริการ
+// ทุนสินค้า (ผ้า/วอลฯ/พื้นที่/ราง) = DB ภายนอก read-only แก้ที่เครื่องมือภายนอก (HANDOFF §11.8)
 type ItemKind = 'labor' | 'service';
 
 const LABOR_LABELS: Record<string, string> = {
@@ -120,8 +119,6 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
     loadCostDefaults,
     exportSecrets,
     importSecrets,
-    importCatalog,
-    exportCatalog,
     costInclude,
     setCostInclude,
   } = useAppStore();
@@ -305,19 +302,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
       const reader = new FileReader();
       reader.onload = (ev) => {
         const content = ev.target?.result as string;
-        // auto-detect: Catalog Contract (สินค้า) ก่อน → ไม่ใช่ค่อย fallback เป็น vault-dump
-        try {
-          const data = JSON.parse(content);
-          if (isCatalogContract(data)) {
-            const res = importCatalog(data);
-            if (res.ok) addToast('success', `นำเข้าแค็ตตาล็อก ${res.imported} รายการ`);
-            else addToast('error', `แค็ตตาล็อกไม่ถูกต้อง: ${res.errors[0] ?? ''}`);
-            e.target.value = '';
-            return;
-          }
-        } catch {
-          // ไม่ใช่ JSON ตรงๆ (อาจเป็น base64/secrets) → ปล่อยให้ importSecrets จัดการ
-        }
+        // ต้นทุนของร้าน (ค่าเย็บ/บริการ) เท่านั้น — สินค้า/ทุนสินค้า = DB ภายนอก (HANDOFF §11.8)
         if (importSecrets(content)) {
           addToast('success', 'นำเข้าข้อมูลต้นทุนสำเร็จ');
         } else {
@@ -650,22 +635,6 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                       )}
                     >
                       <Download className="w-4 h-4" /> ส่งออกทุน (ทั้งหมด)
-                    </button>
-                  )}
-                </MenuItem>
-                <MenuItem>
-                  {({ active }) => (
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(exportCatalog());
-                        addToast('success', 'คัดลอกแค็ตตาล็อกแล้ว');
-                      }}
-                      className={cn(
-                        'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm',
-                        active && 'bg-accent'
-                      )}
-                    >
-                      <Download className="w-4 h-4" /> ส่งออกแค็ตตาล็อก (สินค้า)
                     </button>
                   )}
                 </MenuItem>

@@ -242,6 +242,9 @@ export const createCostDataSlice: StateCreator<
       return { accessoryCosts: newCosts };
     }),
 
+  // ⚠️ ทุนสินค้า (hardware/fabric/wallpaper/area) = DB-owned (Firestore catalog, HANDOFF §11.8).
+  // ไม่ persist/sync + ไม่มี UI เรียกแล้ว — คงเมธอดไว้เพื่อเทสต์/รันไทม์. แก้ทุนจริง = เครื่องมือภายนอก.
+  // (ค่าเย็บ/บริการ = ของร้านเอง ยังแก้ใน ProductionSettings ได้ปกติ)
   updateHardwareCost: (code, cost) =>
     set((state) => ({
       hardwareCosts: { ...state.hardwareCosts, [code]: cost },

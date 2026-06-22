@@ -1,14 +1,27 @@
 rules_version = '2';
 
 // กฎความปลอดภัย Firestore — ร้าน = บัญชีเดียว (shopId = uid ของผู้ลงชื่อเข้า)
-// เจ้าของเข้าถึงได้เฉพาะข้อมูลใต้ shops/{ของตัวเอง}: customers/{code} + jobs/{jobId}
+// เจ้าของเข้าถึงได้เฉพาะข้อมูลใต้ shops/{ของตัวเอง}
 // deploy: firebase deploy --only firestore:rules  (หรือวางใน Console → Firestore → Rules)
 //
 // อนาคต (multi-staff): เพิ่ม shop doc + members แล้วเช็ค membership แทน uid==shopId
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /shops/{shopId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == shopId;
+    function isOwner(shopId) {
+      return request.auth != null && request.auth.uid == shopId;
+    }
+
+    match /shops/{shopId} {
+      // งาน + ทะเบียนลูกค้า + ตั้งค่าร้าน (security / pricing = ค่าแรง·บริการของร้าน)
+      // — เจ้าของอ่าน/เขียนได้
+      match /jobs/{jobId}     { allow read, write: if isOwner(shopId); }
+      match /customers/{code} { allow read, write: if isOwner(shopId); }
+      match /settings/{doc}   { allow read, write: if isOwner(shopId); }
+
+      // แค็ตตาล็อกสินค้า + ราคาทุน (product master) — source of truth ภายนอก เขียนโดย
+      // AI/ingestion pipeline ผ่าน Admin SDK (service account) ซึ่ง bypass rules เสมอ.
+      // ฝั่งแอป = "ผู้บริโภค" → READ-ONLY (กันแอปเขียนทับข้อมูลที่ pipeline เป็นเจ้าของ)
+      match /catalog/{code}   { allow read: if isOwner(shopId); allow write: if false; }
     }
   }
 }

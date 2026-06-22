@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { ItemData } from '@/types';
 import { CostEngine, CostBreakdown } from '@/lib/pricing/CostEngine';
 import { useAppStore } from '@/store/useAppStore';
+import { useCatalogStore } from '@/store/useCatalogStore';
 
 /**
  * วิเคราะห์ต้นทุน/กำไรของ "ทุกประเภทสินค้า" (generalize จาก useSmartPrice ที่ผูกกับผ้าม่าน)
@@ -19,10 +20,12 @@ export const useCostStatus = (item: ItemData | null): CostBreakdown | null => {
   const laborCosts = useAppStore((s) => s.laborCosts);
   const serviceCosts = useAppStore((s) => s.serviceCosts);
   const costInclude = useAppStore((s) => s.costInclude); // สวิตช์นับ/ไม่นับ — recalc เมื่อสลับ
+  // ทุนสินค้าจาก DB ภายนอก (useCatalogStore) — recalc เมื่อ catalog ที่ดึงมาอัปเดต (HANDOFF §11.8)
+  const catalogVer = useCatalogStore((s) => s.updatedAt);
 
   return useMemo(
     () => (item ? CostEngine.analyze(item) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts, costInclude]
+    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts, costInclude, catalogVer]
   );
 };

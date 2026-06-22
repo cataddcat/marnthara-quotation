@@ -8,6 +8,7 @@ import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useInventory } from '@/hooks/useInventory';
+import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 import { useCodeUsage, type CodeUsage } from '@/hooks/useCodeUsage';
 import { categoryVault, categoryLabel, categoryCostUnit } from '@/lib/vault';
 import { fmtTH } from '@/utils/formatters';
@@ -31,9 +32,8 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
   category = '',
 }) => {
   const openModal = useAppStore((s) => s.openModal);
-  const fabricCosts = useAppStore((s) => s.fabricCosts);
-  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
-  const areaCosts = useAppStore((s) => s.areaCosts);
+  // ทุนสินค้า: catalog (DB) เมื่อเชื่อมจริง ไม่งั้น vault ในแอป (HANDOFF §11.8)
+  const { fabricCosts, wallpaperCosts, areaCosts } = useActiveCostMaps();
 
   const { items } = useInventory(category);
   const { usages, totalQty, unit } = useCodeUsage(code, category);

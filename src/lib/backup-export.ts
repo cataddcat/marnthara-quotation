@@ -14,23 +14,20 @@ export interface DocIdentity {
   seq: number;
 }
 
-/** ประกอบก้อนข้อมูล backup (งาน + ร้าน + ต้นทุน) — pure, เทสต์ได้ */
+/** ประกอบก้อนข้อมูล backup (งาน + ร้าน + ต้นทุนของร้าน) — pure, เทสต์ได้
+ *  หมายเหตุ: product master (favorites + ทุนผ้า/วอลฯ/พื้นที่/ราง) = DB ภายนอก → ไม่อยู่ใน backup
+ *  (ดึงจาก Firestore catalog, HANDOFF §11.8). backup เก็บเฉพาะ "ของร้านเอง": ค่าเย็บ/บริการ */
 export function buildBackupObject(state: AppState): Record<string, unknown> {
   return {
     customer: state.customer,
     rooms: state.rooms,
     shopConfig: state.shopConfig,
     discount: state.discount,
-    favorites: state.favorites,
     payments: { receipts: state.receipts, expenses: state.expenses },
     production: {
       laborCosts: state.laborCosts,
       serviceCosts: state.serviceCosts,
       accessoryCosts: state.accessoryCosts,
-      hardwareCosts: state.hardwareCosts,
-      fabricCosts: state.fabricCosts,
-      wallpaperCosts: state.wallpaperCosts,
-      areaCosts: state.areaCosts,
       costInclude: state.costInclude,
     },
     version: '1.0.0',

@@ -86,6 +86,9 @@ export const createInventorySlice: StateCreator<
 > = (set, get) => ({
   favorites: {},
 
+  // ⚠️ product master (favorites + importCatalog/exportCatalog) = DB-owned (Firestore catalog,
+  // HANDOFF §11.8). ไม่ persist/sync แล้ว + ไม่มี UI เรียก — คงเมธอดไว้เพื่อเทสต์/รันไทม์ชั่วคราว.
+  // แก้ทุน/SKU จริง = เครื่องมือภายนอกเขียนลง DB. อย่าผูก UI แก้ไขกลับเข้ามา.
   addFavorite: (category, item) => {
     if (item.cost_per_yard && item.cost_per_yard > 0) {
       routeCostToVault(get, category, item.code, item.cost_per_yard);

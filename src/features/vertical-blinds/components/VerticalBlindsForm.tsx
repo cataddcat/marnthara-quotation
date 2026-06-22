@@ -1,17 +1,15 @@
 import React, { useMemo } from 'react';
 import { AreaItemInput, ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { toNum } from '@/utils/formatters';
 import { useZodForm } from '@/hooks/useZodForm';
 import { VerticalBlindsSchema, VerticalBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, Ruler, Star, Book, ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
+import { Tag, Ruler, Book, ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
-import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
@@ -62,7 +60,6 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   useFormAutoSave(formData, onAutoSave);
 
   const { favorites, openModal } = useAppStore();
-  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.VERTICAL_BLIND);
@@ -180,28 +177,6 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}
           />
-          {isDetail && formData.code && toNum(formData.price_sqyd) > 0 && (
-            <button
-              type="button"
-              onClick={() =>
-                saveToCatalog(
-                  FAVORITE_CATEGORIES.VERTICAL_BLIND,
-                  formData.code,
-                  formData.price_sqyd
-                )
-              }
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
-            >
-              <Star
-                className={cn(
-                  'w-5 h-5',
-                  isInCatalog(FAVORITE_CATEGORIES.VERTICAL_BLIND, formData.code)
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-muted-foreground'
-                )}
-              />
-            </button>
-          )}
         </div>
       </FormSection>
 

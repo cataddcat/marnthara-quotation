@@ -1,9 +1,10 @@
 // src/lib/pricing/CostEngine.test.ts
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CostEngine } from './CostEngine';
 import { useAppStore } from '@/store/useAppStore';
-import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
+import { useCatalogStore } from '@/store/useCatalogStore';
+import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { DEFAULT_COST_INCLUDE, type LaborCost, type CostInclude } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';
 
@@ -669,5 +670,74 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 
       expect(result.excludedComponents).toEqual([]);
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔌 External catalog overlay (useCatalogStore) — ดึงทุนสินค้าจาก DB ภายนอก (HANDOFF §11.8)
+// status==='ready' → ทุนสินค้าใช้ catalog เป็นหลัก; ไม่งั้น fallback persisted vault เดิม
+// ค่าแรง/บริการ = ของร้านเอง อ่าน vault เดิมเสมอ
+// ─────────────────────────────────────────────────────────────────────────────
+describe('🔌 CostEngine — External catalog overlay', () => {
+  beforeEach(() => {
+    setupStore();
+    useCatalogStore.getState().reset();
+  });
+  afterEach(() => {
+    useCatalogStore.getState().reset(); // กัน status 'ready' รั่วไป test อื่น (store เป็น singleton)
+  });
+
+  it('catalog ready → ทุนผ้ามาจาก catalog (ข้าม vault ในแอป)', () => {
+    setupStore({ fabricCosts: { F001: 999 } }); // vault ในแอป ควรถูกข้าม
+    useCatalogStore
+      .getState()
+      .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
+    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2); // ×100 (catalog) ไม่ใช่ ×999
+    expect(result.status).not.toBe('unknown');
+  });
+
+  it('catalog ready แต่ไม่มีรหัสนั้น → unknown (ไม่ fallback vault)', () => {
+    setupStore({ fabricCosts: { F001: 100 } }); // vault มี แต่ catalog ไม่มี
+    useCatalogStore
+      .getState()
+      .setCatalog([{ code: 'OTHER', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 50 }], false);
+    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    expect(result.status).toBe('unknown');
+  });
+
+  it("catalog 'empty' (DB ว่าง) → fallback persisted vault เดิม", () => {
+    setupStore({ fabricCosts: { F001: 100 } });
+    useCatalogStore.getState().setCatalog([], false); // empty → status 'empty'
+    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2);
+    expect(result.status).not.toBe('unknown');
+  });
+
+  it('catalog ready ไม่กระทบค่าแรง (labor ยังอ่าน vault ของร้าน)', () => {
+    setupStore({ laborCosts: { จีบ: cheapLabor } });
+    useCatalogStore
+      .getState()
+      .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
+    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    expect(result.laborCost).toBe(100); // 1.0 × 100 จาก vault labor เดิม
+  });
+
+  it('area item: catalog ready → ทุน/ตร.ล. มาจาก catalog (route เข้า areaCosts)', () => {
+    setupStore({ areaCosts: { B009: 999 } }); // vault ในแอป ควรถูกข้าม
+    useCatalogStore
+      .getState()
+      .setCatalog([{ code: 'B009', category: FAVORITE_CATEGORIES.WOODEN_BLIND, cost: 300 }], false);
+    const item = makeItem({
+      type: ITEM_TYPES.WOODEN_BLIND,
+      id: 'wb-cat',
+      width_m: 2.0,
+      height_m: 2.0,
+      code: 'B009',
+      price_sqyd: 500,
+    });
+    const result = CostEngine.analyze(item);
+    expect(result.fabricCost).toBeCloseTo(4.8 * 300, 2); // ×300 (catalog) ไม่ใช่ ×999 (vault)
+    expect(result.status).not.toBe('unknown');
   });
 });

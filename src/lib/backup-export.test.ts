@@ -4,7 +4,7 @@ import { buildBackupObject } from '@/lib/backup-export';
 import { useAppStore } from '@/store/useAppStore';
 
 describe('buildBackupObject', () => {
-  it('รวม customer/rooms/discount/favorites/payments/production + version', () => {
+  it('รวม customer/rooms/discount/payments/production(ของร้าน) + version', () => {
     useAppStore.setState({
       receipts: [{ id: 'r', label: 'มัดจำ', amount: 100, date: '2026-06-15' }],
       expenses: [],
@@ -14,24 +14,20 @@ describe('buildBackupObject', () => {
     expect(obj.customer).toBeDefined();
     expect(obj.rooms).toBeDefined();
     expect(obj.discount).toBeDefined();
-    expect(obj.favorites).toBeDefined();
+    // product master (favorites + ทุนสินค้า) = DB ภายนอก → ไม่อยู่ใน backup (HANDOFF §11.8)
+    expect(obj.favorites).toBeUndefined();
 
     const payments = obj.payments as { receipts: unknown[]; expenses: unknown[] };
     expect(payments.receipts).toHaveLength(1);
 
     const production = obj.production as Record<string, unknown>;
-    // ครบทุก cost vault (กัน backup ตกข้อมูล)
-    for (const k of [
-      'laborCosts',
-      'serviceCosts',
-      'accessoryCosts',
-      'hardwareCosts',
-      'fabricCosts',
-      'wallpaperCosts',
-      'areaCosts',
-      'costInclude',
-    ]) {
+    // เฉพาะ "ของร้านเอง" (ค่าเย็บ/บริการ/accessory legacy + สวิตช์)
+    for (const k of ['laborCosts', 'serviceCosts', 'accessoryCosts', 'costInclude']) {
       expect(production[k]).toBeDefined();
+    }
+    // ทุนสินค้า ไม่อยู่ใน backup แล้ว
+    for (const k of ['hardwareCosts', 'fabricCosts', 'wallpaperCosts', 'areaCosts']) {
+      expect(production[k]).toBeUndefined();
     }
 
     expect(obj.version).toBe('1.0.0');

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { useCatalogStore } from '@/store/useCatalogStore';
 import { CurtainItemInput, ItemData } from '@/types';
 // ✅ FIX: เรียกใช้ CostEngine จาก lib/pricing (Centralized Location)
 import { CostEngine } from '@/lib/pricing/CostEngine';
@@ -22,6 +23,8 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
   // เพื่อให้ Pro Mode คำนวณใหม่ทันทีที่การตั้งค่าหลังบ้านเปลี่ยน (แม้ไม่ได้พิมพ์อะไรในฟอร์ม)
   // (formulas เป็น compile-time constant แล้ว ไม่ต้อง subscribe)
   const { fabricCosts, accessoryCosts, laborCosts, costInclude } = useAppStore();
+  // ทุนสินค้าจาก DB ภายนอก (useCatalogStore) — hint ให้ recalc เมื่อ catalog อัปเดต (HANDOFF §11.8)
+  const catalogVer = useCatalogStore((s) => s.updatedAt);
 
   // 🔮 คำนวณ Real-time
   // CostEngine.analyze() อ่าน store data ผ่าน useAppStore.getState() — ESLint ไม่เห็น
@@ -32,7 +35,7 @@ export const ProModeControl: React.FC<ProModeControlProps> = ({
       return CostEngine.analyze({ ...formData, type: ITEM_TYPES.CURTAIN, id: 'temp' } as ItemData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [formData, fabricCosts, accessoryCosts, laborCosts, costInclude]
+    [formData, fabricCosts, accessoryCosts, laborCosts, costInclude, catalogVer]
   );
 
   // กรณี Parent สั่งเปิด (simpleView) หรือ user เปิดเอง -> แสดงผล

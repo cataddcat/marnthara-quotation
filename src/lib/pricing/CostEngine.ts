@@ -1,6 +1,7 @@
 // src/lib/pricing/CostEngine.ts
 
 import { useAppStore } from '@/store/useAppStore';
+import { useCatalogStore } from '@/store/useCatalogStore';
 import { ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import {
@@ -44,8 +45,18 @@ export const CostEngine = {
     // ผ้า/ผ้าโปร่ง → fabricCosts, วอลเปเปอร์ → wallpaperCosts, มู่ลี่/ฉาก/มุ้ง → areaCosts
     // (ต้องตรงกับฝั่งบันทึก: routeCostToVault ใน InventorySlice + แค็ตตาล็อกใน MaterialSummaryModal)
     const state = useAppStore.getState();
-    const { fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts, costInclude } =
-      state;
+    // ค่าแรง/บริการ/อุปกรณ์(legacy) + สวิตช์ = "ของร้านเอง" คงอยู่ในแอป (HANDOFF §11.2)
+    const { accessoryCosts, laborCosts, serviceCosts, costInclude } = state;
+
+    // ทุนสินค้า (ผ้า/วอลฯ/พื้นที่/ราง) = product master จาก DB ภายนอก (useCatalogStore, HANDOFF §11.8)
+    // เมื่อมี catalog เชื่อมจริง (status==='ready') ใช้เป็นแหล่งหลัก; ไม่งั้น fallback persisted vault เดิม
+    // (local-only / ยังไม่เชื่อม DB). ไม่เจอรหัส → vaultLookup คืน 0 → hasMissingCost → 'unknown' (เทา)
+    const catalog = useCatalogStore.getState();
+    const useCatalog = catalog.status === 'ready';
+    const fabricCosts = useCatalog ? catalog.fabricCosts : state.fabricCosts;
+    const wallpaperCosts = useCatalog ? catalog.wallpaperCosts : state.wallpaperCosts;
+    const areaCosts = useCatalog ? catalog.areaCosts : state.areaCosts;
+    const hardwareCosts = useCatalog ? catalog.hardwareCosts : state.hardwareCosts;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
     // (รองรับ Manual Override ราคาขายมาแล้วจาก PricingEngine)

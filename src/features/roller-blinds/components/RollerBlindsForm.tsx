@@ -1,16 +1,14 @@
 import React, { useMemo } from 'react';
 import { AreaItemInput, ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
-import { toNum } from '@/utils/formatters';
 import { useZodForm } from '@/hooks/useZodForm';
 import { RollerBlindsSchema, RollerBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Star, Book } from 'lucide-react';
+import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
-import { useSaveToCatalog } from '@/hooks/useSaveToCatalog';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
@@ -60,7 +58,6 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
   useFormAutoSave(formData, onAutoSave);
 
   const { favorites, openModal } = useAppStore();
-  const { saveToCatalog, isInCatalog } = useSaveToCatalog();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.ROLLER_BLIND);
@@ -185,28 +182,6 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}
           />
-          {isDetail && formData.code && toNum(formData.price_sqyd) > 0 && (
-            <button
-              type="button"
-              onClick={() =>
-                saveToCatalog(
-                  FAVORITE_CATEGORIES.ROLLER_BLIND,
-                  formData.code,
-                  formData.price_sqyd
-                )
-              }
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-10 hover:scale-110 transition-transform"
-            >
-              <Star
-                className={cn(
-                  'w-5 h-5 transition-colors',
-                  isInCatalog(FAVORITE_CATEGORIES.ROLLER_BLIND, formData.code)
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-muted-foreground hover:text-amber-400'
-                )}
-              />
-            </button>
-          )}
         </div>
 
         {/* Option: Fabric Variant */}

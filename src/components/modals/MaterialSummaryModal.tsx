@@ -16,16 +16,13 @@ import {
   ChevronDown,
   ChevronLeft,
   AlertTriangle,
-  Pencil,
-  Plus,
   BookOpen,
-  Trash2,
   ArrowRight,
   MapPin,
 } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
-import { InventoryItem } from '@/store/slices/InventorySlice';
+import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 import { FORMULAS } from '@/config/formulas';
 import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@/lib/materials/buildSummary';
 import { missingOpeningItems } from '@/lib/item-status';
@@ -44,81 +41,9 @@ const EmptyHint = ({ message, sub }: { message: string; sub: string }) => (
   </div>
 );
 
-// ─── Inline cost editor ───────────────────────────────────────────────────────
-
-const InlineCostEditor = ({
-  value,
-  onSave,
-  unit,
-}: {
-  value: number;
-  onSave: (v: number) => void;
-  unit: string;
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState('');
-
-  const startEdit = () => {
-    setDraft(value > 0 ? String(value) : '');
-    setEditing(true);
-  };
-
-  const save = () => {
-    const n = parseFloat(draft);
-    onSave(isNaN(n) ? 0 : n);
-    setEditing(false);
-  };
-
-  if (editing) {
-    return (
-      <div className="flex items-center gap-1 shrink-0 min-h-[44px]">
-        <span className="text-xs text-muted-foreground">฿</span>
-        <input
-          type="number"
-          inputMode="decimal"
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={save}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-            if (e.key === 'Escape') setEditing(false);
-          }}
-          className="w-20 text-sm font-mono border-b border-primary bg-transparent focus:outline-none text-right"
-        />
-        <span className="text-xs text-muted-foreground">/{unit}</span>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={startEdit}
-      className={cn(
-        'flex items-center gap-1 shrink-0 rounded px-1.5 min-h-[44px] transition-colors hover:bg-muted/50',
-        value > 0
-          ? 'text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800'
-          : 'text-muted-foreground/50 hover:text-muted-foreground'
-      )}
-    >
-      {value > 0 ? (
-        <>
-          <span className="text-sm font-mono font-semibold">฿{fmtTH(value)}</span>
-          <span className="text-xs text-muted-foreground/70">/{unit}</span>
-          <Pencil className="w-2.5 h-2.5 opacity-40" strokeWidth={1.5} />
-        </>
-      ) : (
-        <>
-          <Plus className="w-3 h-3" strokeWidth={1.5} />
-          <span className="text-xs italic">ตั้งราคาทุน</span>
-        </>
-      )}
-    </button>
-  );
-};
-
 // ─── Catalog sub-components ───────────────────────────────────────────────────
 
+// READ-ONLY — product master = DB-owned (HANDOFF §11.8). แก้ทุน/SKU ที่เครื่องมือภายนอก ไม่ใช่ในแอป
 const InventoryItemRow = ({
   item,
   cost,
@@ -126,9 +51,6 @@ const InventoryItemRow = ({
   highlight,
   accentClass,
   dotClass,
-  onCostSave,
-  onUpdate,
-  onRemove,
   onOpenDetail,
 }: {
   item: HydratedInventoryItem;
@@ -137,16 +59,8 @@ const InventoryItemRow = ({
   highlight?: boolean;
   accentClass: string;
   dotClass: string;
-  onCostSave: (code: string, cost: number) => void;
-  onUpdate: (updates: Partial<InventoryItem>) => void;
-  onRemove: () => void;
   onOpenDetail: () => void;
 }) => {
-  const [editing, setEditing] = useState(false);
-  const [draftCode, setDraftCode] = useState('');
-  const [draftPrice, setDraftPrice] = useState('');
-  const [draftNote, setDraftNote] = useState('');
-  const [confirmDel, setConfirmDel] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
 
   // Code Jump: เลื่อนมาที่รายการที่กระโดดมา (ไฮไลต์ค้างไว้จนปิด/เปลี่ยนหมวด)
@@ -156,72 +70,12 @@ const InventoryItemRow = ({
     }
   }, [highlight]);
 
-  const startEdit = () => {
-    setDraftCode(item.code);
-    setDraftPrice(item.default_price_per_m > 0 ? String(item.default_price_per_m) : '');
-    setDraftNote(item.note || '');
-    setEditing(true);
-  };
-
-  const save = () => {
-    onUpdate({
-      code: draftCode.trim().toUpperCase(),
-      default_price_per_m: parseFloat(draftPrice) || 0,
-      note: draftNote.trim() || undefined,
-    });
-    setEditing(false);
-  };
-
-  if (editing) {
-    return (
-      <div className="p-3 bg-muted/30 rounded-xl border border-primary/30 space-y-2">
-        <input
-          autoFocus
-          value={draftCode}
-          onChange={(e) => setDraftCode(e.target.value.toUpperCase())}
-          placeholder="รหัสสินค้า"
-          className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono"
-        />
-        <input
-          type="number"
-          inputMode="decimal"
-          value={draftPrice}
-          onChange={(e) => setDraftPrice(e.target.value)}
-          placeholder="ราคาขาย / ม."
-          className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <input
-          value={draftNote}
-          onChange={(e) => setDraftNote(e.target.value)}
-          placeholder="หมายเหตุ (ไม่บังคับ)"
-          className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <div className="flex gap-2 justify-end">
-          <button
-            onClick={() => setEditing(false)}
-            className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
-          >
-            ยกเลิก
-          </button>
-          <button
-            onClick={save}
-            className="px-4 py-1.5 text-xs bg-primary text-primary-foreground rounded-lg font-medium"
-          >
-            บันทึก
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       ref={rowRef}
       className={cn(
         'flex items-start gap-2 px-3 py-2.5 bg-card border rounded-2xl transition-colors',
-        highlight
-          ? 'border-primary ring-2 ring-primary/30'
-          : 'border-border/50'
+        highlight ? 'border-primary ring-2 ring-primary/30' : 'border-border/50'
       )}
     >
       <div className="flex-1 min-w-0 space-y-1.5">
@@ -231,10 +85,13 @@ const InventoryItemRow = ({
           <span className={cn('font-mono font-bold text-sm', accentClass)}>{item.code}</span>
         </div>
 
-        {/* ทุน — แก้ได้ในที่ (InlineCostEditor = แหล่งเดียว ไม่มีชิปซ้ำอีก) */}
+        {/* ทุน (อ่านอย่างเดียว — มาจาก DB) */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground w-16 shrink-0">ทุน</span>
-          <InlineCostEditor value={cost} onSave={(v) => onCostSave(item.code, v)} unit={costUnit} />
+          <span className="text-sm font-mono tabular-nums text-foreground">
+            {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+            <span className="text-xs text-muted-foreground"> /{costUnit}</span>
+          </span>
         </div>
 
         {/* ราคาขาย — อ้างอิงจากแคตตาล็อก (รอง: ไม่ลงสี เพื่อไม่ชนความหมายของ "ทุน") */}
@@ -255,6 +112,18 @@ const InventoryItemRow = ({
             <span className="text-sm text-muted-foreground truncate">{item.note}</span>
           </div>
         )}
+
+        {/* ที่มา (provenance) — ผู้ผลิต + วันที่อัปเดตราคา (HANDOFF §11.8) */}
+        {(item.supplier || item.captured_at) && (
+          <div className="flex items-start gap-2">
+            <span className="text-xs text-muted-foreground w-16 shrink-0">ที่มา</span>
+            <span className="text-xs text-muted-foreground truncate">
+              {item.supplier ? `จาก ${item.supplier}` : ''}
+              {item.supplier && item.captured_at ? ' · ' : ''}
+              {item.captured_at ? `อัปเดต ${item.captured_at}` : ''}
+            </span>
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-1 pt-0.5 shrink-0">
         <button
@@ -264,28 +133,6 @@ const InventoryItemRow = ({
         >
           <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
         </button>
-        <button
-          onClick={startEdit}
-          className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
-        >
-          <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
-        </button>
-        {confirmDel ? (
-          <button
-            onClick={onRemove}
-            className="px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded-lg font-medium"
-          >
-            ยืนยัน
-          </button>
-        ) : (
-          <button
-            onClick={() => setConfirmDel(true)}
-            onBlur={() => setTimeout(() => setConfirmDel(false), 200)}
-            className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted/50 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
-          </button>
-        )}
       </div>
     </div>
   );
@@ -294,43 +141,28 @@ const InventoryItemRow = ({
 const CatalogCategoryView = ({
   categoryId,
   costUnit,
-  vault,
   prefillCode,
   onPrefillHandled,
 }: {
   categoryId: string;
   costUnit: string;
-  vault: 'fabric' | 'wallpaper' | 'area' | 'hardware';
+  /** ยังรับไว้เพื่อ compat กับจุดเรียก (ไม่ใช้แล้ว — read-only) */
+  vault?: 'fabric' | 'wallpaper' | 'area' | 'hardware';
   prefillCode?: string;
   onPrefillHandled?: () => void;
 }) => {
-  const { items, addItem, updateItem, removeItem } = useInventory(categoryId);
-  const fabricCosts = useAppStore((s) => s.fabricCosts);
-  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
-  const areaCosts = useAppStore((s) => s.areaCosts);
-  const hardwareCosts = useAppStore((s) => s.hardwareCosts);
-  const updateFabricCost = useAppStore((s) => s.updateFabricCost);
-  const updateWallpaperCost = useAppStore((s) => s.updateWallpaperCost);
-  const updateAreaCost = useAppStore((s) => s.updateAreaCost);
-  const updateHardwareCost = useAppStore((s) => s.updateHardwareCost);
+  // READ-ONLY — product master = DB-owned (HANDOFF §11.8). แก้ทุน/SKU ที่เครื่องมือภายนอก ไม่ใช่ในแอป
+  const { items } = useInventory(categoryId);
   const openModal = useAppStore((s) => s.openModal);
   const accentClass = categoryAccent(categoryId);
   const dotClass = categoryDotClass(categoryId);
 
-  // Code Jump: ตัดสินใจครั้งเดียวตอน mount ของหมวดนี้ (key={catalogCat} → remount เมื่อเปลี่ยนหมวด)
-  // ถ้ามีรหัสที่ส่งมาอยู่แล้ว → ไฮไลต์; ถ้ายังไม่มี → เปิดฟอร์มเพิ่มพร้อมกรอกรหัสไว้
-  const [prefill] = useState<{ highlight: string | null; addCode: string | null }>(() => {
+  // Code Jump: ไฮไลต์รหัสที่กระโดดมา (ตัดสินใจครั้งเดียวตอน mount; key={catalogCat} → remount เมื่อเปลี่ยนหมวด)
+  const [highlightCode] = useState<string | null>(() => {
     const target = prefillCode?.trim().toUpperCase();
-    if (!target) return { highlight: null, addCode: null };
-    const exists = items.some((it) => it.code.toUpperCase() === target);
-    return exists ? { highlight: target, addCode: null } : { highlight: null, addCode: target };
+    if (!target) return null;
+    return items.some((it) => it.code.toUpperCase() === target) ? target : null;
   });
-  const highlightCode = prefill.highlight;
-
-  const [adding, setAdding] = useState(() => prefill.addCode !== null);
-  const [newCode, setNewCode] = useState(() => prefill.addCode ?? '');
-  const [newPrice, setNewPrice] = useState('');
-  const [newNote, setNewNote] = useState('');
 
   // แจ้ง parent ว่าใช้ prefill แล้ว — กัน trigger ซ้ำเมื่อสลับหมวดแล้วกลับมาหมวดเดิม
   useEffect(() => {
@@ -338,37 +170,10 @@ const CatalogCategoryView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getCost = (code: string): number => {
-    if (vault === 'wallpaper') return wallpaperCosts[code] ?? 0;
-    if (vault === 'area') return areaCosts[code] ?? 0;
-    if (vault === 'hardware') return hardwareCosts[code] ?? 0;
-    return fabricCosts[code] ?? 0;
-  };
-
-  const saveCost = (code: string, cost: number) => {
-    if (vault === 'wallpaper') updateWallpaperCost(code, cost);
-    else if (vault === 'area') updateAreaCost(code, cost);
-    else if (vault === 'hardware') updateHardwareCost(code, cost);
-    else updateFabricCost(code, cost);
-  };
-
-  const handleAdd = () => {
-    if (!newCode.trim()) return;
-    addItem({
-      code: newCode.trim().toUpperCase(),
-      default_price_per_m: parseFloat(newPrice) || 0,
-      note: newNote.trim() || undefined,
-    });
-    setNewCode('');
-    setNewPrice('');
-    setNewNote('');
-    setAdding(false);
-  };
-
   return (
     <div>
-      {items.length === 0 && !adding && (
-        <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="เพิ่มรหัสสินค้า + ราคาจากผู้ผลิต" />
+      {items.length === 0 && (
+        <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="ข้อมูลสินค้ามาจากระบบภายนอก (DB)" />
       )}
 
       <div className="space-y-2">
@@ -376,72 +181,15 @@ const CatalogCategoryView = ({
           <InventoryItemRow
             key={item.id}
             item={item}
-            cost={getCost(item.code)}
+            cost={item.cost_per_yard}
             costUnit={costUnit}
             highlight={!!highlightCode && item.code.toUpperCase() === highlightCode}
             accentClass={accentClass}
             dotClass={dotClass}
-            onCostSave={saveCost}
-            onUpdate={(updates) => updateItem(item.id, updates)}
-            onRemove={() => removeItem(item.id)}
             onOpenDetail={() => openModal('codeDetail', { code: item.code, category: categoryId })}
           />
         ))}
       </div>
-
-      {adding ? (
-        <div className="mt-3 p-3 bg-muted/30 rounded-xl border border-border/50 space-y-2">
-          <input
-            autoFocus
-            value={newCode}
-            onChange={(e) => setNewCode(e.target.value.toUpperCase())}
-            placeholder="รหัสสินค้า (เช่น A01)"
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono"
-          />
-          <input
-            type="number"
-            inputMode="decimal"
-            value={newPrice}
-            onChange={(e) => setNewPrice(e.target.value)}
-            placeholder="ราคาขาย / ม."
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          <input
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            placeholder="หมายเหตุ (ไม่บังคับ)"
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          <div className="flex gap-2 justify-end">
-            <button
-              onClick={() => setAdding(false)}
-              className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
-            >
-              ยกเลิก
-            </button>
-            <button
-              onClick={handleAdd}
-              disabled={!newCode.trim()}
-              className="px-4 py-1.5 text-xs bg-primary text-primary-foreground rounded-lg font-medium disabled:opacity-40"
-            >
-              เพิ่ม
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => setAdding(true)}
-          className={cn(
-            'w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-muted-foreground',
-            'border border-dashed border-border/60',
-            'hover:text-foreground hover:border-border hover:bg-muted/20 transition-colors',
-            items.length > 0 ? 'mt-3' : 'mt-0'
-          )}
-        >
-          <Plus className="w-4 h-4" strokeWidth={1.5} />
-          เพิ่มรหัสสินค้า
-        </button>
-      )}
     </div>
   );
 };
@@ -548,7 +296,6 @@ const FabricCard = ({
   accent,
   accentPill,
   costLookup,
-  onCostSave,
   onJumpItem,
 }: {
   code: string;
@@ -558,7 +305,6 @@ const FabricCard = ({
   accent: string;
   accentPill?: string;
   costLookup: Record<string, number>;
-  onCostSave: (code: string, cost: number) => void;
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
@@ -600,11 +346,10 @@ const FabricCard = ({
         <div className="border-t border-border/50 bg-muted/20">
           <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
             <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อหน่วย</span>
-            <InlineCostEditor
-              value={cost}
-              onSave={(v) => onCostSave(code, v)}
-              unit={unit}
-            />
+            <span className="text-sm font-mono tabular-nums text-foreground">
+              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+              <span className="text-xs text-muted-foreground"> /{unit}</span>
+            </span>
           </div>
           <div className="px-3 py-1 divide-y divide-border/60">
             {entries.map((e, i) => (
@@ -653,8 +398,7 @@ const WallpaperCostCard = ({
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
-  const updateWallpaperCost = useAppStore((s) => s.updateWallpaperCost);
+  const { wallpaperCosts } = useActiveCostMaps(); // ทุน read-only — แก้ที่เครื่องมือภายนอก
   const cost = wallpaperCosts[code] ?? 0;
   const totalCost = cost > 0 ? cost * total : 0;
 
@@ -687,11 +431,10 @@ const WallpaperCostCard = ({
         <div className="border-t border-border/50 bg-muted/20">
           <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
             <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อม้วน</span>
-            <InlineCostEditor
-              value={cost}
-              onSave={(v) => updateWallpaperCost(code, v)}
-              unit="ม้วน"
-            />
+            <span className="text-sm font-mono tabular-nums text-foreground">
+              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+              <span className="text-xs text-muted-foreground"> /ม้วน</span>
+            </span>
           </div>
           <div className="px-3 py-1 divide-y divide-border/60">
             {entries.map((e, i) => (
@@ -727,8 +470,7 @@ const AreaCostCard = ({
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const areaCosts = useAppStore((s) => s.areaCosts);
-  const updateAreaCost = useAppStore((s) => s.updateAreaCost);
+  const { areaCosts } = useActiveCostMaps(); // ทุน read-only — แก้ที่เครื่องมือภายนอก
   const cost = areaCosts[group.costKey] ?? 0;
   const costQty = group.unit === 'ตร.ม.' ? group.totalSqm : group.totalSqyd;
   const totalCost = cost > 0 ? cost * costQty : 0;
@@ -769,11 +511,10 @@ const AreaCostCard = ({
         <div className="border-t border-border/50 bg-muted/20">
           <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
             <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อ{group.unit}</span>
-            <InlineCostEditor
-              value={cost}
-              onSave={(v) => updateAreaCost(group.costKey, v)}
-              unit={group.unit}
-            />
+            <span className="text-sm font-mono tabular-nums text-foreground">
+              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+              <span className="text-xs text-muted-foreground"> /{group.unit}</span>
+            </span>
           </div>
           <div className="px-3 py-1 divide-y divide-border/60">
             {group.entries.map((e, i) => {
@@ -922,8 +663,8 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
   prefillCode,
 }) => {
   const rooms = useAppStore((s) => s.rooms);
-  const fabricCosts = useAppStore((s) => s.fabricCosts);
-  const updateFabricCost = useAppStore((s) => s.updateFabricCost);
+  // ทุนผ้า: catalog (DB) เมื่อเชื่อมจริง ไม่งั้น vault ในแอป — read-only (แก้ที่เครื่องมือภายนอก)
+  const { fabricCosts } = useActiveCostMaps();
   const openModal = useAppStore((s) => s.openModal);
   const addToast = useUIStore((s) => s.addToast);
 
@@ -1156,7 +897,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         accent={MATERIAL_ACCENT.fabric}
                         accentPill={MATERIAL_PILL.fabric}
                         costLookup={fabricCosts}
-                        onCostSave={updateFabricCost}
                         onJumpItem={handleJumpItem}
                       />
                     ))}
@@ -1182,7 +922,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                         accent={MATERIAL_ACCENT.sheer}
                         accentPill={MATERIAL_PILL.sheer}
                         costLookup={fabricCosts}
-                        onCostSave={updateFabricCost}
                         onJumpItem={handleJumpItem}
                       />
                     ))}
