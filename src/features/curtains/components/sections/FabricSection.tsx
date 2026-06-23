@@ -13,12 +13,7 @@ import { cn } from '@/lib/utils';
 import { toNum, fmtTH } from '@/utils/formatters';
 import { LayerSelector } from './LayerSelector';
 import { InventoryItem } from '@/store/slices/InventorySlice';
-
-// --- Helper Hook ---
-const useInventory = (category: string) => {
-  const { favorites } = useAppStore();
-  return favorites[category] || [];
-};
+import { useInventory } from '@/hooks/useInventory';
 
 // --- 🤏 Mini Component: Price Status Indicator ---
 interface PriceStatusIndicatorProps {
@@ -75,8 +70,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   const { openModal } = useAppStore();
   const addToast = useUIStore((state) => state.addToast);
 
-  const mainFabrics = useInventory(FAVORITE_CATEGORIES.CURTAIN_MAIN);
-  const sheerFabrics = useInventory(FAVORITE_CATEGORIES.CURTAIN_SHEER);
+  // catalog-aware: ดึง SKU+ราคาจากแค็ตตาล็อกสด (DB) เมื่อเชื่อม, ไม่งั้น fallback favorites
+  const { items: mainFabrics } = useInventory(FAVORITE_CATEGORIES.CURTAIN_MAIN);
+  const { items: sheerFabrics } = useInventory(FAVORITE_CATEGORIES.CURTAIN_SHEER);
 
   // ✅ Cast Array เป็น string[] และใช้ layerMode ที่มี default
   const layerMode = data.layer_mode || LAYER_MODES.MAIN;

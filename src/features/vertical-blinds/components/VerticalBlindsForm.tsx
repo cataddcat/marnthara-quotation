@@ -17,6 +17,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useInventory } from '@/hooks/useInventory';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
@@ -59,7 +60,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData, onAutoSave);
 
-  const { favorites, openModal } = useAppStore();
+  const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.VERTICAL_BLIND);
@@ -74,15 +75,17 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   );
   const analysis = useCostStatus(previewItem);
 
+  // ตัวเลือกรหัส/ราคา — catalog-aware (SKU จาก DB เมื่อเชื่อม, ไม่งั้น fallback favorites)
+  const { items: inventory } = useInventory(FAVORITE_CATEGORIES.VERTICAL_BLIND);
   const suggestions = useMemo(
     () =>
-      (favorites[FAVORITE_CATEGORIES.VERTICAL_BLIND] || []).map((f) => ({
+      inventory.map((f) => ({
         label: f.code,
         value: f.code,
         desc: `${f.default_price_per_m}`,
         data: f,
       })),
-    [favorites]
+    [inventory]
   );
 
   // Reuse logic for favorites handling...

@@ -8,6 +8,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { buildDocFileBase, formatDocCode } from '@/lib/docName';
 import { Printer, FileText, Truck, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useMobileBack } from '@/hooks/useMobileBack';
 
 interface PdfPreviewModalProps {
   isOpen: boolean;
@@ -31,6 +32,9 @@ export const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ isOpen, onClos
   useEffect(() => {
     if (isOpen) ensureCustomerIdentity();
   }, [isOpen, ensureCustomerIdentity]);
+
+  // ปุ่ม Back มือถือ = ปิด preview (ใช้ back-stack กลางเหมือน Modal primitive)
+  useMobileBack(isOpen, onClose);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,

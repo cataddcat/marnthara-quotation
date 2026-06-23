@@ -659,9 +659,11 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                 { key: 'shipping', Icon: Truck, label: 'ค่าขนส่ง (เหมา/งาน)' },
               ] as const
             ).map(({ key, Icon, label }) => (
-              <div
+              <button
                 key={key}
-                className="flex items-center justify-between gap-3 py-1.5 cursor-pointer select-none active:opacity-80 transition-opacity"
+                type="button"
+                aria-pressed={costInclude[key]}
+                className="w-full text-left flex items-center justify-between gap-3 py-1.5 cursor-pointer select-none active:opacity-80 transition-opacity"
                 onClick={() => setCostInclude(key, !costInclude[key])}
               >
                 <div className="flex items-center gap-2 text-sm text-foreground min-w-0">
@@ -675,12 +677,15 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
                     </span>
                   )}
                 </div>
+                {/* ภาพล้วน — toggle จริงอยู่ที่ปุ่มแถว (aria-pressed); ถอด input ออกจาก tab order/a11y tree */}
                 <Switch
                   checked={costInclude[key]}
                   onCheckedChange={() => {}}
                   className="pointer-events-none shrink-0"
+                  tabIndex={-1}
+                  aria-hidden
                 />
-              </div>
+              </button>
             ))}
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { AreaItemInput, ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
-import { WoodenBlindsSchema, WoodenBlindsFormValues } from '../schemas';
+import { WoodenBlindsSchema, AluminumBlindsSchema, WoodenBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
@@ -16,6 +16,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useInventory } from '@/hooks/useInventory';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { FAVORITE_CATEGORIES, ITEM_TYPES } from '@/config/enums';
@@ -51,16 +52,22 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   itemType = ITEM_TYPES.WOODEN_BLIND,
   onAutoSave,
 }) => {
+  // มู่ลี่อลูมิเนียม reuse ฟอร์มนี้ → เลือก schema ให้ literal `type` ตรงกับ item จริง
+  // (cast เพราะ 2 schema โครงสร้างเหมือนกัน ต่างแค่ literal type — รัน safeParse ถูกต้องตามจริง)
+  const schema = (
+    itemType === ITEM_TYPES.ALUMINUM_BLIND ? AluminumBlindsSchema : WoodenBlindsSchema
+  ) as unknown as typeof WoodenBlindsSchema;
+
   const { formData, errors, handleChange, handleNumberChange, handleSubmit } = useZodForm<WoodenBlindsFormValues>({
-    schema: WoodenBlindsSchema,
-    initialData: { ...DEFAULT_DATA, ...initialData } as WoodenBlindsFormValues,
+    schema,
+    initialData: { ...DEFAULT_DATA, ...initialData, type: itemType } as WoodenBlindsFormValues,
     onSubmit: (data) => onSubmit(data as unknown as AreaItemInput),
   });
 
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData as unknown as AreaItemInput, onAutoSave);
 
-  const { favorites, openModal } = useAppStore();
+  const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(itemType);
@@ -85,16 +92,17 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   );
   const analysis = useCostStatus(previewItem);
 
-  // Favorites Logic
+  // ตัวเลือกรหัส/ราคา — catalog-aware (SKU จาก DB เมื่อเชื่อม, ไม่งั้น fallback favorites)
+  const { items: inventory } = useInventory(favCategory);
   const suggestions = useMemo(
     () =>
-      (favorites[favCategory] || []).map((f) => ({
+      inventory.map((f) => ({
         label: f.code,
         value: f.code,
         desc: `${f.default_price_per_m}`,
         data: f,
       })),
-    [favorites, favCategory]
+    [inventory]
   );
 
   const handleCodeChange = (val: string) => {

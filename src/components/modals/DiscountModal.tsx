@@ -63,6 +63,10 @@ export const DiscountModal: React.FC<DiscountModalProps> = ({ isOpen, onClose })
     setType(next);
   };
 
+  // ── หมายเหตุ (intentional): modal นี้เป็น "พรีวิว → ยืนยัน" ต่างจากกฎ "ปิด=ไม่ทำลาย"
+  //    ของฟอร์มอื่นโดยตั้งใจ — มีเฉพาะ handleSave เท่านั้นที่ commit เข้า store; ปิดทางอื่น
+  //    (X/backdrop/Esc/Back) = ทิ้ง draft ในเครื่อง (state init จาก store + remount ทุกครั้งที่เปิด).
+  //    เหตุผล: กันเผลอเปลี่ยน "ราคาที่เสนอลูกค้า" จากการแตะนอกกรอบ/Esc โดยไม่ตั้งใจ.
   const handleSave = () => {
     trigger('success');
     setDiscount({

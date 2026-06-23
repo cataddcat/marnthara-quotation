@@ -10,6 +10,7 @@ import { Tag, ScrollText, Ruler, PaintRoller, Book, Plus, Trash2 } from 'lucide-
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useInventory } from '@/hooks/useInventory';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
@@ -49,7 +50,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
     handleWallpaperSelect,
   } = useWallpaperFormLogic(initialData, onSubmit);
 
-  const { favorites, openModal } = useAppStore();
+  const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.WALLPAPER);
@@ -73,11 +74,8 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
     removeWidthField(i);
   };
 
-  // ── Inventory suggestions from favorites ──────────────────────────────────
-  const rawSuggestions = useMemo(
-    () => favorites[FAVORITE_CATEGORIES.WALLPAPER] || [],
-    [favorites]
-  );
+  // ── Inventory suggestions — catalog-aware (SKU จาก DB เมื่อเชื่อม, ไม่งั้น fallback favorites) ──
+  const { items: rawSuggestions } = useInventory(FAVORITE_CATEGORIES.WALLPAPER);
 
   // Convert InventoryItem[] → SuggestionItem<InventoryItem>[] for ComboboxInput
   const suggestions = useMemo<SuggestionItem<InventoryItem>[]>(

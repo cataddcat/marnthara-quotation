@@ -3,6 +3,7 @@ import { Check, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useMobileBack } from '@/hooks/useMobileBack';
 import { Dialog, Transition, TransitionChild, DialogPanel, DialogTitle } from '@headlessui/react';
 
 export interface OptionItem<T extends string | number = string> {
@@ -61,6 +62,9 @@ export const OptionSheet = <T extends string | number>({
     trigger('light');
     onClose();
   }, [trigger, onClose]);
+
+  // ปุ่ม Back มือถือ = ปิด sheet (back-stack กลาง → ปิดเลเยอร์บนสุดก่อน modal แม่)
+  useMobileBack(isOpen, handleClose);
 
   return (
     <Transition show={isOpen} as={Fragment}>

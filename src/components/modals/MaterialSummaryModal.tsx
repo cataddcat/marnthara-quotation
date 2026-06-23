@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
 import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
 import { MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
 import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
@@ -11,21 +10,20 @@ import {
   Layers,
   Wrench,
   Package,
-  Copy,
-  CheckCheck,
   ChevronDown,
   ChevronLeft,
   AlertTriangle,
   BookOpen,
   ArrowRight,
   MapPin,
+  Search,
 } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
+import { Input } from '@/components/ui/Input';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 import { FORMULAS } from '@/config/formulas';
 import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@/lib/materials/buildSummary';
-import { missingOpeningItems } from '@/lib/item-status';
 
 // ─── Shared empty state ───────────────────────────────────────────────────────
 
@@ -157,6 +155,9 @@ const CatalogCategoryView = ({
   const accentClass = categoryAccent(categoryId);
   const dotClass = categoryDotClass(categoryId);
 
+  // ค้นหา — init ด้วย prefillCode (code-jump) เพื่อให้รายการนั้นโผล่แม้ลิสต์ยาวเกิน cap
+  const [query, setQuery] = useState(() => prefillCode?.trim() ?? '');
+
   // Code Jump: ไฮไลต์รหัสที่กระโดดมา (ตัดสินใจครั้งเดียวตอน mount; key={catalogCat} → remount เมื่อเปลี่ยนหมวด)
   const [highlightCode] = useState<string | null>(() => {
     const target = prefillCode?.trim().toUpperCase();
@@ -170,57 +171,92 @@ const CatalogCategoryView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // กรองตามรหัส/แบรนด์/รุ่น/สี/หมายเหตุ/ผู้ผลิต (case-insensitive)
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((it) =>
+      [it.code, it.brand, it.model, it.color, it.variant, it.note, it.supplier].some((f) =>
+        f?.toLowerCase().includes(q)
+      )
+    );
+  }, [items, query]);
+
+  // จำกัดแถวที่ render — กัน render การ์ดเป็นพันพร้อมกันเมื่อ SKU จาก DB เยอะ
+  const MAX_VISIBLE = 100;
+  const visible = filtered.slice(0, MAX_VISIBLE);
+
   return (
     <div>
-      {items.length === 0 && (
+      {items.length === 0 ? (
         <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="ข้อมูลสินค้ามาจากระบบภายนอก (DB)" />
-      )}
+      ) : (
+        <>
+          {/* เครื่องมือค้นหา */}
+          <div className="mb-3">
+            <Input
+              prefix={<Search className="w-4 h-4" strokeWidth={1.5} />}
+              placeholder="ค้นหารหัส / แบรนด์ / รุ่น / สี"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onClear={() => setQuery('')}
+            />
+            <p className="text-xs text-muted-foreground mt-1.5 px-1">
+              พบ {fmtTH(filtered.length)} / {fmtTH(items.length)} รหัส
+            </p>
+          </div>
 
-      <div className="space-y-2">
-        {items.map((item) => (
-          <InventoryItemRow
-            key={item.id}
-            item={item}
-            cost={item.cost_per_yard}
-            costUnit={costUnit}
-            highlight={!!highlightCode && item.code.toUpperCase() === highlightCode}
-            accentClass={accentClass}
-            dotClass={dotClass}
-            onOpenDetail={() => openModal('codeDetail', { code: item.code, category: categoryId })}
-          />
-        ))}
-      </div>
+          {filtered.length === 0 ? (
+            <EmptyHint message={`ไม่พบ "${query}"`} sub="ลองคำอื่น หรือสลับหมวด" />
+          ) : (
+            <>
+              <div className="space-y-2">
+                {visible.map((item) => (
+                  <InventoryItemRow
+                    key={item.id}
+                    item={item}
+                    cost={item.cost_per_yard}
+                    costUnit={costUnit}
+                    highlight={!!highlightCode && item.code.toUpperCase() === highlightCode}
+                    accentClass={accentClass}
+                    dotClass={dotClass}
+                    onOpenDetail={() =>
+                      openModal('codeDetail', { code: item.code, category: categoryId })
+                    }
+                  />
+                ))}
+              </div>
+              {filtered.length > MAX_VISIBLE && (
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  แสดง {MAX_VISIBLE} จาก {fmtTH(filtered.length)} — พิมพ์เพื่อค้นหาให้แคบลง
+                </p>
+              )}
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
 // ─── Summary sub-components ───────────────────────────────────────────────────
 
+// ยอดรวมปริมาณข้ามรหัสไม่มีความหมายต่อการสั่ง (แต่ละรหัส = สินค้าคนละตัว) →
+// หัว section เก็บแค่ป้าย "(N รหัส)" + ทุนรวม ฿ (รวมได้จริง); ปริมาณต่อรหัสอยู่ในการ์ด
 const SectionHeader = ({
   label,
-  count,
-  unit,
-  valueColor,
   totalCost,
 }: {
   label: string;
-  count: number;
-  unit: string;
-  valueColor?: string;
   totalCost?: number;
 }) => (
   <div className="flex items-center justify-between py-2 border-b border-border/60 mb-2">
     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
-    <div className="flex items-center gap-2">
-      <span className={cn('text-xs font-mono font-bold', valueColor ?? 'text-muted-foreground')}>
-        {fmtTH(count)} {unit}
+    {totalCost !== undefined && totalCost > 0 && (
+      <span className="text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+        ทุน ฿{fmtTH(totalCost)}
       </span>
-      {totalCost !== undefined && totalCost > 0 && (
-        <span className="text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
-          ทุน ฿{fmtTH(totalCost)}
-        </span>
-      )}
-    </div>
+    )}
   </div>
 );
 
@@ -325,7 +361,7 @@ const FabricCard = ({
             </span>
             {hasUnknownCode && <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" strokeWidth={1.5} />}
             <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
-              {entries.length} รายการ
+              {entries.length}
             </span>
           </div>
         </div>
@@ -412,7 +448,7 @@ const WallpaperCostCard = ({
           <div className="flex items-center gap-1.5">
             <span className={cn('font-mono font-bold text-sm', MATERIAL_ACCENT.wallpaper)}>{code}</span>
             <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
-              {entries.length} รายการ
+              {entries.length}
             </span>
           </div>
         </div>
@@ -490,7 +526,7 @@ const AreaCostCard = ({
               </span>
             )}
             <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
-              {group.entries.length} รายการ
+              {group.entries.length}
             </span>
           </div>
         </div>
@@ -666,7 +702,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
   // ทุนผ้า: catalog (DB) เมื่อเชื่อมจริง ไม่งั้น vault ในแอป — read-only (แก้ที่เครื่องมือภายนอก)
   const { fabricCosts } = useActiveCostMaps();
   const openModal = useAppStore((s) => s.openModal);
-  const addToast = useUIStore((s) => s.addToast);
 
   // กดจุดที่ใช้ในการ์ดวัสดุ → กระโดดไปแก้รายการนั้น (push บน modal stack — ปิดแล้วกลับมาที่นี่)
   const handleJumpItem = (roomId: string, itemId: string) => {
@@ -688,15 +723,22 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
   );
   const [catalogCat, setCatalogCat] = useState(() => resolvedInitialCat);
   const [pendingPrefill, setPendingPrefill] = useState<string | undefined>(() => prefillCode);
-  const [copied, setCopied] = useState(false);
 
   const summary = useMemo(() => buildSummary(rooms), [rooms]);
   const { fabricsByCode, sheersByCode, wallpapersByCode, railsByKey, areaByKey, acc } = summary;
 
-  const totalFabricYards = [...fabricsByCode.values()].reduce((s, v) => s + v.total, 0);
-  const totalSheerYards = [...sheersByCode.values()].reduce((s, v) => s + v.total, 0);
-  const totalWallpaperRolls = [...wallpapersByCode.values()].reduce((s, v) => s + v.total, 0);
   const totalRailM = [...railsByKey.values()].reduce((s, v) => s + v.totalLength, 0);
+
+  // area: จัดกลุ่มต่อชนิดสินค้า (คงลำดับ insertion) → หัวย่อย + ยอดรวมหน่วยถูกต่อชนิด
+  const areaByType = useMemo(() => {
+    const m = new Map<string, AreaGroup[]>();
+    for (const g of areaByKey.values()) {
+      const arr = m.get(g.type) ?? [];
+      arr.push(g);
+      m.set(g.type, arr);
+    }
+    return m;
+  }, [areaByKey]);
 
   const fabricTotalCost = [...fabricsByCode.entries()].reduce(
     (s, [code, v]) => s + (fabricCosts[code] ?? 0) * v.total, 0
@@ -716,57 +758,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
     acc.romanSets > 0 ||
     acc.rollers > 0 ||
     acc.snaps > 0;
-
-  const handleCopy = () => {
-    // ✅ เจ้าของร้านยืนยัน (มิ.ย. 2026): ต้องใส่ทิศเปิดครบก่อนออกเอกสารสั่งของ —
-    // ค่าว่างถูกตีความเป็น "แยกกลาง" เงียบ ๆ → ลูกล้อ/ตับผ้าในรายการสั่งผิด
-    const missing = missingOpeningItems(rooms);
-    if (missing.length > 0) {
-      addToast(
-        'warning',
-        `เลือกทิศเปิดให้ครบก่อนคัดลอกรายการสั่งของ (ค้าง ${missing.length} รายการ: ${missing
-          .slice(0, 2)
-          .map((m) => `${m.roomName} ${m.label}`)
-          .join(', ')}${missing.length > 2 ? ' …' : ''})`
-      );
-      return;
-    }
-
-    const lines: string[] = ['=== ข้อมูลสินค้า & ราคา ===', ''];
-    if (fabricsByCode.size > 0) {
-      lines.push('🧵 ผ้าทึบ');
-      fabricsByCode.forEach((v, code) => lines.push(`  ${code}: ${fmtTH(v.total)} หลา`));
-    }
-    if (sheersByCode.size > 0) {
-      lines.push('🌫️ ผ้าโปร่ง');
-      sheersByCode.forEach((v, code) => lines.push(`  ${code}: ${fmtTH(v.total)} หลา`));
-    }
-    if (wallpapersByCode.size > 0) {
-      lines.push('🖼️ วอลเปเปอร์');
-      wallpapersByCode.forEach((v, code) => lines.push(`  ${code}: ${Math.ceil(v.total)} ม้วน`));
-    }
-    if (areaByKey.size > 0) {
-      lines.push('🪟 มู่ลี่/ฉาก/มุ้ง');
-      areaByKey.forEach((g) => lines.push(`  ${g.typeName}${g.code ? ` (${g.code})` : ''}: ${fmtTH(g.totalSqm)} ตร.ม.`));
-    }
-    if (hasRail) {
-      lines.push('', '🚆 ราง');
-      railsByKey.forEach((v, key) => {
-        if (key === 'rail_roman') lines.push(`  ${v.label}: ${v.totalSets} ชุด`);
-        else lines.push(`  ${v.label}: ${fmtTH(v.totalLength)} ม.`);
-      });
-    }
-    if (acc.rollers > 0 || acc.snaps > 0) {
-      lines.push('', '🔩 อุปกรณ์ม่านลอน');
-      if (acc.rollers > 0) lines.push(`  ลูกล้อ: ${acc.rollers} ตัว`);
-      if (acc.snaps > 0) lines.push(`  กระดุม/สแน็ป: ${acc.snaps} เม็ด`);
-    }
-    navigator.clipboard.writeText(lines.join('\n')).then(() => {
-      setCopied(true);
-      addToast('success', 'คัดลอกรายการแล้ว');
-      setTimeout(() => setCopied(false), 2500);
-    });
-  };
 
   const TABS: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
     {
@@ -792,26 +783,17 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="ข้อมูลสินค้า & ราคา"
-      description="รหัส & ราคาจากผู้ผลิต · แก้ไข/เพิ่มได้ · ไม่ใช่สต๊อกสินค้า"
+      description="รหัส & ราคาจากผู้ผลิต · ไม่ใช่สต๊อกสินค้า"
       variant="fullscreen"
       maxWidth="5xl"
       appShell
-      headerAction={
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
-        >
-          {copied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} /> : <Copy className="w-3.5 h-3.5" strokeWidth={1.5} />}
-          <span>{copied ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
-        </button>
-      }
     >
       {/* appShell body is a fixed-height, padding-free frame → fill it exactly (h-full) so the
           desktop sidebar stays put and only the content column scrolls (no resize on tab switch) */}
       <div className="flex flex-col sm:flex-row h-full">
 
         {/* ── DESKTOP LEFT SIDEBAR ────────────────────────────────────────── */}
-        <nav className="hidden sm:flex sm:flex-col sm:w-44 sm:shrink-0 sm:border-r sm:border-border/50 sm:bg-muted/5 sm:py-3">
+        <nav className="hidden sm:flex sm:flex-col sm:w-44 sm:shrink-0 sm:min-h-0 sm:overflow-y-auto sm:overscroll-contain sm:border-r sm:border-border/50 sm:bg-muted/5 sm:py-3">
           {activeTab === 'catalog' ? (
             <>
               <button
@@ -882,9 +864,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   <section>
                     <SectionHeader
                       label={`🧵 ผ้าทึบ (${fabricsByCode.size} รหัส)`}
-                      count={totalFabricYards}
-                      unit="หลา"
-                      valueColor={MATERIAL_ACCENT.fabric}
                       totalCost={fabricTotalCost}
                     />
                     {[...fabricsByCode.entries()].map(([code, v]) => (
@@ -907,9 +886,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   <section>
                     <SectionHeader
                       label={`🌫️ ผ้าโปร่ง (${sheersByCode.size} รหัส)`}
-                      count={totalSheerYards}
-                      unit="หลา"
-                      valueColor={MATERIAL_ACCENT.sheer}
                       totalCost={sheerTotalCost}
                     />
                     {[...sheersByCode.entries()].map(([code, v]) => (
@@ -932,9 +908,6 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   <section>
                     <SectionHeader
                       label={`🖼️ วอลเปเปอร์ (${wallpapersByCode.size} รหัส)`}
-                      count={totalWallpaperRolls}
-                      unit="ม้วน"
-                      valueColor={MATERIAL_ACCENT.wallpaper}
                     />
                     {[...wallpapersByCode.entries()].map(([code, v]) => (
                       <WallpaperCostCard
@@ -949,18 +922,30 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                 )}
 
                 {areaByKey.size > 0 && (
-                  <section>
-                    <div className="flex items-center justify-between py-2 border-b border-border/60 mb-2">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        🪟 มู่ลี่ / ฉาก / มุ้ง ({areaByKey.size} รายการ)
-                      </span>
-                      <span className="text-xs font-mono font-bold text-teal-700 dark:text-teal-400 eeert:text-teal-800">
-                        {fmtTH([...areaByKey.values()].reduce((s, g) => s + g.totalSqm, 0))} ตร.ม.
-                      </span>
-                    </div>
-                    {[...areaByKey.values()].map((group) => (
-                      <AreaCostCard key={group.costKey} group={group} onJumpItem={handleJumpItem} />
-                    ))}
+                  <section className="space-y-5">
+                    {/* แยกต่อชนิดสินค้า — แต่ละชนิดมียอดรวมหน่วยถูกของตัวเอง (ตร.ล./ตร.ม. ไม่ปนกัน) */}
+                    {[...areaByType.entries()].map(([type, groups]) => {
+                      const unit = groups[0].unit;
+                      const subtotal = groups.reduce(
+                        (s, g) => s + (unit === 'ตร.ม.' ? g.totalSqm : g.totalSqyd),
+                        0
+                      );
+                      return (
+                        <div key={type}>
+                          <div className="flex items-center justify-between py-2 border-b border-border/60 mb-2">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              🪟 {groups[0].typeName} ({groups.length} รหัส)
+                            </span>
+                            <span className="text-xs font-mono font-bold text-teal-700 dark:text-teal-400 eeert:text-teal-800">
+                              {fmtTH(subtotal)} {unit}
+                            </span>
+                          </div>
+                          {groups.map((group) => (
+                            <AreaCostCard key={group.costKey} group={group} onJumpItem={handleJumpItem} />
+                          ))}
+                        </div>
+                      );
+                    })}
                   </section>
                 )}
               </div>

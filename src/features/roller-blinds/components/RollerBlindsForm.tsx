@@ -16,6 +16,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useInventory } from '@/hooks/useInventory';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
@@ -57,7 +58,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
   // บันทึกอัตโนมัติเมื่อ formData เปลี่ยน (จับค่าหลัง smart-parse + ค่าช่องสุดท้ายครบ)
   useFormAutoSave(formData, onAutoSave);
 
-  const { favorites, openModal } = useAppStore();
+  const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
   const theme = getItemTheme(ITEM_TYPES.ROLLER_BLIND);
@@ -73,16 +74,17 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
   );
   const analysis = useCostStatus(previewItem);
 
-  // Favorites Logic
+  // ตัวเลือกรหัส/ราคา — catalog-aware (SKU จาก DB เมื่อเชื่อม, ไม่งั้น fallback favorites)
+  const { items: inventory } = useInventory(FAVORITE_CATEGORIES.ROLLER_BLIND);
   const suggestions = useMemo(
     () =>
-      (favorites[FAVORITE_CATEGORIES.ROLLER_BLIND] || []).map((f) => ({
+      inventory.map((f) => ({
         label: f.code,
         value: f.code,
         desc: `${f.default_price_per_m}`,
         data: f,
       })),
-    [favorites]
+    [inventory]
   );
 
   const handleCodeChange = (val: string) => {

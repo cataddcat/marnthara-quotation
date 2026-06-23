@@ -13,7 +13,7 @@ import demoMinimalRaw from '../../test-data/demo-minimal.json';
 
 import { CurtainSchema } from '@/features/curtains/schemas';
 import { WallpaperSchema } from '@/features/wallpapers/schemas';
-import { WoodenBlindsSchema } from '@/features/wooden-blinds/schemas';
+import { WoodenBlindsSchema, AluminumBlindsSchema } from '@/features/wooden-blinds/schemas';
 import { RollerBlindsSchema } from '@/features/roller-blinds/schemas';
 import { VerticalBlindsSchema } from '@/features/vertical-blinds/schemas';
 import { PartitionSchema } from '@/features/partition/schemas';
@@ -46,7 +46,8 @@ const schemaForType = (type: string) => {
       return PleatedScreenSchema;
     case ITEM_TYPES.REMOVAL:
       return RemovalSchema;
-    // aluminum_blind: ใช้ AreaItemInput pattern แต่ยังไม่มี schema (HANDOFF flag เป็น tech debt)
+    case ITEM_TYPES.ALUMINUM_BLIND:
+      return AluminumBlindsSchema;
     default:
       return null;
   }

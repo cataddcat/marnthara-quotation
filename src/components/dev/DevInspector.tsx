@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { Crosshair, Copy, X, Smartphone, MoveVertical } from 'lucide-react';
+import { Crosshair, Copy, X, Smartphone, MoveVertical, ListOrdered } from 'lucide-react';
 import { classifySizePx, type SizeStatus } from '@/config/typography';
+import { useMenuConfigStore } from '@/store/useMenuConfigStore';
 
 /**
  * DevInspector — "Design Probe" (dev only). คลิก/ชี้องค์ประกอบบนแอป → รู้ทันทีว่า
@@ -87,6 +88,10 @@ export const DevInspector = () => {
   const [pinned, setPinned] = useState<Probe | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // โหมดปรับแต่งเมนู (drag-reorder Main Menu) — toggle แล้วเปิด "เมนูหลัก" เพื่อลากจัดเรียง
+  const menuEditing = useMenuConfigStore((s) => s.editing);
+  const toggleMenuEditing = useMenuConfigStore((s) => s.toggleEditing);
 
   // จำลอง safe-area iPhone (notch 59px / home bar 34px) บนจอจำลอง Brave/Chromium ที่ env()=0
   // → toggle class `sim-notch` บน <html> (กฎ CSS อยู่ index.css §9.5) + จำสถานะข้าม reload
@@ -253,6 +258,16 @@ export const DevInspector = () => {
           style={devCircleBtn(simNotch)}
         >
           <MoveVertical size={16} />
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleMenuEditing}
+          onPointerDown={(e) => e.stopPropagation()}
+          title="ปรับแต่งเมนู — เปิดโหมดลากจัดเรียงเมนูหลัก (ข้ามหมวดได้) แล้วเปิด 'เมนูหลัก' เพื่อจัด · คัดลอกลำดับไป bake เป็น default"
+          style={devCircleBtn(menuEditing)}
+        >
+          <ListOrdered size={16} />
         </button>
       </div>
 

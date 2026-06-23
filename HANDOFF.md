@@ -318,10 +318,13 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 > สูตรคำนวณทั้งระบบ centralized ที่ `src/config/formulas.ts` (single source of truth).
 
 ### Still open
-- **Aluminum Blind feature stub** — appears in `ITEM_TYPES` + menu but no form directory exists
-- **`breakdown?: Record<string, number>`** — untyped in `PriceResult` (`src/lib/pricing/types.ts`); a typed shape per item-type would let `CostEngine` consume `fabricYards` / `sheerYards` / `rolls` / `areaSqyd` with editor assist instead of optional-chaining everywhere
+- **Aluminum Blind has no dedicated feature dir** — *by design*: reuses the wooden-blinds form (`ItemModal` maps `ALUMINUM_BLIND` → `WOODEN_BLINDS_FORM_ID`) + its own `AluminumBlindsSchema` in `features/wooden-blinds/schemas.ts`. Fully functional; only "stub" in that there's no `features/aluminum-blinds/` folder.
 - **PricingEngine.test.ts coverage** — `CostEngine.test.ts` covers 18 cases, `PricingEngine.test.ts` 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
 - **Tool-centric IA** — `MainMenuModal` opens 11 modals; primary task "create quotation" lacks a sticky FAB or top-level CTA (P1-B in Design Review backlog).
+
+### Closed (2026-06-22, "งานขัดเงา")
+- ~~Aluminum Blind missing Zod schema~~ → `AluminumBlindsSchema` added; the shared wooden-blinds form now selects schema by `itemType` so the `type` literal matches the item; `demo-validation.test.ts` validates it like every other area type.
+- ~~`breakdown?: Record<string, number>`~~ → typed as `PriceBreakdown` interface (all-optional named fields) in `src/lib/pricing/types.ts` — editor assist for `fabricYards`/`sheerYards`/`rolls`/`areaSqyd`/etc. without changing runtime.
 
 ### Closed (PRs #1–#8, 2026-05-28 → 2026-05-29)
 - ~~Features with missing Zod schemas (6 types)~~ → **PR #3** (Zod + factory + deleted `useItemForm`)

@@ -83,6 +83,9 @@ export interface UISlice {
   activeModal: ModalType | null;
   modalProps: ModalPropsMap[ModalType] | undefined;
   modalStack: ModalSnapshot[];
+  /** นับจำนวนครั้งที่เปิดต่อชนิด modal — ใช้เป็น React key ใน ModalManager ให้ remount
+   *  state สดทุกครั้งที่ "เปิดใหม่" โดยไม่พลิก key ตอนปิด (คง exit/leave animation) */
+  openCounts: Partial<Record<ModalType, number>>;
 
   openModal: OpenModalFn;
   closeModal: () => void;
@@ -98,6 +101,7 @@ export const createUISlice: StateCreator<
   activeModal: null,
   modalProps: undefined,
   modalStack: [],
+  openCounts: {},
 
   openModal: ((type, props) =>
     set((state) => {
@@ -107,14 +111,18 @@ export const createUISlice: StateCreator<
         props: state.modalProps,
       } as ModalSnapshot;
 
+      // bump counter ของชนิดที่กำลังเปิด → React key ใน ModalManager เปลี่ยนเฉพาะตอนเปิดใหม่
+      const openCounts = { ...state.openCounts, [type]: (state.openCounts[type] ?? 0) + 1 };
+
       if (state.activeModal && state.activeModal !== type) {
         return {
           modalStack: [...state.modalStack, snapshot],
           activeModal: type,
           modalProps: props,
+          openCounts,
         };
       }
-      return { activeModal: type, modalProps: props };
+      return { activeModal: type, modalProps: props, openCounts };
     })) as OpenModalFn,
 
   closeModal: () =>

@@ -3,6 +3,7 @@ import { Dialog, Transition, TransitionChild, DialogPanel, DialogTitle } from '@
 import { useUIStore } from '@/store/useUIStore';
 import { Button } from '@/components/ui/Button';
 import { AlertTriangle } from 'lucide-react';
+import { useMobileBack } from '@/hooks/useMobileBack';
 
 export const AlertDialog = () => {
   const { isOpen, title, description, variant, confirmLabel, cancelLabel, onConfirm, onCancel } =
@@ -17,6 +18,9 @@ export const AlertDialog = () => {
       onCancel();
     }
   };
+
+  // ปุ่ม Back มือถือ = ยกเลิก (ปิด confirm บนสุด ไม่ใช่เลเยอร์ที่อยู่ข้างหลัง)
+  useMobileBack(isOpen, () => handleClose(false));
 
   return (
     <Transition show={isOpen} as={Fragment}>

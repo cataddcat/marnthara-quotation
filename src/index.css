@@ -704,6 +704,11 @@ html.sim-notch.dark body::after {
   .pt-safe-top {
     padding-top: var(--safe-top);
   }
+  /* Safe area + base gap — header fullscreen: ไม่ให้ title ชนขอบบนเมื่อจอไม่มี notch
+     (--safe-top = 0px) แต่ยังกัน notch บนมือถือจริง */
+  .pt-safe-top-gap {
+    padding-top: calc(var(--safe-top) + 0.5rem);
+  }
   .mt-safe-top {
     margin-top: var(--safe-top);
   }

@@ -29,7 +29,8 @@ import { AdminPinModal } from '@/components/modals/AdminPinModal';
 import { UndoHistoryModal } from '@/components/modals/UndoHistoryModal';
 
 export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpenOverview }) => {
-  const { activeModal, modalProps, closeModal, openModal, addItem, updateItem } = useAppStore();
+  const { activeModal, modalProps, closeModal, openModal, addItem, updateItem, openCounts } =
+    useAppStore();
   const addToast = useUIStore((state) => state.addToast);
 
   const isVisible = (type: string) => activeModal === type;
@@ -76,13 +77,13 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
       <PdfPreviewModal isOpen={isVisible('pdf')} onClose={closeModal} />
 
       <ShopSettingsModal
-        key={isVisible('shopSettings') ? 'shop-open' : 'shop-closed'}
+        key={`shop-${openCounts.shopSettings ?? 0}`}
         isOpen={isVisible('shopSettings')}
         onClose={closeModal}
       />
 
       <DiscountModal
-        key={isVisible('discount') ? 'discount-open' : 'discount-closed'}
+        key={`discount-${openCounts.discount ?? 0}`}
         isOpen={isVisible('discount')}
         onClose={closeModal}
       />
@@ -100,19 +101,19 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
       <ProductionSettingsModal isOpen={isVisible('productionSettings')} onClose={closeModal} />
 
       <FinancialDashboardModal
-        key={isVisible('costDashboard') ? 'cost-open' : 'cost-closed'}
+        key={`cost-${openCounts.costDashboard ?? 0}`}
         isOpen={isVisible('costDashboard')}
         onClose={closeModal}
       />
 
       <FormulaDocsModal
-        key={isVisible('formulaDocs') ? 'fd-open' : 'fd-closed'}
+        key={`fd-${openCounts.formulaDocs ?? 0}`}
         isOpen={isVisible('formulaDocs')}
         onClose={closeModal}
       />
 
       <MaterialSummaryModal
-        key={isVisible('materialSummary') ? 'ms-open' : 'ms-closed'}
+        key={`ms-${openCounts.materialSummary ?? 0}`}
         isOpen={isVisible('materialSummary')}
         onClose={closeModal}
         initialTab={materialSummaryProps?.initialTab}
@@ -121,13 +122,13 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
       />
 
       <CopySummaryModal
-        key={isVisible('copySummary') ? 'cs-open' : 'cs-closed'}
+        key={`cs-${openCounts.copySummary ?? 0}`}
         isOpen={isVisible('copySummary')}
         onClose={closeModal}
       />
 
       <CodeDetailModal
-        key={isVisible('codeDetail') ? `cd-${codeDetailProps?.code}` : 'cd-closed'}
+        key={`cd-${openCounts.codeDetail ?? 0}`}
         isOpen={isVisible('codeDetail')}
         onClose={closeModal}
         code={codeDetailProps?.code}
@@ -135,25 +136,25 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
       />
 
       <JobsModal
-        key={isVisible('jobs') ? 'jobs-open' : 'jobs-closed'}
+        key={`jobs-${openCounts.jobs ?? 0}`}
         isOpen={isVisible('jobs')}
         onClose={closeModal}
       />
 
       <SignInModal
-        key={isVisible('signIn') ? 'signin-open' : 'signin-closed'}
+        key={`signin-${openCounts.signIn ?? 0}`}
         isOpen={isVisible('signIn')}
         onClose={closeModal}
       />
 
       <CustomerDirectoryModal
-        key={isVisible('customerDirectory') ? 'custdir-open' : 'custdir-closed'}
+        key={`custdir-${openCounts.customerDirectory ?? 0}`}
         isOpen={isVisible('customerDirectory')}
         onClose={closeModal}
       />
 
       <AdminPinModal
-        key={isVisible('adminPin') ? `adminpin-${adminPinProps?.intent}` : 'adminpin-closed'}
+        key={`adminpin-${openCounts.adminPin ?? 0}`}
         isOpen={isVisible('adminPin')}
         onClose={closeModal}
         intent={adminPinProps?.intent ?? 'unlock'}
@@ -161,7 +162,7 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
       />
 
       <UndoHistoryModal
-        key={isVisible('undoHistory') ? 'undo-open' : 'undo-closed'}
+        key={`undo-${openCounts.undoHistory ?? 0}`}
         isOpen={isVisible('undoHistory')}
         onClose={closeModal}
       />

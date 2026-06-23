@@ -188,9 +188,9 @@ export const Modal: React.FC<ModalProps> = ({
                 {/* Header — title 16px; ปุ่มมี hit area 44px (HIG); เว้นขอบตามมาตรฐาน section (p-3.5) */}
                 <div
                   className={cn(
-                    'px-4 py-3.5 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors colorful:bg-card colorful:backdrop-blur-none',
+                    'px-4 py-2 border-b shrink-0 bg-card/95 backdrop-blur z-10 transition-colors colorful:bg-card colorful:backdrop-blur-none',
                     scrolled ? 'border-border' : 'border-transparent',
-                    isFullscreen && 'pt-safe-top' // Safe Area for notch
+                    isFullscreen && 'pt-safe-top-gap' // Safe Area for notch + base gap (กัน title ชนขอบบนเมื่อไม่มี notch)
                   )}
                 >
                   {/* fullscreen บนจอกว้าง: แถวหัวเรื่องเรียงตรงคอลัมน์เนื้อหา (max-w-3xl) */}

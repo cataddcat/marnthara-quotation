@@ -71,8 +71,8 @@ Output สูงสุดของแอพ ประกอบด้วย custo
 
 ### Item Type
 ประเภทของ item (9 ชนิดใน `ITEM_TYPES`): `curtains`, `wallpapers`, `roller-blinds`, `vertical-blinds`,
-`wooden-blinds`, `aluminum-blinds`, `partition`, `pleated-screen`, `removal` — *(aluminum-blinds = stub: อยู่ใน
-enum + เมนูแล้ว แต่ยังไม่มีฟอร์ม ดู HANDOFF §6)*
+`wooden-blinds`, `aluminum-blinds`, `partition`, `pleated-screen`, `removal` — *(aluminum-blinds ใช้ฟอร์ม +
+`AluminumBlindsSchema` ร่วมกับ wooden-blinds โดยไม่มี feature dir แยก ตั้งใจ ดู HANDOFF §6)*
 
 ### Removal (รื้อถอน)
 Item type พิเศษที่หมายถึงงานรื้อของเก่า ไม่ใช่ผ้าหรืออุปกรณ์ใหม่ คิดค่าแรงอย่างเดียว
