@@ -111,6 +111,51 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
 
 **▶ Next focus: UI.** The standing design philosophy is **§1.6 (HIG + NN/g ergonomics) + §1.7 (Geist visual language)** above — together they decide look-and-feel (there is no UI designer; the doc is the designer). Meta-lesson from the reverted overview pass: for **density / typography changes on shared screens**, prefer lighter, targeted touches and surface concrete options to the user before a blanket sweep — "make it bigger" is not automatically "make it better."
 
+### ▶ Session 2026-06-23 — catalog wiring · modal enter/exit · Main Menu dev-customize
+
+**Shipped:**
+- **Catalog/cost audit** → ระบบ "สินค้า & ราคารหัส & ราคาจากผู้ผลิต" ต่อครบ end-to-end ไม่มี bug จริง.
+  Polish: `aluminum_blind` ได้ Zod schema จริง (`AluminumBlindsSchema`; wooden-blinds form เลือก
+  schema ตาม `itemType`) · `PriceBreakdown` interface แทน `breakdown: Record<string,number>` ใน
+  `pricing/types.ts` · Switch a11y (row → `<button aria-pressed>`, input `aria-hidden`).
+- **Catalog picker → catalog-aware:** 6 ฟอร์ม (curtain `FabricSection` + wooden/roller/vertical/
+  partition/wallpaper) route dropdown รหัส/ราคาผ่าน `@/hooks/useInventory` แทน `favorites` ดิบ →
+  เห็น SKU จาก DB สดเมื่อ catalog `status==='ready'` (เดิมมีแต่ราง HardwareSection ที่ catalog-aware).
+- **MaterialSummaryModal:** + ช่องค้นหา SKU (`CatalogCategoryView`, cap 100 แถว) · ลบปุ่ม "คัดลอก"
+  ซ้ำ (ใช้ `CopySummaryModal` สั่งของ/สั่งราง แทน) · sidebar desktop scroll ได้ · count badge เหลือ
+  ตัวเลขล้วน · แท็บวัสดุ "area" แยกซับ-เซกชันต่อชนิดสินค้า (ยอดรวมหน่วยถูก ไม่ปน ตร.ล./ตร.ม.).
+- **Modal enter/exit (audit → แก้ 4 จุด):** `useMobileBack` เขียนใหม่เป็น **back-stack กลาง**
+  (Back ปิด overlay บนสุดทีละชั้น + ไม่ทิ้งขยะ history; reconcile แบบ microtask กัน switch-race) +
+  เพิ่มใน `OptionSheet`/`AlertDialog`/`PdfPreviewModal` · `openCounts` ต่อชนิดใน `UISlice` →
+  ModalManager key → คืน leave-animation ของ keyed modals · `Modal` header กระชับ + utility
+  `.pt-safe-top-gap` (fullscreen ไม่ชนขอบบนเมื่อจอไม่มี notch) · DiscountModal discard-on-cancel =
+  ตั้งใจ (ใส่คอมเมนต์).
+- **Main Menu overhaul (เริ่ม — เจ้าของนำ point-by-point):**
+  - **Data-driven menu** — `src/config/menuItems.ts` (`MENU_ENTRIES`: `section`/`item`/`block`)
+    แทน JSX ตายตัว. **bake ลำดับ default = จัดบรรทัดใน `MENU_ENTRIES`.**
+  - **Dev tool "ปรับแต่งเมนู"** — `src/store/useMenuConfigStore.ts` (`editing` + `order` persist
+    localStorage `mtr.menu-order`; `reconcileIds`/`getOrderedEntries`) + ปุ่ม `ListOrdered` ใน
+    `DevInspector` (dev-only) + drag-reorder (@dnd-kit) ใน `MainMenuModal` (item+block ลากได้/
+    ข้ามหมวดได้, section ตรึง, "คัดลอกลำดับ" ไป bake). round 2: บล็อก account/role/appearance
+    ลากแยกได้. theme switcher = 1 แถว 5 ปุ่ม (icon + ชื่อย่อ).
+  - **Scroll-restore (2 ชั้น, แก้จบ 2026-06-23)** — อาการ "หน้า/modal เด้งบนสุดตอนปิด modal":
+    - **(A) หน้าหลัก (window):** ตัวการจริง = `useMobileBack` เรียก `history.back()` ตอนปิด overlay +
+      default `history.scrollRestoration='auto'` → เบราว์เซอร์คืน scroll เอง (มักเป็น 0) ทุกเบราว์เซอร์.
+      **FIX:** `history.scrollRestoration='manual'` จุดเดียวใน `src/main.tsx` (ดู §4 invariant 10).
+    - **(B) scroll ภายใน modal ที่ถูกซ้อน:** modal stack ตั้งตัวล่าง `isOpen=false` → เนื้อหา unmount →
+      `scrollTop` หาย. **FIX:** `Modal` prop `scrollResetToken` (เก็บ/คืน scrollTop ภายใน; token=
+      `openCounts[type]` แยก "เปิดใหม่→top" vs "กลับจาก stack→คืนเดิม"); wire แล้วที่ `MainMenuModal`.
+    - `useModalScrollRestore` (freeze/restore-rAF, ผูก `activeModal`) คงไว้เป็น insurance ฝั่ง iOS เท่านั้น
+      (vaul/Headless แตะ scroll เฉพาะ Safari/iOS). รายละเอียด: memory `scroll-restore-technique`.
+
+**Next session:**
+- **Main Menu overhaul ต่อ:** เจ้าของจัดลำดับด้วย dev tool → **bake ลำดับใหม่เป็น default** ใน
+  `MENU_ENTRIES`; รอบถัดไปของ dev tool (ถ้าสั่ง): เรียง/ซ่อนหมวด · ซ่อนรายการ · production
+  owner-facing (ตอนนี้ dev-only). ดูแนวทางใน memory `prefers-self-serve-dev-tooling`.
+- gate เขียวรวมยืนยันแล้ว 2026-06-23 (รวม scroll-restore A+B). ถ้า hub modal อื่นที่เปิด modal ลูก
+  แล้วกลับ (เช่น `MaterialSummaryModal`→`CodeDetailModal`) เจออาการ scroll ภายในหาย → opt-in prop
+  `scrollResetToken` เพิ่มได้ทันที (ดูแม่แบบที่ `MainMenuModal` + §7 "When Adding a New Modal").
+
 ---
 
 ## 2. 🗺️ System Map
@@ -134,6 +179,17 @@ All modals are registered in `UISlice.ts` ModalType union. Render via `ModalMana
 | `productionSettings` | **Cost Vault** — ค่าแรง + บริการ only (labor/service) since §11 | — |
 | `costDashboard` | **Financial Health** — P&L overview | — |
 | `materialSummary` | **คลังวัสดุ** — BOM + product/rail catalog cost editor (fabric/area/hardware SKUs) | — |
+
+**Modal stack & scroll (สำคัญ — ดู §4 invariant 9-10):**
+- `openModal` ดันตัวปัจจุบันเข้า `modalStack` แล้วตั้ง `activeModal=type`; `closeModal` pop กลับ (LIFO).
+  **ตัวที่อยู่ใต้ stack ถูกตั้ง `isOpen=false` → เนื้อหา unmount จริง (ไม่ใช่แค่ซ่อน)** — local state ภายใน
+  + `scrollTop` ของ scroll container จะหายเมื่อกลับมา. modal ที่ต้อง "เริ่มใหม่ทุกครั้งเปิด" จึงผูก
+  `key={`x-${openCounts[type]}`}` ใน `ModalManager` (force remount ตอนเปิดใหม่ ไม่ใช่ตอน pop กลับ).
+- **scroll หน้าหลัก (window) ไม่เด้ง** เพราะ `history.scrollRestoration='manual'` (`src/main.tsx`) — กัน
+  เบราว์เซอร์ auto-restore ตอน `useMobileBack` เรียก `history.back()` กลืน guard ของ overlay.
+- **scroll ภายใน modal** (hub modal ที่เปิด modal ลูกแล้วผู้ใช้กลับมา เช่น เมนูหลัก): ส่ง prop
+  `scrollResetToken={openCounts[type]}` ให้ `<Modal>` → `Modal` คืน `scrollTop` เดิมเมื่อกลับจาก stack
+  (token เท่าเดิม) แต่เริ่ม top เมื่อเปิดใหม่ (token bump). ref impl: `MainMenuModal.tsx`.
 
 ### 2.2 Pricing Pipeline
 
@@ -284,7 +340,8 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 6. **`PricingEngine.calculateDetailedPrice(item).breakdown`** — source of truth for `fabricYards`, `sheerYards`, `rolls`. Consuming code should NOT re-derive these.
 7. **`formulas` passed via `PricingContext`** in worker — NEVER call `useAppStore.getState()` inside a Web Worker (separate JS context, store not shared).
 8. **`Discount.is_enabled: boolean`** — required field. Default `false` in `ShopProfileSlice` and `ProjectSlice.resetProject`.
-9. **Modal stack** — `openModal` pushes current to stack; `closeModal` pops. Don't manually mutate `modalStack`.
+9. **Modal stack** — `openModal` pushes current to stack; `closeModal` pops. Don't manually mutate `modalStack`. ตัวที่อยู่ใต้ stack ถูกตั้ง `isOpen=false` → **เนื้อหา unmount** (local state + `scrollTop` หาย); hub modal ที่ scroll ได้ใช้ prop `scrollResetToken` คืนตำแหน่ง (ดู §2.1).
+10. **`history.scrollRestoration='manual'`** (set ใน `src/main.tsx`) — **ห้ามลบ/เปลี่ยนเป็น `'auto'`**. `useMobileBack` ใช้ `history.pushState`/`history.back()` เป็น "guard" ปิด overlay ด้วยปุ่ม Back; ค่า `'auto'` จะสั่งเบราว์เซอร์คืน scroll เอง (มักเป็น 0) ทุกครั้งที่ปิด → หน้าหลักเด้งบนสุดทุกเบราว์เซอร์. แอปไม่มี router จริง (history มีแต่ guard ของ modal) จึงปลอดภัยที่จะ manual.
 
 ---
 
@@ -308,6 +365,8 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 | 14 | `discount.is_enabled` optional but used as required | Type was `?: boolean` | Changed to `is_enabled: boolean` + defaults |
 | 15 | Financial Dashboard aggregation approximations | `usage = width * 2.5` hardcoded | Use `analysis.usedQuantity` from CostEngine |
 | 16 | E2E แดงบน mobile-chromium หลังรีดีไซน์ header (2026-06-10) | `seed-demo.spec.ts` ใช้ `getByText('ผ้าม่าน').first()` หลวม — ตัวแรกใน DOM คือ subtitle "ผ้าม่าน & ของตกแต่ง" ที่เพิ่งเปลี่ยนเป็น `hidden sm:block` → จอแคบ element นั้น hidden → fail (แอปเรนเดอร์ปกติ, locator จับผิดตัว) | Scope `page.locator('main').getByText('ผ้าม่าน').first()` (header อยู่นอก `<main>`). **บทเรียน:** เปลี่ยน responsive visibility (`hidden/sm:block`) ของข้อความใด ๆ → ตรวจ E2E locator ที่ match ข้อความนั้น; ตั้ง assertion ให้ scope (role/`locator('main')`/`getByTestId`) ไม่ใช่ `getByText().first()` ทั่วทั้งหน้า |
+| 17 | หน้าหลักเด้งบนสุดทุกครั้งที่ปิด modal (ทุกอุปกรณ์/เบราว์เซอร์) — 2026-06-23 | `useMobileBack` เรียก `history.back()` กลืน guard ตอนปิด overlay + default `scrollRestoration='auto'` → เบราว์เซอร์ auto-restore scroll (มักเป็น 0). (NB: vaul/Headless แตะ scroll เฉพาะ Safari/iOS — บน Chromium ไม่ใช่ตัวการ) | ตั้ง `history.scrollRestoration='manual'` ใน `src/main.tsx` (§4 invariant 10). **บทเรียน:** SPA ที่ map overlay เป็น history entry (pushState/back) ต้อง 'manual' เสมอ ไม่งั้นเด้งตอนปิด |
+| 18 | "เมนูหลัก" เด้งขึ้นบนสุดหลังเปิด-ปิด modal ซ้อน (เช่น สำรองข้อมูล) — 2026-06-23 | modal stack ตั้งตัวล่าง `isOpen=false` → เนื้อหา modal unmount → `scrollTop` ภายในหายตอน mount ใหม่ (คนละ scroller กับ window — `scrollRestoration` ไม่ช่วย) | `Modal` prop `scrollResetToken` เก็บ scrollTop ใน ref แล้วคืนเมื่อกลับจาก stack (token=`openCounts[type]`: bump=เปิดใหม่→top, เท่าเดิม=กลับจาก stack→คืนเดิม); wire ที่ `MainMenuModal` |
 
 ---
 
@@ -377,6 +436,12 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 2. Create modal component in `src/components/modals/`
 3. Import + render in `src/components/managers/ModalManager.tsx`
 4. Optionally: add button in `MainMenuModal.tsx`
+5. **ถ้าต้องเริ่มสด/รีเซ็ตทุกครั้งที่เปิด** → ใส่ `key={`x-${openCounts.<type> ?? 0}`}` ใน `ModalManager`
+   (remount ตอนเปิดใหม่ ไม่ใช่ตอน pop กลับจาก stack — ดู modal อื่นเป็นแบบ).
+6. **ถ้าเป็น "hub modal"** (เปิด modal ลูกแล้วผู้ใช้กลับมา) **และเนื้อหา scroll ได้** → ส่ง
+   `scrollResetToken={useAppStore((s) => s.openCounts.<type> ?? 0)}` ให้ `<Modal>` เพื่อคืนตำแหน่ง scroll
+   ภายในเมื่อกลับจาก modal ซ้อน (เริ่ม top เมื่อเปิดใหม่). ref impl: `MainMenuModal.tsx`. (พื้นหลัง window
+   ไม่เด้งอยู่แล้วจาก §4 invariant 10.)
 
 ### When Changing Pricing Logic
 1. Update the relevant Strategy in `src/features/<type>/logic/<Type>Strategy.ts`

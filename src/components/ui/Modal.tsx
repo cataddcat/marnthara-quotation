@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dialog,
   DialogPanel,
@@ -33,6 +33,13 @@ interface ModalProps {
    * Opt-in; ordinary modals (forms, short dialogs) keep the content-sized body.
    */
   appShell?: boolean;
+  /**
+   * เก็บ/คืนตำแหน่ง scroll ภายใน modal เมื่อถูก modal ซ้อนแล้วกลับมา (เช่น เมนูหลัก → เปิดของซ้อน → ปิด
+   * ต้องกลับมาที่เดิม ไม่เด้งบนสุด). ส่ง "fresh-open token" ที่เปลี่ยนค่าเฉพาะตอนเปิดใหม่จากศูนย์ — ใช้
+   * `openCounts[type]` จาก store (bump ตอน openModal, ไม่ bump ตอน pop กลับจาก stack): token เท่าเดิม =
+   * กลับจาก stack → คืนตำแหน่งเดิม; token เปลี่ยน = เปิดใหม่ → เริ่มบนสุด. ไม่ส่ง = ปิดฟีเจอร์นี้.
+   */
+  scrollResetToken?: number | string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -46,6 +53,7 @@ export const Modal: React.FC<ModalProps> = ({
   variant = 'center',
   description,
   appShell = false,
+  scrollResetToken,
 }) => {
   useMobileBack(isOpen, onClose);
   // Drawer/fullscreen vs center เป็นเรื่อง "พื้นที่จอจริง" (ถัง Layout) ไม่ใช่โหมดงาน —
@@ -55,10 +63,30 @@ export const Modal: React.FC<ModalProps> = ({
   // หัวเรื่องแบบ "รับรู้การเลื่อน" (Geist §1.7 borders-over-shadows): หัวเรื่องแบนสนิทเมื่ออยู่บนสุด
   // และมีเส้นคั่นโผล่ขึ้นเมื่อเนื้อหาเลื่อน → บอกผู้ใช้ว่ายังมีต่อด้านบน (ใช้กับทุก modal ผ่าน chrome กลาง)
   const [scrolled, setScrolled] = useState(false);
+  // เก็บตำแหน่ง scroll ภายใน เพื่อคืนเมื่อกลับจาก modal ซ้อน (ดู scrollResetToken). scrollElRef ผูกกับ
+  // scroll container — instance ของ Modal อยู่รอดตอนถูกซ้อน (มีแต่ "เนื้อหา" ที่ unmount) ref จึงคงค่าไว้ได้
+  const scrollElRef = useRef<HTMLDivElement | null>(null);
+  const scrollTopRef = useRef(0);
+  const prevTokenRef = useRef<number | string | undefined>(undefined);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    scrollTopRef.current = e.currentTarget.scrollTop;
     const next = e.currentTarget.scrollTop > 4;
     setScrolled((prev) => (prev === next ? prev : next));
   };
+
+  // คืน scrollTop เดิมเมื่อ modal เปิดกลับจาก stack (token เท่าเดิม) / รีเซ็ตเป็น 0 เมื่อเปิดใหม่ (token เปลี่ยน).
+  // rAF ให้รันหลังเนื้อหา mount เสร็จ (Transition/Drawer enter) จึงตั้ง scrollTop ได้จริง
+  useEffect(() => {
+    if (scrollResetToken === undefined || !isOpen) return;
+    const fresh = scrollResetToken !== prevTokenRef.current;
+    prevTokenRef.current = scrollResetToken;
+    if (fresh) scrollTopRef.current = 0;
+    const target = scrollTopRef.current;
+    const raf = requestAnimationFrame(() => {
+      if (scrollElRef.current) scrollElRef.current.scrollTop = target;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen, scrollResetToken]);
 
   // 🧠 Smart Adaptive Logic:
   // จอกว้าง (desktop) → เปลี่ยน Fullscreen/Drawer เป็น Center ให้หมด
@@ -111,7 +139,7 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4" onScroll={handleScroll}>
+            <div ref={scrollElRef} className="flex-1 overflow-y-auto p-4" onScroll={handleScroll}>
               {children}
             </div>
             {footer && (
@@ -256,6 +284,7 @@ export const Modal: React.FC<ModalProps> = ({
                   <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
                 ) : (
                   <div
+                    ref={scrollElRef}
                     className="flex-1 overflow-y-auto overscroll-contain bg-background/50 p-4"
                     onScroll={handleScroll}
                   >

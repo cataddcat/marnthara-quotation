@@ -241,6 +241,9 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   const { theme, setTheme } = useThemeStore();
   const shopName = useAppStore((s) => s.shopConfig.name);
   const openModal = useAppStore((s) => s.openModal);
+  // fresh-open token — bump เฉพาะตอนเปิดเมนูใหม่จากศูนย์ (openModal) ไม่ bump ตอน pop กลับจาก stack →
+  // ให้ Modal คืนตำแหน่ง scroll เดิมเมื่อกลับจาก modal ซ้อน แต่เริ่มบนสุดเมื่อเปิดใหม่
+  const menuOpenSeq = useAppStore((s) => s.openCounts.mainMenu ?? 0);
   const authStatus = useAuthStore((s) => s.status);
   const authEmail = useAuthStore((s) => s.email);
   const signOutUser = useAuthStore((s) => s.signOutUser);
@@ -503,6 +506,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
       description="เข้าถึงฟังก์ชันทั้งหมดของระบบ"
       maxWidth="lg"
       variant="drawer"
+      scrollResetToken={menuOpenSeq}
     >
       <div className="space-y-5 pb-safe-area">
         {/* ── รายการเมนู (data-driven) — โหมดปรับแต่ง (dev) = ลากจัดเรียง/ย้ายข้ามหมวด ── */}

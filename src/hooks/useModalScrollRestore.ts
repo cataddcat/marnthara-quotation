@@ -2,17 +2,19 @@ import { useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 
 /**
- * useModalScrollRestore — คืนตำแหน่ง scroll ของหน้าหลักหลังปิด modal
+ * useModalScrollRestore — (insurance ฝั่ง iOS) คืนตำแหน่ง scroll หน้าหลักหลังปิด modal
  * ────────────────────────────────────────────────────────────────────────────
- * ปัญหา: เปิด modal จากเมนูหลัก (vaul drawer) → ซ้อน BBB (Headless Dialog) → ปิด แล้ว
- * หน้าหลักเด้งไปบนสุด (body-lock ของ 2 ไลบรารีส่งต่อกันแล้วทำตำแหน่งหาย).
+ * ⚠️ ตัวแก้ "หน้าเด้งบนสุดตอนปิด modal" ตัวจริงคือ `history.scrollRestoration='manual'` ใน main.tsx
+ * (กัน browser auto-restore ตอน useMobileBack เรียก `history.back()` กลืน guard) — ดู HANDOFF §4
+ * invariant 10 + memory `scroll-restore-technique`. hook นี้เหลือไว้เป็น insurance เฉพาะ Safari/iOS ที่
+ * vaul ตั้ง body `position:fixed` (เป็น scroll ที่ history ไม่คุม). บน Chromium ไลบรารี modal ไม่แตะ
+ * scroll หน้าหลัก → hook เป็น no-op โดยปลอดภัย (savedY = ตำแหน่งจริง, restore = ไม่ขยับ).
  *
- * วิธี: เก็บ scrollY ของหน้าหลัก "ตอนไม่มี modal เปิด" (capture ก่อน lock เสมอ),
- * freeze ไว้ตอนเปิด modal ตัวแรก, แล้ว restore ตอนปิดตัวสุดท้าย (rAF → รันหลัง cleanup
- * ของ vaul/Headless จึง override ค่าที่ไลบรารีตั้งผิดได้). ผูกกับ activeModal (modal stack)
- * → เปิดซ้อนหลายชั้นก็คืนตำแหน่ง "ก่อนเปิดตัวแรก" ตัวเดียว.
+ * วิธี: เก็บ scrollY "ตอนไม่มี modal เปิด" (capture ก่อน lock), freeze ตอนเปิดตัวแรก, restore ตอนปิด
+ * ตัวสุดท้าย (rAF) ผูกกับ activeModal (modal stack). เรียกครั้งเดียวที่ระดับแอป (App.tsx).
  *
- * เรียกครั้งเดียวที่ระดับแอป (App.tsx).
+ * NB: scroll *ภายในตัว modal* ที่ถูกซ้อน (เช่น เมนูหลัก) เป็นคนละเรื่อง — ใช้ prop `scrollResetToken`
+ * ของ Modal.tsx (ดู HANDOFF §2.1), ไม่เกี่ยวกับ hook นี้.
  */
 export function useModalScrollRestore() {
   const activeModal = useAppStore((s) => s.activeModal);
