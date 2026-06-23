@@ -266,9 +266,20 @@ export const RoomSlider: React.FC<RoomSliderProps> = ({
                   ))}
                 </div>
               ) : (
-                <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
-                  {activeIndex + 1} / {rooms.length}
-                </span>
+                // >8 ห้อง: แถบเลื่อนบอกตำแหน่ง (ไม่ใช้ตัวเลข — เลข 1/9 อยู่ที่ avatar การ์ดแล้ว)
+                // คงเส้นคงวากับกิ่งดอท: pager เป็น "ภาพ" เสมอ ไม่สลับไปเป็นเลข
+                <div
+                  className="relative h-2 w-16 rounded-full bg-muted-foreground/25 shrink-0"
+                  aria-hidden
+                >
+                  <span
+                    className="absolute top-0 h-2 w-5 rounded-full bg-primary transition-all duration-200"
+                    style={{
+                      left: `${(activeIndex / (rooms.length - 1)) * 100}%`,
+                      transform: `translateX(${(activeIndex / (rooms.length - 1)) * -100}%)`,
+                    }}
+                  />
+                </div>
               )}
 
               {/* + เพิ่ม — ปุ่มเดียวเลือก "เพิ่มสินค้า" (ห้องที่เปิดอยู่) หรือ "เพิ่มห้อง" (Design Probe).

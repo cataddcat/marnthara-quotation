@@ -4,8 +4,17 @@ import { ITEM_TYPES } from '@/config/enums';
 
 // รูปแบบม่าน → ป้ายไทยสั้น (ตัด " (English)" ออกจาก CURTAIN_STYLES) สำหรับ title การ์ด
 // เช่น 'ลอน' → 'ม่านลอน', 'จีบ' → 'ม่านจีบ'
+// แป๊บ: title ใช้ "ม่านแป๊บ" (ตัดหาง "/สอดราง" ที่เป็นคำพ้อง) — title นี้คือตัวยาวสุดในชุดที่จำกัด
+//   วัดแล้ว truncate เฉพาะตอนมีชิปสถานะบนจอ <375px (ItemCard Row 1); ย่อจุดนี้จุดเดียวกัน truncate
+//   โดยไม่เพิ่มความสูงการ์ด ส่วน dropdown เลือกสไตล์ยังโชว์ "ม่านแป๊บ/สอดราง (Rod)" เต็มตามเดิม
+const CURTAIN_STYLE_TITLE_OVERRIDE: Record<string, string> = {
+  แป๊บ: 'ม่านแป๊บ',
+};
 const CURTAIN_STYLE_LABELS: Record<string, string> = Object.fromEntries(
-  CURTAIN_STYLES.map((s) => [s.value, s.label.replace(/\s*\(.*?\)\s*/, '').trim()])
+  CURTAIN_STYLES.map((s) => [
+    s.value,
+    CURTAIN_STYLE_TITLE_OVERRIDE[s.value] ?? s.label.replace(/\s*\(.*?\)\s*/, '').trim(),
+  ])
 );
 
 /**

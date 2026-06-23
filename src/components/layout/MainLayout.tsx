@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
-import { ChevronRight, HardHat, ClipboardList, User } from 'lucide-react';
+import { ChevronRight, User, Menu } from 'lucide-react';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
@@ -37,8 +36,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const rooms = useAppStore((state) => state.rooms);
   const customerName = useAppStore((state) => state.customer.name);
   const sync = useSyncStatus();
-  const addToast = useUIStore((s) => s.addToast);
-  const { isField, isDetail, canSwitch, setMode } = useExperienceMode();
+  const { isField, isDetail, canSwitch } = useExperienceMode();
 
   // โหมดละเอียด + overview → กว้างพอสำหรับ sidebar ดัชนีห้อง (240px) + แดชบอร์ดหลายคอลัมน์
   const wideContent = isDetail && viewMode === 'overview';
@@ -47,6 +45,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { trigger } = useHaptic();
   const [scrolled, setScrolled] = useState(false);
   const [isSmartNavOpen, setIsSmartNavOpen] = useState(false);
+  // ตัวกรองเริ่มต้นของ SmartNavigator — กดปุ่ม "ค้าง N" → 'pending' (เห็นเฉพาะห้องที่ค้าง)
+  const [smartNavFilter, setSmartNavFilter] = useState<'all' | 'pending'>('all');
 
   const hasDiscount = discount.is_enabled && discount.value > 0;
   const hasVat = shopConfig.baseVatRate > 0;
@@ -65,18 +65,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     });
     return { total, incomplete };
   }, [rooms]);
-
-  // สลับโหมดงาน 1 แตะ — haptic + toast ยืนยันโหมดใหม่
-  const handleToggleMode = () => {
-    const next = isField ? 'detail' : 'field';
-    trigger('medium');
-    setMode(next);
-    addToast(
-      'info',
-      next === 'field' ? 'โหมดหน้างาน' : 'โหมดละเอียด',
-      next === 'field' ? 'วัดไว จดให้ครบ — ซ่อนทุน/ส่วนต่าง' : 'ราคา · ทุน/ส่วนต่าง · จัดเรียงห้อง'
-    );
-  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -98,28 +86,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           )}
         >
           <div className="max-w-3xl mx-auto h-14 px-4 sm:px-6 flex items-center justify-between">
-            {/* Left: Logo / Brand (→ เมนู) + ชื่อลูกค้างานปัจจุบัน (→ สลับงาน) */}
-            <div className="flex flex-col items-start justify-center min-w-0">
+            {/* Left: ปุ่มเมนู (☰) + ชื่อลูกค้า/งานปัจจุบัน (→ สลับงาน). ตัดชื่อร้านออก (เจ้าของทราบดี);
+                เมนูยังเข้าได้จากไอคอน ☰ ทุกโหมด (detail/desktop ไม่มี dock) */}
+            <div className="flex items-center gap-1 min-w-0">
               <button
-                className="flex items-center gap-2 group active:scale-95 transition-transform outline-none"
                 onClick={() => {
                   trigger('light');
                   onOpenMainMenu?.();
                 }}
+                aria-label="เมนูหลัก"
+                className="-ml-1.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-foreground hover:bg-muted active:scale-95 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <h1 className="text-base sm:text-lg font-bold text-foreground group-hover:text-muted-foreground transition-colors truncate max-w-[120px] sm:max-w-[220px]">
-                  {shopConfig.name || 'ม่านธารา'}
-                </h1>
-                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 transition-colors shrink-0" strokeWidth={1.5} />
+                <Menu className="w-5 h-5" strokeWidth={1.5} />
               </button>
-              {/* ชื่อลูกค้างานปัจจุบัน — แตะเพื่อเปิด "งานทั้งหมด" (สลับงาน) */}
+              {/* ชื่อลูกค้างานปัจจุบัน — context หลักฝั่งซ้าย · แตะเปิด "งานทั้งหมด" (สลับงาน) */}
               <button
                 onClick={() => {
                   trigger('selection');
                   onOpenJobs?.();
                 }}
                 aria-label="สลับงาน / ดูงานทั้งหมด"
-                className="flex items-center gap-1 mt-0.5 text-xs font-medium text-muted-foreground hover:text-foreground active:scale-95 transition-colors max-w-[160px] sm:max-w-[280px] outline-none"
+                className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground hover:text-muted-foreground active:scale-95 transition-colors outline-none"
               >
                 {!sync.hidden && (
                   <span
@@ -127,9 +114,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     title={sync.label}
                   />
                 )}
-                <User className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+                <User className="w-3.5 h-3.5 shrink-0 text-muted-foreground" strokeWidth={1.5} />
                 <span className="truncate">{customerName || 'งานใหม่'}</span>
-                <ChevronRight className="w-3 h-3 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
               </button>
             </div>
 
@@ -137,38 +124,19 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 · Desktop = Net badge 2 บรรทัดเดิม */}
             {canSwitch ? (
               <div className="flex items-stretch h-11 rounded-full border border-border/70 bg-card/60 overflow-hidden shrink-0">
-                {/* ช่องซ้าย: สวิตช์โหมด (tint = สถานะ) */}
-                <button
-                  onClick={handleToggleMode}
-                  aria-label={isField ? 'สลับเป็นโหมดละเอียด' : 'สลับเป็นโหมดหน้างาน'}
-                  className={cn(
-                    'flex items-center justify-center gap-1.5 min-w-11 pl-3 pr-2.5 transition-colors active:opacity-80',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
-                    isField
-                      ? 'bg-amber-50 text-amber-700 eeert:text-amber-900 dark:bg-amber-950/40 dark:text-amber-400'
-                      : 'bg-indigo-50 text-indigo-700 eeert:text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-400'
-                  )}
-                >
-                  {isField ? (
-                    <HardHat className="w-4 h-4 shrink-0" strokeWidth={1.5} />
-                  ) : (
-                    <ClipboardList className="w-4 h-4 shrink-0" strokeWidth={1.5} />
-                  )}
-                  {/* จอแคบมาก (<380px) เหลือไอคอน+สีบอกโหมด — toast ยืนยันตอนสลับ */}
-                  <span className="hidden min-[380px]:inline whitespace-nowrap text-xs font-bold">
-                    {isField ? 'หน้างาน' : 'ละเอียด'}
-                  </span>
-                </button>
-
-                {/* ช่องขวา: KPI ของโหมด — บรรทัดเดียว (field: จุดวัด→ลิ้นชักห้อง · detail: Net→ส่วนลด) */}
+                {/* KPI ของโหมด — pill เดียว (field: จุดวัด→ลิ้นชักห้อง · detail: Net→ส่วนลด).
+                    ปุ่มสลับโหมดย้ายไปเมนูหลักแล้ว (MainMenu Mode Toggle) */}
                 <button
                   onClick={() => {
                     trigger('selection');
-                    if (isField) setIsSmartNavOpen(true);
-                    else onOpenDiscount?.();
+                    if (isField) {
+                      // มีจุดค้าง → เปิดกรองเฉพาะที่ค้างทันที; ครบแล้ว → เปิดทั้งหมด
+                      setSmartNavFilter(fieldStatus.incomplete > 0 ? 'pending' : 'all');
+                      setIsSmartNavOpen(true);
+                    } else onOpenDiscount?.();
                   }}
                   aria-label={isField ? 'ดูห้องทั้งหมด / จุดที่ค้าง' : 'ส่วนลดท้ายบิล'}
-                  className="flex items-center gap-1.5 border-l border-border/70 pl-2.5 pr-3 transition-colors hover:bg-muted/50 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                  className="flex items-center gap-1.5 px-3 transition-colors hover:bg-muted/50 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   {isField ? (
                     <span className="text-sm font-bold leading-none whitespace-nowrap">
@@ -267,6 +235,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         activeRoomId={activeRoomId}
         onNavigate={onNavigateRoom}
         onSetViewMode={onSetViewMode}
+        initialFilter={smartNavFilter}
       />
     </div>
   );

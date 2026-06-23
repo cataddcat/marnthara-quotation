@@ -258,6 +258,11 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
    **peers grouped into ≤ ~7 labelled chunks (Miller's Law, §0)** · product forms follow the §8 anatomy ·
    **vertical waste trimmed** (no redundant stacked labels / double padding — §3) **without dropping the §1/§3
    floors** (14px · Thai 1.5 · 44px) · verified at 360–390px.
+5. **บันทึกศัพท์ใหม่ (กติกาบังคับ)** — เจอ **คำศัพท์ UX/UI ที่สำคัญ/น่าสนใจ** ระหว่างงาน (เทคนิค layout · การวัด ·
+   พฤติกรรม CSS · design pattern · เครื่องมือ) ที่ยังไม่มีในคู่มือ → **เพิ่มลง
+   [`docs/UX-GLOSSARY.md`](./docs/UX-GLOSSARY.md) ทันที** พร้อม (1) ความหมาย (2) ส่วนที่ใช้ในแอพ (`file:line`)
+   (3) ลิงก์ owner ถ้าเป็นค่าของ DESIGN/CONTEXT. เอกสารนั้น = คู่มือศัพท์พัฒนาแอพที่ต้องโตต่อเนื่อง
+   (truncate · natural width · flex/min-w-0 · slack …). *ต่างจาก CONTEXT.md ที่เป็นศัพท์โดเมน/ธุรกิจ.*
 
 ---
 

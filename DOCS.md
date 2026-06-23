@@ -15,6 +15,7 @@ The single entry point to every doc in this repo. Read the 🔴 tier always; dro
 | **[CONTEXT.md](CONTEXT.md)** | Domain **glossary** — ผ้าทึบ, DOUBLE, Style, ลอน… Use these exact terms; no code/paths. | discussing any feature/bug ("what is X?") |
 | **[HANDOFF.md](HANDOFF.md)** | Deep **technical** handoff — design philosophy (save-first, cost priority chain), system map, invariants, cost/catalog model, bug history. | architectural / pricing / save-flow / multi-file changes ("how & why is it built?") |
 | **[DESIGN.md](DESIGN.md)** | The **design system & UI** requirements ("the document is the designer") — typography · colour/contrast · spacing · the Design Probe · enforcement (the law + its values live here). | any UI/UX change ("how should it look?") |
+| **[docs/UX-GLOSSARY.md](docs/UX-GLOSSARY.md)** | 📐 **ศัพท์ UX/UI ฝั่ง design-engineering** (truncate · natural width · flex/min-w-0 · slack · safe-area …) + **กติกาบังคับ "เจอศัพท์ใหม่ → บันทึก"**. ต่างจาก CONTEXT.md ที่เป็นศัพท์โดเมน/ธุรกิจ. | any UI/UX change (อ่านคู่ DESIGN.md · **บันทึกศัพท์ใหม่ที่นี่**) |
 | **[docs/MOBILE-UX-AUDIT.md](docs/MOBILE-UX-AUDIT.md)** | 📱 iPhone-13 (390×844) mobile UX/UI audit — 32 findings (density · safe-area · touch · tokens) flagged 🔴/🟢/🟡 + a **done/remaining status header**. The worklog/seam for the ongoing mobile-density pass. | **continuing mobile UX / density work** (read with DESIGN.md) |
 | **[COMMANDS.md](COMMANDS.md)** | Every project **command** + the verification gate (lint 0-warn · test · build) + expected output. | running anything / before handoff |
 
@@ -44,7 +45,8 @@ restate. **If two docs disagree, the owner wins — fix the other.**
 | UI · typography · **colour** · spacing · elevation | **DESIGN.md** (+ `typography.ts` / `dataTones.ts` mirrors) | link; never copy the numbers/hues. §2 **supersedes & retires** HANDOFF §1.7 framings (incl. "monochrome chrome") |
 | Reading order / doc map | **DOCS.md** (this file) | CLAUDE.md links here — doesn't keep its own order |
 | Product scope · what to build/refuse | **PRINCIPLES.md** | — |
-| Domain vocabulary | **CONTEXT.md** | use the terms verbatim |
+| Domain vocabulary (โดเมน/ธุรกิจ) | **CONTEXT.md** | use the terms verbatim |
+| UX/UI design-engineering vocabulary (truncate · natural width · layout/measurement) | **docs/UX-GLOSSARY.md** | link; เจอศัพท์ใหม่ → บันทึกที่นี่ (DESIGN §6 บังคับ) |
 | Copy / microcopy / voice (คำที่ผู้ใช้เห็น · คำต้องห้าม) | **CONTEXT.md** (คำ + การ render + anti-terms §6) | tone = PRINCIPLES §2.5; decision เฉพาะ → MEMORY |
 | Architecture · pricing · invariants · "why" · bug history | **HANDOFF.md** | — |
 | Standing preferences · latest decisions | **MEMORY.md** *(agent store)* | — |

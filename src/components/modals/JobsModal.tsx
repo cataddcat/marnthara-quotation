@@ -31,6 +31,7 @@ import {
   Check,
   FolderKanban,
   ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 interface JobsModalProps {
@@ -71,6 +72,15 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const PAGE = 50;
   const [visibleCount, setVisibleCount] = useState(PAGE);
+  // มือถือ: เก็บว่าการ์ดงานไหนถูก "กาง" ดูรายละเอียด (เดสก์ท็อปกางหมดด้วย CSS sm: — ไม่พึ่ง state นี้)
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const toggleExpand = (id: string) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const list = useMemo<JobBundle[]>(() => {
     const live = extractJobBundle({
@@ -199,6 +209,12 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
               const sum = summaries.get(job.id) ?? summarizeJob(job, vatRate);
               const isCurrent = job.id === currentJobId;
               const status = job.status as JobStatusKey;
+              const expanded = expandedIds.has(job.id);
+              // มือถือ: โชว์รายละเอียด (เงิน/นับ/ปุ่มเปิดงาน) เมื่อเป็นงานปัจจุบัน หรือผู้ใช้กางการ์ด
+              // เดสก์ท็อป (sm+): บังคับโชว์เสมอ → ใช้คลาส 'hidden sm:block|flex' (ไม่ย่อสักการ์ด)
+              const showDetails = isCurrent || expanded;
+              const detailBlockCls = showDetails ? 'block' : 'hidden sm:block';
+              const detailFlexCls = showDetails ? 'flex' : 'hidden sm:flex';
               return (
                 <div
                   key={job.id}
@@ -210,16 +226,27 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                   {/* แถวบน: ชื่อ + สถานะ + เมนู */}
                   <div className="flex items-start gap-2 p-3 pb-2">
                     <button
-                      onClick={() => handleSwitch(job.id)}
+                      onClick={() => (isCurrent ? handleSwitch(job.id) : toggleExpand(job.id))}
+                      aria-expanded={isCurrent ? undefined : expanded}
                       className="flex-1 min-w-0 text-left active:opacity-80"
                     >
                       <div className="flex items-center gap-2">
                         <span
                           className={cn('w-2 h-2 rounded-full shrink-0', JOB_STATUS_DOT[status])}
                         />
-                        <span className="font-bold text-foreground truncate">
+                        <span className="flex-1 min-w-0 font-bold text-foreground truncate">
                           {job.customer.name || 'งานใหม่ (ยังไม่ตั้งชื่อ)'}
                         </span>
+                        {/* มือถือ: ลูกศรบอกว่ากาง/ย่อได้ (เดสก์ท็อปกางเสมอ → ซ่อน; งานปัจจุบันไม่ย่อ → ไม่มี) */}
+                        {!isCurrent && (
+                          <ChevronDown
+                            className={cn(
+                              'w-4 h-4 shrink-0 text-muted-foreground/50 transition-transform sm:hidden',
+                              expanded && 'rotate-180'
+                            )}
+                            strokeWidth={1.5}
+                          />
+                        )}
                       </div>
                       {(job.customer.phone || job.customer.code) && (
                         <div className="text-xs text-muted-foreground mt-0.5 ml-4 truncate">
@@ -227,15 +254,6 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                         </div>
                       )}
                     </button>
-
-                    {/* ชิปสถานะ (กดเปลี่ยนสเตจ) */}
-                    <StatusMenu
-                      status={status}
-                      onPick={(s) => {
-                        trigger('selection');
-                        setJobStatus(s, job.id);
-                      }}
-                    />
 
                     {/* เมนูการ์ด */}
                     <Menu as="div" className="relative shrink-0">
@@ -289,40 +307,66 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                     </Menu>
                   </div>
 
-                  {/* แถวเงิน */}
-                  <button
-                    onClick={() => handleSwitch(job.id)}
-                    className="block w-full text-left px-3 active:opacity-80"
-                  >
-                    <div className="flex items-center gap-3 text-sm flex-wrap">
-                      <span className="text-muted-foreground">
-                        ราคา{' '}
+                  {/* แถวเงิน — เดสก์ท็อปโชว์เสมอ; มือถือโชว์เมื่อกาง (showDetails). ข้อมูลล้วน ไม่ใช่ปุ่มสลับ */}
+                  <div className={cn(detailBlockCls, 'px-3')}>
+                    {/* มือถือ: 3 แถว label ซ้าย · ตัวเลขชิดขวา เรียงเป็นคอลัมน์ (tabular-nums → จุดทศนิยมตรงกัน
+                        เหมือนตั้งเลขคณิต). เดสก์ท็อป (sm+): กลับเป็น inline เหมือนเดิม */}
+                    <div className="flex flex-col gap-1 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1">
+                      <div className="flex items-baseline justify-between gap-3 sm:justify-start sm:gap-1.5">
+                        <span className="text-muted-foreground">ราคา</span>
                         <span className="font-mono tabular-nums font-bold text-foreground">
                           ฿{fmtTH(sum.price)}
                         </span>
-                      </span>
+                      </div>
                       {sum.received > 0 && (
-                        <span className="text-muted-foreground">
-                          รับแล้ว{' '}
+                        <div className="flex items-baseline justify-between gap-3 sm:justify-start sm:gap-1.5">
+                          <span className="text-muted-foreground">รับแล้ว</span>
                           <span className="font-mono tabular-nums font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
                             ฿{fmtTH(sum.received)}
                           </span>
-                        </span>
+                        </div>
                       )}
                       {sum.balance > 0 && (
-                        <span className="text-muted-foreground">
-                          ค้างเก็บ{' '}
+                        <div className="flex items-baseline justify-between gap-3 sm:justify-start sm:gap-1.5">
+                          <span className="text-muted-foreground">ค้างเก็บ</span>
                           <span className="font-mono tabular-nums font-bold text-amber-700 dark:text-amber-400 eeert:text-amber-900">
                             ฿{fmtTH(sum.balance)}
                           </span>
-                        </span>
+                        </div>
                       )}
                     </div>
-                  </button>
+                  </div>
 
-                  {/* แถวเมตา */}
-                  <div className="flex items-center justify-between gap-2 px-3 pt-2 pb-3 mt-1">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                  {/* แถวเมตา — 2 บรรทัดตั้งใจ (เลี่ยง wrap มั่วเพราะชิปสถานะกว้าง):
+                      บน = สถานะ ⟷ กำลังเปิด/วันที่ · ล่าง = นับห้อง/จุด · ค้าง */}
+                  <div className={cn('space-y-1.5 px-3 pt-2 pb-3', showDetails ? 'mt-1' : 'sm:mt-1')}>
+                    {/* บรรทัดบน: ชิปสถานะ (กดเปลี่ยนสเตจ) ซ้าย ⟷ กำลังเปิด/วันที่ ขวา */}
+                    <div className="flex items-center justify-between gap-2">
+                      <StatusMenu
+                        status={status}
+                        onPick={(s) => {
+                          trigger('selection');
+                          setJobStatus(s, job.id);
+                        }}
+                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isCurrent && (
+                          <span className="text-xs font-bold text-foreground bg-muted px-2 py-0.5 rounded-md">
+                            กำลังเปิด
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {fmtDate(job.updatedAt)}
+                        </span>
+                      </div>
+                    </div>
+                    {/* บรรทัดล่าง: นับขนาดงาน · ค้าง — เดสก์ท็อปโชว์เสมอ; มือถือเมื่อกาง */}
+                    <div
+                      className={cn(
+                        detailFlexCls,
+                        'flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground'
+                      )}
+                    >
                       <span className="whitespace-nowrap">
                         {sum.roomCount} ห้อง · {sum.itemCount} จุด
                       </span>
@@ -332,17 +376,20 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {isCurrent && (
-                        <span className="text-xs font-bold text-foreground bg-muted px-2 py-0.5 rounded-md">
-                          กำลังเปิด
-                        </span>
-                      )}
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {fmtDate(job.updatedAt)}
-                      </span>
-                    </div>
                   </div>
+
+                  {/* ปุ่มสลับไปงานนี้ — เฉพาะงานที่ไม่ใช่ปัจจุบัน; เดสก์ท็อปโชว์เสมอ มือถือเมื่อกาง */}
+                  {!isCurrent && (
+                    <div className={cn(detailFlexCls, 'justify-end px-3 pb-3')}>
+                      <button
+                        onClick={() => handleSwitch(job.id)}
+                        className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted active:scale-95 transition-colors"
+                      >
+                        เปิดงานนี้
+                        <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -388,8 +435,8 @@ const StatusMenu: React.FC<{
       leaveTo="transform opacity-0 scale-95"
     >
       <MenuItems
-        anchor="bottom end"
-        className="z-50 w-44 origin-top-right rounded-xl bg-popover p-1 shadow-xl ring-1 ring-black/5 focus:outline-none border border-border/50 [--anchor-gap:0.5rem]"
+        anchor="bottom start"
+        className="z-50 w-44 origin-top-left rounded-xl bg-popover p-1 shadow-xl ring-1 ring-black/5 focus:outline-none border border-border/50 [--anchor-gap:0.5rem]"
       >
         {JOB_STATUS_ORDER.map((s) => (
           <MenuItem key={s}>

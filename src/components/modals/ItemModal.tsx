@@ -377,12 +377,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             form={activeFormId}
             variant="secondary"
             size="md"
-            className="rounded-full px-5"
+            aria-label="บันทึก แล้วเพิ่มจุดถัดไป"
+            className="rounded-full px-4"
             onClick={() => (submitIntentRef.current = 'next')}
           >
-            บันทึก
-            <ArrowRight className="w-4 h-4 mx-1.5 shrink-0" strokeWidth={1.5} />
             ถัดไป
+            <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" strokeWidth={1.5} />
           </Button>
         ) : (
           <span />
@@ -392,7 +392,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             type="button"
             variant="outline"
             size="md"
-            className="rounded-full px-6"
+            className="rounded-full px-4"
             onClick={handleClose}
           >
             ยกเลิก
@@ -401,7 +401,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             type="submit"
             form={activeFormId}
             size="md"
-            className="rounded-full px-6"
+            className="rounded-full px-4"
             onClick={() => (submitIntentRef.current = 'close')}
           >
             <Save className="w-4 h-4 mr-2" />
