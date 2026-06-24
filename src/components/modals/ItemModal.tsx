@@ -358,13 +358,13 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     </div>
   );
 
-  // ── Footer (iOS-native text-forward): ยังไม่แก้/ฟอร์มว่าง = ไม่มี footer (เปิด edit มาเฉย ๆ เห็นแค่ ✕).
-  //    แก้แล้ว+ข้อมูลครบ → add: [บันทึก & เพิ่ม] (submit+เคลียร์ฟอร์ม) ⟷ [บันทึก] (submit+ปิด) · edit: [บันทึก] เดียว.
+  // ── Footer = ปุ่ม "ลอย" ชิดขวาล่าง (Modal footerFloating; ไม่มีแถบ). ยังไม่แก้/ฟอร์มว่าง = ไม่มีปุ่ม
+  //    (เปิด edit มาเฉย ๆ เห็นแค่ ✕). แก้แล้ว+ข้อมูลครบ → add: [บันทึก & เพิ่ม][บันทึก] · edit: [บันทึก] เดียว.
   //    ยกเลิก/ปิดใช้ปุ่ม ✕ หัว modal (Save-First: draft autosave ยังอยู่ ไม่ทำลาย) ──
   const footer =
     showForm && activeFormId && isDirty && !isFormEmpty ? (
-      <div className="flex items-center justify-between gap-3">
-        {mode === 'add' ? (
+      <div className="flex items-center justify-end gap-2.5">
+        {mode === 'add' && (
           <Button
             type="submit"
             form={activeFormId}
@@ -375,8 +375,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           >
             บันทึก & เพิ่ม
           </Button>
-        ) : (
-          <span />
         )}
         <Button
           type="submit"
@@ -400,6 +398,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       maxWidth={wideTwoCol ? '5xl' : '2xl'}
       headerAction={headerActions}
       footer={footer}
+      footerFloating
     >
       <div className="animate-fade-in">
         {mode === 'add' && !typeConfirmed ? (

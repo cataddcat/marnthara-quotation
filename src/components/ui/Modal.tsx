@@ -34,6 +34,11 @@ interface ModalProps {
    */
   appShell?: boolean;
   /**
+   * ItemModal opt-in: render footer เป็นปุ่ม "ลอย" มุมขวาล่าง (ไม่มีแถบ border/bg) แทน sticky bar.
+   * default = bar เดิม (modal อื่นไม่เปลี่ยน). ใช้คู่กับเนื้อหาที่ได้ bottom-padding กันปุ่มบังฟิลด์สุดท้าย.
+   */
+  footerFloating?: boolean;
+  /**
    * เก็บ/คืนตำแหน่ง scroll ภายใน modal เมื่อถูก modal ซ้อนแล้วกลับมา (เช่น เมนูหลัก → เปิดของซ้อน → ปิด
    * ต้องกลับมาที่เดิม ไม่เด้งบนสุด). ส่ง "fresh-open token" ที่เปลี่ยนค่าเฉพาะตอนเปิดใหม่จากศูนย์ — ใช้
    * `openCounts[type]` จาก store (bump ตอน openModal, ไม่ bump ตอน pop กลับจาก stack): token เท่าเดิม =
@@ -53,6 +58,7 @@ export const Modal: React.FC<ModalProps> = ({
   variant = 'center',
   description,
   appShell = false,
+  footerFloating = false,
   scrollResetToken,
 }) => {
   useMobileBack(isOpen, onClose);
@@ -276,24 +282,44 @@ export const Modal: React.FC<ModalProps> = ({
                   >
                     {/* min-h-full when fullscreen lets children use flex-col + flex-1 spacer tricks;
                         max-w-3xl กันฟอร์มยืดเต็มจอเมื่อ fullscreen (จอมือถือ) ถูกเปิดบนจอกว้าง */}
-                    <div className={cn('mx-auto w-full', isFullscreen && 'min-h-full max-w-3xl')}>
+                    <div
+                      className={cn(
+                        'mx-auto w-full',
+                        isFullscreen && 'min-h-full max-w-3xl',
+                        footerFloating && 'pb-24' // เว้นที่ให้ปุ่มลอย ไม่บังฟิลด์สุดท้าย
+                      )}
+                    >
                       {children}
                     </div>
                   </div>
                 )}
 
-                {/* Footer (Fixed at bottom logic) */}
-                {footer && (
-                  <div
-                    className={cn(
-                      'shrink-0 px-4 py-2.5 border-t border-border bg-background z-20',
-                      isFullscreen && 'pb-safe-bottom-min'
-                    )}
-                  >
-                    {/* fullscreen: ปุ่ม footer เรียงตรงคอลัมน์เนื้อหาเดียวกัน */}
-                    <div className={cn(isFullscreen && 'max-w-3xl mx-auto')}>{footer}</div>
-                  </div>
-                )}
+                {/* Footer — footerFloating: ปุ่ม "ลอย" มุมขวาล่าง (ไม่มีแถบ); ไม่งั้น = sticky bar เดิม */}
+                {footer &&
+                  (footerFloating ? (
+                    <div
+                      className={cn(
+                        'absolute inset-x-0 bottom-0 z-20 px-4 pb-4',
+                        isFullscreen && 'pb-safe-bottom-min'
+                      )}
+                    >
+                      <div
+                        className={cn('flex justify-end', isFullscreen && 'mx-auto w-full max-w-3xl')}
+                      >
+                        {footer}
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        'shrink-0 px-4 py-2.5 border-t border-border bg-background z-20',
+                        isFullscreen && 'pb-safe-bottom-min'
+                      )}
+                    >
+                      {/* fullscreen: ปุ่ม footer เรียงตรงคอลัมน์เนื้อหาเดียวกัน */}
+                      <div className={cn(isFullscreen && 'max-w-3xl mx-auto')}>{footer}</div>
+                    </div>
+                  ))}
               </DialogPanel>
             </TransitionChild>
           </div>
