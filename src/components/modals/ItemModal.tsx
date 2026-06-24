@@ -435,11 +435,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       contentFill={mode === 'add' && !typeConfirmed}
     >
       {mode === 'add' && !typeConfirmed ? (
-        // เลือกประเภท — ไทล์ "สีประจำชนิด" (brand); มือถือดันลงโซนล่าง (นิ้วโป้งแตะถึง) ผ่าน flex-1 + mt-auto
-        // (Modal contentFill ทำ content wrapper เป็น flex-col ตอน fullscreen). เดสก์ท็อป: กริดปกติ content-sized
+        // เลือกประเภท — ไทล์ "สีประจำชนิด" (brand); มือถือ: กริด flex-1 + auto-rows-fr ให้ไทล์ "ขยายเติมเต็มจอ"
+        // พอดีกับจำนวนรายการ (ไม่เหลือช่องว่างโล่งด้านบน) + อยู่โซนล่างแตะถึง. เดสก์ท็อป: กริดปกติ content-sized (68px)
+        // (Modal contentFill ทำ content wrapper เป็น flex-col ตอน fullscreen).
         <div className="animate-fade-in flex flex-1 flex-col">
-          <p className="px-1 pt-1 pb-4 text-sm text-muted-foreground">เลือกสิ่งที่จะเพิ่มในห้องนี้</p>
-          <div className="mx-auto mt-auto grid w-full max-w-md grid-cols-2 gap-2.5 pb-safe-bottom-min">
+          <p className="px-1 pt-1 pb-3 text-sm text-muted-foreground">เลือกสิ่งที่จะเพิ่มในห้องนี้</p>
+          <div className="mx-auto grid w-full max-w-md flex-1 auto-rows-fr grid-cols-2 gap-2.5 pb-safe-bottom-min">
             {typeOptions.map((opt) => (
               <button
                 key={opt.value}

@@ -427,7 +427,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 4. Create feature folder: `src/features/<type>/components/<Type>Form.tsx`, `logic/<Type>Strategy.ts`, `hooks/use<Type>FormLogic.ts`, `schemas.ts`
 5. Add case to `PricingEngine.ts` switch statements (both `calculateDetailedPrice` and `getItemSpecs`)
 6. Add case to `CostEngine.ts` if needed
-7. Add rendering block in `ItemModal.tsx` + pass `onAutoSave`
+7. Add rendering block in `ItemModal.tsx` + pass `onAutoSave`; also register in `MENU_ITEMS`, `FORM_ID_BY_TYPE`, and `TYPE_TILE_CLASS` (picker tile brand colour) there
 8. Add to `STYLE_TO_RAIL` map in `MaterialSummaryModal.tsx` if it's a curtain-like item
 9. Add type guard in `src/lib/type-guards.ts`
 
@@ -490,7 +490,7 @@ src/hooks/
   useZodForm.ts                       — Zod form (always-save)
   useItemForm.ts                      — Simpler form (always-save)
   useFormAutoSave.ts                  — change-to-save bridge (debounced via ItemModal); skips mount
-src/components/modals/ItemModal.tsx   — Save coordinator + single-row sticky footer + flush-on-close
+src/components/modals/ItemModal.tsx   — Save coordinator + floating dirty-gated footer + flush-on-close
 src/features/*/components/*Form.tsx   — 8 feature forms (all call useFormAutoSave + onAutoSave)
 src/features/*/hooks/use*FormLogic.ts — Feature-specific form logic
 ```
@@ -585,7 +585,7 @@ The app forks into **field/หน้างาน** (on-site measuring) and **det
 1. **Disclosure split by intent, not by "advanced".** Installation-spec fields (ฝั่งดึง / เก็บใบ / รูปแบบการเปิด / ตำแหน่งดึง) → wrap in `AdvancedSection`. Catalog/cost tooling (จัดการรายการ, save-to-catalog ⭐, Pro Mode) → stay `{isFull && ...}` (office-only, no escape hatch).
 2. **Honest profit signal.** Traffic-light dot + `CostReadout` render only when `isFull && analysis.totalCost > 0`. Removal (cost always 0) never shows a dot; area/wallpaper need a vault-cost code. Don't show a green dot when cost is unknown.
 3. **Curtains use the shared `ItemSummaryCard` like every form** (Phase C 2026-06-12 **deleted** the curtain-only `PriceSummary`). Its editable Pro Mode (`_cost_*`) moved into `CurtainCostAnalysis` in `ItemSummaryCard`'s `proSlot`; the good state-plate + override-row design was lifted up to `ItemSummaryCard` for all 8 forms. Cost hook = `useCostStatus`. *(Supersedes the old "keep PriceSummary, don't downgrade" rule — PriceSummary no longer exists. See DESIGN §8.)*
-4. **ItemModal footer = capsule (`rounded-full`) `size="md"` (48px) buttons, never full-width.** *(Redesigned 2026-06-10; supersedes the old full-width "บันทึก & เพิ่มจุดถัดไป / บันทึก & ปิด" row.)* When the form has no minimum data yet (`isFormEmpty`, tracked from `hasMinimumItemData`) the footer is a **single "ปิด"** (close-only) button — and `handleSubmit`'s add+close path bails on empty — so an **empty item is never created** (this was the root cause of phantom items + false room "ครบ"). Once started: right side = **ยกเลิก** (`outline`) + **บันทึก** (primary, close intent); add mode also gets a left **"บันทึก → ถัดไป"** (`secondary`, rapid multi-point flow, `submitIntentRef='next'`). Container `flex flex-wrap justify-between`. Don't revert to stacked/full-width, and don't drop the empty→"ปิด" guard.
+4. **ItemModal footer = floating capsule (`rounded-full` `size="md"`/48px) buttons, appearing only after the form is edited.** *(Floating + dirty-gated 2026-06-24 via `Modal` `footerFloating`; supersedes the old sticky-bar "ยกเลิก/ปิด" row.)* The footer renders only when **dirty AND has min data** (`isDirty && !isFormEmpty`, both tracked in `ItemModal`); opening an existing item (or a still-blank form) shows **no footer — just the header ✕** (close = ✕; Save-First keeps the autosaved draft, so nothing is lost). Once edited: edit = **บันทึก**; add also gets **บันทึก & เพิ่ม** (`secondary`, rapid multi-point, `submitIntentRef='next'`) — right-aligned cluster floating bottom-right (no bar). `handleSubmit`'s add+close path still bails on empty so an **empty item is never created** (root cause of phantom items + false room "ครบ"). Don't revert to a sticky bar or re-add ยกเลิก/ปิด buttons.
 5. **Touch ergonomics via `useTierSize().control`** → passed to `<Input size>` (Lite = lg/56px). Don't hardcode input heights per tier.
 
 Verified live (Playwright, Lite 390px + Full 1280px): single-row footer, Lite collapsible disclosure + Full inline, and green traffic-light + CostReadout with a seeded vault cost (60% margin). `npm run lint` 0-warn, `npm run test:run` 295 passing.
