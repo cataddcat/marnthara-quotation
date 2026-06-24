@@ -2,8 +2,6 @@
 
 import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
-import { ItemData } from '@/types';
 import { modalPropsAs } from '@/store/slices/UISlice';
 
 // Import Modals
@@ -29,9 +27,7 @@ import { AdminPinModal } from '@/components/modals/AdminPinModal';
 import { UndoHistoryModal } from '@/components/modals/UndoHistoryModal';
 
 export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpenOverview }) => {
-  const { activeModal, modalProps, closeModal, openModal, addItem, updateItem, openCounts } =
-    useAppStore();
-  const addToast = useUIStore((state) => state.addToast);
+  const { activeModal, modalProps, closeModal, openModal, openCounts } = useAppStore();
 
   const isVisible = (type: string) => activeModal === type;
 
@@ -41,21 +37,6 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
   const projectOverviewProps = modalPropsAs(activeModal, modalProps, 'projectOverview');
   const codeDetailProps = modalPropsAs(activeModal, modalProps, 'codeDetail');
   const adminPinProps = modalPropsAs(activeModal, modalProps, 'adminPin');
-
-  // Handler for Item Form Submit (Add/Edit)
-  const handleItemSubmit = (data: ItemData) => {
-    if (!itemProps?.roomId) return;
-    const { roomId, mode, itemId } = itemProps;
-
-    if (mode === 'edit' && itemId) {
-      updateItem(roomId, itemId, data);
-      addToast('success', 'บันทึกการแก้ไขเรียบร้อย');
-    } else {
-      addItem(roomId, data);
-      addToast('success', 'เพิ่มรายการใหม่เรียบร้อย');
-    }
-    closeModal();
-  };
 
   if (!activeModal) return null;
 
@@ -69,7 +50,6 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
         itemType={itemProps?.itemType}
         initialData={itemProps?.initialData}
         mode={itemProps?.mode}
-        onSubmit={handleItemSubmit}
       />
 
       <CustomerModal isOpen={isVisible('customer')} onClose={closeModal} />

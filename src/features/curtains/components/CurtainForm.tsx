@@ -27,9 +27,7 @@ export const CURTAIN_FORM_ID = 'curtain-edit-form';
 
 interface CurtainFormProps {
   initialData?: Partial<CurtainItemInput>;
-  onSubmit: (data: CurtainItemInput) => void;
-  onCancel: () => void;
-  onAutoSave?: (data: Partial<CurtainItemInput>) => void;
+  onSubmit: (data: CurtainItemInput) => void;  onAutoSave?: (data: Partial<CurtainItemInput>) => void;
   mode?: 'add' | 'edit';
 }
 

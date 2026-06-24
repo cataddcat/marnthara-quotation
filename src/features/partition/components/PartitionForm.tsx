@@ -26,7 +26,6 @@ export const PARTITION_FORM_ID = 'partition-edit-form';
 interface PartitionFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
-  onCancel: () => void;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 

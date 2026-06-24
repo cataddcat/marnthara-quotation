@@ -26,9 +26,7 @@ export const WOODEN_BLINDS_FORM_ID = 'wooden-blinds-edit-form';
 interface WoodenBlindsFormProps {
   // รับ Partial<AreaItemInput> ที่กว้างกว่า — รองรับ caller (ItemModal) ที่ส่ง Partial<ItemData>
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
-  onSubmit: (data: AreaItemInput) => void;
-  onCancel: () => void;
-  itemType?: string;
+  onSubmit: (data: AreaItemInput) => void;  itemType?: string;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 

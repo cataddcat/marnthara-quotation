@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
-import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -8,7 +7,6 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppStore } from '@/store/useAppStore';
 import { useUIStore } from '@/store/useUIStore';
 
-// --- [ARCHITECT] IMPORT FORMS FROM FEATURE DIRECTORIES ---
 import { CurtainForm, CURTAIN_FORM_ID } from '@/features/curtains/components/CurtainForm';
 import { WallpaperForm, WALLPAPER_FORM_ID } from '@/features/wallpapers/components/WallpaperForm';
 import {
@@ -36,7 +34,6 @@ import { ITEM_TYPES } from '@/config/enums';
 import { hasMinimumItemData } from '@/lib/item-status';
 import { normalizeDimensionFields } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
-// [ARCHITECT] Import Unified Theme System
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -46,7 +43,6 @@ interface ItemModalProps {
   itemType?: ItemTypeKey;
   initialData?: Partial<ItemData>;
   mode?: 'add' | 'edit';
-  onSubmit?: (data: ItemData, isComplete?: boolean) => void;
 }
 
 const MENU_ITEMS = [
@@ -82,7 +78,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   itemType: initialItemType = ITEM_TYPES.CURTAIN,
   initialData,
   mode = 'add',
-  onSubmit: _onSubmitLegacy, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
   const { trigger } = useHaptic();
   const { addItem, updateItem } = useAppStore();
@@ -102,15 +97,15 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   };
 
   const [activeType, setActiveType] = useState<ItemTypeKey>(normalizeType(initialItemType));
-  const [typeSheetOpen, setTypeSheetOpen] = useState(false);
-  // โหมด add: ต้อง "เลือกประเภทสินค้าก่อน" จึงจะ mount ฟอร์ม (กันการ remount ที่ล้างค่าที่พิมพ์ไว้
-  // เมื่อเลือกประเภทหลังพิมพ์). โหมด edit ถือว่ายืนยันประเภทแล้วเสมอ
+  // โหมด add: ต้อง "เลือกประเภทสินค้าก่อน" จึงจะ mount ฟอร์ม (typeConfirmed=false → แสดงกริดเลือกประเภท).
+  // "เปลี่ยน" ก็สลับกลับ false เพื่อกลับมากริดเดิม — กริดเป็น picker ทางเดียว (ไม่มี sheet ซ้อน).
+  // โหมด edit ถือว่ายืนยันประเภทแล้วเสมอ
   const [typeConfirmed, setTypeConfirmed] = useState(false);
   const [autoSavedTick, setAutoSavedTick] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
   // Remount key — bumping it resets the form (blank + autofocus) for "save & add next"
   const [formKey, setFormKey] = useState(0);
-  // ฟอร์มยังว่าง (ไม่มีข้อมูลขั้นต่ำ) → footer แสดงปุ่ม "ปิด" แทน "บันทึก" (กันสร้างรายการเปล่า)
+  // ฟอร์มยังว่าง (ไม่มีข้อมูลขั้นต่ำ) → ซ่อน footer ปุ่มบันทึก (กันสร้างรายการเปล่า; ปิดด้วย ✕ หัว modal)
   const [isFormEmpty, setIsFormEmpty] = useState(true);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ค่าฟอร์มล่าสุดที่ค้างใน debounce — เก็บไว้เพื่อ flush ตอนปิด/unmount (กันค่าช่องสุดท้าย เช่น "ความสูง" หาย)
@@ -126,7 +121,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       submitIntentRef.current = 'close';
       setSavedCount(0);
       setFormKey(0);
-      setTypeSheetOpen(false);
       // add → เริ่มที่หน้าเลือกประเภท (ยังไม่ mount ฟอร์ม); edit → เข้าฟอร์มทันที
       setTypeConfirmed(mode === 'edit');
       if (mode === 'add') {
@@ -163,15 +157,20 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
   const handleSelectType = (typeId: ItemTypeKey) => {
     trigger('selection');
-    setTypeSheetOpen(false);
-    // เลือกประเภทเดิมซ้ำ (ยืนยันแล้ว) → ปิด sheet เฉย ๆ ไม่ remount ฟอร์ม (กันค่าที่พิมพ์ไว้ถูกล้าง)
-    if (typeConfirmed && typeId === activeType) return;
-    // เลือกครั้งแรก (product-first) หรือเปลี่ยนประเภทจริง → เริ่ม draft ใหม่ของประเภทนั้น
+    // เลือกประเภทเดิม (เช่น กด "เปลี่ยน" แล้วเปลี่ยนใจ) → เข้าฟอร์มประเภทนั้นต่อ โดยไม่ล้าง draft id เดิม
+    // (กันสร้างรายการซ้ำ — รอบกรอกถัดไปจะ update รายการเดิม)
+    if (typeId === activeType) {
+      setTypeConfirmed(true);
+      setIsFormEmpty(true); // ฟอร์ม mount ใหม่ (ว่าง) → ซ่อน footer จนกว่าจะกรอก (draft id เดิมยังอยู่ กัน item ซ้ำ)
+      return;
+    }
+    // เปลี่ยนเป็นประเภทอื่นจริง → เริ่ม draft ใหม่ของประเภทนั้น
+    // (Save-First: รายการประเภทเดิมที่กรอกถึงขั้นต่ำแล้วยังถูกบันทึกไว้ในห้อง)
     autoCreatedIdRef.current = null;
     setActiveType(typeId);
     setTypeConfirmed(true);
     setFormKey((k) => k + 1);
-    setIsFormEmpty(true); // ฟอร์มประเภทใหม่ว่าง → footer เป็น "ปิด" จนกว่าจะกรอก
+    setIsFormEmpty(true); // ฟอร์มประเภทใหม่ว่าง → ซ่อน footer จนกว่าจะกรอก
   };
 
   // ── Persist draft (immediate) — ใช้ร่วมทั้ง auto-save (หลัง debounce) และ flush ตอนปิด ──
@@ -214,7 +213,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const handleAutoSave = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
-      // ติดตามสถานะ "ฟอร์มว่าง" ทันที (ไม่รอ debounce) เพื่อสลับปุ่ม footer บันทึก ↔ ปิด
+      // ติดตามสถานะ "ฟอร์มว่าง" ทันที (ไม่รอ debounce) เพื่อแสดง/ซ่อน footer ปุ่มบันทึก
       const empty = !hasMinimumItemData(activeType, data as Record<string, unknown>);
       setIsFormEmpty((prev) => (prev === empty ? prev : empty));
       pendingDataRef.current = data;
@@ -304,7 +303,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         addToast('success', `บันทึกจุดที่ ${n} — กรอกจุดถัดไป`);
         autoCreatedIdRef.current = null; // ครั้งถัดไปสร้างรายการใหม่
         setFormKey((k) => k + 1); // remount → เคลียร์ฟอร์ม + โฟกัสช่องกว้าง
-        setIsFormEmpty(true); // ฟอร์มใหม่ว่าง → footer กลับเป็น "ปิด" จนกว่าจะกรอก
+        setIsFormEmpty(true); // ฟอร์มใหม่ว่าง → ซ่อน footer จนกว่าจะกรอก
         return; // คงเปิด modal ไว้
       }
 
@@ -352,24 +351,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     </div>
   );
 
-  // ── Footer (iOS-native text-forward): ฟอร์มว่าง = "ปิด" เดียว (กันรายการเปล่า). กรอกแล้ว →
-  //    add: [บันทึก & เพิ่ม] (submit+เคลียร์ฟอร์ม, เพิ่มหลายจุดรวด) ⟷ [บันทึก] (submit+ปิด) · edit: [บันทึก] เดียว.
-  //    ยกเลิกใช้ปุ่ม ✕ หัว modal (Save-First: draft autosave ยังอยู่ ไม่ทำลาย) ──
+  // ── Footer (iOS-native text-forward): ฟอร์มว่าง = ไม่มี footer (กันรายการเปล่า; ปิดด้วย ✕ หัว modal).
+  //    กรอกแล้ว → add: [บันทึก & เพิ่ม] (submit+เคลียร์ฟอร์ม) ⟷ [บันทึก] (submit+ปิด) · edit: [บันทึก] เดียว.
+  //    ยกเลิก/ปิดใช้ปุ่ม ✕ หัว modal (Save-First: draft autosave ยังอยู่ ไม่ทำลาย) ──
   const footer =
-    showForm && activeFormId ? (
-      isFormEmpty ? (
-        <div className="flex items-center justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            className="rounded-full px-6"
-            onClick={handleClose}
-          >
-            ปิด
-          </Button>
-        </div>
-      ) : (
+    showForm && activeFormId && !isFormEmpty ? (
       <div className="flex items-center justify-between gap-3">
         {mode === 'add' ? (
           <Button
@@ -395,7 +381,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           บันทึก
         </Button>
       </div>
-      )
     ) : undefined;
 
   return (
@@ -427,11 +412,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           </div>
         ) : (
           <>
-            {/* Type switcher (add mode) — แตะเพื่อเปลี่ยนประเภท */}
+            {/* Type switcher (add mode) — แตะเพื่อกลับไปกริดเลือกประเภท (picker ทางเดียว) */}
             {mode === 'add' && (
               <button
                 type="button"
-                onClick={() => setTypeSheetOpen(true)}
+                onClick={() => setTypeConfirmed(false)}
                 className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-xl border border-border bg-card active:scale-[0.99] transition-transform"
               >
                 <span className="flex flex-col items-start min-w-0">
@@ -451,7 +436,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
                 mode={mode}
               />
@@ -461,7 +445,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
@@ -470,7 +453,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
@@ -481,7 +463,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 itemType={activeType}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
@@ -490,7 +471,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
@@ -499,7 +479,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
@@ -508,7 +487,6 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
@@ -517,23 +495,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 key={formKey}
                 initialData={initialData}
                 onSubmit={handleSubmit}
-                onCancel={handleClose}
                 onAutoSave={handleAutoSave}
               />
             )}
           </>
         )}
       </div>
-
-      {/* Type switcher sheet */}
-      <OptionSheet<ItemTypeKey>
-        isOpen={typeSheetOpen}
-        onClose={() => setTypeSheetOpen(false)}
-        title="เลือกประเภทสินค้า"
-        options={typeOptions}
-        value={activeType}
-        onSelect={(v) => handleSelectType(v)}
-      />
     </Modal>
   );
 };

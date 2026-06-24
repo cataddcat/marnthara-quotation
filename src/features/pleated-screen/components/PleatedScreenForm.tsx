@@ -25,7 +25,6 @@ export const PLEATED_SCREEN_FORM_ID = 'pleated-screen-edit-form';
 interface PleatedScreenFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
-  onCancel: () => void;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 

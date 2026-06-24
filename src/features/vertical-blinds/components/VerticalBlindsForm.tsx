@@ -27,7 +27,6 @@ export const VERTICAL_BLINDS_FORM_ID = 'vertical-blinds-edit-form';
 interface VerticalBlindsFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
-  onCancel: () => void;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 

@@ -26,7 +26,6 @@ export const ROLLER_BLINDS_FORM_ID = 'roller-blinds-edit-form';
 interface RollerBlindsFormProps {
   initialData?: Partial<AreaItemInput> & { type?: string; id?: string };
   onSubmit: (data: AreaItemInput) => void;
-  onCancel: () => void;
   onAutoSave?: (data: Partial<AreaItemInput>) => void;
 }
 

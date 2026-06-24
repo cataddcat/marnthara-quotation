@@ -27,7 +27,6 @@ export const WALLPAPER_FORM_ID = 'wallpaper-edit-form';
 interface WallpaperFormProps {
   initialData?: Partial<WallpaperItemInput>;
   onSubmit: (data: WallpaperItemInput) => void;
-  onCancel: () => void;
   onAutoSave?: (data: Partial<WallpaperItemInput>) => void;
 }
 

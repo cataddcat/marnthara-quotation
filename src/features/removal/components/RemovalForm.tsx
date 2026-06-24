@@ -27,7 +27,6 @@ const fmtDisplay = (val: string | number | undefined): string => {
 interface RemovalFormProps {
   initialData?: Partial<RemovalItemInput>;
   onSubmit: (data: RemovalItemInput) => void;
-  onCancel: () => void;
   onAutoSave?: (data: Partial<RemovalItemInput>) => void;
 }
 
