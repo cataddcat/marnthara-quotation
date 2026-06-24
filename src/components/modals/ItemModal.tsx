@@ -70,6 +70,21 @@ const FORM_ID_BY_TYPE: Partial<Record<ItemTypeKey, string>> = {
   [ITEM_TYPES.REMOVAL]: REMOVAL_FORM_ID,
 };
 
+// ไทล์เลือกประเภท — "สีประจำชนิด" (brand): พื้น tint อ่อน + ตัวอักษร + ขอบ hue เดียวกัน.
+// คลาส static literal เท่านั้น (Tailwind JIT สแกนเจอ — แพทเทิร์นเดียวกับ TYPE_CHIP_PLATE ใน ItemCard;
+// ห้ามประกอบจาก template var ดู memory tailwind-dynamic-class-gotcha). token --brand-* จูน AA ครบ 5 ธีม.
+const TYPE_TILE_CLASS: Partial<Record<ItemTypeKey, string>> = {
+  [ITEM_TYPES.CURTAIN]: 'bg-brand-curtain/10 text-brand-curtain border-brand-curtain/30',
+  [ITEM_TYPES.WALLPAPER]: 'bg-brand-wallpaper/10 text-brand-wallpaper border-brand-wallpaper/30',
+  [ITEM_TYPES.WOODEN_BLIND]: 'bg-brand-wood/10 text-brand-wood border-brand-wood/30',
+  [ITEM_TYPES.ALUMINUM_BLIND]: 'bg-brand-alum/10 text-brand-alum border-brand-alum/30',
+  [ITEM_TYPES.ROLLER_BLIND]: 'bg-brand-roller/10 text-brand-roller border-brand-roller/30',
+  [ITEM_TYPES.VERTICAL_BLIND]: 'bg-brand-vertical/10 text-brand-vertical border-brand-vertical/30',
+  [ITEM_TYPES.PARTITION]: 'bg-brand-partition/10 text-brand-partition border-brand-partition/30',
+  [ITEM_TYPES.PLEATED_SCREEN]: 'bg-brand-screen/10 text-brand-screen border-brand-screen/30',
+  [ITEM_TYPES.REMOVAL]: 'bg-brand-removal/10 text-brand-removal border-brand-removal/30',
+};
+
 export const ItemModal: React.FC<ItemModalProps> = ({
   isOpen,
   onClose,
@@ -416,25 +431,32 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       maxWidth={wideTwoCol ? '5xl' : '2xl'}
       headerAction={headerActions}
       footer={footer}
-      footerFloating
+      footerFloating={!!footer}
+      contentFill={mode === 'add' && !typeConfirmed}
     >
-      <div className="animate-fade-in">
-        {mode === 'add' && !typeConfirmed ? (
-          // เลือกประเภท — กริด 2 คอลัมน์ ตัวอักษรล้วน (ไม่ใช้ไอคอน: ไอคอนทั่วไปไม่ตรงกับสินค้าจริง),
-          // ปุ่มขอบชัด สูง ≥44pt กดง่าย และใช้ความกว้างคุ้มกว่ารายการเต็มแถว
-          <div className="mx-auto grid max-w-md grid-cols-2 gap-2.5">
+      {mode === 'add' && !typeConfirmed ? (
+        // เลือกประเภท — ไทล์ "สีประจำชนิด" (brand); มือถือดันลงโซนล่าง (นิ้วโป้งแตะถึง) ผ่าน flex-1 + mt-auto
+        // (Modal contentFill ทำ content wrapper เป็น flex-col ตอน fullscreen). เดสก์ท็อป: กริดปกติ content-sized
+        <div className="animate-fade-in flex flex-1 flex-col">
+          <p className="px-1 pt-1 pb-4 text-sm text-muted-foreground">เลือกสิ่งที่จะเพิ่มในห้องนี้</p>
+          <div className="mx-auto mt-auto grid w-full max-w-md grid-cols-2 gap-2.5 pb-safe-bottom-min">
             {typeOptions.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => handleSelectType(opt.value)}
-                className="flex min-h-[56px] items-center justify-center rounded-xl border border-border bg-card px-3 text-center text-base font-semibold text-foreground transition-all hover:border-foreground/40 hover:bg-muted/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+                className={cn(
+                  'flex min-h-[68px] items-center justify-center rounded-2xl border px-3 text-center text-base font-bold transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card',
+                  TYPE_TILE_CLASS[opt.value] ?? 'border-border bg-card text-foreground'
+                )}
               >
                 {opt.label}
               </button>
             ))}
           </div>
-        ) : (
+        </div>
+      ) : (
+        <div className="animate-fade-in">
           <>
             {/* Type switcher (add mode) — แตะเพื่อกลับไปกริดเลือกประเภท (picker ทางเดียว) */}
             {mode === 'add' && (
@@ -523,8 +545,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               />
             )}
           </>
-        )}
-      </div>
+        </div>
+      )}
     </Modal>
   );
 };

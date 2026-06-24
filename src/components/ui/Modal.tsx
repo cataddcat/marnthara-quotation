@@ -39,6 +39,11 @@ interface ModalProps {
    */
   footerFloating?: boolean;
   /**
+   * ItemModal opt-in (fullscreen เท่านั้น): ทำ content wrapper เป็น flex column เพื่อให้ลูก "เติมความสูงเต็มจอ"
+   * ได้ (เช่น กริดเลือกประเภทดันลงโซนล่างด้วย mt-auto ให้แตะถึงด้วยนิ้วโป้ง). default = บล็อกปกติ (modal อื่นไม่เปลี่ยน).
+   */
+  contentFill?: boolean;
+  /**
    * เก็บ/คืนตำแหน่ง scroll ภายใน modal เมื่อถูก modal ซ้อนแล้วกลับมา (เช่น เมนูหลัก → เปิดของซ้อน → ปิด
    * ต้องกลับมาที่เดิม ไม่เด้งบนสุด). ส่ง "fresh-open token" ที่เปลี่ยนค่าเฉพาะตอนเปิดใหม่จากศูนย์ — ใช้
    * `openCounts[type]` จาก store (bump ตอน openModal, ไม่ bump ตอน pop กลับจาก stack): token เท่าเดิม =
@@ -59,6 +64,7 @@ export const Modal: React.FC<ModalProps> = ({
   description,
   appShell = false,
   footerFloating = false,
+  contentFill = false,
   scrollResetToken,
 }) => {
   useMobileBack(isOpen, onClose);
@@ -286,6 +292,7 @@ export const Modal: React.FC<ModalProps> = ({
                       className={cn(
                         'mx-auto w-full',
                         isFullscreen && 'min-h-full max-w-3xl',
+                        isFullscreen && contentFill && 'flex flex-col', // ให้ลูกเติมความสูง (mt-auto โซนล่าง)
                         footerFloating && 'pb-24' // เว้นที่ให้ปุ่มลอย ไม่บังฟิลด์สุดท้าย
                       )}
                     >
