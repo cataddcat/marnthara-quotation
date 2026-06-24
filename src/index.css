@@ -177,6 +177,18 @@
   --color-brand-screen: hsl(var(--brand-screen));
   --color-brand-removal: hsl(var(--brand-removal));
 
+  /* "ink" = เฉดเข้มของ brand สำหรับ "ตัวอักษร" บนพื้น tint (เช่น ไทล์เลือกประเภท) ให้ contrast ≥AA.
+     fallback → --brand-* เดิม ถ้าไม่ override (ธีมพื้นมืดผ่าน AA อยู่แล้ว). คำนวณ L ด้วยสคริปต์ scratchpad/ink.cjs */
+  --color-brand-curtain-ink: hsl(var(--brand-curtain-ink, var(--brand-curtain)));
+  --color-brand-wallpaper-ink: hsl(var(--brand-wallpaper-ink, var(--brand-wallpaper)));
+  --color-brand-wood-ink: hsl(var(--brand-wood-ink, var(--brand-wood)));
+  --color-brand-roller-ink: hsl(var(--brand-roller-ink, var(--brand-roller)));
+  --color-brand-vertical-ink: hsl(var(--brand-vertical-ink, var(--brand-vertical)));
+  --color-brand-alum-ink: hsl(var(--brand-alum-ink, var(--brand-alum)));
+  --color-brand-partition-ink: hsl(var(--brand-partition-ink, var(--brand-partition)));
+  --color-brand-screen-ink: hsl(var(--brand-screen-ink, var(--brand-screen)));
+  --color-brand-removal-ink: hsl(var(--brand-removal-ink, var(--brand-removal)));
+
   /* --- 4. Extended Color Palette (Eye-Friendly Subtle Tones) --- */
   --color-subtle: hsl(var(--subtle));
   --color-subtle-foreground: hsl(var(--subtle-foreground));
@@ -316,6 +328,15 @@
     --brand-partition: 142 71% 31%; /* Leaf Green */
     --brand-screen: 330 81% 48%; /* Rose */
     --brand-removal: 0 84% 50%; /* Red */
+    /* ink = ตัวอักษรไทล์เลือกประเภท (เข้มขึ้นให้ ≥AA บนพื้น brand/10; curtain เดิมผ่านแล้ว → fallback) */
+    --brand-wallpaper-ink: 24 95% 32%;
+    --brand-wood-ink: 28 87% 31%;
+    --brand-roller-ink: 187 85% 24.5%;
+    --brand-vertical-ink: 199 89% 29.5%;
+    --brand-alum-ink: 215 25% 39.5%;
+    --brand-partition-ink: 142 71% 25%;
+    --brand-screen-ink: 330 81% 38.5%;
+    --brand-removal-ink: 0 84% 39.5%;
 
     /* 7. Extended Palette (Eye-Care Optimized) */
     --subtle: 210 40% 96%; /* Slightly darker than background */
@@ -376,6 +397,15 @@
     --brand-partition: 142 70% 60%;
     --brand-screen: 330 100% 75%;
     --brand-removal: 0 84.2% 66%; /* L↑ → AA-text บนพื้น dark card (เดิม 60.2% = 3.94:1) */
+    /* ink ไทล์เลือกประเภท = brand (สว่างบนพื้นมืด ผ่าน AA อยู่แล้ว) — override กัน :root light-ink รั่วเข้าธีมมืด */
+    --brand-wallpaper-ink: 24 100% 68%;
+    --brand-wood-ink: 28 100% 65%;
+    --brand-roller-ink: 187 100% 60%;
+    --brand-vertical-ink: 199 100% 65%;
+    --brand-alum-ink: 215 25% 75%;
+    --brand-partition-ink: 142 70% 60%;
+    --brand-screen-ink: 330 100% 75%;
+    --brand-removal-ink: 0 84.2% 66%;
 
     /* 7. Extended Palette (Dark Mode) */
     --subtle: 222 47% 13%;
@@ -406,6 +436,15 @@
     --foreground: 222 47% 9%; /* near-black ink */
     --card: 0 0% 100%; /* white card — floats on the grey page */
     --card-foreground: 222 47% 9%;
+    /* ink ตัวอักษรไทล์เลือกประเภท (signature ใช้ brand hue เดียวกับ light แต่พื้นเข้มกว่า → ink เข้มกว่าเล็กน้อย) */
+    --brand-wallpaper-ink: 24 95% 30%;
+    --brand-wood-ink: 28 87% 29%;
+    --brand-roller-ink: 187 85% 23%;
+    --brand-vertical-ink: 199 89% 28%;
+    --brand-alum-ink: 215 25% 37%;
+    --brand-partition-ink: 142 71% 23.5%;
+    --brand-screen-ink: 330 81% 36%;
+    --brand-removal-ink: 0 84% 37%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 9%;
     --muted: 214 24% 93%; /* subtle fills sit between page and card */
@@ -498,6 +537,15 @@
     --brand-partition: 142 72% 22%;
     --brand-screen: 330 70% 36%;
     --brand-removal: 0 72% 38%;
+    /* ink ตัวอักษรไทล์เลือกประเภท (เข้มขึ้นให้ ≥AA บนพื้น brand/10 ของ EEERT cobalt page) */
+    --brand-wallpaper-ink: 22 90% 25.5%;
+    --brand-wood-ink: 28 80% 24.5%;
+    --brand-roller-ink: 187 80% 19.5%;
+    --brand-vertical-ink: 200 90% 23.5%;
+    --brand-alum-ink: 216 20% 30%;
+    --brand-partition-ink: 142 72% 19%;
+    --brand-screen-ink: 330 70% 31%;
+    --brand-removal-ink: 0 72% 32%;
 
     --highlight: 214 90% 42% / 0.14;
     --highlight-foreground: 214 80% 24%;
@@ -571,6 +619,15 @@
     --brand-partition: 142 66% 58%;
     --brand-screen: 330 90% 76%;
     --brand-removal: 0 80% 77%;
+    /* ink ไทล์เลือกประเภท = brand (สว่างบนพื้นมืด ผ่าน AA) — override กัน :root light-ink รั่ว */
+    --brand-wallpaper-ink: 24 95% 66%;
+    --brand-wood-ink: 28 95% 64%;
+    --brand-roller-ink: 187 90% 56%;
+    --brand-vertical-ink: 200 95% 64%;
+    --brand-alum-ink: 215 28% 74%;
+    --brand-partition-ink: 142 66% 58%;
+    --brand-screen-ink: 330 90% 76%;
+    --brand-removal-ink: 0 80% 77%;
 
     --highlight: 214 90% 60% / 0.16;
     --highlight-foreground: 214 80% 80%;

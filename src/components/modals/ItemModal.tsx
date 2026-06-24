@@ -74,15 +74,15 @@ const FORM_ID_BY_TYPE: Partial<Record<ItemTypeKey, string>> = {
 // คลาส static literal เท่านั้น (Tailwind JIT สแกนเจอ — แพทเทิร์นเดียวกับ TYPE_CHIP_PLATE ใน ItemCard;
 // ห้ามประกอบจาก template var ดู memory tailwind-dynamic-class-gotcha). token --brand-* จูน AA ครบ 5 ธีม.
 const TYPE_TILE_CLASS: Partial<Record<ItemTypeKey, string>> = {
-  [ITEM_TYPES.CURTAIN]: 'bg-brand-curtain/10 text-brand-curtain border-brand-curtain/30',
-  [ITEM_TYPES.WALLPAPER]: 'bg-brand-wallpaper/10 text-brand-wallpaper border-brand-wallpaper/30',
-  [ITEM_TYPES.WOODEN_BLIND]: 'bg-brand-wood/10 text-brand-wood border-brand-wood/30',
-  [ITEM_TYPES.ALUMINUM_BLIND]: 'bg-brand-alum/10 text-brand-alum border-brand-alum/30',
-  [ITEM_TYPES.ROLLER_BLIND]: 'bg-brand-roller/10 text-brand-roller border-brand-roller/30',
-  [ITEM_TYPES.VERTICAL_BLIND]: 'bg-brand-vertical/10 text-brand-vertical border-brand-vertical/30',
-  [ITEM_TYPES.PARTITION]: 'bg-brand-partition/10 text-brand-partition border-brand-partition/30',
-  [ITEM_TYPES.PLEATED_SCREEN]: 'bg-brand-screen/10 text-brand-screen border-brand-screen/30',
-  [ITEM_TYPES.REMOVAL]: 'bg-brand-removal/10 text-brand-removal border-brand-removal/30',
+  [ITEM_TYPES.CURTAIN]: 'bg-brand-curtain/10 text-brand-curtain-ink border-brand-curtain/30',
+  [ITEM_TYPES.WALLPAPER]: 'bg-brand-wallpaper/10 text-brand-wallpaper-ink border-brand-wallpaper/30',
+  [ITEM_TYPES.WOODEN_BLIND]: 'bg-brand-wood/10 text-brand-wood-ink border-brand-wood/30',
+  [ITEM_TYPES.ALUMINUM_BLIND]: 'bg-brand-alum/10 text-brand-alum-ink border-brand-alum/30',
+  [ITEM_TYPES.ROLLER_BLIND]: 'bg-brand-roller/10 text-brand-roller-ink border-brand-roller/30',
+  [ITEM_TYPES.VERTICAL_BLIND]: 'bg-brand-vertical/10 text-brand-vertical-ink border-brand-vertical/30',
+  [ITEM_TYPES.PARTITION]: 'bg-brand-partition/10 text-brand-partition-ink border-brand-partition/30',
+  [ITEM_TYPES.PLEATED_SCREEN]: 'bg-brand-screen/10 text-brand-screen-ink border-brand-screen/30',
+  [ITEM_TYPES.REMOVAL]: 'bg-brand-removal/10 text-brand-removal-ink border-brand-removal/30',
 };
 
 export const ItemModal: React.FC<ItemModalProps> = ({
