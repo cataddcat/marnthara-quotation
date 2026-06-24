@@ -107,6 +107,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const [formKey, setFormKey] = useState(0);
   // ฟอร์มยังว่าง (ไม่มีข้อมูลขั้นต่ำ) → ซ่อน footer ปุ่มบันทึก (กันสร้างรายการเปล่า; ปิดด้วย ✕ หัว modal)
   const [isFormEmpty, setIsFormEmpty] = useState(true);
+  // ฟอร์มถูกแก้แล้วหรือยัง (dirty) — footer ปุ่มบันทึกโผล่เฉพาะหลังผู้ใช้แก้จริง
+  // (edit: เปิดรายการเดิมมาเฉย ๆ ยังไม่แก้ → ไม่โชว์ปุ่ม เหลือแค่ ✕)
+  const [isDirty, setIsDirty] = useState(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ค่าฟอร์มล่าสุดที่ค้างใน debounce — เก็บไว้เพื่อ flush ตอนปิด/unmount (กันค่าช่องสุดท้าย เช่น "ความสูง" หาย)
   const pendingDataRef = useRef<Partial<ItemData> | null>(null);
@@ -121,6 +124,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       submitIntentRef.current = 'close';
       setSavedCount(0);
       setFormKey(0);
+      setIsDirty(false); // เปิดใหม่ → ยังไม่ถูกแก้ (edit: ซ่อนปุ่มบันทึกจนกว่าจะแก้)
       // add → เริ่มที่หน้าเลือกประเภท (ยังไม่ mount ฟอร์ม); edit → เข้าฟอร์มทันที
       setTypeConfirmed(mode === 'edit');
       if (mode === 'add') {
@@ -157,6 +161,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
   const handleSelectType = (typeId: ItemTypeKey) => {
     trigger('selection');
+    setIsDirty(false); // ฟอร์ม mount ใหม่ (resume/เปลี่ยนประเภท) → ยังไม่ถูกแก้
     // เลือกประเภทเดิม (เช่น กด "เปลี่ยน" แล้วเปลี่ยนใจ) → เข้าฟอร์มประเภทนั้นต่อ โดยไม่ล้าง draft id เดิม
     // (กันสร้างรายการซ้ำ — รอบกรอกถัดไปจะ update รายการเดิม)
     if (typeId === activeType) {
@@ -213,6 +218,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const handleAutoSave = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
+      setIsDirty(true); // ผู้ใช้แก้ฟอร์มแล้ว (useFormAutoSave ยิงเฉพาะตอนแก้จริง ไม่ยิงตอน mount)
       // ติดตามสถานะ "ฟอร์มว่าง" ทันที (ไม่รอ debounce) เพื่อแสดง/ซ่อน footer ปุ่มบันทึก
       const empty = !hasMinimumItemData(activeType, data as Record<string, unknown>);
       setIsFormEmpty((prev) => (prev === empty ? prev : empty));
@@ -304,6 +310,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         autoCreatedIdRef.current = null; // ครั้งถัดไปสร้างรายการใหม่
         setFormKey((k) => k + 1); // remount → เคลียร์ฟอร์ม + โฟกัสช่องกว้าง
         setIsFormEmpty(true); // ฟอร์มใหม่ว่าง → ซ่อน footer จนกว่าจะกรอก
+        setIsDirty(false); // ฟอร์มใหม่ยังไม่ถูกแก้
         return; // คงเปิด modal ไว้
       }
 
@@ -351,11 +358,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     </div>
   );
 
-  // ── Footer (iOS-native text-forward): ฟอร์มว่าง = ไม่มี footer (กันรายการเปล่า; ปิดด้วย ✕ หัว modal).
-  //    กรอกแล้ว → add: [บันทึก & เพิ่ม] (submit+เคลียร์ฟอร์ม) ⟷ [บันทึก] (submit+ปิด) · edit: [บันทึก] เดียว.
+  // ── Footer (iOS-native text-forward): ยังไม่แก้/ฟอร์มว่าง = ไม่มี footer (เปิด edit มาเฉย ๆ เห็นแค่ ✕).
+  //    แก้แล้ว+ข้อมูลครบ → add: [บันทึก & เพิ่ม] (submit+เคลียร์ฟอร์ม) ⟷ [บันทึก] (submit+ปิด) · edit: [บันทึก] เดียว.
   //    ยกเลิก/ปิดใช้ปุ่ม ✕ หัว modal (Save-First: draft autosave ยังอยู่ ไม่ทำลาย) ──
   const footer =
-    showForm && activeFormId && !isFormEmpty ? (
+    showForm && activeFormId && isDirty && !isFormEmpty ? (
       <div className="flex items-center justify-between gap-3">
         {mode === 'add' ? (
           <Button
