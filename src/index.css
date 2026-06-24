@@ -723,6 +723,10 @@ html.sim-notch.dark body::after {
   .pb-safe-bottom {
     padding-bottom: var(--safe-bottom);
   }
+  /* safe-bottom แบบมี floor — กัน pb=0 เมื่อไม่มี notch (footer สมมาตร) + safe-area เมื่อมี notch */
+  .pb-safe-bottom-min {
+    padding-bottom: max(var(--safe-bottom), 0.625rem);
+  }
   .mb-safe-bottom {
     margin-bottom: var(--safe-bottom);
   }

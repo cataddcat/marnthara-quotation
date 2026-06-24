@@ -8,7 +8,7 @@ import {
   TransitionChild,
 } from '@headlessui/react';
 import { Drawer } from 'vaul';
-import { X, ChevronLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { useMobileBack } from '@/hooks/useMobileBack';
@@ -229,18 +229,6 @@ export const Modal: React.FC<ModalProps> = ({
                     )}
                   >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    {/* ปุ่ม Back สำหรับ Fullscreen (จอมือถือ) — hit area ≥44px + hover/active/focus-visible */}
-                    {isFullscreen && isMobile && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onClose}
-                        aria-label="ย้อนกลับ"
-                        className="-ml-2 h-11 w-11 shrink-0 rounded-full text-foreground"
-                      >
-                        <ChevronLeft className="h-6 w-6" />
-                      </Button>
-                    )}
                     <div className="min-w-0">
                       <DialogTitle
                         as="h3"
@@ -261,18 +249,16 @@ export const Modal: React.FC<ModalProps> = ({
 
                   {headerAction && <div className="flex items-center shrink-0">{headerAction}</div>}
 
-                  {/* ปุ่ม X — แสดงเมื่อไม่ใช่ Fullscreen บนจอมือถือ (กรณีนั้นใช้ปุ่ม Back แทน) */}
-                  {(!isFullscreen || !isMobile) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={onClose}
-                      aria-label="ปิด"
-                      className="h-11 w-11 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
-                  )}
+                  {/* ปุ่ม X — ปิด/ยกเลิก ทุก variant (fullscreen มือถือก็ใช้ ✕ ขวาบนให้เห็นชัด ไม่ใช่ Back) */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    aria-label="ปิด"
+                    className="h-11 w-11 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
                   </div>
                 </div>
 
@@ -300,8 +286,8 @@ export const Modal: React.FC<ModalProps> = ({
                 {footer && (
                   <div
                     className={cn(
-                      'shrink-0 px-4 py-3 border-t border-border bg-background z-20',
-                      isFullscreen && 'pb-safe-bottom'
+                      'shrink-0 px-4 py-2.5 border-t border-border bg-background z-20',
+                      isFullscreen && 'pb-safe-bottom-min'
                     )}
                   >
                     {/* fullscreen: ปุ่ม footer เรียงตรงคอลัมน์เนื้อหาเดียวกัน */}

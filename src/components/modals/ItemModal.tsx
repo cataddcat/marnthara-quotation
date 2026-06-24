@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { Button } from '@/components/ui/Button';
-import { Save, CheckCircle2, ChevronDown, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppStore } from '@/store/useAppStore';
@@ -352,9 +352,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     </div>
   );
 
-  // ── Footer: ปุ่มแคปซูล — ฟอร์มยังว่าง = ปุ่ม "ปิด" เดียว (กันสร้างรายการเปล่า). พอกรอกขั้นต่ำแล้ว →
-  //    ล่าง-ซ้าย "บันทึก → ถัดไป" (เพิ่มหลายจุดรวดหน้างาน, เฉพาะ add) · ล่าง-ขวา ยกเลิก + บันทึก.
-  //    ยกเลิก/ปิด = ปิด (Save-First: draft ที่ autosave ไว้ยังอยู่); ถัดไป = submit + เคลียร์ฟอร์ม ──
+  // ── Footer (iOS-native text-forward): ฟอร์มว่าง = "ปิด" เดียว (กันรายการเปล่า). กรอกแล้ว →
+  //    add: [บันทึก & เพิ่ม] (submit+เคลียร์ฟอร์ม, เพิ่มหลายจุดรวด) ⟷ [บันทึก] (submit+ปิด) · edit: [บันทึก] เดียว.
+  //    ยกเลิกใช้ปุ่ม ✕ หัว modal (Save-First: draft autosave ยังอยู่ ไม่ทำลาย) ──
   const footer =
     showForm && activeFormId ? (
       isFormEmpty ? (
@@ -370,44 +370,30 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           </Button>
         </div>
       ) : (
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-3">
         {mode === 'add' ? (
           <Button
             type="submit"
             form={activeFormId}
             variant="secondary"
             size="md"
-            aria-label="บันทึก แล้วเพิ่มจุดถัดไป"
-            className="rounded-full px-4"
+            className="rounded-full px-5"
             onClick={() => (submitIntentRef.current = 'next')}
           >
-            ถัดไป
-            <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" strokeWidth={1.5} />
+            บันทึก & เพิ่ม
           </Button>
         ) : (
           <span />
         )}
-        <div className="flex items-center gap-2.5">
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            className="rounded-full px-4"
-            onClick={handleClose}
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            form={activeFormId}
-            size="md"
-            className="rounded-full px-4"
-            onClick={() => (submitIntentRef.current = 'close')}
-          >
-            <Save className="w-4 h-4 mr-2" />
-            บันทึก
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          form={activeFormId}
+          size="md"
+          className="rounded-full px-6"
+          onClick={() => (submitIntentRef.current = 'close')}
+        >
+          บันทึก
+        </Button>
       </div>
       )
     ) : undefined;
