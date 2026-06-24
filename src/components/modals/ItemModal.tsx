@@ -90,6 +90,10 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const autoCreatedIdRef = useRef<string | null>(null);
   // Intent of the next explicit submit ('next' = save & add another, 'close' = save & close)
   const submitIntentRef = useRef<'close' | 'next'>('close');
+  // ค่า re-hydrate ฟอร์มตอน "เปลี่ยน → เลือกประเภทเดิมซ้ำ": อ่าน draft ที่ autosave ไว้มาใส่เป็น initialData
+  // ตอน mount ใหม่ (ฟอร์มกลับมาพร้อมค่าที่กรอก ไม่เห็นฟอร์มเปล่า). null = ใช้ initialData ปกติ.
+  // เป็น state (ไม่ใช่ ref) เพราะต้องอ่านตอน render เพื่อส่งเป็น initialData ของฟอร์ม
+  const [hydrateData, setHydrateData] = useState<Partial<ItemData> | null>(null);
 
   const normalizeType = (t: string | ItemTypeKey): ItemTypeKey => {
     if (t === 'set') return ITEM_TYPES.CURTAIN;
@@ -121,6 +125,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       autoCreatedIdRef.current = null;
+      setHydrateData(null);
       submitIntentRef.current = 'close';
       setSavedCount(0);
       setFormKey(0);
@@ -162,15 +167,25 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const handleSelectType = (typeId: ItemTypeKey) => {
     trigger('selection');
     setIsDirty(false); // ฟอร์ม mount ใหม่ (resume/เปลี่ยนประเภท) → ยังไม่ถูกแก้
-    // เลือกประเภทเดิม (เช่น กด "เปลี่ยน" แล้วเปลี่ยนใจ) → เข้าฟอร์มประเภทนั้นต่อ โดยไม่ล้าง draft id เดิม
-    // (กันสร้างรายการซ้ำ — รอบกรอกถัดไปจะ update รายการเดิม)
+    // เลือกประเภทเดิม (กด "เปลี่ยน" แล้วเปลี่ยนใจ) → กลับเข้าฟอร์มเดิม + re-hydrate ค่าจาก draft ที่ autosave ไว้
+    // (ฟอร์มกลับมาพร้อมค่าที่กรอก ไม่เห็นฟอร์มเปล่า; draft id เดิมยังอยู่ กันสร้างรายการซ้ำ)
     if (typeId === activeType) {
+      const draft = (
+        autoCreatedIdRef.current
+          ? useAppStore
+              .getState()
+              .rooms.find((r) => r.id === roomId)
+              ?.items.find((it) => it.id === autoCreatedIdRef.current)
+          : undefined
+      ) as Partial<ItemData> | undefined;
+      setHydrateData(draft ?? null);
       setTypeConfirmed(true);
-      setIsFormEmpty(true); // ฟอร์ม mount ใหม่ (ว่าง) → ซ่อน footer จนกว่าจะกรอก (draft id เดิมยังอยู่ กัน item ซ้ำ)
+      setIsFormEmpty(draft ? !hasMinimumItemData(typeId, draft as Record<string, unknown>) : true);
       return;
     }
-    // เปลี่ยนเป็นประเภทอื่นจริง → เริ่ม draft ใหม่ของประเภทนั้น
+    // เปลี่ยนเป็นประเภทอื่นจริง → เริ่ม draft ใหม่ของประเภทนั้น (ฟอร์มเปล่า ไม่ re-hydrate)
     // (Save-First: รายการประเภทเดิมที่กรอกถึงขั้นต่ำแล้วยังถูกบันทึกไว้ในห้อง)
+    setHydrateData(null);
     autoCreatedIdRef.current = null;
     setActiveType(typeId);
     setTypeConfirmed(true);
@@ -308,6 +323,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         setSavedCount(n);
         addToast('success', `บันทึกจุดที่ ${n} — กรอกจุดถัดไป`);
         autoCreatedIdRef.current = null; // ครั้งถัดไปสร้างรายการใหม่
+        setHydrateData(null); // ฟอร์มใหม่ไม่ re-hydrate
         setFormKey((k) => k + 1); // remount → เคลียร์ฟอร์ม + โฟกัสช่องกว้าง
         setIsFormEmpty(true); // ฟอร์มใหม่ว่าง → ซ่อน footer จนกว่าจะกรอก
         setIsDirty(false); // ฟอร์มใหม่ยังไม่ถูกแก้
@@ -330,6 +346,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         : 'เลือกประเภทสินค้า'
       : `แก้ไข${itemName}`;
   const activeFormId = FORM_ID_BY_TYPE[activeType];
+  // initialData ที่ส่งให้ฟอร์ม: ปกติ = prop; ถ้า resume ประเภทเดิม → re-hydrate จาก draft (hydrateData)
+  const formInitialData = hydrateData ?? initialData;
   // จอกว้าง (desktop) ทุกประเภทใช้ layout 2 คอลัมน์ → ต้องการ modal กว้าง (ถัง Layout — ไม่ใช่โหมดงาน)
   const wideTwoCol = !isMobile;
 
@@ -440,7 +458,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.CURTAIN && (
               <CurtainForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
                 mode={mode}
@@ -449,7 +467,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.WALLPAPER && (
               <WallpaperForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
@@ -457,7 +475,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.ROLLER_BLIND && (
               <RollerBlindsForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
@@ -467,7 +485,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               <WoodenBlindsForm
                 key={formKey}
                 itemType={activeType}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
@@ -475,7 +493,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.VERTICAL_BLIND && (
               <VerticalBlindsForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
@@ -483,7 +501,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.PARTITION && (
               <PartitionForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
@@ -491,7 +509,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.PLEATED_SCREEN && (
               <PleatedScreenForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
@@ -499,7 +517,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             {activeType === ITEM_TYPES.REMOVAL && (
               <RemovalForm
                 key={formKey}
-                initialData={initialData}
+                initialData={formInitialData}
                 onSubmit={handleSubmit}
                 onAutoSave={handleAutoSave}
               />
