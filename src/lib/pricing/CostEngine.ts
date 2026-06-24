@@ -48,15 +48,22 @@ export const CostEngine = {
     // ค่าแรง/บริการ/อุปกรณ์(legacy) + สวิตช์ = "ของร้านเอง" คงอยู่ในแอป (HANDOFF §11.2)
     const { accessoryCosts, laborCosts, serviceCosts, costInclude } = state;
 
-    // ทุนสินค้า (ผ้า/วอลฯ/พื้นที่/ราง) = product master จาก DB ภายนอก (useCatalogStore, HANDOFF §11.8)
-    // เมื่อมี catalog เชื่อมจริง (status==='ready') ใช้เป็นแหล่งหลัก; ไม่งั้น fallback persisted vault เดิม
-    // (local-only / ยังไม่เชื่อม DB). ไม่เจอรหัส → vaultLookup คืน 0 → hasMissingCost → 'unknown' (เทา)
+    // ทุนสินค้า (ผ้า/วอลฯ/พื้นที่/ราง) — หลักการ: **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน**
+    // (HANDOFF §11.9). ออนไลน์ (status==='ready') merge ต่อ key: catalog (DB) ทับ vault → รหัสซ้ำ DB ชนะ,
+    // รหัสที่ DB ไม่มี → ทุนที่จด (vault, ฉายโดย useMaterialDraftHydration) เติมเข้าไป. ออฟไลน์ = vault ล้วน.
+    // ไม่เจอทั้งสอง → vaultLookup คืน 0 → hasMissingCost → 'unknown' (เทา).
     const catalog = useCatalogStore.getState();
     const useCatalog = catalog.status === 'ready';
-    const fabricCosts = useCatalog ? catalog.fabricCosts : state.fabricCosts;
-    const wallpaperCosts = useCatalog ? catalog.wallpaperCosts : state.wallpaperCosts;
-    const areaCosts = useCatalog ? catalog.areaCosts : state.areaCosts;
-    const hardwareCosts = useCatalog ? catalog.hardwareCosts : state.hardwareCosts;
+    const fabricCosts = useCatalog
+      ? { ...state.fabricCosts, ...catalog.fabricCosts }
+      : state.fabricCosts;
+    const wallpaperCosts = useCatalog
+      ? { ...state.wallpaperCosts, ...catalog.wallpaperCosts }
+      : state.wallpaperCosts;
+    const areaCosts = useCatalog ? { ...state.areaCosts, ...catalog.areaCosts } : state.areaCosts;
+    const hardwareCosts = useCatalog
+      ? { ...state.hardwareCosts, ...catalog.hardwareCosts }
+      : state.hardwareCosts;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
     // (รองรับ Manual Override ราคาขายมาแล้วจาก PricingEngine)

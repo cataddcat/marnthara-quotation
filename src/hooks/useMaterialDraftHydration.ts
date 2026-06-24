@@ -1,25 +1,23 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
 import { categoryVault } from '@/lib/vault';
 import { normalizeCode } from '@/lib/codes';
 
 /**
- * ฉาย "ทุน" จากฉบับร่างในเครื่อง (materialDrafts) เข้า runtime cost vault ของแอป
- * เฉพาะตอน "ออฟไลน์" (catalog ยังไม่ ready) — เพราะ CostEngine อ่าน state.fabricCosts/areaCosts/...
- * โดยตรงในโหมดนั้น (HANDOFF §11.8) → กำไร/ทุนคำนวณถูกโดยไม่ต้องแก้ CostEngine.
+ * ฉาย "ทุน" จากฉบับร่างในเครื่อง (materialDrafts) เข้า runtime cost vault ของแอป (`state.*Costs`).
+ * vault = "แหล่งเติมช่องว่าง" ตามหลักการ **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน**:
+ *   - ออฟไลน์ (catalog ยังไม่ ready) → CostEngine อ่าน vault ตรง ๆ → ใช้ทุนที่จด.
+ *   - ออนไลน์ (ready) → CostEngine merge catalog ทับ vault ต่อ key (HANDOFF §11.9) → DB ชนะเมื่อรหัสซ้ำ,
+ *     แต่รหัสที่ DB ไม่มี → ทุนที่จดใน vault เติมเข้าไป (ไม่ถูกทิ้งเงียบ ๆ).
  *
- * vault ไม่ persist (omitTransientState) → เป็นการฉายซ้ำทุกครั้งที่โหลด/ฉบับร่างเปลี่ยน (additive overlay).
- * เมื่อ catalog === 'ready' จะข้าม — DB เป็นทุนหลักผ่าน path ของ engine เอง (ไม่ override ฉบับร่าง).
+ * ฉายเสมอ (ไม่ early-return ตอน ready) เพราะ vault จำเป็นเป็น fallback per-key ของ merge ฝั่ง engine.
+ * vault ไม่ persist (omitTransientState) → ฉายซ้ำทุกครั้งที่โหลด/ฉบับร่างเปลี่ยน (additive overlay).
  * mount ครั้งเดียวที่ราก (App).
  */
 export const useMaterialDraftHydration = () => {
-  const ready = useCatalogStore((s) => s.status) === 'ready';
   const materialDrafts = useAppStore((s) => s.materialDrafts);
 
   useEffect(() => {
-    if (ready) return;
-
     const fabric: Record<string, number> = {};
     const wallpaper: Record<string, number> = {};
     const area: Record<string, number> = {};
@@ -42,5 +40,5 @@ export const useMaterialDraftHydration = () => {
     for (const [k, v] of Object.entries(wallpaper)) s.updateWallpaperCost(k, v);
     for (const [k, v] of Object.entries(area)) s.updateAreaCost(k, v);
     for (const [k, v] of Object.entries(hardware)) s.updateHardwareCost(k, v);
-  }, [ready, materialDrafts]);
+  }, [materialDrafts]);
 };

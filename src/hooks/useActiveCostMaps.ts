@@ -2,10 +2,11 @@ import { useAppStore } from '@/store/useAppStore';
 import { useCatalogStore } from '@/store/useCatalogStore';
 
 /**
- * cost map สินค้าที่ "ใช้งานจริง" — catalog (DB ภายนอก) เมื่อเชื่อมจริง (status==='ready'),
- * ไม่งั้น fallback vault ในแอป. `readOnly` = true เมื่อมาจาก DB → UI ควรซ่อนการแก้ทุน.
+ * cost map สินค้าที่ "ใช้งานจริง" — หลักการ **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน**
+ * (HANDOFF §11.9). ออนไลน์ (status==='ready') merge ต่อ key: catalog (DB) ทับ vault; ออฟไลน์ = vault ล้วน.
+ * `readOnly` = true เมื่อเชื่อม DB จริง → catalog list ในคลังวัสดุยังคงอ่านอย่างเดียว (drafts แก้ในโซนของตัวเอง).
  *
- * ตรรกะเดียวกับ CostEngine (HANDOFF §11.8) — ให้คลังวัสดุ/สรุปวัสดุ แสดงทุนตรงกับที่ใช้คำนวณจริง
+ * ตรรกะ merge เดียวกับ CostEngine — ให้คลังวัสดุ/สรุปวัสดุ แสดงทุนตรงกับที่ใช้คำนวณจริง.
  */
 export const useActiveCostMaps = () => {
   const ready = useCatalogStore((s) => s.status) === 'ready';
@@ -22,9 +23,9 @@ export const useActiveCostMaps = () => {
 
   return {
     readOnly: ready,
-    fabricCosts: ready ? cFabric : sFabric,
-    wallpaperCosts: ready ? cWallpaper : sWallpaper,
-    areaCosts: ready ? cArea : sArea,
-    hardwareCosts: ready ? cHardware : sHardware,
+    fabricCosts: ready ? { ...sFabric, ...cFabric } : sFabric,
+    wallpaperCosts: ready ? { ...sWallpaper, ...cWallpaper } : sWallpaper,
+    areaCosts: ready ? { ...sArea, ...cArea } : sArea,
+    hardwareCosts: ready ? { ...sHardware, ...cHardware } : sHardware,
   };
 };

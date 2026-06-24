@@ -674,8 +674,9 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🔌 External catalog overlay (useCatalogStore) — ดึงทุนสินค้าจาก DB ภายนอก (HANDOFF §11.8)
-// status==='ready' → ทุนสินค้าใช้ catalog เป็นหลัก; ไม่งั้น fallback persisted vault เดิม
+// 🔌 External catalog overlay (useCatalogStore) — ดึงทุนสินค้าจาก DB ภายนอก (HANDOFF §11.9)
+// หลักการ: คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน.
+// status==='ready' → merge ต่อ key: catalog ทับ vault (รหัสซ้ำ DB ชนะ; รหัสที่ DB ไม่มี → vault เติม)
 // ค่าแรง/บริการ = ของร้านเอง อ่าน vault เดิมเสมอ
 // ─────────────────────────────────────────────────────────────────────────────
 describe('🔌 CostEngine — External catalog overlay', () => {
@@ -687,8 +688,8 @@ describe('🔌 CostEngine — External catalog overlay', () => {
     useCatalogStore.getState().reset(); // กัน status 'ready' รั่วไป test อื่น (store เป็น singleton)
   });
 
-  it('catalog ready → ทุนผ้ามาจาก catalog (ข้าม vault ในแอป)', () => {
-    setupStore({ fabricCosts: { F001: 999 } }); // vault ในแอป ควรถูกข้าม
+  it('catalog ready + รหัสซ้ำ → DB ทับ vault (รหัสซ้ำ DB ชนะ)', () => {
+    setupStore({ fabricCosts: { F001: 999 } }); // vault ซ้ำกับ catalog → ถูก DB ทับ
     useCatalogStore
       .getState()
       .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
@@ -697,13 +698,30 @@ describe('🔌 CostEngine — External catalog overlay', () => {
     expect(result.status).not.toBe('unknown');
   });
 
-  it('catalog ready แต่ไม่มีรหัสนั้น → unknown (ไม่ fallback vault)', () => {
-    setupStore({ fabricCosts: { F001: 100 } }); // vault มี แต่ catalog ไม่มี
+  it('catalog ready แต่ไม่มีรหัสนั้น → vault (ทุนที่จด) เติมช่องว่าง (§11.9)', () => {
+    setupStore({ fabricCosts: { F001: 100 } }); // vault มี แต่ catalog ไม่มี → ของฉันเติม
     useCatalogStore
       .getState()
       .setCatalog([{ code: 'OTHER', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 50 }], false);
     const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
-    expect(result.status).toBe('unknown');
+    expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2); // ×100 จาก vault (เติมช่องว่าง)
+    expect(result.status).not.toBe('unknown');
+  });
+
+  it('catalog ready + ทั้งซ้ำและช่องว่าง → DB ชนะรหัสซ้ำ, vault เติมรหัสที่ DB ไม่มี (§11.9)', () => {
+    setupStore({ fabricCosts: { F001: 999, F002: 100 } }); // F001 ซ้ำกับ catalog, F002 มีแต่ใน vault
+    useCatalogStore
+      .getState()
+      .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
+    // รหัสซ้ำ F001 → DB ชนะ (×100 ไม่ใช่ ×999)
+    expect(CostEngine.analyze(makeCurtainItem({ code: 'F001' })).fabricCost).toBeCloseTo(
+      EXPECTED_FABRIC_YARDS * 100,
+      2
+    );
+    // รหัส F002 ที่ DB ไม่มี → vault เติม (×100)
+    const gap = CostEngine.analyze(makeCurtainItem({ code: 'F002' }));
+    expect(gap.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2);
+    expect(gap.status).not.toBe('unknown');
   });
 
   it("catalog 'empty' (DB ว่าง) → fallback persisted vault เดิม", () => {

@@ -687,13 +687,19 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
   (ลำดับ catalog > draft > project). `data.default_price_per_m` = ราคาขาย → auto-fill เดิมของแต่ละฟอร์มทำงานต่อ.
   **ทุกฟอร์มเลิก map `useInventory().items` เองแล้ว** ใช้ฮุคนี้แทน (FabricSection ยังคง `useInventory` แยกไว้
   เทียบราคากับคลังใน `PriceStatusIndicator` = catalog-only เท่านั้น).
-- **ทุนออฟไลน์:** `useMaterialDraftHydration` (mount ที่ App) ฉาย `draft.cost` เข้า runtime vault เมื่อ
-  `status !== 'ready'` → `CostEngine` อ่าน `state.fabricCosts/...` ได้เลย (ไม่แก้ engine). ออนไลน์ = ข้าม
-  (DB ชนะผ่าน path เดิม).
-- **reconcile (เมื่อ `ready` & รหัสซ้ำ):** `classifyDraft` ([draftReconcile.ts](src/lib/materials/draftReconcile.ts))
-  → `local`/`match`/`conflict`. UI อยู่ใน `MaterialSummaryModal` → `LocalDraftSection`/`DraftRow`
-  (เพิ่ม/แก้ code+ทุน+ราคาขาย + ป้าย A/B/C): เคส B ให้เลือก **ใช้ของแค็ตตาล็อก** (ลบฉบับร่าง) / **เก็บของฉัน** —
-  ไม่ทับเงียบ ๆ. แค็ตตาล็อก (DB) ในโมดัลยังคง read-only.
+- **หลักการทุน (2026-06-25, "ใครชนะ"):** **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน.**
+  ไม่มี "เลือกผู้ชนะ" — ระบบตัดสินเองต่อ key: `useMaterialDraftHydration` ฉาย `draft.cost` เข้า runtime vault
+  (`state.*Costs`) **เสมอ** (vault = แหล่งเติมช่องว่าง); `CostEngine` + `useActiveCostMaps` เมื่อ `ready`
+  ใช้ **merge ต่อ key** `{ ...state.*Costs, ...catalog.*Costs }` → รหัสซ้ำ DB ชนะ, รหัสที่ DB ไม่มีทุน
+  (`buildCostMaps` ข้าม `cost<=0` → ไม่ยึด key) → vault (ทุนที่จด) เติมเข้าไป. ออฟไลน์ = vault ล้วน.
+  *(เดิม `if (ready) return` ทำให้ทุนที่จดถูกทิ้งเงียบ ๆ ตอนออนไลน์ + รหัสที่ DB ไม่มี → กำไรเทา — แก้แล้ว.)*
+- **reconcile = nudge บรรทัดเดียว (ยกเครื่อง 2026-06-25):** เดิมกล่อง A/B/C + 2 ปุ่ม ("ใช้ของแค็ตตาล็อก/เก็บของฉัน")
+  ผู้ใช้สับสน "ใครชนะ" — และปุ่ม "เก็บของฉัน" ไม่มีผลคำนวณจริง (ออนไลน์ DB ชนะอยู่แล้ว). ตอนนี้ UI ใน
+  `MaterialSummaryModal` → `LocalDraftSection` ("ราคาของฉัน") / `DraftRow`: เทียบ **cost-only** ผ่าน
+  `classifyDraft` ([draftReconcile.ts](src/lib/materials/draftReconcile.ts), ไม่แก้) โดยส่ง db เฉพาะเมื่อ `dbCost>0`
+  → **conflict** = nudge บรรทัดเดียวสไตล์ `PriceStatusIndicator` (พิลล์ "คลังใช้ ทุน ฿X" + ปุ่มเดียว **ใช้ราคาคลัง**
+  = ลบ note ที่ซ้ำ); **match** = "✓ ตรงกับคลัง" เงียบ; **local/gap-fill/ออฟไลน์** = ไม่แสดงอะไร. ตัดศัพท์
+  "ฉบับร่าง/reconcile/ออฟไลน์/เก็บของฉัน" ออกจากจอ. คลัง (DB) ในโมดัลยังคง read-only.
 
 ---
 
