@@ -18,6 +18,7 @@ import {
   createCustomerRegistrySlice,
   CustomerRegistrySlice,
 } from './slices/CustomerRegistrySlice';
+import { createMaterialDraftSlice, MaterialDraftSlice } from './slices/MaterialDraftSlice';
 
 // --- [QOL] EXPORT TYPES HERE ---
 // เพื่อให้ไฟล์อื่น import { ProjectSlice } from '@/store/useAppStore' ได้เลย
@@ -31,6 +32,7 @@ export type { CostDataSlice, LaborCost, CostInclude } from './slices/CostDataSli
 export type { PaymentSlice, ReceiptEntry, ExpenseEntry } from './slices/PaymentSlice';
 export type { JobsSlice } from './slices/JobsSlice';
 export type { CustomerRegistrySlice } from './slices/CustomerRegistrySlice';
+export type { MaterialDraftSlice, MaterialDraft } from './slices/MaterialDraftSlice';
 // formulas เป็น compile-time constant แล้ว — import { FORMULAS } from '@/config/formulas'
 export type { FormulaConfig } from '@/config/formulas';
 
@@ -43,7 +45,8 @@ export type AppState = CustomerSlice &
   CostDataSlice &
   PaymentSlice &
   JobsSlice &
-  CustomerRegistrySlice;
+  CustomerRegistrySlice &
+  MaterialDraftSlice;
 
 const omitTransientState = (state: AppState): Partial<AppState> => {
   const newState = { ...state };
@@ -73,6 +76,7 @@ export const useAppStore = create<AppState>()(
         ...createPaymentSlice(...a),
         ...createJobsSlice(...a),
         ...createCustomerRegistrySlice(...a),
+        ...createMaterialDraftSlice(...a),
       }),
       {
         name: STORAGE_KEY,

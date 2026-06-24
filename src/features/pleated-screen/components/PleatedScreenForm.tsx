@@ -4,6 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { PleatedScreenSchema, PleatedScreenFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
+import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
 import { Tag, Ruler, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { useCostStatus } from '@/hooks/useCostStatus';
+import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
@@ -71,27 +73,15 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
   );
   const analysis = useCostStatus(previewItem);
 
-  // Note: The following functions are commented out as they are not used in the current JSX
-  // but kept for future reference if needed
+  // ตัวเลือกรหัส/สีเฟรม = แค็ตตาล็อก + ฉบับร่างในเครื่อง + รหัสที่ใช้ในงานนี้ (auto-fill ราคาเมื่อเลือก)
+  const suggestions = useCodeSuggestions(FAVORITE_CATEGORIES.PLEATED_SCREEN);
 
-  // const suggestions = useMemo(() => (favorites[FAVORITE_CATEGORIES.PLEATED_SCREEN] || []).map(f => ({ label: f.code, value: f.code, desc: `${f.default_price_per_m}`, data: f })), [favorites]);
-
-  // const handleCodeChange = (val: string) => {
-  //   handleChange('code', val);
-  //   const match = suggestions.find((s) => s.value.toLowerCase() === val.toLowerCase());
-  //   if (match && match.data?.default_price_per_m) handleNumberChange('price_sqyd', String(match.data.default_price_per_m));
-  // };
-
-  // const handleSaveFav = async () => { /* Reuse Logic */
-  //    const code = formData.code; const price = toNum(formData.price_sqyd);
-  //    if (!code || price <= 0) return addToast('warning', 'ระบุรหัสและราคา');
-  //    const existing = (favorites[FAVORITE_CATEGORIES.PLEATED_SCREEN] || []).find(f => f.code === code);
-  //    if(existing && existing.default_price_per_m !== price) {
-  //       if(await confirm({ title: 'อัพเดทราคา?', description: `เปลี่ยน ${existing.default_price_per_m} -> ${price}?` })) updateFavorite(FAVORITE_CATEGORIES.PLEATED_SCREEN, existing.id, { default_price_per_m: price });
-  //    } else if(!existing) { addFavorite(FAVORITE_CATEGORIES.PLEATED_SCREEN, { code, default_price_per_m: price }); addToast('success', 'บันทึกแล้ว'); }
-  // };
-  // const isFav = (code?: string) => !!code && (favorites[FAVORITE_CATEGORIES.PLEATED_SCREEN] || []).some(f => f.code === code);
-
+  const handleCodeChange = (val: string) => {
+    handleChange('code', val);
+    const match = suggestions.find((s) => s.value.toLowerCase() === val.toLowerCase());
+    if (match && match.data?.default_price_per_m)
+      handleNumberChange('price_sqyd', String(match.data.default_price_per_m));
+  };
 
   const summaryPanel = (
     <ItemSummaryCard
@@ -169,11 +159,11 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
       >
         {/* คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
-          <Input
+          <ComboboxInput
             label="สีเฟรม"
             value={formData.code || ''}
-            onChange={(e) => handleChange('code', e.target.value)}
-            className="bg-muted/50"
+            onChange={handleCodeChange}
+            options={suggestions}
             placeholder="ระบุสี..."
           />
           <Input

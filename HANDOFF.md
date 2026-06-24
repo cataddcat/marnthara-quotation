@@ -673,6 +673,28 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
 - **นอก repo:** "จุดพักข้อมูล" (แดชบอร์ด/sheet/tool ที่รับผล AI → ตรวจ/แก้/อนุมัติ → เขียนลง DB).
   repo นี้ส่งมอบแค่ **contract** ให้ tool นั้นเขียนให้ตรง.
 
+### 11.9 📝 Local material drafts (ฉบับร่างในเครื่อง) — offline-first + reconcile (2026-06-24)
+
+ปัญหา: หลังย้าย product master ไป DB (§11.8, read-only) ผู้ใช้กรอกรหัส/ราคาหน้างานออฟไลน์แล้ว **ไม่มีที่เก็บ
+ที่ใช้ซ้ำได้** → พิมพ์รหัสเดิมซ้ำทุกจุด + ไม่มีช่องกรอก "ทุน". แก้ด้วยชั้น "ฉบับร่างในเครื่อง" — **ของผู้ใช้**
+(ต่างจาก catalog ที่เป็น DB-owned) ที่ **ไม่เคย push กลับ DB**.
+
+- **store:** `MaterialDraftSlice` (`materialDrafts: หมวด → { normCode → {code, cost?, sellPrice?, updatedAt} }`).
+  shop-level, **persist** (ไม่อยู่ใน `omitTransientState` — ต่างจาก favorites/vault ที่ตั้งใจไม่ persist),
+  **ไม่อยู่ใน undo** (ไม่อยู่ใน temporal whitelist).
+- **ตัวเลือกรหัสในทุกฟอร์ม:** `useCodeSuggestions(category)` รวม catalog (`useInventory`) + drafts +
+  รหัสที่ใช้ในงานปัจจุบัน (`collectProjectCodes` จาก `rooms`) dedup ด้วย `normalizeCode`
+  (ลำดับ catalog > draft > project). `data.default_price_per_m` = ราคาขาย → auto-fill เดิมของแต่ละฟอร์มทำงานต่อ.
+  **ทุกฟอร์มเลิก map `useInventory().items` เองแล้ว** ใช้ฮุคนี้แทน (FabricSection ยังคง `useInventory` แยกไว้
+  เทียบราคากับคลังใน `PriceStatusIndicator` = catalog-only เท่านั้น).
+- **ทุนออฟไลน์:** `useMaterialDraftHydration` (mount ที่ App) ฉาย `draft.cost` เข้า runtime vault เมื่อ
+  `status !== 'ready'` → `CostEngine` อ่าน `state.fabricCosts/...` ได้เลย (ไม่แก้ engine). ออนไลน์ = ข้าม
+  (DB ชนะผ่าน path เดิม).
+- **reconcile (เมื่อ `ready` & รหัสซ้ำ):** `classifyDraft` ([draftReconcile.ts](src/lib/materials/draftReconcile.ts))
+  → `local`/`match`/`conflict`. UI อยู่ใน `MaterialSummaryModal` → `LocalDraftSection`/`DraftRow`
+  (เพิ่ม/แก้ code+ทุน+ราคาขาย + ป้าย A/B/C): เคส B ให้เลือก **ใช้ของแค็ตตาล็อก** (ลบฉบับร่าง) / **เก็บของฉัน** —
+  ไม่ทับเงียบ ๆ. แค็ตตาล็อก (DB) ในโมดัลยังคง read-only.
+
 ---
 
 ## 12. ☁️ Multi-job switcher + Firebase cloud sync (2026-06-14)

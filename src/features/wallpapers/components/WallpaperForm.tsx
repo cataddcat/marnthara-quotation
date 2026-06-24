@@ -10,7 +10,7 @@ import { Tag, ScrollText, Ruler, PaintRoller, Book, Plus, Trash2 } from 'lucide-
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
 import { useCostStatus } from '@/hooks/useCostStatus';
-import { useInventory } from '@/hooks/useInventory';
+import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
@@ -20,7 +20,6 @@ import { getItemTheme } from '@/lib/theme-utils';
 import { cn } from '@/lib/utils';
 import { useWallpaperFormLogic } from '../hooks/useWallpaperFormLogic';
 import { InventoryItem } from '@/store/slices/InventorySlice';
-import { SuggestionItem } from '@/components/ui/ComboboxInput';
 
 export const WALLPAPER_FORM_ID = 'wallpaper-edit-form';
 
@@ -73,20 +72,8 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
     removeWidthField(i);
   };
 
-  // ── Inventory suggestions — catalog-aware (SKU จาก DB เมื่อเชื่อม, ไม่งั้น fallback favorites) ──
-  const { items: rawSuggestions } = useInventory(FAVORITE_CATEGORIES.WALLPAPER);
-
-  // Convert InventoryItem[] → SuggestionItem<InventoryItem>[] for ComboboxInput
-  const suggestions = useMemo<SuggestionItem<InventoryItem>[]>(
-    () =>
-      rawSuggestions.map((item) => ({
-        label: item.code,
-        value: item.code,
-        desc: item.note || undefined,
-        data: item,
-      })),
-    [rawSuggestions]
-  );
+  // ตัวเลือกรหัส = แค็ตตาล็อก + ฉบับร่างในเครื่อง + รหัสที่ใช้ในงานนี้ (ไม่ต้องพิมพ์ซ้ำที่จุดต่อไป)
+  const suggestions = useCodeSuggestions(FAVORITE_CATEGORIES.WALLPAPER);
 
   // ── Price preview ─────────────────────────────────────────────────────────
   const previewItem = useMemo(

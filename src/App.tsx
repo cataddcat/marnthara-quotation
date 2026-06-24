@@ -12,6 +12,7 @@ import { shouldRemindBackup, daysSinceBackup } from '@/lib/backup-reminder';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useUndoRedoShortcuts } from '@/hooks/useUndoRedo';
 import { useModalScrollRestore } from '@/hooks/useModalScrollRestore';
+import { useMaterialDraftHydration } from '@/hooks/useMaterialDraftHydration';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
@@ -37,6 +38,9 @@ function App() {
 
   // คืนตำแหน่ง scroll หน้าหลักหลังปิด modal (เมนู → BBB → ปิด ไม่เด้งบนสุด)
   useModalScrollRestore();
+
+  // ฉายทุนจากฉบับร่างในเครื่อง → vault (เฉพาะออฟไลน์) ให้กำไร/ทุนคำนวณถูกตอนยังไม่เชื่อม DB
+  useMaterialDraftHydration();
 
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     () => (rooms.length > 0 ? rooms[0].id : null)

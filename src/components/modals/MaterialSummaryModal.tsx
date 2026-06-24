@@ -17,11 +17,20 @@ import {
   ArrowRight,
   MapPin,
   Search,
+  Plus,
+  Trash2,
+  HardDriveDownload,
 } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
+import { useCatalogStore } from '@/store/useCatalogStore';
+import { normalizeCode } from '@/lib/codes';
+import { toNum } from '@/utils/formatters';
+import { classifyDraft } from '@/lib/materials/draftReconcile';
+import type { MaterialDraft } from '@/store/slices/MaterialDraftSlice';
 import { FORMULAS } from '@/config/formulas';
 import { buildSummary, type FabricEntry, type RailItem, type AreaGroup } from '@/lib/materials/buildSummary';
 
@@ -136,6 +145,264 @@ const InventoryItemRow = ({
   );
 };
 
+// ── ฉบับร่างในเครื่อง (offline) — เพิ่ม/แก้ code+ทุน+ราคาขาย + reconcile กับแค็ตตาล็อก DB ──
+// ต่างจากแค็ตตาล็อก (DB-owned, read-only): นี่คือ "ของผู้ใช้" ในเครื่อง ใช้ซ้ำข้ามจุด/ข้ามงาน,
+// ไม่เคย push กลับ DB. เมื่อออนไลน์แล้วรหัสซ้ำ → ให้เลือกใช้ของแค็ตตาล็อกหรือเก็บของฉัน (ไม่ทับเงียบ ๆ)
+const DraftRow = ({
+  categoryId,
+  draft,
+  costUnit,
+  accentClass,
+  dotClass,
+  ready,
+  catalogItem,
+}: {
+  categoryId: string;
+  draft: MaterialDraft;
+  costUnit: string;
+  accentClass: string;
+  dotClass: string;
+  /** ออนไลน์จริง (catalog ready) — รู้สถานะ DB ของรหัสนี้ */
+  ready: boolean;
+  /** entry ในแค็ตตาล็อก DB ที่รหัสตรงกัน (มีเฉพาะตอน ready & พบ) */
+  catalogItem?: HydratedInventoryItem;
+}) => {
+  const upsert = useAppStore((s) => s.upsertMaterialDraft);
+  const remove = useAppStore((s) => s.removeMaterialDraft);
+
+  const [cost, setCost] = useState(draft.cost ? String(draft.cost) : '');
+  const [sell, setSell] = useState(draft.sellPrice ? String(draft.sellPrice) : '');
+  const [keepMine, setKeepMine] = useState(false);
+
+  const commit = () =>
+    upsert(categoryId, { code: draft.code, cost: toNum(cost), sellPrice: toNum(sell) });
+
+  // reconcile — เทียบกับ DB เฉพาะเมื่อมี catalogItem (ออนไลน์ & รหัสซ้ำ)
+  const dbCost = catalogItem?.cost_per_yard ?? 0;
+  const dbSell = catalogItem?.default_price_per_m ?? 0;
+  const reconcile = classifyDraft(
+    { cost: toNum(cost), sellPrice: toNum(sell) },
+    catalogItem ? { cost: dbCost, sellPrice: dbSell } : null
+  );
+  const conflict = reconcile === 'conflict'; // เคส B
+  const confirmedByDb = reconcile === 'match'; // เคส A
+
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-3 space-y-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotClass)} />
+          <span className={cn('font-mono font-bold text-sm truncate', accentClass)}>
+            {draft.code}
+          </span>
+          <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">
+            ในเครื่อง
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => remove(categoryId, draft.code)}
+          title="ลบฉบับร่าง"
+          className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted/50 transition-colors shrink-0"
+        >
+          <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+        </button>
+      </div>
+
+      {/* แก้ทุน/ราคาขาย — commit เมื่อ blur ออกจากกลุ่ม (กันเขียนทุก keystroke) */}
+      <div className="grid grid-cols-2 gap-2" onBlur={commit}>
+        <Input
+          label="ทุน"
+          value={cost}
+          onChange={(e) => setCost(e.target.value)}
+          placeholder="0"
+          inputMode="decimal"
+          type="number"
+          suffix={`/${costUnit}`}
+          className="text-right font-mono"
+        />
+        <Input
+          label="ราคาขาย"
+          value={sell}
+          onChange={(e) => setSell(e.target.value)}
+          placeholder="0"
+          inputMode="decimal"
+          type="number"
+          suffix="฿"
+          className="text-right font-mono"
+        />
+      </div>
+
+      {/* เคส A — ตรงกับแค็ตตาล็อก */}
+      {confirmedByDb && (
+        <div className="flex items-center justify-between gap-2 text-xs">
+          <span className="text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 font-medium">
+            ✓ ตรงกับแค็ตตาล็อกแล้ว
+          </span>
+          <button
+            type="button"
+            onClick={() => remove(categoryId, draft.code)}
+            className="text-muted-foreground hover:text-foreground underline underline-offset-2"
+          >
+            ลบฉบับร่าง
+          </button>
+        </div>
+      )}
+
+      {/* เคส B — ต่างจากแค็ตตาล็อก → ให้เลือก (ไม่ทับอัตโนมัติ) */}
+      {conflict && !keepMine && (
+        <div className="rounded-xl border border-amber-200/70 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-2 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-300 eeert:text-amber-900">
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            รหัสนี้มีในแค็ตตาล็อกแล้ว (ต่างกัน)
+          </div>
+          <div className="text-xs text-amber-800/90 dark:text-amber-300/90 font-mono tabular-nums">
+            DB: ทุน ฿{fmtTH(dbCost)} · ขาย ฿{fmtTH(dbSell)}
+          </div>
+          <div className="flex gap-2 pt-0.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="h-8 text-xs flex-1"
+              onClick={() => remove(categoryId, draft.code)}
+            >
+              ใช้ของแค็ตตาล็อก
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-8 text-xs flex-1"
+              onClick={() => setKeepMine(true)}
+            >
+              เก็บของฉัน
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* เคส C — ออนไลน์แต่ยังไม่มีรหัสนี้ใน DB */}
+      {ready && !catalogItem && (
+        <div className="text-xs text-muted-foreground">ยังไม่อยู่ในแค็ตตาล็อก</div>
+      )}
+    </div>
+  );
+};
+
+const LocalDraftSection = ({
+  categoryId,
+  costUnit,
+  accentClass,
+  dotClass,
+}: {
+  categoryId: string;
+  costUnit: string;
+  accentClass: string;
+  dotClass: string;
+}) => {
+  const draftsMap = useAppStore((s) => s.materialDrafts[categoryId]);
+  const upsert = useAppStore((s) => s.upsertMaterialDraft);
+  const { items: catalog } = useInventory(categoryId);
+  const ready = useCatalogStore((s) => s.status) === 'ready';
+
+  const catalogByCode = useMemo(() => {
+    const m = new Map<string, HydratedInventoryItem>();
+    for (const it of catalog) m.set(normalizeCode(it.code), it);
+    return m;
+  }, [catalog]);
+
+  const drafts = useMemo(
+    () => Object.values(draftsMap ?? {}).sort((a, b) => a.code.localeCompare(b.code)),
+    [draftsMap]
+  );
+
+  const [newCode, setNewCode] = useState('');
+  const [newCost, setNewCost] = useState('');
+  const [newSell, setNewSell] = useState('');
+
+  const handleAdd = () => {
+    const code = newCode.trim();
+    if (!code) return;
+    upsert(categoryId, { code, cost: toNum(newCost), sellPrice: toNum(newSell) });
+    setNewCode('');
+    setNewCost('');
+    setNewSell('');
+  };
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <HardDriveDownload className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+        <h3 className="text-sm font-bold text-foreground">ในเครื่อง (ฉบับร่าง · ออฟไลน์)</h3>
+      </div>
+      <p className="text-xs text-muted-foreground -mt-1">
+        กรอกรหัส/ทุน/ราคาขายไว้ใช้ซ้ำได้แม้ไม่ออนไลน์ — เมื่อต่อ DB แล้วเจอรหัสซ้ำ ระบบจะให้เลือกใช้ของแค็ตตาล็อกหรือเก็บของคุณ
+      </p>
+
+      {drafts.length > 0 && (
+        <div className="space-y-2">
+          {drafts.map((d) => (
+            <DraftRow
+              key={d.code}
+              categoryId={categoryId}
+              draft={d}
+              costUnit={costUnit}
+              accentClass={accentClass}
+              dotClass={dotClass}
+              ready={ready}
+              catalogItem={ready ? catalogByCode.get(normalizeCode(d.code)) : undefined}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* เพิ่มรหัสในเครื่อง */}
+      <div className="rounded-2xl border border-dashed border-border p-3 space-y-2.5">
+        <Input
+          label="เพิ่มรหัส (ในเครื่อง)"
+          value={newCode}
+          onChange={(e) => setNewCode(e.target.value)}
+          placeholder="เช่น PASAYA-DIM-02"
+          className="font-mono"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            label="ทุน"
+            value={newCost}
+            onChange={(e) => setNewCost(e.target.value)}
+            placeholder="0"
+            inputMode="decimal"
+            type="number"
+            suffix={`/${costUnit}`}
+            className="text-right font-mono"
+          />
+          <Input
+            label="ราคาขาย"
+            value={newSell}
+            onChange={(e) => setNewSell(e.target.value)}
+            placeholder="0"
+            inputMode="decimal"
+            type="number"
+            suffix="฿"
+            className="text-right font-mono"
+          />
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          className="w-full gap-1.5"
+          onClick={handleAdd}
+          disabled={!newCode.trim()}
+        >
+          <Plus className="w-4 h-4" />
+          เพิ่มรหัส
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const CatalogCategoryView = ({
   categoryId,
   costUnit,
@@ -187,10 +454,23 @@ const CatalogCategoryView = ({
   const visible = filtered.slice(0, MAX_VISIBLE);
 
   return (
-    <div>
-      {items.length === 0 ? (
-        <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="ข้อมูลสินค้ามาจากระบบภายนอก (DB)" />
-      ) : (
+    <div className="space-y-5">
+      {/* ชั้นฉบับร่างในเครื่อง (offline-first) — เพิ่ม/แก้/reconcile */}
+      <LocalDraftSection
+        categoryId={categoryId}
+        costUnit={costUnit}
+        accentClass={accentClass}
+        dotClass={dotClass}
+      />
+
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+          <h3 className="text-sm font-bold text-foreground">แค็ตตาล็อก (DB · อ่านอย่างเดียว)</h3>
+        </div>
+        {items.length === 0 ? (
+          <EmptyHint message="ยังไม่มีรหัสในหมวดนี้" sub="ข้อมูลสินค้ามาจากระบบภายนอก (DB)" />
+        ) : (
         <>
           {/* เครื่องมือค้นหา */}
           <div className="mb-3">
@@ -234,7 +514,8 @@ const CatalogCategoryView = ({
             </>
           )}
         </>
-      )}
+        )}
+      </div>
     </div>
   );
 };

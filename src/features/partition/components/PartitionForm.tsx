@@ -16,7 +16,7 @@ import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { useCostStatus } from '@/hooks/useCostStatus';
-import { useInventory } from '@/hooks/useInventory';
+import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
 import { getItemTheme } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
@@ -72,18 +72,8 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
   );
   const analysis = useCostStatus(previewItem);
 
-  // ตัวเลือกรหัส/ราคา — catalog-aware (SKU จาก DB เมื่อเชื่อม, ไม่งั้น fallback favorites)
-  const { items: inventory } = useInventory(FAVORITE_CATEGORIES.PARTITION);
-  const suggestions = useMemo(
-    () =>
-      inventory.map((f) => ({
-        label: f.code,
-        value: f.code,
-        desc: `${f.default_price_per_m}`,
-        data: f,
-      })),
-    [inventory]
-  );
+  // ตัวเลือกรหัส = แค็ตตาล็อก + ฉบับร่างในเครื่อง + รหัสที่ใช้ในงานนี้
+  const suggestions = useCodeSuggestions(FAVORITE_CATEGORIES.PARTITION);
 
   const handleCodeChange = (val: string) => {
     handleChange('code', val);

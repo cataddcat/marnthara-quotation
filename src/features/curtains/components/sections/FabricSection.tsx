@@ -14,6 +14,7 @@ import { toNum, fmtTH } from '@/utils/formatters';
 import { LayerSelector } from './LayerSelector';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { useInventory } from '@/hooks/useInventory';
+import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 
 // --- 🤏 Mini Component: Price Status Indicator ---
 interface PriceStatusIndicatorProps {
@@ -71,8 +72,13 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   const addToast = useUIStore((state) => state.addToast);
 
   // catalog-aware: ดึง SKU+ราคาจากแค็ตตาล็อกสด (DB) เมื่อเชื่อม, ไม่งั้น fallback favorites
+  // — ใช้สำหรับเทียบราคากับคลัง (PriceStatusIndicator) เท่านั้น = catalog/favorites ล้วน
   const { items: mainFabrics } = useInventory(FAVORITE_CATEGORIES.CURTAIN_MAIN);
   const { items: sheerFabrics } = useInventory(FAVORITE_CATEGORIES.CURTAIN_SHEER);
+
+  // ตัวเลือกรหัส = แค็ตตาล็อก + ฉบับร่างในเครื่อง + รหัสที่ใช้ในงานนี้ (ไม่ต้องพิมพ์ซ้ำที่จุดต่อไป)
+  const mainOptions = useCodeSuggestions(FAVORITE_CATEGORIES.CURTAIN_MAIN);
+  const sheerOptions = useCodeSuggestions(FAVORITE_CATEGORIES.CURTAIN_SHEER);
 
   // ✅ Cast Array เป็น string[] และใช้ layerMode ที่มี default
   const layerMode = data.layer_mode || LAYER_MODES.MAIN;
@@ -202,16 +208,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       onMainFabricSelect(item.data);
                     }
                   }}
-                  options={mainFabrics.map((f) => ({
-                    label: f.code,
-                    value: f.code,
-                    desc:
-                      f.note ||
-                      (f.default_price_per_m > 0
-                        ? `฿${fmtTH(f.default_price_per_m)}`
-                        : undefined),
-                    data: f,
-                  }))}
+                  options={mainOptions}
                   error={errors.code}
                   warning={warnings.code}
                 />
@@ -305,16 +302,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       onSheerFabricSelect(item.data);
                     }
                   }}
-                  options={sheerFabrics.map((f) => ({
-                    label: f.code,
-                    value: f.code,
-                    desc:
-                      f.note ||
-                      (f.default_price_per_m > 0
-                        ? `฿${fmtTH(f.default_price_per_m)}`
-                        : undefined),
-                    data: f,
-                  }))}
+                  options={sheerOptions}
                   error={errors.sheer_code}
                   warning={warnings.sheer_code}
                 />
