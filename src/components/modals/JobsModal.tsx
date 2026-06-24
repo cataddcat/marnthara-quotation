@@ -62,6 +62,8 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const duplicateJob = useAppStore((s) => s.duplicateJob);
   const deleteJob = useAppStore((s) => s.deleteJob);
   const setJobStatus = useAppStore((s) => s.setJobStatus);
+  const openModal = useAppStore((s) => s.openModal);
+  const closeAllModals = useAppStore((s) => s.closeAllModals);
 
   const addToast = useUIStore((s) => s.addToast);
   const { confirm } = useConfirm();
@@ -141,8 +143,11 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const handleNew = () => {
     trigger('medium');
     createJob();
-    addToast('success', 'เปิดงานใหม่ (งานเดิมเก็บไว้แล้ว)');
-    onClose();
+    addToast('success', 'เปิดงานใหม่ — กรอกข้อมูลลูกค้า');
+    // ปิดชั้น modal ทั้งหมดก่อน แล้วเปิดฟอร์มข้อมูลลูกค้าของงานใหม่ (ขั้นแรก: ลูกค้าคือใคร)
+    // — กัน "กดแล้วเงียบ" ตอนงานปัจจุบันเป็นงานเปล่า (จอเดิมเป๊ะ); ปิด customer แล้วลงหน้า home สะอาด
+    closeAllModals();
+    openModal('customer');
   };
 
   const handleDuplicate = (id: string) => {
