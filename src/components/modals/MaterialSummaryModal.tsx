@@ -24,6 +24,8 @@ import {
 import { Alert } from '@/components/ui/Alert';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { useConfirm } from '@/hooks/useConfirm';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 import { useCatalogStore } from '@/store/useCatalogStore';
@@ -167,12 +169,23 @@ const DraftRow = ({
 }) => {
   const upsert = useAppStore((s) => s.upsertMaterialDraft);
   const remove = useAppStore((s) => s.removeMaterialDraft);
+  const { confirm } = useConfirm();
 
   const [cost, setCost] = useState(draft.cost ? String(draft.cost) : '');
   const [sell, setSell] = useState(draft.sellPrice ? String(draft.sellPrice) : '');
 
   const commit = () =>
     upsert(categoryId, { code: draft.code, cost: toNum(cost), sellPrice: toNum(sell) });
+
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: 'ลบรหัสนี้?',
+      description: `ลบราคาที่คุณจดของ "${draft.code}" ใช่ไหม? (ข้อมูลในคลังไม่ถูกแตะ)`,
+      confirmLabel: 'ลบ',
+      variant: 'destructive',
+    });
+    if (ok) remove(categoryId, draft.code);
+  };
 
   // reconcile (cost-only, gap-fill-aware): คลังทับเฉพาะเมื่อมี "ทุน" จริง (dbCost>0) → เทียบทุน.
   // คลังไม่มีทุน (ไม่อยู่ในคลัง/ออฟไลน์/คลังยังไม่ตั้งทุน) → ของฉันเติมช่องว่าง → ไม่ถือว่าชน (ไม่ขึ้น nudge).
@@ -182,7 +195,7 @@ const DraftRow = ({
   const confirmedByDb = reconcile === 'match';
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-3 space-y-2.5">
+    <div className="rounded-xl border border-border/60 bg-card p-2.5 space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotClass)} />
@@ -192,7 +205,7 @@ const DraftRow = ({
         </div>
         <button
           type="button"
-          onClick={() => remove(categoryId, draft.code)}
+          onClick={handleDelete}
           title="ลบรหัสนี้"
           className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted/50 transition-colors shrink-0"
         >
@@ -204,6 +217,7 @@ const DraftRow = ({
       <div className="grid grid-cols-2 gap-2" onBlur={commit}>
         <Input
           label="ทุน"
+          size="sm"
           value={cost}
           onChange={(e) => setCost(e.target.value)}
           placeholder="0"
@@ -214,6 +228,7 @@ const DraftRow = ({
         />
         <Input
           label="ราคาขาย"
+          size="sm"
           value={sell}
           onChange={(e) => setSell(e.target.value)}
           placeholder="0"
@@ -290,12 +305,24 @@ const LocalDraftSection = ({
   };
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2">
-        <Tag className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-        <h3 className="text-sm font-bold text-foreground">ราคาของฉัน</h3>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-1">
+    <CollapsibleSection
+      defaultOpen={false}
+      title={
+        <span className="flex items-center gap-2">
+          <Tag className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+          ราคาของฉัน
+        </span>
+      }
+      badge={
+        drafts.length > 0 ? (
+          <span className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+            {drafts.length} รหัส
+          </span>
+        ) : undefined
+      }
+      hint="จดราคาไว้ใช้ตอนออฟไลน์ หรือรหัสที่คลังยังไม่มี"
+    >
+      <p className="text-sm text-muted-foreground -mt-2">
         ราคาที่คุณจดไว้ — ใช้ตอนออฟไลน์ หรือรหัสที่คลังยังไม่มี · ถ้าคลังมี ระบบจะใช้ราคาคลัง
       </p>
 
@@ -316,9 +343,10 @@ const LocalDraftSection = ({
       )}
 
       {/* เพิ่มรหัสในเครื่อง */}
-      <div className="rounded-2xl border border-dashed border-border p-3 space-y-2.5">
+      <div className="rounded-xl border border-dashed border-border p-2.5 space-y-2">
         <Input
           label="เพิ่มรหัส"
+          size="sm"
           value={newCode}
           onChange={(e) => setNewCode(e.target.value)}
           placeholder="เช่น PASAYA-DIM-02"
@@ -327,6 +355,7 @@ const LocalDraftSection = ({
         <div className="grid grid-cols-2 gap-2">
           <Input
             label="ทุน"
+            size="sm"
             value={newCost}
             onChange={(e) => setNewCost(e.target.value)}
             placeholder="0"
@@ -337,6 +366,7 @@ const LocalDraftSection = ({
           />
           <Input
             label="ราคาขาย"
+            size="sm"
             value={newSell}
             onChange={(e) => setNewSell(e.target.value)}
             placeholder="0"
@@ -357,7 +387,7 @@ const LocalDraftSection = ({
           เพิ่มรหัส
         </Button>
       </div>
-    </div>
+    </CollapsibleSection>
   );
 };
 
