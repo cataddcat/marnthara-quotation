@@ -718,7 +718,7 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
 **Identity invariant (1 งาน = 1 UUID):** `customer.id (crypto.randomUUID v4)` = `job.id` = Firestore doc key (`shops/{uid}/jobs/{id}`) = id ที่ฝังในไฟล์ JSON export. **per-account isolation** (firestore.rules: `uid == shopId` — ไม่ใช่ cross-account). Restore ไฟล์ dedup ด้วย UUID: `src/lib/restore-identity.ts` (`resolveRestoreIdentity` ตรวจชนกับ `jobs[]` + `forkBundleId` มอบ UUID ใหม่ตอนเลือก "สำเนาใหม่") → DataModal flush งานปัจจุบันก่อนทับ + ถาม "ทับ/สำเนาใหม่" เมื่อชน (ไม่มีงานหายเงียบ).
 
 ### 12.3 JobsSlice (checkout)
-`saveCurrentJob` (no-op ถ้า `isBundleEmpty`) · `switchJob`/`createJob(fromCustomer?)`/`duplicateJob`/`deleteJob`/`setJobStatus(_, id?)`. switch/create → `clearUndoHistory()` (กัน undo ข้ามงาน, ผ่าน `temporalBridge`). push/delete cloud ผ่าน `jobSyncBridge` (no-op จนกว่า syncEngine จะ register). สถานะ 6 สเตจ: `JOB_STATUS` (enums) + ชิปสีใน `dataTones.ts`.
+`saveCurrentJob` (no-op ถ้า `isBundleEmpty`) · `switchJob`/`createJob(fromCustomer?)`/`deleteJob`/`setJobStatus(_, id?)`. switch/create → `clearUndoHistory()` (กัน undo ข้ามงาน, ผ่าน `temporalBridge`). push/delete cloud ผ่าน `jobSyncBridge` (no-op จนกว่า syncEngine จะ register). สถานะ 6 สเตจ: `JOB_STATUS` (enums) + ชิปสีใน `dataTones.ts`.
 
 ### 12.4 Sync — `src/lib/sync/syncEngine.ts` (startSync/stopSync จาก App effect ตาม auth)
 - onSnapshot(jobs/customers) → ป้อน mirror realtime. **reconcile ครั้งแรก**: รวม local↔cloud โดย `updatedAt` (ดัน local-ใหม่กว่า/local-only ขึ้น) = first-sign-in adopt + กัน stale ทับ.

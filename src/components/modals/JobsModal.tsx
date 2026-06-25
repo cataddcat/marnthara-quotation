@@ -2,7 +2,7 @@
 //
 // "งานทั้งหมด" — กระดานสลับงาน: ลิสต์ลูกค้า/งานที่ค้าง พร้อมสถานะ · เงิน · ความคืบหน้า
 //   • งาน active = field live (checkout model) → overlay ข้อมูลสดทับ snapshot ในชั้นวาง
-//   • แตะการ์ด → สลับงาน · ชิปสถานะ → เปลี่ยนสเตจ · เมนู → ทำสำเนา/ลบ
+//   • แตะการ์ด → สลับงาน · ชิปสถานะ → เปลี่ยนสเตจ · เมนู → รายละเอียดลูกค้า/ลบ
 //   • เงินต่อการ์ด = summarizeJob (สูตรเดียวกับหน้าหลัก) — ไม่เก็บ snapshot ที่ค้าง
 
 import React, { useMemo, useState } from 'react';
@@ -26,7 +26,7 @@ import {
   Plus,
   Search,
   MoreHorizontal,
-  Copy,
+  User,
   Trash2,
   Check,
   FolderKanban,
@@ -59,7 +59,6 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
 
   const switchJob = useAppStore((s) => s.switchJob);
   const createJob = useAppStore((s) => s.createJob);
-  const duplicateJob = useAppStore((s) => s.duplicateJob);
   const deleteJob = useAppStore((s) => s.deleteJob);
   const setJobStatus = useAppStore((s) => s.setJobStatus);
   const openModal = useAppStore((s) => s.openModal);
@@ -150,10 +149,12 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
     openModal('customer');
   };
 
-  const handleDuplicate = (id: string) => {
+  // เปิดรายละเอียดลูกค้าของงานนี้ — สลับไปงานนั้นก่อน (customer modal ผูกกับ live state)
+  const handleCustomerDetails = (id: string) => {
     trigger('light');
-    duplicateJob(id);
-    addToast('success', 'ทำสำเนางานแล้ว');
+    switchJob(id); // no-op ถ้าเป็นงานปัจจุบันอยู่แล้ว
+    onClose(); // ปิด JobsModal
+    openModal('customer'); // เปิดข้อมูลลูกค้าของงานที่เพิ่งสลับเข้า
   };
 
   // ลบงาน = ทำลายล้าง → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
@@ -184,9 +185,13 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <Button onClick={handleNew} className="shrink-0 gap-1.5 bg-primary text-primary-foreground">
-              <Plus className="w-4 h-4" strokeWidth={2} />
-              งานใหม่
+            <Button
+              onClick={handleNew}
+              size="icon"
+              aria-label="งานใหม่"
+              className="shrink-0 bg-primary text-primary-foreground"
+            >
+              <Plus className="w-5 h-5" strokeWidth={2} />
             </Button>
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
@@ -206,7 +211,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
             <div className="text-center py-20 text-muted-foreground">
               <FolderKanban className="w-10 h-10 mx-auto mb-3 opacity-30" strokeWidth={1.5} />
               <p className="text-sm">
-                {query ? 'ไม่พบงานที่ค้นหา' : 'ยังไม่มีงาน — กด "งานใหม่" เพื่อเริ่ม'}
+                {query ? 'ไม่พบงานที่ค้นหา' : 'ยังไม่มีงาน — กดปุ่ม ＋ เพื่อเปิดงานใหม่'}
               </p>
             </div>
           ) : (
@@ -284,13 +289,13 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                           <MenuItem>
                             {({ active }) => (
                               <button
-                                onClick={() => handleDuplicate(job.id)}
+                                onClick={() => handleCustomerDetails(job.id)}
                                 className={cn(
                                   'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm',
                                   active ? 'bg-muted text-foreground' : 'text-foreground'
                                 )}
                               >
-                                <Copy className="w-4 h-4" strokeWidth={1.5} /> ทำสำเนา
+                                <User className="w-4 h-4" strokeWidth={1.5} /> รายละเอียดลูกค้า
                               </button>
                             )}
                           </MenuItem>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { useAppStore } from '@/store/useAppStore';
+import { customerToken } from '@/lib/docName';
 import { User, MapPin, Phone, FileText, Truck, Hash } from 'lucide-react';
 
 interface CustomerModalProps {
@@ -49,14 +50,19 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose })
             value={customer.taxId || ''}
             onChange={(e) => handleChange('taxId', e.target.value)}
           />
-          {/* รหัสลูกค้าจากทะเบียนภายนอก (ถ้ามี) — เว้นว่าง ระบบจะ fallback เป็น C{4hex} จาก id */}
-          <Input
-            prefix={<Hash className="w-4 h-4 text-muted-foreground" />}
-            label="รหัสลูกค้า (Customer Code)"
-            placeholder="C0007 — เว้นว่างได้ถ้ายังไม่มีทะเบียน"
-            value={customer.code || ''}
-            onChange={(e) => handleChange('code', e.target.value)}
-          />
+          {/* รหัสลูกค้า — รันจาก UUID/ทะเบียน (DB) เท่านั้น ไม่ให้พิมพ์มือ */}
+          <div className="space-y-1.5">
+            <span className="text-[15px] font-medium text-foreground ml-1">
+              รหัสลูกค้า (Customer Code)
+            </span>
+            <div className="flex h-12 items-center gap-2 rounded-xl border border-input bg-muted/40 px-4">
+              <Hash className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="font-mono tabular-nums text-base text-foreground">
+                {customer.code?.trim() || customerToken(customer.id)}
+              </span>
+              <span className="ml-auto text-xs text-muted-foreground">อัตโนมัติ</span>
+            </div>
+          </div>
 
           <div className="space-y-1.5">
             <label className="text-base font-medium text-foreground ml-1 flex items-center gap-2">

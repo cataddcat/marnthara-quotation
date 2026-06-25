@@ -78,7 +78,7 @@ export const MENU_ENTRIES: MenuEntry[] = [
   { kind: 'item', id: 'jobs', label: 'งานทั้งหมด', desc: 'สลับงาน · ดูความคืบหน้าทุกงาน', icon: FolderKanban, tone: 'jobs', action: 'jobs' },
   { kind: 'item', id: 'overview', label: 'ภาพรวมห้อง', desc: 'ดูทุกห้องแบบแดชบอร์ด', icon: LayoutDashboard, tone: 'jobs', action: 'overview' },
   { kind: 'item', id: 'customer', label: 'ลูกค้างานนี้', desc: 'แก้ชื่อ/ที่อยู่บนเอกสาร', icon: User, tone: 'jobs', action: 'customer' },
-  { kind: 'item', id: 'customerDirectory', label: 'ฐานลูกค้า', desc: 'เลือกลูกค้า · เปิดงานใหม่', icon: Users, tone: 'jobs', action: 'customerDirectory' },
+  { kind: 'item', id: 'customerDirectory', label: 'ฐานข้อมูลลูกค้า', desc: 'ดูข้อมูลลูกค้าทุกราย · อ่านอย่างเดียว', icon: Users, tone: 'jobs', action: 'customerDirectory' },
 
   // ── B · ส่งให้ลูกค้า ──
   { kind: 'section', id: 'sec-deliver', label: 'ส่งให้ลูกค้า', tone: 'deliver' },

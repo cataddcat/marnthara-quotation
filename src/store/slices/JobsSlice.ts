@@ -52,8 +52,6 @@ export interface JobsSlice {
   switchJob: (id: string) => void;
   /** เปิดงานใหม่ (เปล่า หรือ autofill จากลูกค้าในทะเบียน) */
   createJob: (fromCustomer?: JobCustomerSeed) => void;
-  /** ทำสำเนางาน (id ใหม่, ล้างเงินจริง, รีเซ็ตสถานะ) — ไม่สลับไป */
-  duplicateJob: (id: string) => void;
   /** ลบงาน; ถ้าลบงานปัจจุบัน → สลับไปงานล่าสุด/เปล่า */
   deleteJob: (id: string) => void;
   /** ตั้งสถานะงาน (default = งานปัจจุบัน; ส่ง id เพื่อตั้งของงานอื่นในลิสต์ได้) */
@@ -167,31 +165,6 @@ export const createJobsSlice: StateCreator<
     clearUndoHistory();
     // ถ้ามาจากลูกค้า (มีชื่อ) → เก็บลงชั้นวางทันที; งานเปล่า → no-op
     get().saveCurrentJob();
-  },
-
-  duplicateJob: (id) => {
-    const src = get().jobs.find((j) => j.id === id);
-    if (!src) return;
-    const now = new Date().toISOString();
-    const newId = newUuid();
-    const copy: JobBundle = {
-      ...src,
-      id: newId,
-      customer: { ...src.customer, id: newId, name: `${src.customer.name} (สำเนา)` },
-      rooms: src.rooms.map((r) => ({
-        ...r,
-        id: newUuid(),
-        items: r.items.map((it) => ({ ...it, id: newUuid() })),
-      })),
-      // เงินจริง (มัดจำ/จ่าย) = ข้อเท็จจริงของงานเดิม — สำเนาเริ่มศูนย์
-      receipts: [],
-      expenses: [],
-      status: DEFAULT_JOB_STATUS,
-      createdAt: now,
-      updatedAt: now,
-    };
-    set((state) => ({ jobs: [...state.jobs, copy] }));
-    jobSync().pushJob(copy);
   },
 
   deleteJob: (id) => {

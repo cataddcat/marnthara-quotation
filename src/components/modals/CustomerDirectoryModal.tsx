@@ -1,61 +1,42 @@
 // src/components/modals/CustomerDirectoryModal.tsx
 //
-// "ฐานลูกค้า" — ทะเบียนลูกค้า (cloud / local): ค้น/เลือก → เปิดงานใหม่ให้ลูกค้านั้น
-//   + เพิ่ม/แก้ลูกค้า · นำเข้า (Customer Contract: วาง/ไฟล์)
-// ต่างจาก CustomerModal เดิม (แก้ข้อมูลลูกค้า "ของงานนี้")
+// "ฐานข้อมูลลูกค้า" — มุมมอง "อ่านอย่างเดียว" ของทะเบียนลูกค้า (mirror จาก Firebase Firestore = แหล่งข้อมูลจริง)
+//   • ค้น → แตะการ์ดเพื่อกางดูข้อมูลครบทุกฟิลด์ (UUID/รหัส/ชื่อ/เบอร์/ภาษี/ที่อยู่/ติดตั้ง/หมายเหตุ/อัปเดต)
+//   • เพิ่ม/แก้/นำเข้า/ลบ ทำที่ Firestore เท่านั้น — ที่นี่ดูอย่างเดียว
+// ต่างจาก CustomerModal ("ลูกค้างานนี้" — แก้ชื่อ/ที่อยู่บนเอกสารของงานปัจจุบัน)
 
 import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
-import { useConfirm } from '@/hooks/useConfirm';
-import { useHaptic } from '@/hooks/useHaptic';
-import { useRequireAdmin } from '@/hooks/useRequireAdmin';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { cn } from '@/lib/utils';
-import type { RegistryCustomer } from '@/lib/customers/contract';
-import {
-  Search,
-  UserPlus,
-  Upload,
-  FilePlus2,
-  Pencil,
-  Trash2,
-  Hash,
-  Phone,
-  User,
-} from 'lucide-react';
+import { Search, User, ChevronDown } from 'lucide-react';
 
 interface CustomerDirectoryModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type Panel = 'none' | 'form' | 'import';
-
-const emptyForm = { code: '', name: '', phone: '', address: '', taxId: '', installationAddress: '' };
-
 export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const registry = useAppStore((s) => s.customerRegistry);
-  const importCustomers = useAppStore((s) => s.importCustomers);
-  const upsertCustomer = useAppStore((s) => s.upsertCustomer);
-  const removeCustomer = useAppStore((s) => s.removeCustomer);
-  const createJob = useAppStore((s) => s.createJob);
-  const addToast = useUIStore((s) => s.addToast);
-  const { confirm } = useConfirm();
-  const { trigger } = useHaptic();
-  const requireAdmin = useRequireAdmin();
+  const sync = useSyncStatus();
 
   const [query, setQuery] = useState('');
-  const [panel, setPanel] = useState<Panel>('none');
-  const [form, setForm] = useState(emptyForm);
-  const [importText, setImportText] = useState('');
   const PAGE = 50;
   const [visibleCount, setVisibleCount] = useState(PAGE);
+  // เก็บว่าการ์ดลูกค้าไหนถูก "กาง" ดูรายละเอียด
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const toggleExpand = (id: string) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -67,108 +48,10 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
     return [...arr].sort((a, b) => a.name.localeCompare(b.name, 'th'));
   }, [registry, query]);
 
-  const handleOpenJob = (c: RegistryCustomer) => {
-    trigger('medium');
-    createJob({
-      code: c.code,
-      name: c.name,
-      phone: c.phone,
-      address: c.address,
-      taxId: c.taxId,
-      installationAddress: c.installationAddress,
-    });
-    addToast('success', `เปิดงานใหม่ให้ ${c.name}`);
-    onClose();
-  };
-
-  const handleEdit = (c: RegistryCustomer) => {
-    setForm({
-      code: c.code,
-      name: c.name,
-      phone: c.phone ?? '',
-      address: c.address ?? '',
-      taxId: c.taxId ?? '',
-      installationAddress: c.installationAddress ?? '',
-    });
-    setPanel('form');
-  };
-
-  // ลบลูกค้า = ทำลายล้าง → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
-  const handleDelete = (c: RegistryCustomer) =>
-    requireAdmin(async () => {
-      const ok = await confirm({
-        title: 'ลบลูกค้าออกจากทะเบียน?',
-        description: `"${c.name}" (${c.code}) จะถูกลบจากฐานลูกค้า — งานที่อ้างถึงยังอยู่`,
-        confirmLabel: 'ลบ',
-        variant: 'destructive',
-      });
-      if (!ok) return;
-      removeCustomer(c.code);
-      addToast('success', 'ลบลูกค้าแล้ว');
-    });
-
-  const handleSaveForm = () => {
-    if (!form.code.trim() || !form.name.trim()) {
-      addToast('warning', 'กรอกรหัสและชื่อลูกค้า');
-      return;
-    }
-    upsertCustomer({
-      code: form.code.trim(),
-      name: form.name.trim(),
-      phone: form.phone.trim() || undefined,
-      address: form.address.trim() || undefined,
-      taxId: form.taxId.trim() || undefined,
-      installationAddress: form.installationAddress.trim() || undefined,
-    });
-    addToast('success', 'บันทึกลูกค้าแล้ว');
-    setForm(emptyForm);
-    setPanel('none');
-  };
-
-  const handleImportText = () => {
-    if (!importText.trim()) return;
-    let data: unknown;
-    try {
-      data = JSON.parse(importText);
-    } catch {
-      addToast('error', 'JSON ไม่ถูกต้อง');
-      return;
-    }
-    const res = importCustomers(data);
-    if (res.ok) {
-      addToast('success', `นำเข้าลูกค้า ${res.imported} ราย`);
-      setImportText('');
-      setPanel('none');
-    } else {
-      addToast('error', `นำเข้าไม่สำเร็จ: ${res.errors[0] ?? ''}`);
-    }
-  };
-
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target?.result as string);
-        const res = importCustomers(data);
-        if (res.ok) {
-          addToast('success', `นำเข้าลูกค้า ${res.imported} ราย`);
-          setPanel('none');
-        } else {
-          addToast('error', `นำเข้าไม่สำเร็จ: ${res.errors[0] ?? ''}`);
-        }
-      } catch {
-        addToast('error', 'ไฟล์ไม่ถูกต้อง');
-      }
-    };
-    reader.readAsText(file);
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="ฐานลูกค้า" variant="fullscreen">
+    <Modal isOpen={isOpen} onClose={onClose} title="ฐานข้อมูลลูกค้า" variant="fullscreen">
       <div className="flex flex-col h-full bg-background pb-safe-area overflow-hidden">
-        {/* แถบค้นหา + ปุ่ม */}
+        {/* แถบค้นหา + สถานะ */}
         <div className="shrink-0 px-4 pt-3 pb-3 border-b border-border/50 bg-muted/20 space-y-2.5">
           <Input
             prefix={<Search className="w-4 h-4 text-muted-foreground" />}
@@ -176,159 +59,76 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setForm(emptyForm);
-                setPanel((p) => (p === 'form' ? 'none' : 'form'));
-              }}
-              className="flex-1 gap-1.5"
-            >
-              <UserPlus className="w-4 h-4" strokeWidth={1.5} /> เพิ่มลูกค้า
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setPanel((p) => (p === 'import' ? 'none' : 'import'))}
-              className="flex-1 gap-1.5"
-            >
-              <Upload className="w-4 h-4" strokeWidth={1.5} /> นำเข้า
-            </Button>
+          <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
+            <span>
+              {list.length > 0 ? `${list.length} ราย · ดูอย่างเดียว` : 'ยังไม่มีลูกค้าในฐานข้อมูล'}
+            </span>
+            {!sync.hidden && (
+              <span className="flex items-center gap-1.5">
+                <span className={cn('w-1.5 h-1.5 rounded-full', sync.dotClass)} />
+                {sync.label}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-          {/* ฟอร์มเพิ่ม/แก้ */}
-          {panel === 'form' && (
-            <div className="rounded-2xl border border-border bg-card p-3 space-y-3 animate-fade-in">
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  prefix={<Hash className="w-4 h-4 text-muted-foreground" />}
-                  label="รหัสลูกค้า"
-                  placeholder="C0007"
-                  value={form.code}
-                  onChange={(e) => setForm({ ...form, code: e.target.value })}
-                />
-                <Input
-                  prefix={<User className="w-4 h-4 text-muted-foreground" />}
-                  label="ชื่อ"
-                  placeholder="ชื่อลูกค้า"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-              </div>
-              <Input
-                prefix={<Phone className="w-4 h-4 text-muted-foreground" />}
-                label="เบอร์โทร"
-                placeholder="08X-XXX-XXXX"
-                inputMode="tel"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-              <Input
-                label="ที่อยู่"
-                placeholder="ที่อยู่เปิดบิล (ถ้ามี)"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-              />
-              <div className="flex gap-2 pt-1">
-                <Button variant="outline" onClick={() => setPanel('none')} className="flex-1">
-                  ยกเลิก
-                </Button>
-                <Button
-                  onClick={handleSaveForm}
-                  className="flex-1 bg-primary text-primary-foreground"
-                >
-                  บันทึกลูกค้า
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* นำเข้า */}
-          {panel === 'import' && (
-            <div className="rounded-2xl border border-border bg-card p-3 space-y-3 animate-fade-in">
-              <p className="text-sm text-muted-foreground">
-                วาง Customer Contract (marnthara.customers) หรือ array ของลูกค้า แล้วกดนำเข้า
-              </p>
-              <textarea
-                className="w-full h-28 p-3 text-sm font-mono border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder='{"contract":"marnthara.customers","version":1,"entries":[…]}'
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-              />
-              <div className="flex gap-2">
-                <label className="flex-1">
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    className="hidden"
-                    onChange={handleImportFile}
-                  />
-                  <span className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-border text-sm font-medium cursor-pointer hover:bg-muted transition-colors">
-                    <FilePlus2 className="w-4 h-4" strokeWidth={1.5} /> เลือกไฟล์
-                  </span>
-                </label>
-                <Button
-                  onClick={handleImportText}
-                  disabled={!importText.trim()}
-                  className="flex-1 bg-primary text-primary-foreground"
-                >
-                  นำเข้า
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* รายการลูกค้า */}
+        {/* รายการลูกค้า — ดูอย่างเดียว, แตะเพื่อกางทุกฟิลด์ */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5">
           {list.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <User className="w-10 h-10 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
               <p className="text-sm">
-                {query ? 'ไม่พบลูกค้า' : 'ยังไม่มีลูกค้าในทะเบียน — เพิ่ม หรือ นำเข้า'}
+                {query ? 'ไม่พบลูกค้า' : 'ยังไม่มีลูกค้า — ข้อมูลมาจาก Firestore'}
               </p>
             </div>
           ) : (
-            list.slice(0, visibleCount).map((c) => (
-              <div
-                key={c.id}
-                className="rounded-2xl border border-border/60 bg-card p-3 flex items-center gap-2"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-foreground truncate">{c.name}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {[c.code, c.phone].filter(Boolean).join(' · ')}
-                  </div>
-                </div>
-                <Button
-                  onClick={() => handleOpenJob(c)}
-                  className="shrink-0 bg-primary text-primary-foreground text-sm h-9 px-3"
+            list.slice(0, visibleCount).map((c) => {
+              const expanded = expandedIds.has(c.id);
+              return (
+                <div
+                  key={c.id}
+                  className="rounded-2xl border border-border/60 bg-card overflow-hidden"
                 >
-                  เปิดงานใหม่
-                </Button>
-                <button
-                  onClick={() => handleEdit(c)}
-                  aria-label="แก้ไข"
-                  className={cn(
-                    'shrink-0 p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors'
+                  <button
+                    onClick={() => toggleExpand(c.id)}
+                    aria-expanded={expanded}
+                    className="w-full flex items-center gap-2 p-3 text-left active:opacity-80"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-foreground truncate">{c.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {[c.code, c.phone].filter(Boolean).join(' · ')}
+                      </div>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        'w-4 h-4 shrink-0 text-muted-foreground/50 transition-transform',
+                        expanded && 'rotate-180'
+                      )}
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                  {expanded && (
+                    <dl className="px-3 pb-3 pt-2 space-y-2 border-t border-border/50 animate-fade-in">
+                      <DetailRow label="UUID" value={c.id} mono />
+                      <DetailRow label="รหัสลูกค้า" value={c.code} mono />
+                      <DetailRow label="ชื่อ" value={c.name} />
+                      <DetailRow label="เบอร์โทร" value={c.phone} />
+                      <DetailRow label="เลขผู้เสียภาษี" value={c.taxId} mono />
+                      <DetailRow label="ที่อยู่เปิดบิล" value={c.address} />
+                      <DetailRow label="ที่อยู่ติดตั้ง" value={c.installationAddress} />
+                      <DetailRow label="หมายเหตุ" value={c.note} />
+                      <DetailRow label="อัปเดตล่าสุด" value={c.updated_at} />
+                    </dl>
                   )}
-                >
-                  <Pencil className="w-4 h-4" strokeWidth={1.5} />
-                </button>
-                <button
-                  onClick={() => handleDelete(c)}
-                  aria-label="ลบ"
-                  className="shrink-0 p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" strokeWidth={1.5} />
-                </button>
-              </div>
-            ))
+                </div>
+              );
+            })
           )}
 
           {list.length > visibleCount && (
             <button
-              onClick={() => setVisibleCount((c) => c + PAGE)}
+              onClick={() => setVisibleCount((n) => n + PAGE)}
               className="w-full py-3 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               ดูเพิ่ม ({list.length - visibleCount} ราย)
@@ -340,3 +140,22 @@ export const CustomerDirectoryModal: React.FC<CustomerDirectoryModalProps> = ({
     </Modal>
   );
 };
+
+// แถวรายละเอียด: label ⟷ value (ค่าว่าง → "—"); mono สำหรับรหัส/UUID/ตัวเลข
+const DetailRow: React.FC<{ label: string; value?: string; mono?: boolean }> = ({
+  label,
+  value,
+  mono,
+}) => (
+  <div className="flex items-start justify-between gap-3">
+    <dt className="text-xs text-muted-foreground shrink-0">{label}</dt>
+    <dd
+      className={cn(
+        'text-sm text-foreground text-right break-all min-w-0',
+        mono && 'font-mono tabular-nums'
+      )}
+    >
+      {value?.trim() ? value : '—'}
+    </dd>
+  </div>
+);

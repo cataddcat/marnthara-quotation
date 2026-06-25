@@ -134,25 +134,8 @@ describe('🗂️ JobsSlice — setJobStatus', () => {
   });
 });
 
-describe('🗂️ JobsSlice — duplicateJob / deleteJob', () => {
+describe('🗂️ JobsSlice — deleteJob', () => {
   beforeEach(reset);
-
-  it('duplicateJob → id ใหม่ · ล้างเงินจริง · รีเซ็ตสถานะ · ไม่สลับไป', () => {
-    s().setCustomer({ name: 'A' });
-    s().addReceipt({ label: 'มัดจำ', amount: 1000, date: '2026-06-14' });
-    s().saveCurrentJob();
-    const idA = s().currentJobId as string;
-    s().setJobStatus(JOB_STATUS.DONE);
-
-    s().duplicateJob(idA);
-    const jobs = s().jobs;
-    expect(jobs).toHaveLength(2);
-    const copy = jobs.find((j) => j.id !== idA);
-    expect(copy?.receipts).toHaveLength(0);
-    expect(copy?.status).toBe(DEFAULT_JOB_STATUS);
-    expect(copy?.customer.name).toContain('สำเนา');
-    expect(s().currentJobId).toBe(idA); // ยังเปิดงานเดิม
-  });
 
   it('deleteJob งานปัจจุบัน → สลับไปงานที่เหลือ', () => {
     s().setCustomer({ name: 'A' });
