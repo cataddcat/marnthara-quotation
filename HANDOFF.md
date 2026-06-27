@@ -276,6 +276,11 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ## 6. 📌 Known Tech Debt — Still open
 
+- **EEERT-minimal UI pilot (in progress, 2026-06-27)** — ทิศ "Minimal" (ลด chrome/หัวข้อซ้ำ · ขยายหัวข้อ · รวมกรอบ) นำร่อง **gate `theme==='eeert'` เท่านั้น** (ธีมอื่นคงเดิม). คำสั่งที่ใช้ = 3 keywords (`minimal` · `de-dup section header` · `กฎข้อ 4/flatten nested cards`) → **[docs/UX-GLOSSARY.md](docs/UX-GLOSSARY.md) §คำสั่งงาน**; log ละเอียด = memory `minimal-ui-eeert-template`.
+  - **ทำแล้ว (surfaces):** `MainMenuModal` (กลุ่มการ์ดต่อหมวด · typography 16px/ตัด desc · flatten บล็อกบัญชี/PIN/ธีม) · **ช่องขนาด W/H ครบ 7 ฟอร์ม** (ลบหัวข้อ + prefix) · curtains `StyleSection` (de-dup + ย้าย `LayerSelector` เข้ากรอบ + selector → radio-tiles) · **`NestedSurfaceContext`** (กฎข้อ 4) · `AdvancedSection` default→"ตัวเลือกเพิ่มเติม" *(global)* + `HardwareSection` de-dup · `FabricSection` (ลบหัวข้อผ้า → ไอคอน + tint ม่วงช่องรหัส).
+  - **ค้าง/ถัดไป:** roll out keywords เดิมไปจุดที่เหลือ (`JobsModal` · `CustomerDirectoryModal` · `MaterialSummaryModal` · `workspace/ItemCard` · `RoomCard`) · เรื่อง **"input ต้องมีขอบ"** (เจ้าของจะ re-probe ด้วย Design Probe ที่อัปเกรดแล้ว — โชว์ owner/call-site).
+  - **Exit / graduate criteria:** เจ้าของรีวิว EEERT แล้วโอเค → **graduate** = ถอด gate `isEeert` / เลื่อนเป็น base (ดู DESIGN §2 *"rollout EEERT-first … graduate by promoting"*); ถ้ายังไม่โอเค = คงนำร่องต่อ. ห้ามทิ้งค้างแบบไม่มีกำหนด.
+  - **แยกออกจาก pilot (เป็น global/ทุกธีมแล้ว):** version footer = git-derived (`__APP_VERSION__`) · Design Probe owner/call-site upgrade (dev tool).
 - **Aluminum Blind has no dedicated feature dir** — *by design*: reuses the wooden-blinds form (`ItemModal` maps `ALUMINUM_BLIND` → `WOODEN_BLINDS_FORM_ID`) + its own `AluminumBlindsSchema` in `features/wooden-blinds/schemas.ts`. Fully functional; only "stub" in that there's no `features/aluminum-blinds/` folder.
 - **`PricingEngine.test.ts` coverage** — thinner than `CostEngine.test.ts`; no tests yet for undo/redo, import/export, or schema validation hints.
 - **Tool-centric IA** — `MainMenuModal` opens many modals; the primary task "create quotation" lacks a sticky FAB / top-level CTA.

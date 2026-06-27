@@ -24,6 +24,22 @@
 
 ---
 
+## 🎛️ คำสั่งงาน EEERT-minimal (command keywords) — *owned ที่นี่*
+
+> เจ้าของพูดคำเหล่านี้ = AI เข้าใจทันทีว่าให้ทำอะไร. **ทั้งหมด gate `theme==='eeert'`** (ธีมอื่นคงเดิม).
+> log ละเอียดของแต่ละงาน = memory `minimal-ui-eeert-template`; สถานะ pilot (ทำแล้ว/ค้าง/เกณฑ์ graduate) = **[HANDOFF §6](../HANDOFF.md)**.
+
+| คำสั่ง | ความหมาย (ทำอะไร) | ที่ใช้ / โค้ดอ้างอิง |
+|---|---|---|
+| **`minimal`** | ขยายหัวข้อให้เด่น + **ตัดคำอธิบาย (Meta)**; ถ้าเป็น text input ให้ **ย้าย label เข้าไปในช่อง** ผ่าน **`Input.prefix`** (+`aria-label` กัน a11y) แทน label ด้านบน. | ช่องขนาด W/H ทุกฟอร์ม · หัวข้อ MainMenuModal · `prefix` ใน [Input.tsx](../src/components/ui/Input.tsx) |
+| **`de-dup section header`** (ยุบหัวข้อ section ซ้ำ) | ลบ `title`+`icon` ของ `FormSection` เมื่อ **label คอนโทรลข้างในสื่อความครบแล้ว** (หัวข้อ section มัก = เอา label ย่อยมาต่อกัน → ซ้ำ). **คง** `headerRight`/error inline. | StyleSection ("รูปแบบม่าน & การเก็บ") · DimensionSection ("ขนาดพื้นที่") · HardwareSection ("อุปกรณ์ม่าน") |
+| **`กฎข้อ 4`** / **`flatten nested cards`** | section ที่อยู่ใน "การ์ดอื่น" (เนื้อหาของ `CollapsibleSection`) **ไม่วาดกรอบ/พื้นของตัวเองซ้ำ** → เลี่ยงการ์ดซ้อนการ์ด. ทำผ่าน **`NestedSurfaceContext`** (provider ที่ CollapsibleSection · consumer ที่ FormSection). | [nestedSurface.ts](../src/components/ui/nestedSurface.ts) · [FormSection.tsx](../src/components/ui/FormSection.tsx) · [CollapsibleSection.tsx](../src/components/ui/CollapsibleSection.tsx) |
+
+> หลักการร่ม (DESIGN §0/§2): "minimal" ที่นี่ = **ลด chrome ซ้ำ + เพิ่มที่ว่าง** แต่ **คง** การแยก surface พออ่านกลางแดด
+> + สีตามหมวด (data-tone) + touch ≥44 — ไม่ใช่ถอดเส้น/ถอดสีจนแบนกลืน.
+
+---
+
 ## 1. 📐 Layout & การจัดข้อความให้พอดี (text-fitting) — *owned ที่นี่*
 
 | คำศัพท์ | ความหมาย | ส่วนไหนในแอพ / ตัวอย่าง |
@@ -43,7 +59,7 @@
 | **hierarchy inversion (สำคัญสุดได้พื้นที่น้อยสุด)** | layout anti-pattern: element ที่**สำคัญสุด** (ใช้ scan/ตัดสินใจ) กลับถูกบีบพื้นที่เพราะวางในแถวเดียวกับ control รอง ๆ ที่เป็น `shrink-0`. อาการ: ของหลัก truncate ทั้งที่แถวยังมีที่ว่างไปกับของรอง. แก้โดยย้ายของรองลงแถวอื่น / ให้ของหลักได้แถวของตัวเอง. | ชื่อลูกค้า [JobsModal.tsx](../src/components/modals/JobsModal.tsx): เดิม box ~108px เพราะชิปสถานะ 120px + kebab 44px แย่งแถวบน → **แก้ 2026-06-23: ย้ายชิปสถานะลงแถวเมตา → box 236px @390px** (ชื่อ = hero เต็มแถว) |
 | **thumb-inside positioning** | จัด thumb/marker ให้เลื่อน**ภายในแทร็คโดยไม่ล้นขอบ**: `left: frac*100%` (เลื่อนตามสัดส่วน) **+** `transform: translateX(frac*-100%)` (ชดเชยความกว้างของ thumb เอง) → frac 0 = ชิดซ้ายพอดี, 1 = ชิดขวาพอดี, ไม่มีส่วนไหนยื่นพ้นแทร็ค. คู่กับ `transition-all` = เลื่อนนุ่ม. *(วัด center ของ thumb จะได้ ~0.16/0.5/0.84 ไม่ใช่ 0/0.5/1 เพราะ thumb มีความกว้าง — เป็นเรื่องปกติ ไม่ใช่ bug)* | แถบเลื่อนบอกตำแหน่งห้อง RoomSlider pager (>8 ห้อง) [RoomSlider.tsx](../src/components/workspace/RoomSlider.tsx) — แทนตัวเลข "N/M" 2026-06-24 |
 | **consistent-form indicator (ตัวบ่งชี้คงรูป)** | หลักการ: ตัวบ่งชี้สถานะเดียวกันควร**คงรูปแบบ** ไม่สลับชนิดการแสดงผลตามเงื่อนไข (เช่น count↔visual) เพราะผู้ใช้จะนึกว่าเป็น bug/ของคนละอย่าง. ถ้าต้องรองรับหลายขนาด ให้สลับ**ภายในชนิดเดียวกัน** (ดอท→แถบ ล้วนเป็น visual) ไม่ใช่ข้ามชนิด. + เลี่ยงแสดง**ค่าเดียวกันซ้ำ**สองที่ (duplication). | RoomSlider pager เดิม ≤8=ดอท / >8=เลข "N/M" (ซ้ำกับ avatar) → 2026-06-24 ทำให้เป็น visual เสมอ (ดอท→แถบ), เลขอยู่ที่ avatar ที่เดียว |
-| **de-dup section header (ยุบหัวข้อ section ซ้ำ)** | EEERT-minimal pattern: ลบ `title`+`icon` ของ `FormSection` เมื่อ **label ของคอนโทรลข้างในสื่อความครบแล้ว** (หัวข้อ section มัก = เอา label ย่อยมาต่อกัน → ซ้ำ). ถ้าคอนโทรลเป็น text input ให้ย้าย label เข้า field ผ่าน **`Input.prefix`** (+`aria-label` กัน a11y) แทน label ด้านบน. gate `theme==='eeert'` (ธีมอื่นคงเดิม) · คง `headerRight` (error inline). | "รูปแบบม่าน & การเก็บ" → ลบ เหลือ "รูปแบบม่าน"+"ทิศทางการเปิด" [StyleSection.tsx](../src/features/curtains/components/sections/StyleSection.tsx) · "ขนาดพื้นที่ (ม.)" → ลบ + W/H เข้า field [DimensionSection.tsx](../src/features/curtains/components/sections/DimensionSection.tsx). owner = [DESIGN minimal](../DESIGN.md) |
+| **de-dup section header (ยุบหัวข้อ section ซ้ำ)** | → ดู **🎛️ คำสั่งงาน EEERT-minimal** ด้านบน (เป็น command keyword) | หมวดคำสั่งงาน EEERT-minimal |
 
 ---
 
