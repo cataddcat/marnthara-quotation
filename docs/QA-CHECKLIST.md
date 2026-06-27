@@ -1,7 +1,7 @@
 # 🧪 QA Checklist — Marnthara Smart Quotation (+ Catalog Tool)
 
 เช็กลิสต์ทดสอบ manual "ทุกซอกทุกมุม" — ไล่ทีละข้อ ติ๊ก ✅/❌ ในคอลัมน์ **📱 มือถือ (390px)** และ
-**🖥️ เดสก์ท็อป**. ใช้คู่กับเทสต์อัตโนมัติ (lint · unit 697 · E2E 15 · build) ที่เป็น baseline แล้ว.
+**🖥️ เดสก์ท็อป**. ใช้คู่กับเทสต์อัตโนมัติ (lint · unit · E2E · build — คำสั่ง/จำนวนเทสต์ดูที่ [COMMANDS.md](../COMMANDS.md)) ที่เป็น baseline แล้ว.
 
 > **วิธีตั้งจอมือถือ:** `npm run dev` → ปุ่ม **"จอมือถือ"** (DevInspector มุมล่างซ้าย) เปิด popup 390×844 +
 > ปุ่ม **"Notch"** จำลอง safe-area. ตรวจสี/คอนทราสต์ด้วย **Design Probe** (Alt+L).

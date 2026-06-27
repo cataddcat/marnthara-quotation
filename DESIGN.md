@@ -4,13 +4,9 @@
 > *decides* look-and-feel and is the **source of truth** for every UI decision. When code and this doc
 > disagree, the doc wins (or the doc is changed deliberately, in a PR, with reasoning).
 >
-> Foundations it builds on (read once, then defer here): **[HANDOFF.md §1.6](./HANDOFF.md)** (Apple HIG +
-> NN/g ergonomics) and **§1.7** (Geist-aligned visual language). This file is the *applied, enforceable*
-> layer on top of them.
->
-> **📱 Mobile audit worklog:** the ongoing iPhone-13 (390×844) density · safe-area · touch · token pass —
-> with its **done/remaining status** — lives in **[docs/MOBILE-UX-AUDIT.md](./docs/MOBILE-UX-AUDIT.md)**.
-> Read it (with this file) when continuing mobile UX work.
+> Foundation it builds on (read once, then defer here): **[HANDOFF.md §1.6](./HANDOFF.md)** (Apple HIG +
+> NN/g ergonomics). This file is the *applied, enforceable* layer on top — and the **sole owner** of the
+> visual language (typography · colour · spacing · elevation · radii · icons); §2 supersedes any older framing.
 
 ---
 
@@ -65,6 +61,7 @@ layer is the emphasis tool; see the `Metric` hero *plate*).
   `ItemSummaryCard` total), never a bigger font. **The numeric/data layer is 14–16px** — dense card/list
   numbers (`Metric`) at **14px**, summary / document totals at **16px + plate**; only *text headings*
   (Display role) use the 18px ceiling. Plate/colour carries importance; size is at most one coarse step.
+  **The 14/16 numeric split is intentional — don't "unify" it.**
 - ❌ No `12px` for Body/primary content — `12px` is for Meta only.
 - ✅ Thai needs air: body `line-height ≥ 1.5` (`leading-normal`+); **never** `leading-none` / `leading-tight`
   on multi-line Thai. Negative tracking (`tracking-tight`) is for **Latin headings / numbers only**, never Thai body.
@@ -249,7 +246,7 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
 3. **Lint guard (gated)** — the `no-restricted-syntax` rules in [`eslint.config.js`](./eslint.config.js)
    block **both bounds**: every `< 12px` content size *and* every `> 18px` size (`text-xl`+ / arbitrary
    `text-[19px+]`); `npm run lint` (the 0-warning gate) fails on regressions. Print
-   (`src/components/print/**`) is exempt from both. See §7.
+   (`src/components/print/**`) is exempt from both.
 4. **Per-screen checklist before merge:** Body ≥ 14px · Meta(12px) only on dates/counts/units · no < 12px
    content · **no > 18px (cap — emphasis via colour/plate, not size)** · content = `text-foreground`
    (muted only ≥ 14px, secondary) · 44px taps · numbers `font-mono` ·
@@ -263,36 +260,6 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
    [`docs/UX-GLOSSARY.md`](./docs/UX-GLOSSARY.md) ทันที** พร้อม (1) ความหมาย (2) ส่วนที่ใช้ในแอพ (`file:line`)
    (3) ลิงก์ owner ถ้าเป็นค่าของ DESIGN/CONTEXT. เอกสารนั้น = คู่มือศัพท์พัฒนาแอพที่ต้องโตต่อเนื่อง
    (truncate · natural width · flex/min-w-0 · slack …). *ต่างจาก CONTEXT.md ที่เป็นศัพท์โดเมน/ธุรกิจ.*
-
----
-
-## 7. ✅ Phase-2 readability pass — DONE
-
-Phase 1 defined the standard + tooling (Probe, `typography.ts`, `Text`, the lint guard) with **no
-rendered UI changed**. **Phase 2 is complete:**
-
-- **Worklist cleared** — all sub-12px content sizes (was **79 sites / ~22 files**) migrated to the scale:
-  Meta (units · counts · codes · chips · eyebrow micro-labels) → `text-xs` (12px); genuine readable
-  sentences (helper / explanatory text) → `text-sm` (14px). The A4 **lookbook** preview keeps its print
-  sizing (`text-[12px]`, matching its siblings).
-- **Guard is gated** — the `no-restricted-syntax` rule now lives in [`eslint.config.js`](./eslint.config.js)
-  at `error`, so **`npm run lint`** (the 0-warning gate) blocks any future `< 12px` content. The standalone
-  `eslint.design.config.mjs` + `npm run lint:design` were retired.
-- **18px cap added (2026-06-11)** — all 17 on-screen `> 18px` sites (`text-xl`×8 · `text-2xl`×5 ·
-  `text-3xl`×3 + the Display token) were demoted. A second gated `no-restricted-syntax` regex blocks
-  `text-xl`+ / `text-[19px+]`; `classifySizePx` flags `> 18.5px` as error so the Probe catches computed
-  sizes too. Unit-tested in [`src/config/typography.test.ts`](./src/config/typography.test.ts).
-- **Numeric layer settled at 14–16px (2026-06-11, probe pass)** — after the cap, a Probe sweep pulled
-  numbers down and the owner fixed a deliberate two-step: **card / list / overview data (`Metric`,
-  all sizes) = 14px**; **summary / document totals (`ItemSummaryCard` · `RemovalForm` ·
-  `DiscountModal` · `FinancialRing` & target margin %) = 16px + tone plate**. Emphasis is the
-  tone-tinted plate + colour + weight; size only separates "everyday data" (14) from "the headline total"
-  (16) by one coarse step. Only *text headings* (Display role) keep the 18px ceiling (`text-lg`,
-  weight-only — no plate). This 14/16 split is **intentional — do not "unify" it.**
-- **Exempt:** `src/components/print/**` (print medium has its own sizing — both bounds).
-
-> Ongoing discipline: keep new/changed UI on the scale (§1) and **measure with the Probe** (§6) before
-> adjusting — don't blanket-enlarge (the reverted "ภาพรวม" enlarge is the cautionary tale).
 
 ---
 

@@ -69,7 +69,7 @@ Thai market 2025 prices are baked into `DEFAULT_LABOR_COSTS`, `DEFAULT_SERVICE_C
 
 ### 1.6 UX Baseline — Apple HIG + NN/g (mandatory for every screen)
 
-> 📐 Now consolidated + made enforceable in **[`DESIGN.md`](./DESIGN.md)** (the canonical design spec). §1.6/§1.7 are its foundation.
+> 📐 Now consolidated + made enforceable in **[`DESIGN.md`](./DESIGN.md)** (the canonical design spec). §1.6 is its foundation.
 
 The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen Norman Group usability heuristics, mapped to this codebase's primitives. **New or changed UI must satisfy all five before merge.**
 
@@ -81,80 +81,9 @@ The standing UX contract for all UI. Apple Human Interface Guidelines + Nielsen 
 
 **Reference implementation:** `src/components/ui/Modal.tsx` — 44px header close/back buttons via the reused `Button`, tier resolved from `useExperienceMode()` (respects the persisted override, not raw screen width — see §10), and a visible drawer close button.
 
-### 1.7 Geist-aligned visual language (synthesized from §1.6 + Vercel Geist)
+### 1.7 Visual language → owned by DESIGN.md §2
 
-> 📐 The applied/enforceable design law now lives in **[`DESIGN.md`](./DESIGN.md)** (typography floor, Design Probe, `Text` primitive, the gated `<12px` lint guard).
->
-> ⚠️ **Colour & contrast EVOLVED (2026-06) — DESIGN.md §2 supersedes the stance below.** The current law is **"every number colour-coded by type · high contrast · clear surface separation"** (vivid colour-coded values; grey page + white cards + visible borders + real elevation; only *true chrome* — containers/nav/section-labels/body-prose — stays neutral). Read §1.7 below as **historical Geist rationale**: the neutral-chrome discipline, numeric layer, radii, and icon discipline still hold — but its **"monochrome-first / monochrome chrome / Eye-Care-soft / flatness-is-the-gap / borders-over-shadows"** framings are **retired** (DESIGN §2 explicitly retired "monochrome chrome" — numbers no longer sit grey by default). When in doubt, DESIGN.md §2 wins.
-
-We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standing visual language, synthesized from §1.6 and Vercel's **Geist** design system, mapped to our tokens/primitives. It decides look-and-feel so we don't have to re-litigate per screen. **§1.7 layers on top of §1.6 — never overrides §1.6's ergonomics.**
-
-*Why this fits us:* our foundation is already ~70% Geist — `--primary` is Slate-900 (≈black) / near-white in dark (Geist's monochrome core), tokens are semantic, headings track tight (-0.02em), base is 16px. The gap is flatness, the numeric layer, radii, and icon discipline.
-
-1. **Monochrome-first ⊇ §1.6#1 (primary = CTA only).** Decorative/affordance icons, chips, and labels default to `text-foreground` / `text-muted-foreground` — **never `text-primary`** unless the element *is* the primary CTA. (Status/brand/traffic-light colors are the sanctioned exceptions — they carry meaning.)
-2. **Borders + soft, differential elevation.** *(Evolved 2026-06-07 — was "borders over shadows".)* Define surfaces with a 1px `border-border` + a background shift (`bg-card` / `bg-muted/40`), **then lift interactive/raised surfaces with the tuned, slate-tinted elevation scale** (`index.css` `@theme`: `--shadow-2xs…lg`) to guide the eye and separate buttons. Keep it **differential** (ghost flat → secondary/outline `shadow-xs` → buttons/cards `shadow-sm` → CTA/popover `shadow-md`) and **soft** — still avoid heavy `shadow-2xl`/`shadow-primary/*`, gradients (`gradient-*`), and `.glass-card`. Dark mode leans on borders (soft shadows read weakly on OLED).
-3. **Sharper, consistent radii.** Controls (button / input / tab / chip) → ~8px (`rounded-lg`); cards/containers → ~10–12px (`rounded-xl`). Avoid `rounded-2xl`+ on interactive controls (too pillowy for Geist). Token: `--radius: 0.75rem` stays the card baseline.
-4. **Geist Mono = the numeric layer.** `--font-mono` is **Geist Mono** (self-hosted `public/fonts/GeistMono-Variable.woff2`, precached for offline). Every `font-mono` (prices, dims, codes, units — ~72 sites) renders in it; being monospaced it aligns numbers into columns for free. Use `font-mono` for any number/code the eye scans or compares. Body text keeps the system Thai sans (Geist has no Thai glyphs).
-5. **Icon discipline (keep lucide).** `lucide` everywhere, but Geist-tuned: `strokeWidth={1.5}`, sizes on a 16px grid (`w-3.5`/`w-4`/`w-5`), `currentColor` only (monochrome — see #1). Do **not** migrate icon libraries; tuned lucide ≈ Geist look at zero churn.
-6. **Restrained accent + clear focus.** Keep `focus-visible:ring-ring` (NOT `:focus`). Accents (status / brand / amber prices / emerald profit) are *accents* — text/border/dot, not full fills.
-7. **Keep §1.6#2 ergonomics — do NOT adopt Geist's desktop density.** 44×44 hit areas, `useTierSize().control` (field = 56px — Lite/Full renamed to field/detail, §10), 16px base stay. Geist is desktop-dense; we are mobile/on-site first.
-8. **Motion: subtle + fast.** Keep the existing `cubic-bezier(0.16,1,0.3,1)` easings; drop gradient/glow flourishes (they read "2021", not Geist).
-
-**Rollout:** apply per screen when you touch it (don't sweep all 14 modals at once). Reference application = `ProductionSettingsModal` ("ตั้งค่าต้นทุน").
-
-**Rollout status (2026-06):** ✅ **full-app sweep done.** Foundation (control primitives drop `rounded-2xl`→`rounded-xl`; `Button` primary CTA flattened — no `shadow-primary`; dead `.glass-card`/`.gradient-*`/`.hover-glow`/`.hover-lift` + `--gradient-*` removed from `index.css`) + every screen: `ItemCard`, `RoomCard`, shared primitives (`ItemSummaryCard` — dropped the decorative blur glow + the now-dead `accentClass` prop across 8 callers; `FormSection`; `CollapsibleSection`), curtain sections (`Style`/`Hardware`/`Price`/`Fabric`/`CurtainForm` — selected pills now monochrome `border-foreground bg-accent`), `MaterialSummaryModal`, `FinancialDashboard` (+`FinancialRing`/`ItemCard`/`CostRow`/`CodeJumpButton`), and the remaining modals/chrome (`MainMenu`, `Discount`, `Data`, `ProjectOverview`, `ShopSettings`, `Customer`, `CodeDetail`, `FormulaDocs`, `Lookbook`, `CopySummary`, `Modal`, `OptionSheet`, `AlertDialog`, `Toast`, `FormLayout`, `GlobalErrorGuard`, `MainLayout` dock, `SmartNavigator`, `ComboboxInput`, `Input` undo). Recipe applied: borders-over-shadows · `font-mono` on scanned numbers · lucide `strokeWidth={1.5}` · decorative `text-primary`/`bg-primary/10`→neutral (`text-foreground`/`bg-muted`/`bg-accent`). **Kept (sanctioned):** status/brand/traffic-light colors, per-room accents, the dark Pro Mode + Discount invoice cards, `bg-primary text-primary-foreground` *fills* on true CTAs/selected states, neutral overlay shadows (modal `shadow-2xl`, menu/popover `shadow-md`, dock, PDF paper), `FinancialRing` conic chart. Verified: `lint` 0-warn · `test:run` 456 pass · `build` OK.
-
-**Post-sweep follow-ups (2026-06-07):**
-- **Dock HOME button** — the `MainLayout` floating dock is now **4 pills** (หน้าหลัก / ห้อง / ภาพรวม / เมนู). `App.handleGoHome` = focus mode + first room + smooth scroll-to-top; dock widened `max-w-[440px]`, pills tightened (`px-2 gap-1.5 text-[12px] whitespace-nowrap`, `focus-visible:ring-ring`).
-- **`Modal.tsx` scroll-aware header** — the header separator is **transparent until the content scrolls** (`scrolled` state via `onScroll`, applied to drawer + center/fullscreen; header padding `py-2`→`py-2.5`). A clean flat top that gains a divider only when there's more above — universal polish for *every* modal.
-- **✅ Overview ("ภาพรวม") readability — RESOLVED (2026-06).** Original complaint: รก / เล็ก / ตัวหนังสือเล็ก (cluttered / cramped / tiny). The reverted "bigger everywhere + fewer columns" pass was the wrong lever; what landed was **clarity-first, not uniform scaling** — grey-page → white-card **surface separation** (Light + the Signature theme), **colour-coded data** (DESIGN.md §2), sharpened hierarchy (**ขนาด > ราคา** — dimension is the hero, price secondary), and per-item prices in the summary. *(The old reverted diff stays dead — don't re-apply it.)*
-
-**▶ Next focus: UI.** The standing design philosophy is **§1.6 (HIG + NN/g ergonomics) + §1.7 (Geist visual language)** above — together they decide look-and-feel (there is no UI designer; the doc is the designer). Meta-lesson from the reverted overview pass: for **density / typography changes on shared screens**, prefer lighter, targeted touches and surface concrete options to the user before a blanket sweep — "make it bigger" is not automatically "make it better."
-
-### ▶ Session 2026-06-23 — catalog wiring · modal enter/exit · Main Menu dev-customize
-
-**Shipped:**
-- **Catalog/cost audit** → ระบบ "สินค้า & ราคารหัส & ราคาจากผู้ผลิต" ต่อครบ end-to-end ไม่มี bug จริง.
-  Polish: `aluminum_blind` ได้ Zod schema จริง (`AluminumBlindsSchema`; wooden-blinds form เลือก
-  schema ตาม `itemType`) · `PriceBreakdown` interface แทน `breakdown: Record<string,number>` ใน
-  `pricing/types.ts` · Switch a11y (row → `<button aria-pressed>`, input `aria-hidden`).
-- **Catalog picker → catalog-aware:** 6 ฟอร์ม (curtain `FabricSection` + wooden/roller/vertical/
-  partition/wallpaper) route dropdown รหัส/ราคาผ่าน `@/hooks/useInventory` แทน `favorites` ดิบ →
-  เห็น SKU จาก DB สดเมื่อ catalog `status==='ready'` (เดิมมีแต่ราง HardwareSection ที่ catalog-aware).
-- **MaterialSummaryModal:** + ช่องค้นหา SKU (`CatalogCategoryView`, cap 100 แถว) · ลบปุ่ม "คัดลอก"
-  ซ้ำ (ใช้ `CopySummaryModal` สั่งของ/สั่งราง แทน) · sidebar desktop scroll ได้ · count badge เหลือ
-  ตัวเลขล้วน · แท็บวัสดุ "area" แยกซับ-เซกชันต่อชนิดสินค้า (ยอดรวมหน่วยถูก ไม่ปน ตร.ล./ตร.ม.).
-- **Modal enter/exit (audit → แก้ 4 จุด):** `useMobileBack` เขียนใหม่เป็น **back-stack กลาง**
-  (Back ปิด overlay บนสุดทีละชั้น + ไม่ทิ้งขยะ history; reconcile แบบ microtask กัน switch-race) +
-  เพิ่มใน `OptionSheet`/`AlertDialog`/`PdfPreviewModal` · `openCounts` ต่อชนิดใน `ModalSlice` →
-  ModalManager key → คืน leave-animation ของ keyed modals · `Modal` header กระชับ + utility
-  `.pt-safe-top-gap` (fullscreen ไม่ชนขอบบนเมื่อจอไม่มี notch) · DiscountModal discard-on-cancel =
-  ตั้งใจ (ใส่คอมเมนต์).
-- **Main Menu overhaul (เริ่ม — เจ้าของนำ point-by-point):**
-  - **Data-driven menu** — `src/config/menuItems.ts` (`MENU_ENTRIES`: `section`/`item`/`block`)
-    แทน JSX ตายตัว. **bake ลำดับ default = จัดบรรทัดใน `MENU_ENTRIES`.**
-  - **Dev tool "ปรับแต่งเมนู"** — `src/store/standalone/useMenuConfigStore.ts` (`editing` + `order` persist
-    localStorage `mtr.menu-order`; `reconcileIds`/`getOrderedEntries`) + ปุ่ม `ListOrdered` ใน
-    `DevInspector` (dev-only) + drag-reorder (@dnd-kit) ใน `MainMenuModal` (item+block ลากได้/
-    ข้ามหมวดได้, section ตรึง, "คัดลอกลำดับ" ไป bake). round 2: บล็อก account/role/appearance
-    ลากแยกได้. theme switcher = 1 แถว 5 ปุ่ม (icon + ชื่อย่อ).
-  - **Scroll-restore (2 ชั้น, แก้จบ 2026-06-23)** — อาการ "หน้า/modal เด้งบนสุดตอนปิด modal":
-    - **(A) หน้าหลัก (window):** ตัวการจริง = `useMobileBack` เรียก `history.back()` ตอนปิด overlay +
-      default `history.scrollRestoration='auto'` → เบราว์เซอร์คืน scroll เอง (มักเป็น 0) ทุกเบราว์เซอร์.
-      **FIX:** `history.scrollRestoration='manual'` จุดเดียวใน `src/main.tsx` (ดู §4 invariant 10).
-    - **(B) scroll ภายใน modal ที่ถูกซ้อน:** modal stack ตั้งตัวล่าง `isOpen=false` → เนื้อหา unmount →
-      `scrollTop` หาย. **FIX:** `Modal` prop `scrollResetToken` (เก็บ/คืน scrollTop ภายใน; token=
-      `openCounts[type]` แยก "เปิดใหม่→top" vs "กลับจาก stack→คืนเดิม"); wire แล้วที่ `MainMenuModal`.
-    - `useModalScrollRestore` (freeze/restore-rAF, ผูก `activeModal`) คงไว้เป็น insurance ฝั่ง iOS เท่านั้น
-      (vaul/Headless แตะ scroll เฉพาะ Safari/iOS). รายละเอียด: memory `scroll-restore-technique`.
-
-**Next session:**
-- **Main Menu overhaul ต่อ:** เจ้าของจัดลำดับด้วย dev tool → **bake ลำดับใหม่เป็น default** ใน
-  `MENU_ENTRIES`; รอบถัดไปของ dev tool (ถ้าสั่ง): เรียง/ซ่อนหมวด · ซ่อนรายการ · production
-  owner-facing (ตอนนี้ dev-only). ดูแนวทางใน memory `prefers-self-serve-dev-tooling`.
-- gate เขียวรวมยืนยันแล้ว 2026-06-23 (รวม scroll-restore A+B). ถ้า hub modal อื่นที่เปิด modal ลูก
-  แล้วกลับ (เช่น `MaterialSummaryModal`→`CodeDetailModal`) เจออาการ scroll ภายในหาย → opt-in prop
-  `scrollResetToken` เพิ่มได้ทันที (ดูแม่แบบที่ `MainMenuModal` + §7 "When Adding a New Modal").
+The applied, enforceable visual language — typography · colour · spacing · elevation · radii · icon discipline · the numeric/Geist-Mono layer · the Design Probe + `<12px`/`>18px` lint guards — lives in **[`DESIGN.md`](./DESIGN.md)** (the sole owner; read it before any UI change). §1.6 above (HIG + NN/g ergonomics) is the foundation it builds on. *(The earlier Geist / "monochrome-chrome" framings here were retired in 2026-06 — DESIGN §2's "every number colour-coded by type · high contrast · clear surface separation" supersedes them. Don't reintroduce grey-by-default numbers.)*
 
 ---
 
@@ -345,58 +274,11 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ---
 
-## 5. 🐛 Bugs Fixed in This Session
+## 6. 📌 Known Tech Debt — Still open
 
-| # | Bug | Root Cause | Fix |
-|---|---|---|---|
-| 1 | WallpaperForm crash on save | `validate` undefined (not destructured) | Fixed destructuring + added missing handlers to `useWallpaperFormLogic` |
-| 2 | Formulas disappear on backup restore | `formulas` not included in DataModal export | Added `formulas: state.formulas` to export + import |
-| 3 | Stale worker results overwriting state | No request generation tracking | Added `runIdRef` counter; ignore when `runIdRef.current !== runId` |
-| 4 | Worker uses stale store formulas | Worker has separate JS context | Pass `formulas` via `PricingContext` in postMessage |
-| 5 | Formula Studio accepts negative/zero values | No input validation | Added `MUST_BE_POSITIVE` + negative guard in `handleDraftChange` |
-| 6 | Sheer cost = 0 silently for DOUBLE mode | Only `sheer_code` path, no fallbacks | Priority chain: code → sheer_price_sqyd → _cost_sheer → flag |
-| 7 | Save button does nothing with partial data | Zod validation gate in `handleSubmit` | Always call onSubmit; validation shows inline hints only |
-| 8 | Edit mode requires clicking Save | No auto-save | Form-level `onBlur` + ItemModal's `handleAutoSave` |
-| 9 | "รายการโปรด" naming confusing | Actual purpose is cost registry | Renamed to "คลังผ้า"/"คลังรหัสผ้าและต้นทุน" |
-| 10 | Sheer sewing labor missing for DOUBLE | Only main labor charged | Added `'ผ้าโปร่ง'` labor entry + Section D2 in CostEngine |
-| 11 | Labor can't be per-yard | Only 'meter'/'sqm'/'set' units | Added `'yard'` unit → uses `breakdown.fabricYards` |
-| 12 | Code jump hides missing-cost items | `{fabricTotal > 0 && ...}` guard | Always show codes with jump button |
-| 13 | Jump to non-existent code shows empty list | No auto-prefill | Added `prefillCode` prop + auto-open create form |
-| 14 | `discount.is_enabled` optional but used as required | Type was `?: boolean` | Changed to `is_enabled: boolean` + defaults |
-| 15 | Financial Dashboard aggregation approximations | `usage = width * 2.5` hardcoded | Use `analysis.usedQuantity` from CostEngine |
-| 16 | E2E แดงบน mobile-chromium หลังรีดีไซน์ header (2026-06-10) | `seed-demo.spec.ts` ใช้ `getByText('ผ้าม่าน').first()` หลวม — ตัวแรกใน DOM คือ subtitle "ผ้าม่าน & ของตกแต่ง" ที่เพิ่งเปลี่ยนเป็น `hidden sm:block` → จอแคบ element นั้น hidden → fail (แอปเรนเดอร์ปกติ, locator จับผิดตัว) | Scope `page.locator('main').getByText('ผ้าม่าน').first()` (header อยู่นอก `<main>`). **บทเรียน:** เปลี่ยน responsive visibility (`hidden/sm:block`) ของข้อความใด ๆ → ตรวจ E2E locator ที่ match ข้อความนั้น; ตั้ง assertion ให้ scope (role/`locator('main')`/`getByTestId`) ไม่ใช่ `getByText().first()` ทั่วทั้งหน้า |
-| 17 | หน้าหลักเด้งบนสุดทุกครั้งที่ปิด modal (ทุกอุปกรณ์/เบราว์เซอร์) — 2026-06-23 | `useMobileBack` เรียก `history.back()` กลืน guard ตอนปิด overlay + default `scrollRestoration='auto'` → เบราว์เซอร์ auto-restore scroll (มักเป็น 0). (NB: vaul/Headless แตะ scroll เฉพาะ Safari/iOS — บน Chromium ไม่ใช่ตัวการ) | ตั้ง `history.scrollRestoration='manual'` ใน `src/main.tsx` (§4 invariant 10). **บทเรียน:** SPA ที่ map overlay เป็น history entry (pushState/back) ต้อง 'manual' เสมอ ไม่งั้นเด้งตอนปิด |
-| 18 | "เมนูหลัก" เด้งขึ้นบนสุดหลังเปิด-ปิด modal ซ้อน (เช่น สำรองข้อมูล) — 2026-06-23 | modal stack ตั้งตัวล่าง `isOpen=false` → เนื้อหา modal unmount → `scrollTop` ภายในหายตอน mount ใหม่ (คนละ scroller กับ window — `scrollRestoration` ไม่ช่วย) | `Modal` prop `scrollResetToken` เก็บ scrollTop ใน ref แล้วคืนเมื่อกลับจาก stack (token=`openCounts[type]`: bump=เปิดใหม่→top, เท่าเดิม=กลับจาก stack→คืนเดิม); wire ที่ `MainMenuModal` |
-
----
-
-## 6. 📌 Known Tech Debt (NOT addressed this session)
-
-> Updated 2026-05-29 after PRs #1–#8.
-> `npm run lint --max-warnings 0` ผ่าน. Bundle 998 KiB (เล็กลง 40+ KiB จาก initial baseline).
-> สูตรคำนวณทั้งระบบ centralized ที่ `src/config/formulas.ts` (single source of truth).
-
-### Still open
 - **Aluminum Blind has no dedicated feature dir** — *by design*: reuses the wooden-blinds form (`ItemModal` maps `ALUMINUM_BLIND` → `WOODEN_BLINDS_FORM_ID`) + its own `AluminumBlindsSchema` in `features/wooden-blinds/schemas.ts`. Fully functional; only "stub" in that there's no `features/aluminum-blinds/` folder.
-- **PricingEngine.test.ts coverage** — `CostEngine.test.ts` covers 18 cases, `PricingEngine.test.ts` 7 cases. No tests yet for undo/redo, import/export, or schema validation hints.
-- **Tool-centric IA** — `MainMenuModal` opens 11 modals; primary task "create quotation" lacks a sticky FAB or top-level CTA (P1-B in Design Review backlog).
-
-### Closed (2026-06-22, "งานขัดเงา")
-- ~~Aluminum Blind missing Zod schema~~ → `AluminumBlindsSchema` added; the shared wooden-blinds form now selects schema by `itemType` so the `type` literal matches the item; `demo-validation.test.ts` validates it like every other area type.
-- ~~`breakdown?: Record<string, number>`~~ → typed as `PriceBreakdown` interface (all-optional named fields) in `src/lib/pricing/types.ts` — editor assist for `fabricYards`/`sheerYards`/`rolls`/`areaSqyd`/etc. without changing runtime.
-
-### Closed (PRs #1–#8, 2026-05-28 → 2026-05-29)
-- ~~Features with missing Zod schemas (6 types)~~ → **PR #3** (Zod + factory + deleted `useItemForm`)
-- ~~`modalProps: Record<string, any>`~~ → **PR #2** (`ModalPropsMap` discriminated union)
-- ~~`'favoriteManager'` string literal~~ → resolved before this batch
-- ~~13 pre-existing TypeScript errors~~ → resolved before this batch
-- ~~2 broken assertions in `PricingEngine.test.ts`~~ → **PR #1**
-- ~~`FinancialDashboardModal.tsx` (675 LOC god component)~~ → **PR #5**: split into 8 files
-- ~~20 pre-existing lint errors~~ → **PR #6**
-- ~~`InventoryManagerModal` orphan~~ → **PR #6** (deleted)
-- ~~Hardcoded curtain catalog + scattered formulas~~ → **PR #8**: centralized to `src/config/formulas.ts`. WAVE catalog extensible via single-file edit. `FormulaSlice` + `FormulaStudioModal` deleted (deterministic, no persist drift). Added `FormulaDocsModal` for read-only inspection.
-- ~~Wallpaper height > roll_length silent fail~~ → **PR #8**: now emits `warning: 'height_exceeds_roll'`
-- ~~MaterialSummary BOM hardcoded constants~~ → **PR #8**: moved to `FORMULAS.materials`
+- **`PricingEngine.test.ts` coverage** — thinner than `CostEngine.test.ts`; no tests yet for undo/redo, import/export, or schema validation hints.
+- **Tool-centric IA** — `MainMenuModal` opens many modals; the primary task "create quotation" lacks a sticky FAB / top-level CTA.
 
 ---
 
@@ -587,8 +469,6 @@ The app forks into **field/หน้างาน** (on-site measuring) and **det
 3. **Curtains use the shared `ItemSummaryCard` like every form** (Phase C 2026-06-12 **deleted** the curtain-only `PriceSummary`). Its editable Pro Mode (`_cost_*`) moved into `CurtainCostAnalysis` in `ItemSummaryCard`'s `proSlot`; the good state-plate + override-row design was lifted up to `ItemSummaryCard` for all 8 forms. Cost hook = `useCostStatus`. *(Supersedes the old "keep PriceSummary, don't downgrade" rule — PriceSummary no longer exists. See DESIGN §8.)*
 4. **ItemModal footer = floating capsule (`rounded-full` `size="md"`/48px) buttons, appearing only after the form is edited.** *(Floating + dirty-gated 2026-06-24 via `Modal` `footerFloating`; supersedes the old sticky-bar "ยกเลิก/ปิด" row.)* The footer renders only when **dirty AND has min data** (`isDirty && !isFormEmpty`, both tracked in `ItemModal`); opening an existing item (or a still-blank form) shows **no footer — just the header ✕** (close = ✕; Save-First keeps the autosaved draft, so nothing is lost). Once edited: edit = **บันทึก**; add also gets **บันทึก & เพิ่ม** (`secondary`, rapid multi-point, `submitIntentRef='next'`) — right-aligned cluster floating bottom-right (no bar). `handleSubmit`'s add+close path still bails on empty so an **empty item is never created** (root cause of phantom items + false room "ครบ"). Don't revert to a sticky bar or re-add ยกเลิก/ปิด buttons.
 5. **Touch ergonomics via `useTierSize().control`** → passed to `<Input size>` (Lite = lg/56px). Don't hardcode input heights per tier.
-
-Verified live (Playwright, Lite 390px + Full 1280px): single-row footer, Lite collapsible disclosure + Full inline, and green traffic-light + CostReadout with a seeded vault cost (60% margin). `npm run lint` 0-warn, `npm run test:run` 295 passing.
 
 ---
 

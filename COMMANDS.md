@@ -34,7 +34,7 @@ npm run lint && npm run test:run && npm run build
 - **Typography guard is GATED** — the `<12px` content ban (DESIGN.md §1/§2) lives in `eslint.config.js`
   as a `no-restricted-syntax` rule at `error`, so **`npm run lint`** blocks any `text-[9/10/11px]` on
   content. Print medium (`src/components/print/**`) is exempt. (The Phase-1 `lint:design` /
-  `eslint.design.config.mjs` were retired once the worklist was cleared — see DESIGN.md §7.)
+  `eslint.design.config.mjs` were retired — see DESIGN.md §6.)
 - **Design Probe** (not a CLI — in-app dev tool): `npm run dev`, then press **Alt+L** (or click the
   "Probe" button, bottom-left) → hover/click any element to read its *text · file:line · font-size/
   line-height/weight · classes · DESIGN.md role · ⚠ if <12px*, and copy a paste-ready block.
