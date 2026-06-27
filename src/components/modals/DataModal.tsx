@@ -15,6 +15,7 @@ import {
   HardDrive,
   Star,
   DollarSign,
+  FlaskConical,
 } from 'lucide-react';
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
@@ -200,6 +201,24 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // dev only: ใส่ข้อมูลทดสอบ (รหัส 2/หมวด + ลูกค้า 5 ห้องครบเคส) — โหลด seed แบบ dynamic
+  // เพื่อให้ prod build (import.meta.env.DEV === false) ตัดโมดูล seed ทิ้ง
+  const handleSeed = async () => {
+    const ok = await confirm({
+      title: 'ใส่ข้อมูลทดสอบ?',
+      description:
+        'งานปัจจุบันจะถูกเก็บใน "งานทั้งหมด" ก่อน แล้วเพิ่มลูกค้าทดสอบ 3 ราย (งานครบทุกเคส · งานเล็ก · ปิดการขาย) ' +
+        'พร้อมรหัสทดสอบ 2 รหัสต่อหมวดสินค้า — สำหรับเดินเครื่องทดสอบเท่านั้น',
+      confirmLabel: 'ใส่ข้อมูลทดสอบ',
+      variant: 'default',
+    });
+    if (!ok) return;
+    const { seedTestData } = await import('@/lib/dev/seedTestData');
+    const r = seedTestData();
+    addToast('success', `ใส่ข้อมูลทดสอบแล้ว: ${r.codes} รหัส · ${r.customers} ลูกค้า · ${r.rooms} ห้อง`);
+    onClose();
+  };
+
   // ล้างเครื่อง = ทำลายล้างสูงสุด → ผู้ดูแลเท่านั้น (พนักงานกด → เด้งขอ PIN ก่อน)
   const handleFactoryReset = () => {
     if (resetInput !== 'RESET') return;
@@ -359,6 +378,37 @@ export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
         </div>
+
+        {/* 🧪 ZONE 3.5: SEED TEST DATA (DEV ONLY) */}
+        {import.meta.env.DEV && (
+          <div className="bg-muted/40 border border-dashed border-border rounded-xl p-4 space-y-3">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-card rounded-xl border border-border">
+                <FlaskConical className="w-6 h-6 text-muted-foreground" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-foreground">
+                  ใส่ข้อมูลทดสอบ{' '}
+                  <span className="text-muted-foreground font-medium text-xs bg-muted px-1.5 py-0.5 rounded">
+                    Dev
+                  </span>
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  รหัสทดสอบ 2 รหัส/หมวด (18 รหัส) + ลูกค้าทดสอบ 3 ราย (ครบทุกเคส · งานเล็ก · ปิดการขาย) <br />
+                  งานปัจจุบันถูกเก็บไว้ก่อน · กดซ้ำได้ (ไม่เกิดงานซ้ำ)
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={handleSeed}
+                  className="mt-4 w-full sm:w-auto"
+                >
+                  <FlaskConical className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                  ใส่ข้อมูลทดสอบ
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 🔴 ZONE 4: DANGER ZONE */}
         <div className="pt-4">
