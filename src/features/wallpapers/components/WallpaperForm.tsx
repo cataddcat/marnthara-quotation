@@ -178,11 +178,23 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
 
       {/* 2. Specification */}
       <FormSection
-        icon={ScrollText}
+        icon={isEeert ? undefined : ScrollText}
         iconClass={theme.icon}
-        title="รหัส & ราคา"
+        title={isEeert ? undefined : 'รหัส & ราคา'}
         headerRight={
-          isDetail && (
+          isDetail &&
+          (isEeert ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              aria-label="จัดการรายการ"
+              onClick={() => openModal('materialSummary', { initialTab: 'catalog', initialCategory: FAVORITE_CATEGORIES.WALLPAPER })}
+            >
+              <Book className="w-4 h-4" />
+            </Button>
+          ) : (
             <Button
               type="button"
               variant="ghost"
@@ -193,7 +205,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
-          )
+          ))
         }
       >
         <ComboboxInput<InventoryItem>

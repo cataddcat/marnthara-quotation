@@ -144,11 +144,28 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
       </FormSection>
 
       <FormSection
-        icon={Tag}
+        icon={isEeert ? undefined : Tag}
         iconClass={theme.icon}
-        title="สเปค & ราคา"
+        title={isEeert ? undefined : 'สเปค & ราคา'}
         headerRight={
-          isDetail && (
+          isDetail &&
+          (isEeert ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              aria-label="จัดการรายการ"
+              onClick={() =>
+                openModal('materialSummary', {
+                  initialTab: 'catalog',
+                  initialCategory: FAVORITE_CATEGORIES.PLEATED_SCREEN,
+                })
+              }
+            >
+              <Book className="w-4 h-4" />
+            </Button>
+          ) : (
             <Button
               type="button"
               variant="ghost"
@@ -164,7 +181,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
-          )
+          ))
         }
       >
         {/* คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}

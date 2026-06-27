@@ -50,3 +50,18 @@ export const segmentedItemClass = (active: boolean, theme: ThemeStyle): string =
       ? cn('bg-card shadow-sm', theme.text)
       : 'text-muted-foreground hover:text-foreground'
   );
+
+/* ── Radio tile — ไทล์ขอบรายตัว (เข้าชุด OpeningStyleSelector/LayerSelector tiles) ───── */
+
+/**
+ * คลาสปุ่มไทล์ radio — ขอบรายตัว (border-2), active = ขอบเข้ม + พื้น accent.
+ * recipe เดียวกับ OpeningStyleSelector/LayerSelector(variant="tiles") เพื่อกัน drift ของโค้ดใหม่.
+ * ผู้เรียกใส่ไอคอน + ป้าย + badge `Check` เองด้านใน (เหมือน OpeningStyleSelector).
+ */
+export const radioTileClass = (active: boolean): string =>
+  cn(
+    'relative flex flex-col items-center justify-center h-16 rounded-xl border-2 transition-all active:scale-95',
+    active
+      ? 'border-foreground bg-accent text-foreground'
+      : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-foreground/40'
+  );

@@ -148,11 +148,25 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
       {/* 2. Details */}
       <FormSection
-        icon={Tag}
+        icon={isEeert ? undefined : Tag}
         iconClass={theme.icon}
-        title="รหัส & ราคา"
+        title={isEeert ? undefined : 'รหัส & ราคา'}
         headerRight={
-          isDetail && (
+          isDetail &&
+          (isEeert ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              aria-label="จัดการรายการ"
+              onClick={() =>
+                openModal('materialSummary', { initialTab: 'catalog', initialCategory: FAVORITE_CATEGORIES.ROLLER_BLIND })
+              }
+            >
+              <Book className="w-4 h-4" />
+            </Button>
+          ) : (
             <Button
               type="button"
               variant="ghost"
@@ -165,7 +179,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
               <Book className="w-3.5 h-3.5" />
               <span className="text-xs">จัดการรายการ</span>
             </Button>
-          )
+          ))
         }
       >
         <ComboboxInput

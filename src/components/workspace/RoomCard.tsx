@@ -64,6 +64,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   // Colorful themes (EEERT + Dark Vivid): collapse the footer to one line (drop the
   // "สถานะ"/"ยอดรวมห้อง" labels).
   const isColorful = useThemeStore((s) => isColorfulTheme(s.theme));
+  // EEERT minimal: ในโหมด focus รายการในห้องถูก list อยู่ใต้การ์ดอยู่แล้ว → ซ่อนป้ายสรุปชนิดที่หัวการ์ด
+  // (ซ้ำกับ list / EmptyState ด้านล่าง). โหมด compact ไม่ list รายการ จึงยังโชว์ป้ายไว้.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   // Collapsing header — เมื่อหัวการ์ดเลื่อนพ้นเส้น fold (ใต้ app header) → โชว์แถบบาง "ลำดับ+ชื่อ" แทน
   const headerRef = useRef<HTMLDivElement>(null);
@@ -419,22 +422,23 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 )}
               </div>
 
-              {/* Item type breakdown pills */}
-              {typeBreakdown.length > 0 ? (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {typeBreakdown.map(([label, count]) => (
-                    <span
-                      key={label}
-                      className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground"
-                    >
-                      {label}
-                      {count > 1 ? ` ×${count}` : ''}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground/40 mt-1">ยังไม่มีรายการ</p>
-              )}
+              {/* Item type breakdown pills — ซ่อนใน EEERT (โหมด focus list รายการอยู่ใต้การ์ดแล้ว) */}
+              {!isEeert &&
+                (typeBreakdown.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {typeBreakdown.map(([label, count]) => (
+                      <span
+                        key={label}
+                        className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground"
+                      >
+                        {label}
+                        {count > 1 ? ` ×${count}` : ''}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/40 mt-1">ยังไม่มีรายการ</p>
+                ))}
             </div>
 
             {/* Kebab menu */}
