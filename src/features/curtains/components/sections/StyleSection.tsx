@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { CurtainItemInput } from '@/types';
 import { CURTAIN_STYLES, STYLES_WITHOUT_OPENING } from '@/config/constants';
+import { LAYER_MODES } from '@/config/enums';
 import { OptionSheet } from '@/components/ui/OptionSheet';
 import { FormSection } from '@/components/ui/FormSection';
 import { Settings2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
+import { LayerSelector } from './LayerSelector';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 
 interface StyleSectionProps {
   data: CurtainItemInput;
@@ -15,6 +18,15 @@ interface StyleSectionProps {
 
 export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, errors }) => {
   const [activeSheet, setActiveSheet] = useState<'style' | null>(null);
+  // EEERT-minimal: ยุบหัวข้อ section ที่ซ้ำกับ label ภายใน (de-dup header); ธีมอื่นคงเดิม
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
+
+  // EEERT: ย้าย "ประเภทม่าน" (LayerSelector) ขึ้นมารวมในกรอบนี้ (เดิมอยู่ FabricSection)
+  const layerMode = data.layer_mode || LAYER_MODES.MAIN;
+  const allowedLayerModes =
+    data.style === 'แป๊บ'
+      ? [LAYER_MODES.MAIN, LAYER_MODES.SHEER] // แป๊บ (สอดราง) ทำ 2 ชั้นไม่ได้
+      : [LAYER_MODES.MAIN, LAYER_MODES.SHEER, LAYER_MODES.DOUBLE];
 
   const getStyleLabel = () =>
     CURTAIN_STYLES.find((s) => s.value === data.style)?.label || 'เลือกรูปแบบ...';
@@ -23,9 +35,9 @@ export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, erro
     <div className="space-y-4">
       {/* 1. Style Selection Card */}
       <FormSection
-        icon={Settings2}
+        icon={isEeert ? undefined : Settings2}
         iconClass="text-foreground"
-        title="รูปแบบม่าน & การเก็บ"
+        title={isEeert ? undefined : 'รูปแบบม่าน & การเก็บ'}
         headerRight={
           errors?.style && (
             <span className="text-xs text-destructive flex items-center gap-1">
@@ -51,6 +63,19 @@ export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, erro
             <span className="text-sm text-muted-foreground font-bold">เปลี่ยน {'>'}</span>
           </button>
         </div>
+
+        {/* ประเภทม่าน (ชั้นผ้า) — EEERT: ย้ายขึ้นมาในกรอบเดียวกับรูปแบบ/ทิศทาง (เดิมอยู่ FabricSection) */}
+        {isEeert && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground ml-1">ประเภทม่าน</label>
+            <LayerSelector
+              value={layerMode}
+              onChange={(v) => onChange('layer_mode', v)}
+              allowedModes={allowedLayerModes}
+              variant="tiles"
+            />
+          </div>
+        )}
 
         {/* ทิศทางการเปิด — ม่านพับ (ยกขึ้นแนวตั้ง) / แป๊บ (สอดราว) ไม่มีทิศซ้าย/กลาง/ขวา
             แสดงทุกโหมด: บังคับเลือกก่อนออกเอกสาร — เก็บคำตอบได้ตั้งแต่หน้างาน */}

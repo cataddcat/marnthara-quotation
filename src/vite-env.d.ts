@@ -15,3 +15,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// เวอร์ชัน footer ที่ Vite `define` ฉีดตอน build (git-derived: "วันที่ · short SHA") — ดู vite.config.ts
+declare const __APP_VERSION__: string;

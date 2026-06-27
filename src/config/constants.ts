@@ -4,8 +4,9 @@
  */
 import { ITEM_TYPES } from './enums';
 
-// Single source of truth for the displayed app version (menu footer). Bump here only.
-export const APP_VERSION = '6.7.0';
+// เวอร์ชันที่โชว์ใน footer = "วันที่ deploy · short SHA" — มาจาก git ตอน build (Vite `define` ใน
+// vite.config.ts) เปลี่ยนเองทุก push ไม่ต้อง bump มือ. ดู __APP_VERSION__ ใน vite-env.d.ts
+export const APP_VERSION = __APP_VERSION__;
 // Year of the bundled "standard market costs" (DEFAULT_*_COSTS in CostDataSlice).
 // Single source — shown in the "โหลดค่ามาตรฐาน <year>" UI; bump when the defaults are refreshed.
 export const COST_DATA_YEAR = 2025;

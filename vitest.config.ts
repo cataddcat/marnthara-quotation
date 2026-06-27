@@ -4,6 +4,9 @@ import path from 'path';
 
 // Configuration for Testing (Vitest)
 export default defineConfig({
+  // __APP_VERSION__ ถูกฉีดโดย Vite `define` ตอน build (vite.config.ts) — เทสต์ไม่ใช้ค่าจริง
+  // ใส่ placeholder กัน ReferenceError ตอน constants.ts โหลด (ไม่รัน git/PWA plugin ในเทสต์)
+  define: { __APP_VERSION__: JSON.stringify('test') },
   test: {
     globals: true,
     environment: 'jsdom', // จำลอง Browser environment

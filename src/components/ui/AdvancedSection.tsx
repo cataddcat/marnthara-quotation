@@ -24,7 +24,7 @@ interface AdvancedSectionProps {
  */
 export const AdvancedSection: React.FC<AdvancedSectionProps> = ({
   expanded,
-  title = 'ตัวเลือกการติดตั้ง',
+  title = 'ตัวเลือกเพิ่มเติม',
   hint = 'ฝั่งดึง · การเปิด — ใส่ทีหลังได้',
   children,
 }) => {

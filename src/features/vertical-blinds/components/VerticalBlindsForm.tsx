@@ -11,6 +11,7 @@ import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
@@ -62,6 +63,8 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
+  // EEERT minimal: ลบหัวข้อ section + ย้ายป้าย กว้าง/สูง เข้าใน field (prefix); ธีมอื่นคงเดิม
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
   const theme = getItemTheme(ITEM_TYPES.VERTICAL_BLIND);
 
   const previewItem = useMemo<ItemData>(
@@ -114,10 +117,15 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
   return (
     <form id={VERTICAL_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
-      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
+      <FormSection
+        icon={isEeert ? undefined : Ruler}
+        title={isEeert ? undefined : 'ขนาดพื้นที่ (ม.)'}
+      >
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="กว้าง (W)"
+            label={isEeert ? undefined : 'กว้าง (W)'}
+            prefix={isEeert ? 'W' : undefined}
+            aria-label={isEeert ? 'กว้าง (W)' : undefined}
             value={formData.width_m}
             onChange={(e) => handleNumberChange('width_m', e.target.value)}
             isDimension
@@ -125,7 +133,9 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             size={control}            error={errors.width_m}
           />
           <Input
-            label="สูง (H)"
+            label={isEeert ? undefined : 'สูง (H)'}
+            prefix={isEeert ? 'H' : undefined}
+            aria-label={isEeert ? 'สูง (H)' : undefined}
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}
             isDimension

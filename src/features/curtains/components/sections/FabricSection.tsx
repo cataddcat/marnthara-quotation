@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { CurtainItemInput } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 import { useNotificationStore } from '@/store/standalone/useNotificationStore';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { ComboboxInput, SuggestionItem } from '@/components/ui/ComboboxInput';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -70,6 +71,8 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
 }) => {
   const { openModal } = useAppStore();
   const addToast = useNotificationStore((state) => state.addToast);
+  // EEERT: "ประเภทม่าน" (LayerSelector) ย้ายไปอยู่ StyleSection แล้ว → ที่นี่ไม่เรนเดอร์ซ้ำ
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   // catalog-aware: ดึง SKU+ราคาจากแค็ตตาล็อกสด (DB) เมื่อเชื่อม, ไม่งั้น fallback favorites
   // — ใช้สำหรับเทียบราคากับคลัง (PriceStatusIndicator) เท่านั้น = catalog/favorites ล้วน
@@ -150,44 +153,70 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 1. ✅ Layer Mode Selector */}
-      <FormSection icon={Layers} iconClass="text-foreground" title="เลือกประเภทม่าน">
-        {/* ✅ ใส่ Default Value กันตาย (Fallback) */}
-        <LayerSelector
-          value={layerMode}
-          onChange={(val) => onChange('layer_mode', val)}
-          allowedModes={allowedLayerModes}
-        />
-      </FormSection>
+      {/* 1. ✅ Layer Mode Selector — EEERT: ย้ายขึ้นไปรวมในกรอบ StyleSection แล้ว (ไม่เรนเดอร์ที่นี่) */}
+      {!isEeert && (
+        <FormSection icon={Layers} iconClass="text-foreground" title="เลือกประเภทม่าน">
+          {/* ✅ ใส่ Default Value กันตาย (Fallback) */}
+          <LayerSelector
+            value={layerMode}
+            onChange={(val) => onChange('layer_mode', val)}
+            allowedModes={allowedLayerModes}
+          />
+        </FormSection>
+      )}
 
       {/* 2. ส่วนเลือกผ้า (แสดงตาม Mode) */}
       <FormSection>
         {/* --- MAIN FABRIC INPUT --- */}
         {showMain && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
-              <div className={cn('flex items-center gap-2 font-bold', MATERIAL_ACCENT.fabric)}>
-                <Moon className="w-4 h-4" />
-                <span>ผ้าทึบ (Main)</span>
+            {isEeert ? (
+              // EEERT-minimal: ลบหัวข้อสี "ผ้าทึบ (Main)" (ซ้ำกับ label ช่องรหัส) — เหลือไอคอนจัดการ (detail)
+              showCatalogTools && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-violet-500"
+                    title="จัดการรายการ"
+                    aria-label="จัดการรายการ"
+                    onClick={() =>
+                      openModal('materialSummary', {
+                        initialTab: 'catalog',
+                        initialCategory: FAVORITE_CATEGORIES.CURTAIN_MAIN,
+                      })
+                    }
+                  >
+                    <Book className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            ) : (
+              <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
+                <div className={cn('flex items-center gap-2 font-bold', MATERIAL_ACCENT.fabric)}>
+                  <Moon className="w-4 h-4" />
+                  <span>ผ้าทึบ (Main)</span>
+                </div>
+                {showCatalogTools && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 gap-1 text-muted-foreground hover:text-violet-500"
+                    onClick={() =>
+                      openModal('materialSummary', {
+                        initialTab: 'catalog',
+                        initialCategory: FAVORITE_CATEGORIES.CURTAIN_MAIN,
+                      })
+                    }
+                  >
+                    <Book className="w-3.5 h-3.5" />
+                    <span className="text-xs">จัดการรายการ</span>
+                  </Button>
+                )}
               </div>
-              {showCatalogTools && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 gap-1 text-muted-foreground hover:text-violet-500"
-                onClick={() =>
-                  openModal('materialSummary', {
-                    initialTab: 'catalog',
-                    initialCategory: FAVORITE_CATEGORIES.CURTAIN_MAIN,
-                  })
-                }
-              >
-                <Book className="w-3.5 h-3.5" />
-                <span className="text-xs">จัดการรายการ</span>
-              </Button>
-              )}
-            </div>
+            )}
             
             {/* Responsive grid: 7/5 split — give price column more room for xx,xxx */}
             <div className="grid grid-cols-12 gap-3 items-start">
@@ -196,6 +225,8 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 <ComboboxInput<InventoryItem>
                   label="รหัสผ้าทึบ"
                   placeholder="ค้นหาหรือพิมพ์รหัส..."
+                  // EEERT: ย้าย color-code จากหัวข้อ → tint ม่วง material ที่ช่องรหัส (ทึบ = เข้ม)
+                  className={isEeert ? 'bg-violet-500/10' : undefined}
                   value={data.code || ''}
                   onChange={(val) => onChange('code', val)}
                   onSelect={(item) => {
@@ -259,29 +290,53 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             "space-y-3 animate-in fade-in slide-in-from-top-2 duration-300",
             showMain && "pt-4 border-t border-dashed border-border"
           )}>
-            <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
-              <div className={cn('flex items-center gap-2 font-bold', MATERIAL_ACCENT.sheer)}>
-                <Sun className="w-4 h-4" />
-                <span>ผ้าโปร่ง (Sheer)</span>
+            {isEeert ? (
+              // EEERT-minimal: ลบหัวข้อสี "ผ้าโปร่ง (Sheer)" — เหลือไอคอนจัดการ (detail)
+              showCatalogTools && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-violet-400"
+                    title="จัดการรายการ"
+                    aria-label="จัดการรายการ"
+                    onClick={() =>
+                      openModal('materialSummary', {
+                        initialTab: 'catalog',
+                        initialCategory: FAVORITE_CATEGORIES.CURTAIN_SHEER,
+                      })
+                    }
+                  >
+                    <Book className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            ) : (
+              <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
+                <div className={cn('flex items-center gap-2 font-bold', MATERIAL_ACCENT.sheer)}>
+                  <Sun className="w-4 h-4" />
+                  <span>ผ้าโปร่ง (Sheer)</span>
+                </div>
+                {showCatalogTools && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 gap-1 text-muted-foreground hover:text-violet-400"
+                    onClick={() =>
+                      openModal('materialSummary', {
+                        initialTab: 'catalog',
+                        initialCategory: FAVORITE_CATEGORIES.CURTAIN_SHEER,
+                      })
+                    }
+                  >
+                    <Book className="w-3.5 h-3.5" />
+                    <span className="text-xs">จัดการรายการ</span>
+                  </Button>
+                )}
               </div>
-              {showCatalogTools && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 gap-1 text-muted-foreground hover:text-violet-400"
-                onClick={() =>
-                  openModal('materialSummary', {
-                    initialTab: 'catalog',
-                    initialCategory: FAVORITE_CATEGORIES.CURTAIN_SHEER,
-                  })
-                }
-              >
-                <Book className="w-3.5 h-3.5" />
-                <span className="text-xs">จัดการรายการ</span>
-              </Button>
-              )}
-            </div>
+            )}
 
             {/* Responsive grid: 7/5 split */}
             <div className="grid grid-cols-12 gap-3 items-start">
@@ -290,6 +345,8 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                 <ComboboxInput<InventoryItem>
                   label="รหัสผ้าโปร่ง"
                   placeholder="ค้นหา..."
+                  // EEERT: tint ม่วงอ่อนกว่า (โปร่ง = อ่อน)
+                  className={isEeert ? 'bg-violet-500/5' : undefined}
                   value={data.sheer_code || ''}
                   onChange={(val) => onChange('sheer_code', val)}
                   onSelect={(item) => {

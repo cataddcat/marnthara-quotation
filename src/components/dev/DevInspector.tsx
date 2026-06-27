@@ -7,7 +7,8 @@ import { useMenuConfigStore } from '@/store/standalone/useMenuConfigStore';
 /**
  * DevInspector — "Design Probe" (dev only). คลิก/ชี้องค์ประกอบบนแอป → รู้ทันทีว่า
  *   • อะไร: ข้อความ + คลาส text-/font-/leading-/tracking-
- *   • ที่ไหน: ไฟล์:บรรทัด (จาก data-loc)
+ *   • ที่ไหน: ไฟล์:บรรทัดของ element (data-loc) + **คอมโพเนนต์ + prop ระบุตัว** (จาก React fiber)
+ *            + **call-site จริง** (data-loc คนละไฟล์) → แยกได้ว่าเป็น instance ไหน เช่น `Input · label="ราคา / ม."`
  *   • ขนาดเท่าไหร่: font-size/line-height/weight ที่ render จริง + role ตาม DESIGN.md + ⚠ ถ้าผิดมาตรฐาน
  * แล้วคัดลอกบล็อกพร้อมวางบอก AI เพื่อปรับแบบแม่นยำ (ไม่ใช่ "ปรับตรงนั้น" ลอย ๆ)
  *
@@ -27,6 +28,8 @@ interface Probe {
   roleHint: string;
   status: SizeStatus;
   note: string;
+  owner: string; // คอมโพเนนต์ที่เรนเดอร์ + prop ระบุตัว (จาก fiber) เช่น `Input · label="…"`
+  caller: string; // call-site จริง (data-loc คนละไฟล์) เช่น FabricSection.tsx:201
 }
 
 // เหนือทุก modal (modal ใช้ z-50/51)
@@ -45,6 +48,65 @@ const locToRef = (loc: string): string => {
 };
 
 const SIZE_TOKEN = /^text-(xs|sm|base|lg|xl|2xl|3xl|4xl)$/;
+
+// ── React fiber → "คอมโพเนนต์ตัวไหน" (dev) ──────────────────────────────────────
+// data-loc บอกแค่ "element อยู่ไฟล์ไหน" (เช่น Input.tsx:160 เหมือนกันทุก <Input>) ไม่บอก instance.
+// ไต่ fiber หาคอมโพเนนต์ (ชื่อขึ้นต้นตัวใหญ่) ตัวแรกเหนือ element + prop ระบุตัว → แยก instance ได้.
+interface FiberLike {
+  type: unknown;
+  memoizedProps: Record<string, unknown> | null;
+  return: FiberLike | null;
+}
+
+const getFiber = (node: Element): FiberLike | null => {
+  const key = Object.keys(node).find(
+    (k) => k.startsWith('__reactFiber$') || k.startsWith('__reactInternalInstance$')
+  );
+  return key ? (node as unknown as Record<string, FiberLike>)[key] ?? null : null;
+};
+
+const fiberName = (type: unknown): string | null => {
+  if (typeof type === 'function') {
+    const fn = type as { displayName?: string; name?: string };
+    return fn.displayName || fn.name || null;
+  }
+  if (type && typeof type === 'object') {
+    const o = type as { displayName?: string; render?: unknown; type?: unknown };
+    if (typeof o.displayName === 'string') return o.displayName;
+    if (o.render) return fiberName(o.render); // forwardRef
+    if (o.type) return fiberName(o.type); // memo
+  }
+  return null;
+};
+
+const IDENT_PROPS = ['label', 'title', 'aria-label', 'placeholder', 'name', 'id'];
+
+// คอมโพเนนต์ที่เรนเดอร์ element นี้ + prop ระบุตัว เช่น `Input · label="รหัสผ้าทึบ"`
+const ownerOf = (node: Element): string => {
+  let f = getFiber(node);
+  for (let depth = 0; f && depth < 40; depth++, f = f.return) {
+    const name = fiberName(f.type);
+    if (!name || !/^[A-Z]/.test(name) || name === 'DevInspector') continue;
+    const props = f.memoizedProps ?? {};
+    for (const k of IDENT_PROPS) {
+      const v = props[k];
+      if (typeof v === 'string' && v.trim()) return `${name} · ${k}="${v.trim().slice(0, 28)}"`;
+    }
+    return name;
+  }
+  return '';
+};
+
+// call-site: data-loc ตัวแรกบน DOM ที่ "คนละไฟล์" กับ element เอง = ที่ที่ถูกเรียกใช้จริง
+const callerOf = (el: HTMLElement): string => {
+  const ownFile = (el.getAttribute('data-loc') || '').split(':')[0];
+  let cur = el.parentElement;
+  for (let depth = 0; cur && depth < 60; depth++, cur = cur.parentElement) {
+    const loc = cur.getAttribute('data-loc');
+    if (loc && loc.split(':')[0] !== ownFile) return loc;
+  }
+  return '';
+};
 
 const buildProbe = (el: HTMLElement): Probe => {
   const r = el.getBoundingClientRect();
@@ -70,16 +132,22 @@ const buildProbe = (el: HTMLElement): Probe => {
     roleHint: v.roleHint,
     status: v.status,
     note: v.note,
+    owner: ownerOf(el),
+    caller: callerOf(el),
   };
 };
 
 const buildCopy = (p: Probe): string => {
+  // บรรทัด context — "คอมโพเนนต์ตัวไหน + ถูกเรียกที่ไหน" (ตัว disambiguate instance)
+  const ctx = [p.owner, p.caller && `in ${locToRef(p.caller)}`].filter(Boolean).join(' · ');
   const sizeLine = `"${p.text}"  ·  ${p.fontPx}px / lh ${p.lh} / w${p.weight}`;
   const classLine = p.hasSize
     ? `classes: ${p.tokens || '(none)'}`
     : `classes: ${p.tokens || '(none)'} — ขนาดสืบทอด (inherited)`;
   const roleLine = `role: ${p.roleHint} (${p.status})${p.note ? ' · ' + p.note : ''}`;
-  return [locToRef(p.loc), sizeLine, classLine, roleLine].join('\n');
+  return [locToRef(p.loc), ctx && `↳ ${ctx}`, sizeLine, classLine, roleLine]
+    .filter(Boolean)
+    .join('\n');
 };
 
 export const DevInspector = () => {
@@ -306,7 +374,7 @@ export const DevInspector = () => {
               textOverflow: 'ellipsis',
             }}
           >
-            {renderSummary(hover)} · {locToRef(hover.loc)}
+            {renderSummary(hover)} · {hover.owner || locToRef(hover.loc)}
           </div>
         </>
       )}
@@ -386,7 +454,15 @@ export const DevInspector = () => {
             <div style={{ color: '#cbd5e1', wordBreak: 'break-word' }}>
               {pinned.hasSize ? pinned.tokens || '(no type classes)' : `${pinned.tokens || '(no type classes)'} — inherited`}
             </div>
-            <div style={{ color: '#38bdf8', wordBreak: 'break-all' }}>{locToRef(pinned.loc)}</div>
+            {pinned.owner && (
+              <div style={{ color: '#a5b4fc', wordBreak: 'break-word' }}>↳ {pinned.owner}</div>
+            )}
+            <div style={{ color: '#38bdf8', wordBreak: 'break-all' }}>
+              {locToRef(pinned.loc)}
+              {pinned.caller && (
+                <span style={{ color: '#64748b' }}> · in {locToRef(pinned.caller)}</span>
+              )}
+            </div>
           </div>
         </div>
       )}

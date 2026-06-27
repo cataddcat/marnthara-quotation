@@ -10,6 +10,7 @@ import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book } from 'lucide-reac
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { FormTwoColumn } from '@/components/ui/FormTwoColumn';
 import { FormSection } from '@/components/ui/FormSection';
 import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
@@ -68,6 +69,8 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
   const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
+  // EEERT minimal: ลบหัวข้อ section + ย้ายป้าย กว้าง/สูง เข้าใน field (prefix); ธีมอื่นคงเดิม
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
   const theme = getItemTheme(itemType);
 
   // Determine Favorite Category based on itemType
@@ -131,11 +134,16 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
     <form id={WOODEN_BLINDS_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
+      <FormSection
+        icon={isEeert ? undefined : Ruler}
+        title={isEeert ? undefined : 'ขนาดพื้นที่ (ม.)'}
+      >
         <div className="grid grid-cols-2 gap-4">
           {/* [FIX] Use Standard Input instead of Combobox to prevent random suggestions */}
           <Input
-            label="กว้าง (W)"
+            label={isEeert ? undefined : 'กว้าง (W)'}
+            prefix={isEeert ? 'W' : undefined}
+            aria-label={isEeert ? 'กว้าง (W)' : undefined}
             placeholder="0.00"
             value={formData.width_m}
             onChange={(e) => handleNumberChange('width_m', e.target.value)}
@@ -144,7 +152,9 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             size={control}            error={errors.width_m}
           />
           <Input
-            label="สูง (H)"
+            label={isEeert ? undefined : 'สูง (H)'}
+            prefix={isEeert ? 'H' : undefined}
+            aria-label={isEeert ? 'สูง (H)' : undefined}
             placeholder="0.00"
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}

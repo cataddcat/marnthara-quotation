@@ -1,6 +1,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useTierSize } from '@/hooks/useExperienceMode';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
+import { useNestedSurface } from './nestedSurface';
 
 interface FormSectionProps {
   /** ไอคอนหัวข้อ section */
@@ -35,11 +37,15 @@ export const FormSection: React.FC<FormSectionProps> = ({
   const { section } = useTierSize();
   const hasHeader = Boolean(title || headerRight || Icon);
 
+  // กฎข้อ 4 (anti card-in-card): อยู่ในการ์ดแม่ (CollapsibleSection) + ธีม EEERT → ไม่วาดกรอบ/พื้น/pad
+  // ของตัวเองซ้ำ (พ่อให้ padding แล้ว) เหลือแค่หัวข้อ+เนื้อหา. ธีมอื่น/ไม่ nested = การ์ดเดิม.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  const flat = useNestedSurface() && isEeert;
+
   return (
     <div
       className={cn(
-        'bg-card rounded-xl border border-border',
-        section.pad,
+        !flat && cn('bg-card rounded-xl border border-border', section.pad),
         stack ?? section.stack,
         className
       )}

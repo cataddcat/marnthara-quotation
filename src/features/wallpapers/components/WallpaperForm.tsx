@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Tag, ScrollText, Ruler, PaintRoller, Book, Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
@@ -51,6 +52,8 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
   const { openModal } = useAppStore();
   const { isDetail } = useExperienceMode();
   const { control } = useTierSize();
+  // EEERT minimal: ลบหัวข้อ section + ย้ายป้ายช่องสูงเข้าใน field (prefix); คงหลายผนัง/ป้ายกลุ่ม; ธีมอื่นคงเดิม
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
   const theme = getItemTheme(ITEM_TYPES.WALLPAPER);
 
   // Stable keys per wall-width row. `widths` is a plain string[] with no id, so
@@ -120,7 +123,10 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
     <form id={WALLPAPER_FORM_ID} onSubmit={handleSubmit}>
       <FormTwoColumn full={isDetail} right={summaryPanel}>
       {/* 1. Dimensions */}
-      <FormSection icon={Ruler} title="ขนาดพื้นที่ (ม.)">
+      <FormSection
+        icon={isEeert ? undefined : Ruler}
+        title={isEeert ? undefined : 'ขนาดพื้นที่ (ม.)'}
+      >
         <div className="space-y-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground ml-1">
@@ -157,7 +163,9 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
           </div>
 
           <Input
-            label="ความสูง (เมตร)"
+            label={isEeert ? undefined : 'ความสูง (เมตร)'}
+            prefix={isEeert ? 'H' : undefined}
+            aria-label={isEeert ? 'ความสูง (เมตร)' : undefined}
             placeholder="0.00"
             value={formData.height_m}
             onChange={(e) => handleNumberChange('height_m', e.target.value)}

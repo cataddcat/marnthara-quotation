@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { FormSection } from '@/components/ui/FormSection';
 import { useInventory } from '@/hooks/useInventory';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import {
   Wrench,
   Palette,
@@ -107,6 +108,8 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
   errors,
   warnings,
 }) => {
+  // EEERT-minimal: ลบหัวข้อ FormSection (de-dup ซ้ำกับ disclosure + ตัด note ฝ่ายผลิต); ธีมอื่นคงเดิม
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
   const features = CURTAIN_STYLE_FEATURES[data.style] || {
     hasRail: false,
     hasHook: false,
@@ -159,11 +162,13 @@ export const HardwareSection: React.FC<HardwareSectionProps> = ({
 
   return (
     <FormSection
-      icon={Wrench}
+      icon={isEeert ? undefined : Wrench}
       iconClass="text-foreground"
-      title="อุปกรณ์ม่าน"
+      title={isEeert ? undefined : 'อุปกรณ์ม่าน'}
       headerRight={
-        <span className="text-xs text-muted-foreground">ข้อมูลสำหรับฝ่ายผลิต</span>
+        isEeert ? undefined : (
+          <span className="text-xs text-muted-foreground">ข้อมูลสำหรับฝ่ายผลิต</span>
+        )
       }
     >
       {!hasAnyHardware && (

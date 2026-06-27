@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NestedSurfaceContext } from './nestedSurface';
 
 interface CollapsibleSectionProps {
   title: React.ReactNode;
@@ -57,7 +58,8 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
       {open && (
         <div className="px-4 pb-4 pt-1 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
-          {children}
+          {/* กฎข้อ 4: เนื้อหาข้างในการ์ดนี้ = "nested" → FormSection ข้างในไม่วาดกรอบซ้ำ */}
+          <NestedSurfaceContext.Provider value={true}>{children}</NestedSurfaceContext.Provider>
         </div>
       )}
     </div>

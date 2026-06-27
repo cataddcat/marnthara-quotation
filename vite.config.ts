@@ -3,15 +3,39 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from 'url';
+import { execSync } from 'node:child_process';
 import path from 'path';
 
 // ✅ แก้ปัญหา __dirname ใน ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// เวอร์ชันที่โชว์ใน footer = "วันที่ deploy · รหัส commit สั้น" — ดึงจาก git ตอน build (ไม่ต้อง bump มือ).
+// Vercel ตั้ง VERCEL_GIT_COMMIT_SHA ให้ทุก build; local ใช้ git CLI; ไม่มีทั้งคู่ → 'dev' (กัน build พัง).
+function resolveAppVersion(): string {
+  const sha =
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    (() => {
+      try {
+        return execSync('git rev-parse HEAD').toString().trim();
+      } catch {
+        return '';
+      }
+    })();
+  const short = sha ? sha.slice(0, 7) : 'dev';
+  // วันที่ build = วันที่ deploy (โซนกรุงเทพ) รูปแบบ YYYY-MM-DD
+  const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
+  return `${date} · ${short}`;
+}
+
 export default defineConfig(({ command }) => ({
   // 1. Base Path — root domain (Vercel)
   base: '/',
+
+  // เวอร์ชัน footer (git-derived) — Vite แทนที่ token นี้แบบ static ทั้ง dev/build
+  define: {
+    __APP_VERSION__: JSON.stringify(resolveAppVersion()),
+  },
 
   // 2. Plugins
   plugins: [

@@ -69,14 +69,20 @@ const MenuCompactItem = ({
   desc,
   onClick,
   tone,
+  variant = 'card',
 }: {
   icon: React.ElementType;
   label: string;
   desc?: string;
   onClick: () => void;
   tone: MenuIconTone;
+  /** 'card' = การ์ดมีกรอบ+เงา (ธีมทั่วไป) · 'row' = แถวไร้กรอบในการ์ดกลุ่ม (EEERT minimal) */
+  variant?: 'card' | 'row';
 }) => {
   const { trigger } = useHaptic();
+  // Minimal (แม่แบบ EEERT): หัวข้อใหญ่ขึ้น 16px + ตัดคำอธิบายทิ้ง; ธีมอื่นคงเดิม
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  const isRow = variant === 'row';
 
   return (
     <button
@@ -84,20 +90,35 @@ const MenuCompactItem = ({
         trigger('light');
         onClick();
       }}
-      className="group flex w-full items-center gap-3 px-3 py-2 min-h-[48px] rounded-xl border border-border bg-card hover:bg-muted/30 transition-all duration-200 active:scale-[0.98] shadow-sm"
+      className={cn(
+        'group flex w-full items-center gap-3 px-3 min-h-[48px] transition-all duration-200',
+        isRow
+          ? // แถวในการ์ดกลุ่ม — ขอบมน/เส้นคั่นมาจากการ์ดแม่ (overflow-hidden + divide-y)
+            'py-2.5 bg-transparent hover:bg-muted/40'
+          : 'py-2 rounded-xl border border-border bg-card hover:bg-muted/30 active:scale-[0.98] shadow-sm'
+      )}
     >
       <div className={cn('p-2 rounded-lg shrink-0 transition-colors', MENU_ICON_TONE[tone])}>
         <Icon className="w-4 h-4" strokeWidth={1.5} />
       </div>
       <div className="text-left flex-1 min-w-0">
-        <div className="font-semibold text-foreground text-sm leading-snug truncate">{label}</div>
-        {desc && (
+        <div
+          className={cn(
+            'font-semibold text-foreground leading-snug truncate',
+            isEeert ? 'text-base' : 'text-sm'
+          )}
+        >
+          {label}
+        </div>
+        {!isEeert && desc && (
           <div className="text-xs text-muted-foreground mt-0.5 font-medium truncate">
             {desc}
           </div>
         )}
       </div>
-      <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
+      {!isRow && (
+        <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
+      )}
     </button>
   );
 };
@@ -105,10 +126,18 @@ const MenuCompactItem = ({
 type ActionMap = Record<MenuAction, () => void>;
 
 // หัวข้อหมวด (data-driven) — สีตามกลุ่ม (DESIGN §2); pt-4 คั่นกลุ่ม, first:pt-0
-const SectionHeader = ({ entry }: { entry: Extract<MenuEntry, { kind: 'section' }> }) => (
+// flush = อยู่ในกลุ่มที่คุมระยะด้วย wrapper (EEERT minimal) → ตัด pt-4, ใช้ mb-2 แทน
+const SectionHeader = ({
+  entry,
+  flush = false,
+}: {
+  entry: Extract<MenuEntry, { kind: 'section' }>;
+  flush?: boolean;
+}) => (
   <h3
     className={cn(
-      'text-xs font-bold uppercase tracking-widest px-1 pt-4 first:pt-0 flex items-center gap-2',
+      'text-xs font-bold uppercase tracking-widest px-1 flex items-center gap-2',
+      flush ? 'mb-2' : 'pt-4 first:pt-0',
       MENU_GROUP_TONE[entry.tone].text
     )}
   >
@@ -141,6 +170,103 @@ const MenuEntryRow = ({
   return entry.adminOnly ? <AdminGate>{item}</AdminGate> : item;
 };
 
+// EEERT minimal: จัดกลุ่ม "การ์ดต่อหมวด" — ขอบมน/เส้นคั่นมาจากการ์ดแม่ (overflow-hidden + divide-y)
+const GROUP_CARD_CLS =
+  'rounded-xl border border-border bg-card shadow-sm overflow-hidden divide-y divide-border/60';
+
+// walk entries (flat) → บล็อกนำหน้ารวมเป็นการ์ดเดียว · แต่ละหมวด = หัวข้อ(flush) + การ์ด item rows.
+// robust ต่อ reorder: เก็บ item ต่อท้ายหมวดจนเจอ entry ที่ไม่ใช่ item; บล็อกแทรกกลางจึงตัดกลุ่มเอง.
+const GroupedMenu = ({
+  entries,
+  actionMap,
+  blockMap,
+}: {
+  entries: MenuEntry[];
+  actionMap: ActionMap;
+  blockMap: Record<MenuBlockId, React.ReactNode>;
+}) => {
+  const groups: React.ReactNode[] = [];
+  let i = 0;
+  while (i < entries.length) {
+    const entry = entries[i];
+
+    if (entry.kind === 'block') {
+      const blocks: Extract<MenuEntry, { kind: 'block' }>[] = [];
+      while (i < entries.length) {
+        const e = entries[i];
+        if (e.kind !== 'block') break;
+        blocks.push(e);
+        i++;
+      }
+      // ข้ามบล็อกที่ไม่มีเนื้อหา (เช่น roleBlock = null ตอนยังไม่ล็อกอิน) → กันแถวว่าง + เส้นคั่นค้าง
+      const visible = blocks.filter((b) => blockMap[b.id]);
+      if (visible.length > 0) {
+        groups.push(
+          <div key={`blocks-${visible[0].id}`} className={GROUP_CARD_CLS}>
+            {visible.map((b) => (
+              <div key={b.id} className="px-3 py-2.5">
+                {blockMap[b.id]}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      continue;
+    }
+
+    if (entry.kind === 'section') {
+      const items: Extract<MenuEntry, { kind: 'item' }>[] = [];
+      i++;
+      while (i < entries.length) {
+        const e = entries[i];
+        if (e.kind !== 'item') break;
+        items.push(e);
+        i++;
+      }
+      groups.push(
+        <div key={entry.id}>
+          <SectionHeader entry={entry} flush />
+          <div className={GROUP_CARD_CLS}>
+            {items.map((it) => {
+              const row = (
+                <MenuCompactItem
+                  key={it.id}
+                  icon={it.icon}
+                  label={it.label}
+                  desc={it.desc}
+                  tone={it.tone}
+                  onClick={actionMap[it.action]}
+                  variant="row"
+                />
+              );
+              // AdminGate คืน fragment/null → button เป็น direct child ของ divide-y เสมอ (เส้นคั่นถูก)
+              return it.adminOnly ? <AdminGate key={it.id}>{row}</AdminGate> : row;
+            })}
+          </div>
+        </div>
+      );
+      continue;
+    }
+
+    // item โดด (ไม่มีหมวดนำ — กรณี reorder ผิดปกติ) → การ์ดเดี่ยว
+    groups.push(
+      <div key={entry.id} className={GROUP_CARD_CLS}>
+        <MenuCompactItem
+          icon={entry.icon}
+          label={entry.label}
+          desc={entry.desc}
+          tone={entry.tone}
+          onClick={actionMap[entry.action]}
+          variant="row"
+        />
+      </div>
+    );
+    i++;
+  }
+
+  return <div className="space-y-4">{groups}</div>;
+};
+
 // แถวเมนูโหมดปรับแต่ง (ลากจัดเรียง) — item ลากได้, header ตรึง (disabled).
 // โหมดนี้แสดงรายการ adminOnly ด้วย (จัดตำแหน่งได้) + ป้ายล็อกบอกว่าเป็นของผู้ดูแล
 const SortableMenuEntry = ({ entry }: { entry: MenuEntry }) => {
@@ -153,6 +279,8 @@ const SortableMenuEntry = ({ entry }: { entry: MenuEntry }) => {
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+  // Minimal (แม่แบบ EEERT): item row ในโหมดลากเรียงให้ตรงกับ MenuCompactItem
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   if (entry.kind === 'section') {
     return (
@@ -209,8 +337,15 @@ const SortableMenuEntry = ({ entry }: { entry: MenuEntry }) => {
         <entry.icon className="w-4 h-4" strokeWidth={1.5} />
       </div>
       <div className="text-left flex-1 min-w-0">
-        <div className="font-semibold text-foreground text-sm leading-snug truncate">{entry.label}</div>
-        {entry.desc && (
+        <div
+          className={cn(
+            'font-semibold text-foreground leading-snug truncate',
+            isEeert ? 'text-base' : 'text-sm'
+          )}
+        >
+          {entry.label}
+        </div>
+        {!isEeert && entry.desc && (
           <div className="text-xs text-muted-foreground mt-0.5 font-medium truncate">{entry.desc}</div>
         )}
       </div>
@@ -239,6 +374,8 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   onOpenMaterialSummary,
 }) => {
   const { theme, setTheme } = useThemeStore();
+  // EEERT minimal: ยกโครงเมนูเป็น "การ์ดต่อหมวด" + flatten บล็อก (gate ธีมเดียว); ธีมอื่นคงเดิม
+  const isEeert = theme === 'eeert';
   const shopName = useAppStore((s) => s.shopConfig.name);
   const openModal = useAppStore((s) => s.openModal);
   // fresh-open token — bump เฉพาะตอนเปิดเมนูใหม่จากศูนย์ (openModal) ไม่ bump ตอน pop กลับจาก stack →
@@ -309,12 +446,21 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
     { id: 'detail' as const, label: 'ละเอียด', icon: ClipboardList, active: mode === 'detail' },
   ];
 
+  // EEERT minimal: บล็อกเป็นแถวในการ์ดกลุ่ม → ถอด chrome การ์ดย่อย (padding มาจาก wrapper GroupedMenu)
+  const subCard = isEeert ? '' : 'bg-card border border-border/50 rounded-lg px-3 py-2';
+  const toggleShell = isEeert ? '' : 'bg-card border border-border/50 p-1 rounded-lg';
+
   // ── บล็อกบัญชี/ตั้งค่า (data-driven, ลาก-ย้ายได้) — เนื้อหา bespoke ใช้ hooks ในคอมโพเนนต์ ──
   const accountBlock = (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-baseline gap-2 min-w-0">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider shrink-0">ร้านของคุณ</span>
+          {/* EEERT minimal: ตัดป้าย "ร้านของคุณ" (ซ้ำซ้อน) ให้ชื่อร้านยืนเดี่ยว */}
+          {!isEeert && (
+            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider shrink-0">
+              ร้านของคุณ
+            </span>
+          )}
           <span className="text-base font-bold leading-tight text-foreground truncate">
             {shopName || 'ม่านธารา'}
           </span>
@@ -323,7 +469,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 
       {/* บัญชี / สถานะซิงค์ — ซ่อนเมื่อยังไม่ตั้งค่า Firebase (local-only) */}
       {authStatus !== 'disabled' && (
-        <div className="flex items-center justify-between gap-2 bg-card border border-border/50 rounded-lg px-3 py-2">
+        <div className={cn('flex items-center justify-between gap-2', subCard)}>
           <div className="flex items-center gap-2 min-w-0">
             {authStatus === 'signed-in' ? (
               <Cloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" strokeWidth={1.5} />
@@ -381,7 +527,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 
   const roleBlock =
     authStatus === 'signed-in' ? (
-      <div className="bg-card border border-border/50 rounded-lg px-3 py-2 space-y-1.5">
+      <div className={cn('space-y-1.5', subCard)}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {guardEnabled && isStaff ? (
@@ -393,13 +539,16 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
               <div className="text-sm font-semibold text-foreground">
                 {guardEnabled ? (isAdmin ? 'ผู้ดูแล' : 'พนักงาน') : 'ผู้ดูแล'}
               </div>
-              <div className="text-xs text-muted-foreground truncate max-w-[170px]">
-                {!guardEnabled
-                  ? 'ตั้ง PIN กันพนักงานเผลอลบ/แก้ทุน'
-                  : isAdmin
-                    ? 'ปลดล็อกอยู่ — ทำได้ทุกอย่าง'
-                    : 'จำกัดสิทธิ์ — แตะปลดล็อก'}
-              </div>
+              {/* EEERT minimal: ตัดคำอธิบายสิทธิ์ยาว ๆ (คงชื่อสิทธิ์ + ปุ่มจัดการ) */}
+              {!isEeert && (
+                <div className="text-xs text-muted-foreground truncate max-w-[170px]">
+                  {!guardEnabled
+                    ? 'ตั้ง PIN กันพนักงานเผลอลบ/แก้ทุน'
+                    : isAdmin
+                      ? 'ปลดล็อกอยู่ — ทำได้ทุกอย่าง'
+                      : 'จำกัดสิทธิ์ — แตะปลดล็อก'}
+                </div>
+              )}
             </div>
           </div>
 
@@ -454,7 +603,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   const appearanceBlock = (
     <div className="space-y-2">
       {/* Theme Toggle — แถวเดียว 5 ปุ่ม เต็มกว้าง (icon + ชื่อย่อ); title = ชื่อเต็มเพื่อ a11y */}
-      <div className="grid grid-cols-5 gap-1 bg-card border border-border/50 p-1 rounded-lg">
+      <div className={cn('grid grid-cols-5 gap-1', toggleShell)}>
         {themes.map((opt) => (
           <button
             key={opt.id}
@@ -473,7 +622,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
 
       {/* Mode Toggle — โหมดงาน (เฉพาะจอมือถือ; desktop = ละเอียดเสมอ) */}
       {canSwitch && (
-        <div className="flex items-center justify-between bg-card border border-border/50 p-1 rounded-lg">
+        <div className={cn('flex items-center justify-between', toggleShell)}>
           {displayModes.map((opt) => (
             <button
               key={opt.id}
@@ -554,6 +703,8 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
               </div>
             </SortableContext>
           </DndContext>
+        ) : isEeert ? (
+          <GroupedMenu entries={menuEntries} actionMap={actionMap} blockMap={blockMap} />
         ) : (
           <div className="space-y-1.5">
             {menuEntries.map((entry) => (
@@ -565,7 +716,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
         {/* ── Footer ── */}
         <div className="pt-2 text-center">
           <span className="text-xs text-muted-foreground font-mono bg-muted/40 px-2 py-1 rounded-md">
-            Marnthara v{APP_VERSION}
+            Marnthara · {APP_VERSION}
           </span>
         </div>
 
