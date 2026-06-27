@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CustomerModal } from './CustomerModal';
 import { useAppStore } from '@/store/useAppStore';
-import { BLANK_CUSTOMER } from '@/lib/job-bundle';
+import { BLANK_CUSTOMER } from '@/lib/jobs/job-bundle';
 
 const store = () => useAppStore.getState();
 

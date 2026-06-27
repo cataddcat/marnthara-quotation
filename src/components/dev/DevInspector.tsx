@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { createPortal } from 'react-dom';
 import { Crosshair, Copy, X, Smartphone, MoveVertical, ListOrdered } from 'lucide-react';
 import { classifySizePx, type SizeStatus } from '@/config/typography';
-import { useMenuConfigStore } from '@/store/useMenuConfigStore';
+import { useMenuConfigStore } from '@/store/standalone/useMenuConfigStore';
 
 /**
  * DevInspector — "Design Probe" (dev only). คลิก/ชี้องค์ประกอบบนแอป → รู้ทันทีว่า

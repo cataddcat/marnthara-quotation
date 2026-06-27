@@ -8,7 +8,7 @@ import {
   blankJob,
   isBundleEmpty,
   customerFromRegistry,
-} from '@/lib/job-bundle';
+} from '@/lib/jobs/job-bundle';
 import { type JobStatusKey, DEFAULT_JOB_STATUS } from '@/config/enums';
 import { clearUndoHistory } from '../temporalBridge';
 import { jobSync } from '@/lib/sync/jobSyncBridge';

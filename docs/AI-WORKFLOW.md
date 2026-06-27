@@ -78,7 +78,7 @@
 #### ขั้น 1 — กวาด 🧹 (ให้ design-reviewer ตรวจ)
 พิมพ์ในห้องแชตปกติ:
 ```
-ให้ design-reviewer ตรวจ src/components/features/RoomCard.tsx
+ให้ design-reviewer ตรวจ src/components/workspace/RoomCard.tsx
 ```
 มันจะอ่านไฟล์ **ในห้องของมันเอง** (ไม่กินที่ห้องหลัก) แล้วส่งกลับมาเป็น **รายการเรียงลำดับ**:
 ```
@@ -138,7 +138,7 @@ AI จะอ่าน **เฉพาะรอบบรรทัด 250** (ไม
 
 **ตัวอย่างจริง** — พิมพ์ในแชต:
 ```
-ให้ design-reviewer ตรวจทุกไฟล์ใน src/components/features/
+ให้ design-reviewer ตรวจทุกไฟล์ใน src/components/workspace/
 ```
 มันจะกวาดทุกไฟล์ **ในห้องแยกของมันเอง** (ห้องหลักคุณไม่บวม) แล้วคืน numbered list 🔴/🟡/🟢 →
 คุณ triage → ห้องหลักค่อยแก้ตามที่อนุมัติ
@@ -195,7 +195,7 @@ AI จะอ่าน **เฉพาะรอบบรรทัด 250** (ไม
 
 **ตรวจทั้งหน้า:**
 ```
-ให้ design-reviewer ตรวจ src/components/features/RoomCard.tsx แล้วสรุปเป็นรายการ
+ให้ design-reviewer ตรวจ src/components/workspace/RoomCard.tsx แล้วสรุปเป็นรายการ
 ```
 
 **แก้จุดเดียว (หลังก็อปจาก Probe):**

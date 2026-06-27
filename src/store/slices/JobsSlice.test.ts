@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useAppStore } from '@/store/useAppStore';
 import { DEFAULT_JOB_STATUS, JOB_STATUS } from '@/config/enums';
-import { BLANK_CUSTOMER, BLANK_DISCOUNT, blankJob, type JobBundle } from '@/lib/job-bundle';
+import { BLANK_CUSTOMER, BLANK_DISCOUNT, blankJob, type JobBundle } from '@/lib/jobs/job-bundle';
 
 const reset = () =>
   useAppStore.setState({

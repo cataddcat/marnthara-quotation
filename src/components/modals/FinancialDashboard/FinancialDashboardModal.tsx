@@ -9,7 +9,7 @@
 import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';

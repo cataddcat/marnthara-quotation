@@ -5,7 +5,7 @@
 // ไฟล์นี้ import แค่ type (ไม่ผูก store/Firestore)
 // ────────────────────────────────────────────────────────────────────────────
 
-import type { JobBundle } from '@/lib/job-bundle';
+import type { JobBundle } from '@/lib/jobs/job-bundle';
 
 export interface JobSyncBridge {
   /** ดันงานขึ้น cloud (debounce ภายใน impl) */

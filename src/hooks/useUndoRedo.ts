@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useStore } from 'zustand';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useHaptic } from '@/hooks/useHaptic';
 
 type Trigger = ReturnType<typeof useHaptic>['trigger'];
@@ -12,7 +12,7 @@ const doUndo = (trigger: Trigger) => {
   if (t.pastStates.length === 0) return;
   t.undo();
   trigger('medium');
-  useUIStore.getState().addToast('info', 'ย้อนกลับแล้ว');
+  useNotificationStore.getState().addToast('info', 'ย้อนกลับแล้ว');
 };
 
 const doRedo = (trigger: Trigger) => {
@@ -20,7 +20,7 @@ const doRedo = (trigger: Trigger) => {
   if (t.futureStates.length === 0) return;
   t.redo();
   trigger('medium');
-  useUIStore.getState().addToast('info', 'ทำซ้ำแล้ว');
+  useNotificationStore.getState().addToast('info', 'ทำซ้ำแล้ว');
 };
 
 /**

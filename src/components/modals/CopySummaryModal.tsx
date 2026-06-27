@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useCalculations } from '@/hooks/useCalculations';
 import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import {
   type SummaryType,
   type SummaryInput,
   type RailFormat,
-} from '@/lib/summaryGenerator';
+} from '@/lib/export/summaryGenerator';
 import { missingOpeningItems } from '@/lib/item-status';
 
 // เอกสารฝั่งผลิต — ทิศเปิดมีผลต่อใบสั่ง (สไลด์/ลูกล้อ/ตับผ้า): ✅ เจ้าของร้านยืนยันให้
@@ -37,7 +37,7 @@ export const CopySummaryModal: React.FC<CopySummaryModalProps> = ({ isOpen, onCl
   const shopConfig = useAppStore((state) => state.shopConfig);
   const discount = useAppStore((state) => state.discount);
   const { grandTotal, discountAmount, vatAmount, finalTotal } = useCalculations();
-  const addToast = useUIStore((state) => state.addToast);
+  const addToast = useNotificationStore((state) => state.addToast);
   const { trigger } = useHaptic();
 
   const [type, setType] = useState<SummaryType>('customer');

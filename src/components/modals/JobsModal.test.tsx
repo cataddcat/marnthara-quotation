@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { JobsModal } from './JobsModal';
 import { useAppStore } from '@/store/useAppStore';
-import { blankJob } from '@/lib/job-bundle';
+import { blankJob } from '@/lib/jobs/job-bundle';
 
 const store = () => useAppStore.getState();
 

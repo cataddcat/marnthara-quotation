@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { isItemPending } from '@/lib/item-status';
-import { SmartNavigator } from '@/components/features/SmartNavigator';
+import { SmartNavigator } from '@/components/workspace/SmartNavigator';
 
 interface MainLayoutProps {
   children: React.ReactNode;

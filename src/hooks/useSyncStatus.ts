@@ -1,6 +1,6 @@
 // src/hooks/useSyncStatus.ts
 // แปลงสถานะซิงค์ (useSyncStore) → ข้อความ/สีพร้อมใช้ใน UI (header dot · เมนู · JobsModal)
-import { useSyncStore } from '@/store/useSyncStore';
+import { useSyncStore } from '@/store/standalone/useSyncStore';
 
 export interface SyncStatusView {
   /** ซ่อน (ยังไม่ sign-in / ไม่ตั้ง Firebase) */

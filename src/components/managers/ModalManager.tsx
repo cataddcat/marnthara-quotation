@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { modalPropsAs } from '@/store/slices/UISlice';
+import { modalPropsAs } from '@/store/slices/ModalSlice';
 
 // Import Modals
 import { ItemModal } from '@/components/modals/ItemModal';
@@ -31,7 +31,7 @@ export const ModalManager: React.FC<{ onOpenOverview?: () => void }> = ({ onOpen
 
   const isVisible = (type: string) => activeModal === type;
 
-  // narrow modalProps ตาม activeModal — helper จาก UISlice
+  // narrow modalProps ตาม activeModal — helper จาก ModalSlice
   const itemProps = modalPropsAs(activeModal, modalProps, 'item');
   const materialSummaryProps = modalPropsAs(activeModal, modalProps, 'materialSummary');
   const projectOverviewProps = modalPropsAs(activeModal, modalProps, 'projectOverview');

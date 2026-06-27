@@ -10,7 +10,7 @@ import { createCustomerSlice, CustomerSlice } from './slices/CustomerSlice';
 import { createProjectSlice, ProjectSlice } from './slices/ProjectSlice';
 import { createShopProfileSlice, ShopProfileSlice } from './slices/ShopProfileSlice';
 import { createInventorySlice, InventorySlice } from './slices/InventorySlice';
-import { createUISlice, UISlice } from './slices/UISlice';
+import { createModalSlice, ModalSlice } from './slices/ModalSlice';
 import { createCostDataSlice, CostDataSlice } from './slices/CostDataSlice';
 import { createPaymentSlice, PaymentSlice } from './slices/PaymentSlice';
 import { createJobsSlice, JobsSlice } from './slices/JobsSlice';
@@ -27,7 +27,7 @@ export type { CustomerSlice } from './slices/CustomerSlice';
 export type { ProjectSlice } from './slices/ProjectSlice';
 export type { ShopProfileSlice } from './slices/ShopProfileSlice';
 export type { InventorySlice } from './slices/InventorySlice';
-export type { UISlice, ModalType } from './slices/UISlice';
+export type { ModalSlice, ModalType } from './slices/ModalSlice';
 export type { CostDataSlice, LaborCost, CostInclude } from './slices/CostDataSlice';
 export type { PaymentSlice, ReceiptEntry, ExpenseEntry } from './slices/PaymentSlice';
 export type { JobsSlice } from './slices/JobsSlice';
@@ -41,7 +41,7 @@ export type AppState = CustomerSlice &
   ProjectSlice &
   ShopProfileSlice &
   InventorySlice &
-  UISlice &
+  ModalSlice &
   CostDataSlice &
   PaymentSlice &
   JobsSlice &
@@ -71,7 +71,7 @@ export const useAppStore = create<AppState>()(
         ...createProjectSlice(...a),
         ...createShopProfileSlice(...a),
         ...createInventorySlice(...a),
-        ...createUISlice(...a),
+        ...createModalSlice(...a),
         ...createCostDataSlice(...a),
         ...createPaymentSlice(...a),
         ...createJobsSlice(...a),

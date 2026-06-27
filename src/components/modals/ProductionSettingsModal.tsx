@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { COST_DATA_YEAR } from '@/config/constants';
 import {
@@ -123,7 +123,7 @@ export const ProductionSettingsModal: React.FC<ProductionSettingsModalProps> = (
     setCostInclude,
   } = useAppStore();
 
-  const addToast = useUIStore((state) => state.addToast);
+  const addToast = useNotificationStore((state) => state.addToast);
   const { confirm } = useConfirm();
 
   const [searchTerm, setSearchTerm] = useState('');

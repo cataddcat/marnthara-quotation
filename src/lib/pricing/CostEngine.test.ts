@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CostEngine } from './CostEngine';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { DEFAULT_COST_INCLUDE, type LaborCost, type CostInclude } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';

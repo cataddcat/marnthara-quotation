@@ -98,7 +98,7 @@ and the Probe both read it.
   *(**Dark Vivid** = EEERT's **dark sibling** ("deep indigo studio"). It runs as `class="dark dark-vivid"` —
   the `.dark` base makes every `dark:` data tone fire unchanged, while `.dark-vivid` overlays only the chrome
   (deep-indigo page/cards, vivid cobalt CTA). It shares EEERT's colourful pill/plate treatment via
-  `isColorfulTheme()` in [`useThemeStore.ts`](./src/store/useThemeStore.ts), so it needs **no** new tone-table
+  `isColorfulTheme()` in [`useThemeStore.ts`](./src/store/standalone/useThemeStore.ts), so it needs **no** new tone-table
   entries — the bright `dark:` tones are already AAA-correct on the dark canvas.)*
 - **Contrast: WCAG AA minimum, AAA where practical.** Surfaces must separate by a clear **lightness gap**
   (grey page · white cards) **+ visible borders** — never near-white-on-white flatness.

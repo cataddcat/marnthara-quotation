@@ -11,15 +11,15 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useRequireAdmin } from '@/hooks/useRequireAdmin';
 import { cn } from '@/lib/utils';
 import { fmtTH } from '@/utils/formatters';
-import { extractJobBundle, isBundleEmpty, type JobBundle } from '@/lib/job-bundle';
-import { summarizeJob, type JobSummary } from '@/lib/job-summary';
+import { extractJobBundle, isBundleEmpty, type JobBundle } from '@/lib/jobs/job-bundle';
+import { summarizeJob, type JobSummary } from '@/lib/jobs/job-summary';
 import { JOB_STATUS_ORDER, JOB_STATUS_LABELS, type JobStatusKey } from '@/config/enums';
 import { JOB_STATUS_CHIP, JOB_STATUS_DOT } from '@/config/dataTones';
 import {
@@ -64,7 +64,7 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const openModal = useAppStore((s) => s.openModal);
   const closeAllModals = useAppStore((s) => s.closeAllModals);
 
-  const addToast = useUIStore((s) => s.addToast);
+  const addToast = useNotificationStore((s) => s.addToast);
   const { confirm } = useConfirm();
   const { trigger } = useHaptic();
   const sync = useSyncStatus();

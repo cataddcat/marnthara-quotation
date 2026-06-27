@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { useAppStore } from '@/store/useAppStore';
-import { customerToken } from '@/lib/docName';
+import { customerToken } from '@/lib/export/docName';
 import { User, MapPin, Phone, FileText, Truck, Hash } from 'lucide-react';
 
 interface CustomerModalProps {

@@ -15,7 +15,7 @@ icon:  `text-[hsl(var(${brandVar}))]`,
 → สี/พื้น brand ไม่ขึ้น** (อาการเดียวกับที่ ItemCard type chip เจอ: ปรับ opacity เท่าไหร่พื้นก็ไม่ขึ้น).
 
 **ยืนยัน:** เปลี่ยน ItemCard chip ไปใช้ `@theme` static utility (`bg-brand-curtain/25`, ดู `TYPE_CHIP_PLATE`
-ใน `src/components/features/ItemCard.tsx`) แล้ว **render จริง** — ส่วน dynamic ตัวเดิมไม่ขึ้น.
+ใน `src/components/workspace/ItemCard.tsx`) แล้ว **render จริง** — ส่วน dynamic ตัวเดิมไม่ขึ้น.
 
 ## 🔎 ขอบเขต (ตรวจแล้ว — ยืนยันซ้ำตอนทำ)
 ผู้ใช้จริงตอนนี้ = **6 ฟอร์ม** ใช้ `theme.text` (เป็น `valueClass`) + `theme.icon` (เป็น `iconClass`):

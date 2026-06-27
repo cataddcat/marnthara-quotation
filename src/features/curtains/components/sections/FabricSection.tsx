@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { CurtainItemInput } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { ComboboxInput, SuggestionItem } from '@/components/ui/ComboboxInput';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -69,7 +69,7 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
   stack = false,
 }) => {
   const { openModal } = useAppStore();
-  const addToast = useUIStore((state) => state.addToast);
+  const addToast = useNotificationStore((state) => state.addToast);
 
   // catalog-aware: ดึง SKU+ราคาจากแค็ตตาล็อกสด (DB) เมื่อเชื่อม, ไม่งั้น fallback favorites
   // — ใช้สำหรับเทียบราคากับคลัง (PriceStatusIndicator) เท่านั้น = catalog/favorites ล้วน

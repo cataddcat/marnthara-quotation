@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef } from 'react';
-import { PrintBlock } from '@/lib/print/printModel';
+import { PrintBlock } from '@/lib/export/printModel';
 import { PrintDocContext } from './parts/types';
 import { CONTENT_W_PX } from './parts/geometry';
 import { PrintPageHeader } from './parts/PrintPageHeader';

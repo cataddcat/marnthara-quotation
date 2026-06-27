@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useCalculations } from '@/hooks/useCalculations';
-import { buildBlocks } from '@/lib/print/printModel';
-import { paginate, PaginateBudgets } from '@/lib/print/paginate';
+import { buildBlocks } from '@/lib/export/printModel';
+import { paginate, PaginateBudgets } from '@/lib/export/paginate';
 import { DocumentType } from './docTypes';
 import { PrintDocContext } from './parts/types';
 import { PrintPage } from './parts/PrintPage';
 import { PrintMeasureLayer, PrintMetrics } from './PrintMeasureLayer';
 import { CONTENT_H_PX, SLACK_PX } from './parts/geometry';
-import { formatDocCode } from '@/lib/docName';
+import { formatDocCode } from '@/lib/export/docName';
 
 // Re-export so existing importers (PdfPreviewModal) keep working.
 export type { DocumentType } from './docTypes';

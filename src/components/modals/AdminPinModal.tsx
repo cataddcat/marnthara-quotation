@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { ShieldCheck, Info } from 'lucide-react';
 import { useRole } from '@/hooks/useRole';
 import { isValidPin } from '@/lib/security/pin';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 
 export type AdminPinIntent = 'unlock' | 'setup' | 'disable';
 
@@ -33,7 +33,7 @@ export const AdminPinModal: React.FC<AdminPinModalProps> = ({
   onSuccess,
 }) => {
   const { unlock, setPin, disableGuard, hasPin } = useRole();
-  const addToast = useUIStore((s) => s.addToast);
+  const addToast = useNotificationStore((s) => s.addToast);
   const [pin, setPinValue] = useState('');
   const [pin2, setPin2] = useState('');
   const [error, setError] = useState('');

@@ -3,7 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { CATALOG_CATEGORIES, categoryAccent, categoryDotClass } from '@/lib/vault';
 import { MATERIAL_ACCENT, MATERIAL_PILL } from '@/config/dataTones';
-import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
+import { useThemeStore, isColorfulTheme } from '@/store/standalone/useThemeStore';
 import { fmtTH, fmtSize } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import {
@@ -28,7 +28,7 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { normalizeCode } from '@/lib/codes';
 import { toNum } from '@/utils/formatters';
 import { classifyDraft } from '@/lib/materials/draftReconcile';

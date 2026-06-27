@@ -1,14 +1,14 @@
 import { Fragment } from 'react';
 import { Dialog, Transition, TransitionChild, DialogPanel, DialogTitle } from '@headlessui/react';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { Button } from '@/components/ui/Button';
 import { AlertTriangle } from 'lucide-react';
 import { useMobileBack } from '@/hooks/useMobileBack';
 
 export const AlertDialog = () => {
   const { isOpen, title, description, variant, confirmLabel, cancelLabel, onConfirm, onCancel } =
-    useUIStore((state) => state.alertConfig);
-  const closeAlert = useUIStore((state) => state.closeAlert);
+    useNotificationStore((state) => state.alertConfig);
+  const closeAlert = useNotificationStore((state) => state.closeAlert);
 
   const handleClose = (isConfirm: boolean) => {
     closeAlert();

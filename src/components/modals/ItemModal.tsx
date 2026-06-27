@@ -5,7 +5,7 @@ import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 
 import { CurtainForm, CURTAIN_FORM_ID } from '@/features/curtains/components/CurtainForm';
 import { WallpaperForm, WALLPAPER_FORM_ID } from '@/features/wallpapers/components/WallpaperForm';
@@ -96,7 +96,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 }) => {
   const { trigger } = useHaptic();
   const { addItem, updateItem } = useAppStore();
-  const addToast = useUIStore((s) => s.addToast);
+  const addToast = useNotificationStore((s) => s.addToast);
   const isMobile = useIsMobile();
   // ชื่อห้องปัจจุบัน — แสดงด้านบน Modal กันผู้ใช้สับสนว่ากำลังเพิ่ม/แก้ไขในห้องไหน
   const roomName = useAppStore((s) => s.rooms.find((r) => r.id === roomId)?.name);

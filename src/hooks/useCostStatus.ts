@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ItemData } from '@/types';
 import { CostEngine, CostBreakdown } from '@/lib/pricing/CostEngine';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 
 /**
  * วิเคราะห์ต้นทุน/กำไรของ "ทุกประเภทสินค้า" (generalize จาก useSmartPrice ที่ผูกกับผ้าม่าน)

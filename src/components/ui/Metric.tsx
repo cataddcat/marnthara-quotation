@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { DATA_TONE_TEXT, DATA_TONE_PLATE, DATA_TONE_PILL, type DataTone } from '@/config/dataTones';
-import { useThemeStore, isColorfulTheme } from '@/store/useThemeStore';
+import { useThemeStore, isColorfulTheme } from '@/store/standalone/useThemeStore';
 
 /**
  * Metric — the canonical "labelled number" block of the dashboard redesign.

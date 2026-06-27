@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
 vi.mock('@/lib/pricing/pricing.worker?worker', () => ({ default: class {} }));
 
 import { ModalManager } from './ModalManager';
-import { modalPropsAs } from '@/store/slices/UISlice';
+import { modalPropsAs } from '@/store/slices/ModalSlice';
 import { useAppStore } from '@/store/useAppStore';
 
 describe('modalPropsAs — narrowing', () => {

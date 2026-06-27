@@ -71,7 +71,7 @@ AI สังเคราะห์ (OCR รูป + แยกตาราง → 
 
 ## ของที่แอปทำเสร็จแล้ว (อย่าทำซ้ำ — อ้างอิงได้)
 
-- อ่าน/cache: [`src/lib/sync/catalogSync.ts`](../src/lib/sync/catalogSync.ts) (`subscribeCatalog`, onSnapshot + validate ต่อ doc) → [`src/store/useCatalogStore.ts`](../src/store/useCatalogStore.ts) (transient)
+- อ่าน/cache: [`src/lib/sync/catalogSync.ts`](../src/lib/sync/catalogSync.ts) (`subscribeCatalog`, onSnapshot + validate ต่อ doc) → [`src/store/standalone/useCatalogStore.ts`](../src/store/standalone/useCatalogStore.ts) (transient)
 - ใช้ทุน: [`CostEngine.ts`](../src/lib/pricing/CostEngine.ts), [`useInventory.ts`](../src/hooks/useInventory.ts), [`useActiveCostMaps.ts`](../src/hooks/useActiveCostMaps.ts) (catalog เมื่อ `status==='ready'`)
 - rules + contract + เอกสาร: [`firestore.rules`](../firestore.rules), [`contract.ts`](../src/lib/catalog/contract.ts), [HANDOFF.md](../HANDOFF.md) §11.8
 - คลังวัสดุ/ฟอร์ม = read-only product master แล้ว

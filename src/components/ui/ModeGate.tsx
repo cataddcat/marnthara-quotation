@@ -1,6 +1,6 @@
 import React from 'react';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
-import type { ExperienceMode } from '@/store/useExperienceStore';
+import type { ExperienceMode } from '@/store/standalone/useExperienceStore';
 
 interface ModeGateProps {
   /** แสดง children เฉพาะเมื่อโหมดงานปัจจุบันตรงกับค่านี้ */

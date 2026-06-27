@@ -22,9 +22,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/app';
 import { useAppStore } from '@/store/useAppStore';
-import { useSyncStore } from '@/store/useSyncStore';
-import { useRoleStore } from '@/store/useRoleStore';
-import type { JobBundle } from '@/lib/job-bundle';
+import { useSyncStore } from '@/store/standalone/useSyncStore';
+import { useRoleStore } from '@/store/standalone/useRoleStore';
+import type { JobBundle } from '@/lib/jobs/job-bundle';
 import type { RegistryCustomer } from '@/lib/customers/contract';
 import {
   extractPricing,
@@ -33,7 +33,7 @@ import {
   isPricingEmpty,
   type PricingBundle,
   type PricingFields,
-} from '@/lib/pricing-bundle';
+} from '@/lib/pricing/pricing-bundle';
 import { normalizeCode } from '@/lib/codes';
 import { newUuid } from '@/lib/id';
 import { setJobSyncBridge, resetJobSyncBridge } from '@/lib/sync/jobSyncBridge';

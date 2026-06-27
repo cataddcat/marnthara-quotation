@@ -8,15 +8,15 @@ import JSZip from 'jszip';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES, type ItemTypeKey } from '@/config/enums';
 import { fmtDimension, toNum } from '@/utils/formatters';
-import { generateItemVisualSvg } from '@/lib/svgGenerator';
+import { generateItemVisualSvg } from '@/lib/export/svgGenerator';
 import { calcWaveHardware, waveSplitFromOpening } from '@/lib/materials/waveHardware';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { cn } from '@/lib/utils';
-import { buildDocFileBase, formatDocCode } from '@/lib/docName';
+import { buildDocFileBase, formatDocCode } from '@/lib/export/docName';
 import type {
   ItemData,
   CurtainItemInput,
@@ -292,7 +292,7 @@ export const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose })
   const shopConfig = useAppStore((s) => s.shopConfig);
   const customer = useAppStore((s) => s.customer);
   const ensureCustomerIdentity = useAppStore((s) => s.ensureCustomerIdentity);
-  const addToast = useUIStore((s) => s.addToast);
+  const addToast = useNotificationStore((s) => s.addToast);
 
   // Item types present in the project (non-suspended), ordered by ITEM_CONFIG
   const presentTypes = useMemo<string[]>(() => {

@@ -41,11 +41,11 @@
 ## ก้อน 3 — Cards & layout
 | ไฟล์ | จุด | สถานะ | หมายเหตุ |
 |---|--:|:--:|---|
-| `components/features/ItemCard.tsx` | 3 | 🔍 | สี = `TYPE_CHIP_PLATE` (brand) + `text-foreground` — ผ่านแล้ว |
-| `components/features/RoomCard.tsx` | 5 | ✅ | emerald-600→700 · amber-600/500→700+dark (ยอด/ค้าง/พัก) |
-| `components/features/RoomDashboard.tsx` | 3 | ✅ | amber-600→700 · emerald-600→700 |
-| `components/features/SmartNavigator.tsx` | 2 | ✅ | amber-600→700 · amber-500→700+dark |
-| `components/features/ConflictBanner.tsx` | 6 | 🔍 | icon amber-600 (3:1) + ปุ่ม amber มี dark: ครบ |
+| `components/workspace/ItemCard.tsx` | 3 | 🔍 | สี = `TYPE_CHIP_PLATE` (brand) + `text-foreground` — ผ่านแล้ว |
+| `components/workspace/RoomCard.tsx` | 5 | ✅ | emerald-600→700 · amber-600/500→700+dark (ยอด/ค้าง/พัก) |
+| `components/workspace/RoomDashboard.tsx` | 3 | ✅ | amber-600→700 · emerald-600→700 |
+| `components/workspace/SmartNavigator.tsx` | 2 | ✅ | amber-600→700 · amber-500→700+dark |
+| `components/workspace/ConflictBanner.tsx` | 6 | 🔍 | icon amber-600 (3:1) + ปุ่ม amber มี dark: ครบ |
 | `components/layout/MainLayout.tsx` | 6 | ✅ | amber-600→700 · emerald-600→700 |
 
 ## ก้อน 4 — Feature forms

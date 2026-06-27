@@ -126,14 +126,14 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
   ตัวเลขล้วน · แท็บวัสดุ "area" แยกซับ-เซกชันต่อชนิดสินค้า (ยอดรวมหน่วยถูก ไม่ปน ตร.ล./ตร.ม.).
 - **Modal enter/exit (audit → แก้ 4 จุด):** `useMobileBack` เขียนใหม่เป็น **back-stack กลาง**
   (Back ปิด overlay บนสุดทีละชั้น + ไม่ทิ้งขยะ history; reconcile แบบ microtask กัน switch-race) +
-  เพิ่มใน `OptionSheet`/`AlertDialog`/`PdfPreviewModal` · `openCounts` ต่อชนิดใน `UISlice` →
+  เพิ่มใน `OptionSheet`/`AlertDialog`/`PdfPreviewModal` · `openCounts` ต่อชนิดใน `ModalSlice` →
   ModalManager key → คืน leave-animation ของ keyed modals · `Modal` header กระชับ + utility
   `.pt-safe-top-gap` (fullscreen ไม่ชนขอบบนเมื่อจอไม่มี notch) · DiscountModal discard-on-cancel =
   ตั้งใจ (ใส่คอมเมนต์).
 - **Main Menu overhaul (เริ่ม — เจ้าของนำ point-by-point):**
   - **Data-driven menu** — `src/config/menuItems.ts` (`MENU_ENTRIES`: `section`/`item`/`block`)
     แทน JSX ตายตัว. **bake ลำดับ default = จัดบรรทัดใน `MENU_ENTRIES`.**
-  - **Dev tool "ปรับแต่งเมนู"** — `src/store/useMenuConfigStore.ts` (`editing` + `order` persist
+  - **Dev tool "ปรับแต่งเมนู"** — `src/store/standalone/useMenuConfigStore.ts` (`editing` + `order` persist
     localStorage `mtr.menu-order`; `reconcileIds`/`getOrderedEntries`) + ปุ่ม `ListOrdered` ใน
     `DevInspector` (dev-only) + drag-reorder (@dnd-kit) ใน `MainMenuModal` (item+block ลากได้/
     ข้ามหมวดได้, section ตรึง, "คัดลอกลำดับ" ไป bake). round 2: บล็อก account/role/appearance
@@ -162,7 +162,7 @@ We have HIG + NN/g (§1.6) but **no UI designer** — this section is the standi
 
 ### 2.1 Modal System
 
-All modals are registered in `UISlice.ts` ModalType union. Render via `ModalManager.tsx`. Open via `useAppStore.openModal(type, props?)`.
+All modals are registered in `ModalSlice.ts` ModalType union. Render via `ModalManager.tsx`. Open via `useAppStore.openModal(type, props?)`.
 
 | Modal | Purpose | Key Props |
 |---|---|---|
@@ -309,7 +309,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
     which `html2canvas@1` cannot parse → export throws.
 - **Filter:** item-type chips; `presentTypes` + derived `effective` set (no setState-in-effect);
   empty rooms vanish after filtering.
-- **Proportional, semantic drawings:** `src/lib/svgGenerator.ts` (`generateItemVisualSvg`) — aspect-correct
+- **Proportional, semantic drawings:** `src/lib/export/svgGenerator.ts` (`generateItemVisualSvg`) — aspect-correct
   per item + W×H labels; communicates **style** (ลอน/จีบ/ตาไก่/พับ/แป๊บ/หลุยส์, wallpaper, each blind type),
   **opening direction** (curtain `opening_style` Thai values: `แยกกลาง`→🡄🡆 / `เก็บข้างเดียว`→single arrow;
   **default `''` = "ยังไม่เลือก"** — no default since 2026-06, ItemCard shows a "เลือกทิศเปิด" warning until set.
@@ -321,7 +321,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
   `PdfPreviewModal`).
 
 ### Room Dashboard — detail-mode overview + drag-reorder (NEW, 2026-06)
-- `src/components/features/RoomDashboard.tsx` — the **detail-mode** rendering of `viewMode === 'overview'` (since 2026-06-10 also on mobile — 1-col grid + touch drag; field mode keeps the focus view). Responsive grid (`sm:2 / xl:3`) of room cards, each = header (grip · name→focus · total · ⋯ menu) + its `ItemCard` list + add-item; trailing add-room cell; a project summary header on top (total points / ค้าง / grand total).
+- `src/components/workspace/RoomDashboard.tsx` — the **detail-mode** rendering of `viewMode === 'overview'` (since 2026-06-10 also on mobile — 1-col grid + touch drag; field mode keeps the focus view). Responsive grid (`sm:2 / xl:3`) of room cards, each = header (grip · name→focus · total · ⋯ menu) + its `ItemCard` list + add-item; trailing add-room cell; a project summary header on top (total points / ค้าง / grand total).
 - **Reorder via `@dnd-kit`** (dependency added: `@dnd-kit/core` + `/sortable` + `/utilities`) — mouse **+ touch + keyboard** (PointerSensor distance-8 so taps/clicks still work; KeyboardSensor). Grip (`GripVertical`) is the `setActivatorNodeRef` drag handle so `ItemCard` stays clickable.
 - **Three drag flows:** rooms reorder (grid `SortableContext`, `rectSortingStrategy`) · items reorder within a room (`verticalListSortingStrategy`) · **items move across rooms with live preview** (multi-container pattern: `onDragOver` mutates a local `localItems: Record<roomId, itemId[]>`, render reads from it; commit **once** in `onDragEnd`). Original room captured in `dragFromRoomRef` (the active sortable's `data.roomId` changes as it previews into other containers — don't rely on it for the source).
 - **Store is the source of truth; the drag commits one undoable step.** `onDragEnd` → `reorderRooms` / `reorderItems` / `moveItemToRoom` (see §8 ProjectSlice). Custom `collisionDetection` filters droppables by active type (`room` vs `item`/`roomdrop`) so the nested contexts don't fight.
@@ -432,7 +432,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 9. Add type guard in `src/lib/type-guards.ts`
 
 ### When Adding a New Modal
-1. Add string literal to `ModalType` union in `src/store/slices/UISlice.ts`
+1. Add string literal to `ModalType` union in `src/store/slices/ModalSlice.ts`
 2. Create modal component in `src/components/modals/`
 3. Import + render in `src/components/managers/ModalManager.tsx`
 4. Optionally: add button in `MainMenuModal.tsx`
@@ -459,7 +459,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 src/store/useAppStore.ts              — Root store (temporal + persist v3 + 6 slices)
 src/store/migrations.ts               — persist migrate: v1→v2 legacy items + v2→v3 cost-vault split
 src/store/slices/
-  UISlice.ts                          — Modals + toast queue
+  ModalSlice.ts                       — modal stack (modalStack + modalProps)
   ProjectSlice.ts                     — rooms[] + CRUD + factoryReset + reorderRooms/reorderItems/moveItemToRoom (Room Dashboard §3)
   CustomerSlice.ts                    — Customer info
   ShopProfileSlice.ts                 — Shop config + discount
@@ -468,8 +468,8 @@ src/store/slices/
   (FormulaSlice removed — formulas are now compile-time FORMULAS in src/config/formulas.ts)
 src/lib/vault.ts                      — CATALOG_CATEGORIES: category id → {label, costUnit, vault} routing
 src/lib/catalog/contract.ts           — Zod catalog contract v2 (import/export schema, isCatalogContract)
-src/store/useThemeStore.ts            — Light/Dark theme
-src/store/useUIStore.ts               — addToast
+src/store/standalone/useThemeStore.ts            — Light/Dark theme
+src/store/standalone/useNotificationStore.ts               — addToast
 ```
 
 ### Pricing & Cost
@@ -498,7 +498,7 @@ src/features/*/hooks/use*FormLogic.ts — Feature-specific form logic
 ### Two-Mode UI (field/detail — แกน "งาน" ไม่ใช่อุปกรณ์, ดู §10)
 ```
 src/hooks/useExperienceMode.ts        — single source of mode (mobile=persisted, desktop=detail) + useTierSize
-src/store/useExperienceStore.ts       — persisted mode (key marnthara-experience)
+src/store/standalone/useExperienceStore.ts       — persisted mode (key marnthara-experience)
 src/components/ui/ModeGate.tsx         — declarative show-by-tier primitive
 src/components/ui/FormTwoColumn.tsx    — Full+lg → input/summary 2-col; else stack
 src/components/ui/AdvancedSection.tsx  — disclosure: Full inline / Lite collapsible (escape hatch)
@@ -522,7 +522,7 @@ src/components/modals/
   LookbookModal.tsx                   — A4 lookbook: paginate + PDF/PNG-zip export + type filter (NEW)
   ... (other modals)
 src/components/managers/ModalManager.tsx — Modal router
-src/lib/svgGenerator.ts                  — proportional semantic item drawings (style/opening/cord + dims)
+src/lib/export/svgGenerator.ts                  — proportional semantic item drawings (style/opening/cord + dims)
 ```
 
 ### Config
@@ -712,10 +712,10 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
 - **Zustand mirror** = `jobs[]` (JobsSlice) + `customerRegistry[]` (CustomerRegistrySlice) — ชั้นวางงาน/ทะเบียนลูกค้า.
 - **Firestore** = `shops/{uid}/jobs/{id}` (งานเก็บเป็น **JSON string** ต่อ doc — เลี่ยงข้อจำกัด nested-array/undefined) + `shops/{uid}/customers/{code}` (structured). canonical เมื่อ sign-in.
 
-### 12.2 "งานหนึ่งก้อน" (JobBundle) — `src/lib/job-bundle.ts`
+### 12.2 "งานหนึ่งก้อน" (JobBundle) — `src/lib/jobs/job-bundle.ts`
 `{ customer, rooms, discount, receipts, expenses } + status/timestamps`. `extractJobBundle`/`bundleToLiveFields`/`blankJob`/`isBundleEmpty`/`customerFromRegistry`. ใช้ซ้ำใน JobsSlice + resetProject + DataModal restore. **id งาน = customer.id (UUID); customer.code = join key ไปทะเบียนลูกค้า.**
 
-**Identity invariant (1 งาน = 1 UUID):** `customer.id (crypto.randomUUID v4)` = `job.id` = Firestore doc key (`shops/{uid}/jobs/{id}`) = id ที่ฝังในไฟล์ JSON export. **per-account isolation** (firestore.rules: `uid == shopId` — ไม่ใช่ cross-account). Restore ไฟล์ dedup ด้วย UUID: `src/lib/restore-identity.ts` (`resolveRestoreIdentity` ตรวจชนกับ `jobs[]` + `forkBundleId` มอบ UUID ใหม่ตอนเลือก "สำเนาใหม่") → DataModal flush งานปัจจุบันก่อนทับ + ถาม "ทับ/สำเนาใหม่" เมื่อชน (ไม่มีงานหายเงียบ).
+**Identity invariant (1 งาน = 1 UUID):** `customer.id (crypto.randomUUID v4)` = `job.id` = Firestore doc key (`shops/{uid}/jobs/{id}`) = id ที่ฝังในไฟล์ JSON export. **per-account isolation** (firestore.rules: `uid == shopId` — ไม่ใช่ cross-account). Restore ไฟล์ dedup ด้วย UUID: `src/lib/backup/restore-identity.ts` (`resolveRestoreIdentity` ตรวจชนกับ `jobs[]` + `forkBundleId` มอบ UUID ใหม่ตอนเลือก "สำเนาใหม่") → DataModal flush งานปัจจุบันก่อนทับ + ถาม "ทับ/สำเนาใหม่" เมื่อชน (ไม่มีงานหายเงียบ).
 
 ### 12.3 JobsSlice (checkout)
 `saveCurrentJob` (no-op ถ้า `isBundleEmpty`) · `switchJob`/`createJob(fromCustomer?)`/`deleteJob`/`setJobStatus(_, id?)`. switch/create → `clearUndoHistory()` (กัน undo ข้ามงาน, ผ่าน `temporalBridge`). push/delete cloud ผ่าน `jobSyncBridge` (no-op จนกว่า syncEngine จะ register). สถานะ 6 สเตจ: `JOB_STATUS` (enums) + ชิปสีใน `dataTones.ts`.
@@ -746,7 +746,7 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
 - **โมเดล (derived):** `deriveRole({guardEnabled, unlocked})` = `guardEnabled ? (unlocked ? admin : staff) : admin`.
   - ค่าระดับร้าน (sync): `shops/{uid}/settings/security` = `{ guardEnabled, adminPinHash }` (SHA-256, `lib/security/pin.ts`).
   - ต่ออุปกรณ์ (local, persist `marnthara-role`, **ไม่ sync**): `unlocked` → เครื่องใหม่ที่ร้านเปิดการ์ด = staff อัตโนมัติ.
-- **ไฟล์:** `store/useRoleStore.ts` (+`deriveRole`) · `hooks/useRole.ts` · `hooks/useRequireAdmin.ts` (action→เด้ง PIN) ·
+- **ไฟล์:** `store/standalone/useRoleStore.ts` (+`deriveRole`) · `hooks/useRole.ts` · `hooks/useRequireAdmin.ts` (action→เด้ง PIN) ·
   `components/ui/AdminGate.tsx` (ลอก ModeGate) · `components/modals/AdminPinModal.tsx` · `lib/sync/securityBridge.ts` (decouple store↔Firestore).
   syncEngine subscribe/push `securityRef` (รูปแบบเดียวกับ jobs/customers).
 - **ล็อกอะไร (admin-only):** ลบงาน (`JobsModal`) · ลบลูกค้า (`CustomerDirectoryModal`) · ล้างเครื่อง (`ShopSettingsModal`/`DataModal`) ·
@@ -757,7 +757,7 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
 ### 12.9 Pricing sync (สินค้า&ราคา + ต้นทุน ระดับร้าน)
 "ความรู้ราคาทั้งร้าน" = `favorites` + 7 vault ต้นทุน + `costInclude` — **ชุดเดียวของร้าน** (ไม่ใช่ต่องาน) → sync ให้ทุกเครื่องตรงกัน.
 - **Firestore:** `shops/{uid}/settings/pricing` = `{ updatedAt, data: JSON.stringify(PricingBundle) }` (JSON string เหมือน jobs · doc limit 1MB).
-- **helper:** `src/lib/pricing-bundle.ts` (pure) — `extractPricing`/`applyPricingFields`/`mergePricing`/`isPricingEmpty`.
+- **helper:** `src/lib/pricing/pricing-bundle.ts` (pure) — `extractPricing`/`applyPricingFields`/`mergePricing`/`isPricingEmpty`.
 - **syncEngine:** `pricingRef` + `onSnapshot` — reconcile ครั้งแรก: cloud มี doc → **merge** (union, cloud ชนะ — ไม่ให้ของหาย) + ดันผลรวมขึ้น;
   cloud ว่าง (server ยืนยัน) → **seed** จาก local. หลัง reconcile → **replace** (mirror, รองรับการลบข้ามเครื่อง) คุมด้วย flag `pricingHydrating` กัน echo.
   push = subscription จับ favorites/vault/costInclude เปลี่ยน (≠ hydrate) → debounce 800ms → `pushPricingDoc` (ไม่ผ่าน bridge — ไม่มี slice action ที่ push).

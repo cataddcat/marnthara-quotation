@@ -5,7 +5,7 @@ import { ITEM_TYPES, FAVORITE_CATEGORIES, DEFAULT_JOB_STATUS } from '@/config/en
 import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { isAreaItem } from '@/lib/type-guards';
 import { newUuid } from '@/lib/id';
-import { downloadBackup } from '@/lib/backup-export';
+import { downloadBackup } from '@/lib/backup/backup-export';
 
 // [REFACTOR] Renamed from RoomSlice to ProjectSlice to reflect broader scope
 export interface ProjectSlice {

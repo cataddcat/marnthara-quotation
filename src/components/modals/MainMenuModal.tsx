@@ -20,9 +20,9 @@ import {
 import { cn } from '@/lib/utils';
 import { APP_VERSION } from '@/config/constants';
 import { useAppStore } from '@/store/useAppStore';
-import { useThemeStore } from '@/store/useThemeStore';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
+import { useAuthStore } from '@/store/standalone/useAuthStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
@@ -40,7 +40,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { getOrderedEntries, useMenuConfigStore } from '@/store/useMenuConfigStore';
+import { getOrderedEntries, useMenuConfigStore } from '@/store/standalone/useMenuConfigStore';
 import type { MenuAction, MenuBlockId, MenuEntry } from '@/config/menuItems';
 
 interface MainMenuModalProps {
@@ -247,7 +247,7 @@ export const MainMenuModal: React.FC<MainMenuModalProps> = ({
   const authStatus = useAuthStore((s) => s.status);
   const authEmail = useAuthStore((s) => s.email);
   const signOutUser = useAuthStore((s) => s.signOutUser);
-  const addToast = useUIStore((s) => s.addToast);
+  const addToast = useNotificationStore((s) => s.addToast);
   const sync = useSyncStatus();
   const { trigger } = useHaptic();
   const { mode, canSwitch, setMode } = useExperienceMode();

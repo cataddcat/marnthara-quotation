@@ -2,7 +2,7 @@
 // Single source of truth ของบทบาทปัจจุบัน (admin / พนักงาน) — รวม useRoleStore + pin hashing
 // เป็น API เดียวให้ UI ใช้: เช็คบทบาท + ปลด/ล็อก + ตั้ง/ปิด PIN
 
-import { useRoleStore, deriveRole, type Role } from '@/store/useRoleStore';
+import { useRoleStore, deriveRole, type Role } from '@/store/standalone/useRoleStore';
 import { hashPin, verifyPin } from '@/lib/security/pin';
 
 export interface UseRoleResult {

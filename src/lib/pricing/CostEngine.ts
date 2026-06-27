@@ -1,7 +1,7 @@
 // src/lib/pricing/CostEngine.ts
 
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { ItemData } from '@/types';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import {

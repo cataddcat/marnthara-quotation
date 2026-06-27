@@ -11,7 +11,7 @@
 import { collection, onSnapshot, type Unsubscribe } from 'firebase/firestore';
 import { db } from '@/lib/firebase/app';
 import { CatalogEntrySchema, type CatalogEntry } from '@/lib/catalog/contract';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 
 const catalogCol = (uid: string) => collection(db!, 'shops', uid, 'catalog');
 

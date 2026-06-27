@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { CurtainItemInput, ItemData } from '@/types';
 // ✅ FIX: เรียกใช้ CostEngine จาก lib/pricing (Centralized Location)
 import { CostEngine } from '@/lib/pricing/CostEngine';

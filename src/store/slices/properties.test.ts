@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { useAppStore } from '@/store/useAppStore';
-import type { ModalType } from '@/store/slices/UISlice';
+import type { ModalType } from '@/store/slices/ModalSlice';
 import { asItemData, makeCurtain } from '@/test/factories';
 
 const RUN = { numRuns: 100, seed: 42 } as const;
@@ -45,7 +45,7 @@ describe('ProjectSlice — property invariants', () => {
   });
 });
 
-describe('UISlice — modal stack invariant', () => {
+describe('ModalSlice — modal stack invariant', () => {
   it('forall distinct modal sequence → closeModal ย้อนกลับ activeModal ทีละชั้นจน null', () => {
     const open = store().openModal as (t: ModalType) => void;
     fc.assert(

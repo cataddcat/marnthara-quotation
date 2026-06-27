@@ -1,5 +1,5 @@
 import { useIsMobile } from './useIsMobile';
-import { useExperienceStore, ExperienceMode } from '@/store/useExperienceStore';
+import { useExperienceStore, ExperienceMode } from '@/store/standalone/useExperienceStore';
 
 export interface ExperienceModeResult {
   mode: ExperienceMode;

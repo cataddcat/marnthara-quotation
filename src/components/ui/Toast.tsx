@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { useUIStore, ToastMessage } from '@/store/useUIStore';
+import { useNotificationStore, ToastMessage } from '@/store/standalone/useNotificationStore';
 import { Check, AlertCircle, Info, AlertTriangle } from 'lucide-react'; // [FIXED] Removed X
 import { Transition } from '@headlessui/react';
 import { cn } from '@/lib/utils';
@@ -61,8 +61,8 @@ const ToastItem: React.FC<{ toast: ToastMessage; onDismiss: (id: string) => void
 };
 
 export const ToastContainer = () => {
-  const toasts = useUIStore((state) => state.toasts);
-  const removeToast = useUIStore((state) => state.removeToast);
+  const toasts = useNotificationStore((state) => state.toasts);
+  const removeToast = useNotificationStore((state) => state.removeToast);
 
   if (toasts.length === 0) return null;
 

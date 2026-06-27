@@ -5,8 +5,8 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useAuthStore } from '@/store/standalone/useAuthStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { Mail, Lock, Cloud, AlertCircle } from 'lucide-react';
 
 interface SignInModalProps {
@@ -24,7 +24,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
   const busy = useAuthStore((s) => s.busy);
   const error = useAuthStore((s) => s.error);
   const clearError = useAuthStore((s) => s.clearError);
-  const addToast = useUIStore((s) => s.addToast);
+  const addToast = useNotificationStore((s) => s.addToast);
 
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [email, setEmail] = useState('');

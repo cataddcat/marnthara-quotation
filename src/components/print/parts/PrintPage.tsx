@@ -1,5 +1,5 @@
 import React from 'react';
-import { PrintPageModel } from '@/lib/print/paginate';
+import { PrintPageModel } from '@/lib/export/paginate';
 import { PrintDocContext } from './types';
 import { PAGE_STYLE } from './geometry';
 import { PrintPageHeader } from './PrintPageHeader';

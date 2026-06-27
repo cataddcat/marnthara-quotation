@@ -9,7 +9,7 @@ import { Save, AlertTriangle, Store, CreditCard, FileText, ImagePlus, Trash2 } f
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useRequireAdmin } from '@/hooks/useRequireAdmin';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { compressImage } from '@/utils/imageHelper';
 
 interface ShopSettingsModalProps {
@@ -24,7 +24,7 @@ export const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({ isOpen, on
 
   const { confirm } = useConfirm();
   const requireAdmin = useRequireAdmin();
-  const addToast = useUIStore((state) => state.addToast);
+  const addToast = useNotificationStore((state) => state.addToast);
 
   // Local State
   const [shopData, setShopData] = useState<ShopConfig>(shopConfig);

@@ -1,4 +1,4 @@
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 
 interface ConfirmOptions {
   title: string;
@@ -9,7 +9,7 @@ interface ConfirmOptions {
 }
 
 export const useConfirm = () => {
-  const openAlert = useUIStore((state) => state.openAlert);
+  const openAlert = useNotificationStore((state) => state.openAlert);
 
   const confirm = (options: ConfirmOptions): Promise<boolean> => {
     return new Promise((resolve) => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useRequireAdmin } from '@/hooks/useRequireAdmin';
 import {
@@ -19,9 +19,9 @@ import {
 // ❌ ลบหรือ Comment บรรทัดนี้ออก
 // import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { parseBackup, type ParsedBackup } from '@/lib/backup';
-import { downloadBackup } from '@/lib/backup-export';
-import { resolveRestoreIdentity, forkBundleId } from '@/lib/restore-identity';
+import { parseBackup, type ParsedBackup } from '@/lib/backup/backup';
+import { downloadBackup } from '@/lib/backup/backup-export';
+import { resolveRestoreIdentity, forkBundleId } from '@/lib/backup/restore-identity';
 import type { Customer } from '@/types';
 
 interface DataModalProps {
@@ -31,7 +31,7 @@ interface DataModalProps {
 
 export const DataModal: React.FC<DataModalProps> = ({ isOpen, onClose }) => {
   const { createJob, factoryReset, importFavorites, importSecrets } = useAppStore();
-  const addToast = useUIStore((state) => state.addToast);
+  const addToast = useNotificationStore((state) => state.addToast);
   const { confirm } = useConfirm();
   const requireAdmin = useRequireAdmin();
 

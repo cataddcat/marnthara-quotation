@@ -49,7 +49,7 @@ The bundle ships 9 prototype components; this repo ships **22** richer primitive
 |---|---|---|
 | `Button.jsx` (inline styles) | [Button.tsx](/src/components/ui/Button.tsx) — haptics, differential shadows, `focus-visible` ring, Tailwind | repo ahead |
 | `Badge` / `Card` / `Input` / `Select` / `Switch` / `Toast` | repo equivalents in `src/components/ui/` | repo ahead |
-| `ItemCard` / `RoomCard` | [ItemCard.tsx](/src/components/features/ItemCard.tsx) · [RoomCard.tsx](/src/components/features/RoomCard.tsx) | repo ahead |
+| `ItemCard` / `RoomCard` | [ItemCard.tsx](/src/components/workspace/ItemCard.tsx) · [RoomCard.tsx](/src/components/workspace/RoomCard.tsx) | repo ahead |
 | — (not in bundle) | Modal, AlertDialog, Text, ComboboxInput, OptionSheet, AdvancedSection, FormLayout, … | repo-only |
 
 - **Verdict: no component changes.** Adopting any prototype would be a regression.

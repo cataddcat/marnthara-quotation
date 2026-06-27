@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { RoomSlider } from '@/components/features/RoomSlider';
-import { type DashboardDensity } from '@/components/features/RoomDashboard';
-import { EmptyState } from '@/components/features/EmptyState';
+import { RoomSlider } from '@/components/workspace/RoomSlider';
+import { type DashboardDensity } from '@/components/workspace/RoomDashboard';
+import { EmptyState } from '@/components/workspace/EmptyState';
 import { useAppStore } from '@/store/useAppStore';
-import { useThemeStore, THEME_CLASSES, THEME_DOM_CLASSES } from '@/store/useThemeStore';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useUIStore } from '@/store/useUIStore';
+import { useThemeStore, THEME_CLASSES, THEME_DOM_CLASSES } from '@/store/standalone/useThemeStore';
+import { useAuthStore } from '@/store/standalone/useAuthStore';
+import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { startSync, stopSync } from '@/lib/sync/syncEngine';
-import { shouldRemindBackup, daysSinceBackup } from '@/lib/backup-reminder';
+import { shouldRemindBackup, daysSinceBackup } from '@/lib/backup/backup-reminder';
 import { useExperienceMode } from '@/hooks/useExperienceMode';
 import { useUndoRedoShortcuts } from '@/hooks/useUndoRedo';
 import { useModalScrollRestore } from '@/hooks/useModalScrollRestore';
@@ -17,7 +17,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
 import { ModalManager } from '@/components/managers/ModalManager';
-import { ConflictBanner } from '@/components/features/ConflictBanner';
+import { ConflictBanner } from '@/components/workspace/ConflictBanner';
 import { DevInspector } from '@/components/dev/DevInspector';
 import { ItemData } from '@/types';
 import { ITEM_TYPES } from '@/config/enums';
@@ -99,7 +99,7 @@ function App() {
   }, [authStatus, authUid]);
 
   // เตือนสำรองข้อมูล (เฉพาะ local-only — signed-in มี Firestore เป็น backup แล้ว) ครั้งเดียว/เซสชัน
-  const addToast = useUIStore((state) => state.addToast);
+  const addToast = useNotificationStore((state) => state.addToast);
   const remindedRef = useRef(false);
   useEffect(() => {
     if (remindedRef.current || authStatus === 'loading' || authStatus === 'signed-in') return;

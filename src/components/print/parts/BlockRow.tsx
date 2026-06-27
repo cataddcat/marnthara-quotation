@@ -1,5 +1,5 @@
 import React from 'react';
-import { PrintBlock } from '@/lib/print/printModel';
+import { PrintBlock } from '@/lib/export/printModel';
 import { fmtNum } from './fmt';
 
 interface Props {

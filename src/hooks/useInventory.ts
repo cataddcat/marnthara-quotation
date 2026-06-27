@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { InventoryItem } from '@/store/slices/InventorySlice';
 import { categoryVault } from '@/lib/vault';
 
