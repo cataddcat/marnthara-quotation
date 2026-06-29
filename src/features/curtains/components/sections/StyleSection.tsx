@@ -7,6 +7,7 @@ import { FormSection } from '@/components/ui/FormSection';
 import { Settings2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
+import { Squircle } from '@/components/ui/Squircle';
 import { LayerSelector } from './LayerSelector';
 import { useThemeStore } from '@/store/standalone/useThemeStore';
 
@@ -49,19 +50,20 @@ export const StyleSection: React.FC<StyleSectionProps> = ({ data, onChange, erro
         {/* Style Selection Button */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground ml-1">รูปแบบม่าน</label>
-          <button
-            type="button"
+          <Squircle
             onClick={() => setActiveSheet('style')}
-            className={cn(
-              "w-full flex items-center justify-between p-4 rounded-xl border bg-background transition-all hover:bg-muted/30",
-              errors?.style 
-                ? "border-destructive/50 ring-1 ring-destructive/20" 
-                : "border-input hover:border-primary/50"
+            strokeWidth={errors?.style ? 2 : 1.5}
+            className="w-full flex items-center justify-between p-4 rounded-xl"
+            pathClassName={cn(
+              'fill-background transition-[fill,stroke]',
+              errors?.style
+                ? 'stroke-destructive'
+                : 'stroke-input group-hover:fill-muted/30 group-hover:stroke-primary/50'
             )}
           >
             <span className="text-base font-medium">{getStyleLabel()}</span>
             <span className="text-sm text-muted-foreground font-bold">เปลี่ยน {'>'}</span>
-          </button>
+          </Squircle>
         </div>
 
         {/* ประเภทม่าน (ชั้นผ้า) — EEERT: ย้ายขึ้นมาในกรอบเดียวกับรูปแบบ/ทิศทาง (เดิมอยู่ FabricSection) */}

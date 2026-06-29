@@ -2,6 +2,7 @@
 
 import { ChevronDown, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { Alert } from '@/components/ui/Alert';
 import { fmtTH } from '@/utils/formatters';
 import { Metric } from '@/components/ui/Metric';
@@ -22,6 +23,8 @@ interface ItemCardProps {
 export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCardProps) => {
   const { analysis, typeName, roomName, item } = row;
   const st = STATUS_STYLE[analysis.status];
+  // EEERT-minimal: bigger row hero (type name). Other themes unchanged.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   const laborTotal = analysis.laborCost ?? 0;
   const railTotal = (analysis.railCost ?? 0) + (analysis.accCost ?? 0);
@@ -69,7 +72,14 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-sm text-foreground leading-tight">{typeName}</span>
+            <span
+              className={cn(
+                'font-semibold text-sm text-foreground leading-tight',
+                isEeert && 'text-base'
+              )}
+            >
+              {typeName}
+            </span>
             <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full leading-tight">
               {roomName}
             </span>

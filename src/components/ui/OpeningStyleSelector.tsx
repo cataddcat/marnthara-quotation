@@ -1,6 +1,7 @@
 import React from 'react';
 import { Minus, SplitSquareHorizontal, ArrowRightToLine, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Squircle } from '@/components/ui/Squircle';
 import { openingBucket, OPENING_CENTER, OPENING_SIDE } from '@/lib/opening-style';
 
 /**
@@ -37,15 +38,19 @@ export const OpeningStyleSelector: React.FC<OpeningStyleSelectorProps> = ({
         {OPTIONS.map((opt) => {
           const isSelected = activeBucket === opt.bucket;
           return (
-            <button
+            <Squircle
               key={opt.label}
-              type="button"
               onClick={() => onChange(opt.value)}
+              strokeWidth={2}
               className={cn(
-                'relative flex flex-col items-center justify-center h-16 rounded-xl border-2 transition-all active:scale-95',
+                'flex flex-col items-center justify-center h-16 rounded-xl transition-transform active:scale-95',
+                isSelected ? 'text-foreground' : 'text-muted-foreground'
+              )}
+              pathClassName={cn(
+                'transition-[fill,stroke]',
                 isSelected
-                  ? 'border-foreground bg-accent text-foreground'
-                  : 'border-border bg-card text-muted-foreground hover:bg-muted/30 hover:border-foreground/40'
+                  ? 'fill-accent stroke-foreground'
+                  : 'fill-card stroke-border group-hover:fill-muted/30 group-hover:stroke-foreground/40'
               )}
             >
               <opt.icon
@@ -64,7 +69,7 @@ export const OpeningStyleSelector: React.FC<OpeningStyleSelectorProps> = ({
                   <Check className="w-2 h-2" strokeWidth={1.5} />
                 </div>
               )}
-            </button>
+            </Squircle>
           );
         })}
       </div>

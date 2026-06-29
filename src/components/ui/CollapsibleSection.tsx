@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NestedSurfaceContext } from './nestedSurface';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 
 interface CollapsibleSectionProps {
   title: React.ReactNode;
@@ -27,6 +28,8 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   className,
 }) => {
   const [open, setOpen] = useState(defaultOpen);
+  // EEERT-minimal: collapsed hint is Meta-misuse → drop it in EEERT. Other themes keep it.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   return (
     <div
@@ -52,7 +55,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         />
       </button>
 
-      {!open && hint && (
+      {!open && hint && !isEeert && (
         <div className="px-4 pb-3 -mt-1 text-xs text-muted-foreground">{hint}</div>
       )}
 

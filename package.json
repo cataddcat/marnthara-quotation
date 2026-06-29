@@ -32,6 +32,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@headlessui/react": "^2.2.10",
     "clsx": "^2.1.1",
+    "figma-squircle": "^1.1.0",
     "firebase": "^12.15.0",
     "html2canvas-pro": "^2.0.4",
     "jspdf": "^4.2.1",

@@ -5,6 +5,7 @@ import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppStore } from '@/store/useAppStore';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 
 import { CurtainForm, CURTAIN_FORM_ID } from '@/features/curtains/components/CurtainForm';
@@ -95,6 +96,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   mode = 'add',
 }) => {
   const { trigger } = useHaptic();
+  // EEERT-minimal: drop the "ประเภทสินค้า" Meta label + make "เปลี่ยน" a clear tappable chip. Others unchanged.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
   const { addItem, updateItem } = useAppStore();
   const addToast = useNotificationStore((s) => s.addToast);
   const isMobile = useIsMobile();
@@ -460,22 +463,39 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         <div className="animate-fade-in">
           <>
             {/* Type switcher (add mode) — แตะเพื่อกลับไปกริดเลือกประเภท (picker ทางเดียว) */}
-            {mode === 'add' && (
-              <button
-                type="button"
-                onClick={() => setTypeConfirmed(false)}
-                className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-xl border border-border bg-card active:scale-[0.99] transition-transform"
-              >
-                <span className="flex flex-col items-start min-w-0">
-                  <span className="text-xs text-muted-foreground leading-none">ประเภทสินค้า</span>
-                  <span className="font-bold text-foreground leading-tight truncate">{itemName}</span>
-                </span>
-                <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground shrink-0">
-                  เปลี่ยน
-                  <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
-                </span>
-              </button>
-            )}
+            {mode === 'add' &&
+              (isEeert ? (
+                // EEERT: พื้นที่กดจำกัดไว้ที่ชิป "เปลี่ยน" เท่านั้น (แถวไม่ใช่ปุ่ม) — ชิป tap ≥44px
+                <div className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-xl border border-border bg-card">
+                  <span className="flex flex-col items-start min-w-0">
+                    <span className="font-bold text-foreground leading-tight truncate">{itemName}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setTypeConfirmed(false)}
+                    aria-label="เปลี่ยนประเภทสินค้า"
+                    className="flex items-center gap-1 shrink-0 min-h-[44px] px-3.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:bg-muted active:scale-95 transition-colors"
+                  >
+                    เปลี่ยน
+                    <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setTypeConfirmed(false)}
+                  className="w-full flex items-center justify-between gap-2 min-h-[56px] px-4 mb-3 rounded-xl border border-border bg-card active:scale-[0.99] transition-transform"
+                >
+                  <span className="flex flex-col items-start min-w-0">
+                    <span className="text-xs text-muted-foreground leading-none">ประเภทสินค้า</span>
+                    <span className="font-bold text-foreground leading-tight truncate">{itemName}</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground shrink-0">
+                    เปลี่ยน
+                    <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
+                  </span>
+                </button>
+              ))}
 
             {/* ── Product Form ── */}
             {activeType === ITEM_TYPES.CURTAIN && (

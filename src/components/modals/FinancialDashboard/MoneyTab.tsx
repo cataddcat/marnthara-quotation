@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { fmtTH, toNum, localDateISO } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/Input';
@@ -48,6 +49,8 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
   const toggleExpensePaid = useAppStore((s) => s.toggleExpensePaid);
   const removeExpense = useAppStore((s) => s.removeExpense);
   const { trigger } = useHaptic();
+  // EEERT-minimal: promote section titles to real headings (drop tiny uppercase Meta). Others unchanged.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   // ฟอร์มเพิ่มรายการ — เก็บเป็น string ระหว่างพิมพ์ แปลงตอน submit
   const [receiptLabel, setReceiptLabel] = useState('');
@@ -153,7 +156,14 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
       {/* ── 1. เงินรับจากลูกค้า ── */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+          <div
+            className={cn(
+              'flex items-center gap-2',
+              isEeert
+                ? 'text-base font-semibold text-foreground'
+                : 'text-xs font-bold text-muted-foreground uppercase tracking-wider'
+            )}
+          >
             <Wallet className="w-3.5 h-3.5" strokeWidth={1.5} />
             เงินรับจากลูกค้า ({receipts.length})
           </div>
@@ -322,7 +332,14 @@ export const MoneyTab: React.FC<MoneyTabProps> = ({ jobPrice, estimates }) => {
       {/* ── 2. เช็คลิสท์รายจ่าย ── */}
       <section className="space-y-2 pt-3 border-t border-border/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+          <div
+            className={cn(
+              'flex items-center gap-2',
+              isEeert
+                ? 'text-base font-semibold text-foreground'
+                : 'text-xs font-bold text-muted-foreground uppercase tracking-wider'
+            )}
+          >
             <ClipboardCheck className="w-3.5 h-3.5" strokeWidth={1.5} />
             เช็คลิสท์รายจ่าย ({paidCount}/{expenses.length})
           </div>

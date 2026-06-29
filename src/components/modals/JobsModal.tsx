@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/store/useAppStore';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -69,6 +70,8 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
   const { trigger } = useHaptic();
   const sync = useSyncStatus();
   const requireAdmin = useRequireAdmin();
+  // EEERT-minimal: hero job name + single status source (chip, not dot). Other themes unchanged.
+  const isEeert = useThemeStore((s) => s.theme === 'eeert');
 
   const [query, setQuery] = useState('');
   const PAGE = 50;
@@ -241,10 +244,18 @@ export const JobsModal: React.FC<JobsModalProps> = ({ isOpen, onClose }) => {
                       className="flex-1 min-w-0 text-left active:opacity-80"
                     >
                       <div className="flex items-center gap-2">
+                        {/* EEERT: status comes from the chip below (single source) → drop the dup dot */}
+                        {!isEeert && (
+                          <span
+                            className={cn('w-2 h-2 rounded-full shrink-0', JOB_STATUS_DOT[status])}
+                          />
+                        )}
                         <span
-                          className={cn('w-2 h-2 rounded-full shrink-0', JOB_STATUS_DOT[status])}
-                        />
-                        <span className="flex-1 min-w-0 font-bold text-foreground truncate">
+                          className={cn(
+                            'flex-1 min-w-0 font-bold text-foreground truncate',
+                            isEeert && 'text-base'
+                          )}
+                        >
                           {job.customer.name || 'งานใหม่ (ยังไม่ตั้งชื่อ)'}
                         </span>
                         {/* มือถือ: ลูกศรบอกว่ากาง/ย่อได้ (เดสก์ท็อปกางเสมอ → ซ่อน; งานปัจจุบันไม่ย่อ → ไม่มี) */}
