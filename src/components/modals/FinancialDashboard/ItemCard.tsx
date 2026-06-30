@@ -3,6 +3,7 @@
 import { ChevronDown, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useThemeStore } from '@/store/standalone/useThemeStore';
+import { useSquircleClip } from '@/components/ui/useSquircleClip';
 import { Alert } from '@/components/ui/Alert';
 import { fmtTH } from '@/utils/formatters';
 import { Metric } from '@/components/ui/Metric';
@@ -25,6 +26,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
   const st = STATUS_STYLE[analysis.status];
   // EEERT-minimal: bigger row hero (type name). Other themes unchanged.
   const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  const clipRef = useSquircleClip<HTMLDivElement>();
 
   const laborTotal = analysis.laborCost ?? 0;
   const railTotal = (analysis.railCost ?? 0) + (analysis.accCost ?? 0);
@@ -59,6 +61,7 @@ export const ItemCard = ({ row, expanded, onToggle, onOpenCodeDetail }: ItemCard
 
   return (
     <div
+      ref={clipRef}
       className={cn('bg-card border border-border/60 border-l-[3px] rounded-2xl overflow-hidden', st.accent)}
     >
       {/* ── Main row (always visible) ── */}

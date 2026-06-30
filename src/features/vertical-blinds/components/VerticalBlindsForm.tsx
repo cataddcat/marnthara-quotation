@@ -6,7 +6,7 @@ import { VerticalBlindsSchema, VerticalBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, Ruler, Book, ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
+import { Tag, Ruler, Book, ArrowLeftToLine, ArrowRightToLine, Check } from 'lucide-react';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
@@ -20,7 +20,7 @@ import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
-import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK, radioTileClass } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const VERTICAL_BLINDS_FORM_ID = 'vertical-blinds-edit-form';
@@ -194,6 +194,23 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             warning={warnings.price_sqyd}
           />
         </div>
+
+        {/* ประเภทใบ — เข้าชุดม่านม้วน (Blackout/Sunscreen/Dimout) → fabric_variant */}
+        <div className="space-y-2 pt-2 border-t border-border">
+          <label className="text-[13px] font-medium text-muted-foreground">ประเภทใบ</label>
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-3 gap-1')}>
+            {['Blackout', 'Sunscreen', 'Dimout'].map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => handleChange('fabric_variant', v)}
+                className={segmentedItemClass(formData.fabric_variant === v, theme)}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
       </FormSection>
 
       {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
@@ -205,27 +222,63 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
             value={formData.opening_style}
             onChange={(v) => handleChange('opening_style', v)}
           />
-          <div className="space-y-2">
-            <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
-            <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
-              <button
-                type="button"
-                onClick={() => handleChange('adjustment_side', 'ขวา')}
-                className={segmentedItemClass(formData.adjustment_side === 'ขวา', theme)}
-              >
-                <ArrowRightToLine className="w-3.5 h-3.5" />
-                ขวา
-              </button>
-              <button
-                type="button"
-                onClick={() => handleChange('adjustment_side', 'ซ้าย')}
-                className={segmentedItemClass(formData.adjustment_side === 'ซ้าย', theme)}
-              >
-                <ArrowLeftToLine className="w-3.5 h-3.5" />
-                ซ้าย
-              </button>
+          {isEeert ? (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground ml-1">ฝั่งดึง</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'ซ้าย', icon: ArrowLeftToLine },
+                  { value: 'ขวา', icon: ArrowRightToLine },
+                ].map(({ value, icon: Icon }) => {
+                  const active = formData.adjustment_side === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => handleChange('adjustment_side', value)}
+                      className={radioTileClass(active)}
+                    >
+                      <Icon
+                        className={cn(
+                          'w-7 h-7 mb-1',
+                          active ? 'text-foreground animate-bounce-short' : 'text-muted-foreground/70'
+                        )}
+                        strokeWidth={1.5}
+                      />
+                      <span className="text-sm font-medium">{value}</span>
+                      {active && (
+                        <div className="absolute top-1 right-1 bg-foreground text-background rounded-full p-0.5">
+                          <Check className="w-2 h-2" strokeWidth={1.5} />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
+              <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
+                <button
+                  type="button"
+                  onClick={() => handleChange('adjustment_side', 'ซ้าย')}
+                  className={segmentedItemClass(formData.adjustment_side === 'ซ้าย', theme)}
+                >
+                  <ArrowLeftToLine className="w-3.5 h-3.5" />
+                  ซ้าย
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChange('adjustment_side', 'ขวา')}
+                  className={segmentedItemClass(formData.adjustment_side === 'ขวา', theme)}
+                >
+                  <ArrowRightToLine className="w-3.5 h-3.5" />
+                  ขวา
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </AdvancedSection>
 

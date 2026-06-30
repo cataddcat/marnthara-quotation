@@ -1,23 +1,28 @@
 import React from 'react';
 import { AlertTriangle, AlertCircle, Info, CheckCircle2, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Squircle } from '@/components/ui/Squircle';
 
 export type AlertVariant = 'info' | 'warning' | 'success' | 'destructive';
 
 // Status carried by a tinted bg + border + icon (DESIGN.md §2 — status colors are
-// the sanctioned exception to monochrome). Dark text shade keeps it readable (AA);
-// the vivid semantic tokens are too light for body text, so the alert palette
-// uses the darker -700/-300 steps consistently across all four variants.
-// eeert: crisper full-opacity -300 borders so the notice separates clearly on the
-// grey-page / white-card surfaces (text is already -800 = AAA on EEERT).
-const VARIANT_STYLES: Record<AlertVariant, string> = {
-  info: 'bg-sky-50 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-800/50 text-sky-800 dark:text-sky-300 eeert:border-sky-300',
+// the sanctioned exception to monochrome). Squircle surface: bg→path fill, border→path stroke;
+// text stays on the element. Dark text shade keeps it readable (AA); eeert: crisper -300 stroke.
+const VARIANT_PATH: Record<AlertVariant, string> = {
+  info: 'fill-sky-50 dark:fill-sky-950/30 stroke-sky-200/60 dark:stroke-sky-800/50 eeert:stroke-sky-300',
   warning:
-    'bg-amber-50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 eeert:border-amber-300',
+    'fill-amber-50 dark:fill-amber-950/30 stroke-amber-200/60 dark:stroke-amber-800/50 eeert:stroke-amber-300',
   success:
-    'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 eeert:border-emerald-300',
+    'fill-emerald-50 dark:fill-emerald-950/30 stroke-emerald-200/60 dark:stroke-emerald-800/50 eeert:stroke-emerald-300',
   destructive:
-    'bg-rose-50 dark:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/50 text-rose-800 dark:text-rose-300 eeert:border-rose-300',
+    'fill-rose-50 dark:fill-rose-950/30 stroke-rose-200/60 dark:stroke-rose-800/50 eeert:stroke-rose-300',
+};
+
+const VARIANT_TEXT: Record<AlertVariant, string> = {
+  info: 'text-sky-800 dark:text-sky-300',
+  warning: 'text-amber-800 dark:text-amber-300',
+  success: 'text-emerald-800 dark:text-emerald-300',
+  destructive: 'text-rose-800 dark:text-rose-300',
 };
 
 const VARIANT_ICON: Record<AlertVariant, LucideIcon> = {
@@ -44,15 +49,18 @@ export const Alert: React.FC<AlertProps> = ({ variant = 'info', icon, className,
   const Icon = icon === null ? null : (icon ?? VARIANT_ICON[variant]);
 
   return (
-    <div
+    <Squircle
+      as="div"
+      strokeWidth={1}
+      pathClassName={VARIANT_PATH[variant]}
       className={cn(
-        'flex items-start gap-2 rounded-xl border p-2.5 text-sm leading-snug',
-        VARIANT_STYLES[variant],
+        'flex items-start gap-2 rounded-xl p-2.5 text-sm leading-snug',
+        VARIANT_TEXT[variant],
         className
       )}
     >
       {Icon && <Icon className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={1.5} />}
       <div className="min-w-0 flex-1">{children}</div>
-    </div>
+    </Squircle>
   );
 };

@@ -53,9 +53,10 @@ export const DATA_TONE_PLATE: Record<DataTone, string> = {
   muted: 'bg-muted/60 border-border',
 };
 
-/** ช่องกรอกมิติ (Input[isDimension]) — ตัวเลขเด่นโทนมิติ ใช้ที่ primitive เดียว ห้าม caller แปะเอง */
+/** ช่องกรอกมิติ (Input[isDimension]) — ตัวเลขเด่นโทนมิติ ใช้ที่ primitive เดียว ห้าม caller แปะเอง.
+ *  พื้น tint ฟ้า (bg) ย้ายไปเป็น squircle fill ของ wrapper แล้ว (Input ใช้ `fill-blue-500/10`) — ที่นี่เหลือ "ตัวอักษร" */
 export const DIMENSION_INPUT_CLASS =
-  'text-lg font-bold text-blue-700 dark:text-blue-400 eeert:text-blue-800 bg-blue-500/10';
+  'text-lg font-bold text-blue-700 dark:text-blue-400 eeert:text-blue-800';
 
 /** หมวดวัสดุ (DESIGN.md §2.1 ชั้น Material) — ผ้า=violet · วอลเปเปอร์=orange · พื้นที่=teal · อุปกรณ์=sky */
 export type MaterialKind = 'fabric' | 'sheer' | 'wallpaper' | 'area' | 'hardware';

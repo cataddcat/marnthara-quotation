@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
+import { Squircle } from '@/components/ui/Squircle';
 
 export interface ButtonProps extends React.ComponentProps<'button'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
@@ -29,20 +30,32 @@ export const Button = ({
     onClick?.(e);
   };
 
-  // Borders + soft, DIFFERENTIAL elevation (DESIGN.md §2): ghost stays flat so hierarchy reads;
-  // secondary/outline get a visible edge + faint lift; filled CTAs lift more and press down on :active.
-  const variants = {
-    primary:
-      'bg-primary text-primary-foreground border border-transparent shadow-sm hover:bg-primary/90 hover:shadow-md active:scale-[0.98] active:shadow-sm',
-    secondary:
-      'bg-secondary text-secondary-foreground border border-border shadow-xs hover:bg-secondary/80 hover:shadow-sm active:scale-[0.98] active:shadow-none',
-    outline:
-      'border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:shadow-sm active:scale-[0.98] active:shadow-none',
-    ghost:
-      'hover:bg-accent hover:text-accent-foreground border border-transparent active:scale-[0.98]',
-    destructive:
-      'bg-destructive text-destructive-foreground border border-transparent shadow-sm hover:bg-destructive/90 hover:shadow-md active:scale-[0.98] active:shadow-sm',
+  // Squircle surface: the variant's bg/border move onto the SVG <path> (fill = surface, stroke = edge);
+  // elevation = drop-shadow so it follows the squircle (box-shadow would trace a rounded-rect).
+  // Differential elevation (DESIGN.md §2): ghost flat · secondary/outline edge-only · CTAs lift.
+  const variantPath: Record<NonNullable<ButtonProps['variant']>, string> = {
+    primary: 'fill-primary group-hover:fill-primary/90',
+    secondary: 'fill-secondary stroke-border group-hover:fill-secondary/80',
+    outline: 'fill-background stroke-border group-hover:fill-accent',
+    ghost: 'fill-transparent group-hover:fill-accent',
+    destructive: 'fill-destructive group-hover:fill-destructive/90',
   };
+  const variantText: Record<NonNullable<ButtonProps['variant']>, string> = {
+    primary: 'text-primary-foreground',
+    secondary: 'text-secondary-foreground',
+    outline: 'text-foreground hover:text-accent-foreground',
+    ghost: 'text-foreground hover:text-accent-foreground',
+    destructive: 'text-destructive-foreground',
+  };
+  const variantShadow: Record<NonNullable<ButtonProps['variant']>, string> = {
+    primary: 'drop-shadow-sm group-hover:drop-shadow-md',
+    secondary: '',
+    outline: '',
+    ghost: '',
+    destructive: 'drop-shadow-sm group-hover:drop-shadow-md',
+  };
+  // only edged variants draw a stroke; filled/ghost have no visible border
+  const hasStroke = variant === 'secondary' || variant === 'outline';
 
   const sizes = {
     sm: 'h-9 px-3 text-xs rounded-lg',
@@ -53,13 +66,16 @@ export const Button = ({
   };
 
   return (
-    <button
+    <Squircle
       ref={ref}
       type={type}
       onClick={handleClick}
+      strokeWidth={hasStroke ? 1.5 : 0}
+      pathClassName={variantPath[variant]}
+      shadowClassName={variantShadow[variant]}
       className={cn(
-        'inline-flex items-center justify-center whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 select-none',
-        variants[variant],
+        'inline-flex items-center justify-center whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 select-none active:scale-[0.98]',
+        variantText[variant],
         sizes[size],
         className
       )}

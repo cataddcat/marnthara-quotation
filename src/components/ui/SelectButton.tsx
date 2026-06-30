@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown, AlertCircle } from 'lucide-react';
+import { Squircle } from '@/components/ui/Squircle';
 
 interface SelectButtonProps extends React.ComponentProps<'button'> {
   label?: string;
@@ -31,24 +32,25 @@ export const SelectButton = React.forwardRef<HTMLButtonElement, SelectButtonProp
             {label}
           </label>
         )}
-        <button
+        <Squircle
           ref={ref}
           id={id}
-          type="button"
+          strokeWidth={1.5}
+          pathClassName={cn('fill-background', hasError ? 'stroke-destructive' : 'stroke-input')}
           className={cn(
-            'flex w-full items-center justify-between border bg-background py-2 transition-all shadow-sm',
+            'flex w-full items-center justify-between py-2 transition-all',
             sizeClasses.button,
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
-            hasError ? 'border-destructive text-destructive' : 'border-input text-foreground',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+            hasError ? 'text-destructive' : 'text-foreground',
             !valueLabel && 'text-muted-foreground', // Placeholder color
-            'active:scale-[0.99] active:bg-accent/50', // Subtle feedback
+            'active:scale-[0.99]', // Subtle feedback
             className
           )}
           {...props}
         >
           <span className="truncate">{valueLabel || placeholder}</span>
           <ChevronDown className={cn("h-5 w-5 opacity-50 shrink-0", hasError && "text-destructive")} />
-        </button>
+        </Squircle>
         {hasError && (
           <div className="flex items-center gap-1.5 px-1 animate-fade-in">
              <AlertCircle className="w-3.5 h-3.5 text-destructive" />

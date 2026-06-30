@@ -6,7 +6,7 @@ import { RollerBlindsSchema, RollerBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
 import { ComboboxInput } from '@/components/ui/ComboboxInput';
 import { Button } from '@/components/ui/Button';
-import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book } from 'lucide-react';
+import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/useAppStore';
 import { useExperienceMode, useTierSize } from '@/hooks/useExperienceMode';
@@ -19,7 +19,7 @@ import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
-import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK } from '@/lib/theme-utils';
+import { getItemTheme, segmentedItemClass, SEGMENTED_TRACK, radioTileClass } from '@/lib/theme-utils';
 import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 
 export const ROLLER_BLINDS_FORM_ID = 'roller-blinds-edit-form';
@@ -219,26 +219,62 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
 
       {/* Controls: Pull Side (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
       <AdvancedSection expanded={isDetail} hint="ฝั่งดึง — ใส่ทีหลังได้">
-        <div className="space-y-2">
-          <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
-          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
-            {['ซ้าย', 'ขวา'].map((side) => (
-              <button
-                key={side}
-                type="button"
-                onClick={() => handleChange('adjustment_side', side)}
-                className={segmentedItemClass(formData.adjustment_side === side, theme)}
-              >
-                {side === 'ซ้าย' ? (
-                  <ArrowLeftToLine className="w-4 h-4" />
-                ) : (
-                  <ArrowRightToLine className="w-4 h-4" />
-                )}
-                {side}
-              </button>
-            ))}
+        {isEeert ? (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground ml-1">ฝั่งดึง</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'ซ้าย', icon: ArrowLeftToLine },
+                { value: 'ขวา', icon: ArrowRightToLine },
+              ].map(({ value, icon: Icon }) => {
+                const active = formData.adjustment_side === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleChange('adjustment_side', value)}
+                    className={radioTileClass(active)}
+                  >
+                    <Icon
+                      className={cn(
+                        'w-7 h-7 mb-1',
+                        active ? 'text-foreground animate-bounce-short' : 'text-muted-foreground/70'
+                      )}
+                      strokeWidth={1.5}
+                    />
+                    <span className="text-sm font-medium">{value}</span>
+                    {active && (
+                      <div className="absolute top-1 right-1 bg-foreground text-background rounded-full p-0.5">
+                        <Check className="w-2 h-2" strokeWidth={1.5} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
+            <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
+              {['ซ้าย', 'ขวา'].map((side) => (
+                <button
+                  key={side}
+                  type="button"
+                  onClick={() => handleChange('adjustment_side', side)}
+                  className={segmentedItemClass(formData.adjustment_side === side, theme)}
+                >
+                  {side === 'ซ้าย' ? (
+                    <ArrowLeftToLine className="w-4 h-4" />
+                  ) : (
+                    <ArrowRightToLine className="w-4 h-4" />
+                  )}
+                  {side}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </AdvancedSection>
 
       {/* Actions */}

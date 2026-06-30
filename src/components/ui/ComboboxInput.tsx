@@ -9,6 +9,7 @@ import {
 } from '@headlessui/react';
 import { cn } from '@/lib/utils';
 import { ChevronsUpDown, Check, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Squircle } from '@/components/ui/Squircle';
 
 export interface SuggestionItem<T = unknown> {
   label: string;
@@ -52,12 +53,17 @@ export const ComboboxInput = <T = unknown,>({
   const id = providedId || generatedId;
   const [query, setQuery] = useState('');
 
-  // Status Colors
-  const statusClasses = error
-    ? 'border-destructive focus:ring-destructive text-destructive'
+  // Status: border → squircle wrapper stroke; text/ring → the input itself
+  const statusStroke = error
+    ? 'stroke-destructive'
     : warning
-    ? 'border-warning focus:ring-warning text-warning-foreground'
-    : 'border-input focus:ring-primary';
+    ? 'stroke-warning'
+    : 'stroke-input';
+  const statusInput = error
+    ? 'text-destructive focus:ring-destructive'
+    : warning
+    ? 'text-warning-foreground focus:ring-warning'
+    : 'focus:ring-primary';
 
   const sizeClasses = {
     sm: { input: 'h-9 text-sm rounded-lg', label: 'text-sm' },
@@ -89,7 +95,12 @@ export const ComboboxInput = <T = unknown,>({
         immediate
       >
         <div className="relative">
-          <div className="relative w-full cursor-default overflow-hidden rounded-xl bg-background text-left shadow-sm focus:outline-none">
+          <Squircle
+            as="div"
+            strokeWidth={1.5}
+            pathClassName={cn('fill-background', statusStroke)}
+            className={cn('relative w-full cursor-default text-left', size === 'sm' ? 'rounded-lg' : 'rounded-xl')}
+          >
              {prefix && (
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none z-10">
                   {prefix}
@@ -97,9 +108,9 @@ export const ComboboxInput = <T = unknown,>({
              )}
             <HeadlessInput
               className={cn(
-                'w-full border py-2 leading-5 focus:outline-none focus:ring-2 focus:border-transparent transition-all bg-background',
+                'w-full bg-transparent py-2 leading-5 focus:outline-none focus:ring-2 focus:border-transparent transition-all',
                 sizeClasses.input,
-                statusClasses,
+                statusInput,
                 prefix ? 'pl-10' : 'pl-4',
                 'pr-10',
                 className
@@ -114,13 +125,13 @@ export const ComboboxInput = <T = unknown,>({
               inputMode={inputMode}
               autoComplete="off"
             />
-            <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2 z-10">
               <ChevronsUpDown
                 className="h-5 w-5 text-muted-foreground/50"
                 aria-hidden="true"
               />
             </ComboboxButton>
-          </div>
+          </Squircle>
           
           <Transition
             as={Fragment}

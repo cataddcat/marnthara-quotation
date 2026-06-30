@@ -2,48 +2,69 @@
 //
 // Cross-browser squircle (continuous-curvature superellipse corner) — works on every engine
 // incl. iOS Safari / Firefox, unlike native CSS `corner-shape` (Chromium-only as of 2026-06).
+// figma-squircle generates the corner path math. Corner SIZE follows the element's computed
+// `border-radius` (keep a `rounded-*` class as the size source → theme-token aware); SHAPE = superellipse.
 //
-// The shape is an inline SVG <path> drawn BEHIND the content (figma-squircle for the corner math).
-// fill = surface · stroke = outline — both as Tailwind classes on the <path> (theme-/state-driven),
-// so the old CSS `border` (which an SVG corner can't follow) moves into the SVG stroke.
-//
-// Corner SIZE follows the element's computed `border-radius` (keep a `rounded-*` class for the size
-// source → stays theme-token-aware across all themes); SHAPE = the superellipse. Button-scoped for
-// now (the StyleSection rollout); polymorphic/card variants can come later.
+// Two tools:
+//   • <Squircle> — a control (button/div) whose surface is an SVG <path> drawn BEHIND content:
+//     fill = surface, stroke = outline (Tailwind `fill-*`/`stroke-*` on the path, state-driven) +
+//     optional drop-shadow (box-shadow can't trace a squircle). Use for buttons/inputs.
+//   • useSquircleClip() (separate file) — a hook that applies `clip-path: path()` to an existing element,
+//     clipping its bg + children (divide-y rows, images) to the squircle. Use for cards/surfaces.
 
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, useLayoutEffect, useRef, useState, type ElementType } from 'react';
 import { getSvgPath } from 'figma-squircle';
 import { cn } from '@/lib/utils';
+import { useThemeStore } from '@/store/standalone/useThemeStore';
 
+const DEFAULT_SMOOTHING = 0.6;
+
+// ── <Squircle> control (behind mode) ─────────────────────────────────────────
 interface SquircleProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** element to render (button default; div for non-interactive surfaces like Alert) */
+  as?: 'button' | 'div';
   /** corner size px — defaults to the element's computed border-radius (theme-driven) */
   radius?: number;
   /** figma corner smoothing 0..1 (higher = flatter sides / more "Apple") */
   smoothing?: number;
-  /** outline width in px (0 = fill only) */
+  /** outline width px (0 = fill only / no border) */
   strokeWidth?: number;
-  /** tailwind fill/stroke on the squircle <path> (+ group-hover/group-focus-visible variants) */
+  /** tailwind fill/stroke on the squircle path (+ group-hover/group-focus-within variants) */
   pathClassName?: string;
+  /** drop-shadow utility so elevation follows the squircle (e.g. 'drop-shadow-sm') */
+  shadowClassName?: string;
 }
 
-export const Squircle: React.FC<SquircleProps> = ({
-  radius,
-  smoothing = 0.6,
-  strokeWidth = 1.5,
-  pathClassName,
-  className,
-  children,
-  type = 'button',
-  ...rest
-}) => {
-  const ref = useRef<HTMLButtonElement>(null);
+export const Squircle = forwardRef<HTMLButtonElement, SquircleProps>(function Squircle(
+  {
+    as = 'button',
+    radius,
+    smoothing = DEFAULT_SMOOTHING,
+    strokeWidth = 1.5,
+    pathClassName,
+    shadowClassName,
+    className,
+    children,
+    type,
+    ...rest
+  },
+  forwardedRef
+) {
+  const innerRef = useRef<HTMLElement | null>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [autoRadius, setAutoRadius] = useState(0);
+  // single store subscription (not a per-instance MutationObserver) → scales to many instances
+  const theme = useThemeStore((s) => s.theme);
+
+  const setRefs = (node: HTMLElement | null) => {
+    innerRef.current = node;
+    if (typeof forwardedRef === 'function') forwardedRef(node as HTMLButtonElement);
+    else if (forwardedRef) forwardedRef.current = node as HTMLButtonElement;
+  };
 
   useLayoutEffect(() => {
-    const el = ref.current;
+    const el = innerRef.current;
     if (!el) return;
-
     const measure = () => {
       const rect = el.getBoundingClientRect();
       setSize({ w: rect.width, h: rect.height });
@@ -52,56 +73,58 @@ export const Squircle: React.FC<SquircleProps> = ({
         setAutoRadius(Number.isFinite(br) ? br : 0);
       }
     };
-
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    // theme switch swaps the themed --radius token → recompute corner size
-    const mo = new MutationObserver(measure);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => {
-      ro.disconnect();
-      mo.disconnect();
-    };
-  }, [radius]);
+    return () => ro.disconnect();
+    // `theme` → recompute the themed corner radius on theme switch
+  }, [radius, theme]);
 
-  // inset the path by half the stroke so the outline sits fully inside the box (not clipped)
   const r = radius ?? autoRadius;
   const inset = strokeWidth / 2;
-  const w = Math.max(size.w - strokeWidth, 0);
-  const h = Math.max(size.h - strokeWidth, 0);
+  // inset the path by half the stroke so the outline sits fully inside the box (not clipped)
   const path =
-    w > 0 && h > 0
+    size.w > 0 && size.h > 0
       ? getSvgPath({
-          width: w,
-          height: h,
+          width: Math.max(size.w - strokeWidth, 0),
+          height: Math.max(size.h - strokeWidth, 0),
           cornerRadius: Math.max(r - inset, 0),
           cornerSmoothing: smoothing,
         })
       : '';
 
+  const Tag = as as ElementType;
+
   return (
-    <button ref={ref} type={type} className={cn('group relative isolate', className)} {...rest}>
+    <Tag
+      ref={setRefs}
+      {...(as === 'button' ? { type: type ?? 'button' } : {})}
+      className={cn('group relative isolate', className)}
+      {...rest}
+    >
       {path && (
         <svg
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full overflow-visible"
+          className={cn(
+            'pointer-events-none absolute inset-0 -z-10 h-full w-full overflow-visible transition-[filter]',
+            shadowClassName
+          )}
           viewBox={`0 0 ${size.w} ${size.h}`}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
           <g transform={`translate(${inset} ${inset})`}>
-            {/* fill="none" = fallback; pathClassName (CSS) overrides the presentation attribute */}
+            {/* fill="none" fallback; pathClassName (CSS) overrides the presentation attribute */}
             <path
               d={path}
               fill="none"
               vectorEffect="non-scaling-stroke"
               strokeWidth={strokeWidth}
-              className={pathClassName}
+              className={cn('transition-[fill,stroke]', pathClassName)}
             />
           </g>
         </svg>
       )}
       {children}
-    </button>
+    </Tag>
   );
-};
+});

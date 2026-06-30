@@ -4,6 +4,7 @@ import { ItemCard } from './ItemCard';
 import { EmptyState } from './EmptyState';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useSquircleClip } from '@/components/ui/useSquircleClip';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -70,6 +71,12 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
   // Collapsing header — เมื่อหัวการ์ดเลื่อนพ้นเส้น fold (ใต้ app header) → โชว์แถบบาง "ลำดับ+ชื่อ" แทน
   const headerRef = useRef<HTMLDivElement>(null);
+  // squircle the room header card (merge with headerRef which is used for measurement)
+  const clipRef = useSquircleClip<HTMLDivElement>();
+  const setCardRef = (node: HTMLDivElement | null) => {
+    headerRef.current = node;
+    clipRef.current = node;
+  };
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
     if (isCompact) return;
@@ -336,7 +343,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
       {/* Room Header Card */}
       <div
-        ref={headerRef}
+        ref={setCardRef}
         className={cn(
           'relative rounded-2xl border bg-card overflow-hidden transition-[border-color] duration-300 flex',
           room.is_suspended

@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NestedSurfaceContext } from './nestedSurface';
 import { useThemeStore } from '@/store/standalone/useThemeStore';
+import { useSquircleClip } from './useSquircleClip';
 
 interface CollapsibleSectionProps {
   title: React.ReactNode;
@@ -30,9 +31,11 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const [open, setOpen] = useState(defaultOpen);
   // EEERT-minimal: collapsed hint is Meta-misuse → drop it in EEERT. Other themes keep it.
   const isEeert = useThemeStore((s) => s.theme === 'eeert');
+  const clipRef = useSquircleClip<HTMLDivElement>();
 
   return (
     <div
+      ref={clipRef}
       className={cn(
         'bg-card rounded-xl border border-border overflow-hidden',
         className

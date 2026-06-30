@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
+import { Squircle } from '@/components/ui/Squircle';
 
 interface SelectProps extends Omit<React.ComponentProps<'select'>, 'size'> {
   label?: string;
@@ -38,7 +39,7 @@ export const Select = ({
           {label}
         </label>
       )}
-      <div className="relative">
+      <Squircle as="div" strokeWidth={1.5} pathClassName="fill-background stroke-input" className={cn('relative', size === 'sm' ? 'rounded-lg' : 'rounded-xl')}>
         {selectedColor && (
           <span
             aria-hidden="true"
@@ -51,7 +52,7 @@ export const Select = ({
           id={id}
           value={value}
           className={cn(
-            'flex w-full appearance-none border border-input bg-background py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm',
+            'flex w-full appearance-none bg-transparent py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-all',
             sizeClasses.select,
             selectedColor && 'pl-7',
             className
@@ -69,7 +70,7 @@ export const Select = ({
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
           <ChevronDown className="h-4 w-4" />
         </div>
-      </div>
+      </Squircle>
     </div>
   );
 };

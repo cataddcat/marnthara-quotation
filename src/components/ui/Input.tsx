@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { X, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { parseDimension, toNum } from '@/utils/formatters';
 import { DIMENSION_INPUT_CLASS } from '@/config/dataTones';
+import { Squircle } from '@/components/ui/Squircle';
 
 /** ช่วงขนาดสมเหตุสมผล (ม.) — นอกช่วงนี้เตือน (ไม่บล็อก) */
 const DIM_MIN_M = 0.1;
@@ -121,12 +122,17 @@ export const Input = ({
       : undefined;
   const effectiveWarning = warning ?? dimWarning;
 
-  // Determine status color
-  const statusClasses = error
-    ? 'border-destructive focus:ring-destructive text-destructive'
+  // Status: border → squircle wrapper stroke; text/ring → the input itself
+  const statusStroke = error
+    ? 'stroke-destructive'
     : effectiveWarning
-    ? 'border-warning focus:ring-warning text-warning-foreground'
-    : 'border-input focus:ring-primary';
+    ? 'stroke-warning'
+    : 'stroke-input';
+  const statusInput = error
+    ? 'text-destructive focus-visible:ring-destructive'
+    : effectiveWarning
+    ? 'text-warning-foreground focus-visible:ring-warning'
+    : '';
 
   const showClear = onClear && value && String(value).length > 0;
 
@@ -150,9 +156,14 @@ export const Input = ({
           {label}
         </label>
       )}
-      <div className="relative">
+      <Squircle
+        as="div"
+        strokeWidth={1.5}
+        pathClassName={cn(isDimension ? 'fill-blue-500/10' : 'fill-background', statusStroke)}
+        className={cn('relative', size === 'sm' ? 'rounded-lg' : 'rounded-xl')}
+      >
         {prefix && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none z-10">
             {prefix}
           </div>
         )}
@@ -167,12 +178,12 @@ export const Input = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           className={cn(
-            'flex w-full border bg-background py-2 shadow-sm transition-all',
+            'flex w-full bg-transparent py-2 transition-all',
             sizeClasses.input,
             'file:border-0 file:bg-transparent file:text-sm file:font-medium',
             'placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
-            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/50',
-            statusClasses,
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            statusInput,
             // ช่องมิติ = โทน dimension จากทะเบียน §2.1 — ฝังที่ primitive เดียว caller ห้ามแปะสีเอง
             isDimension && DIMENSION_INPUT_CLASS,
             suffix ? 'pr-12' : showClear ? 'pr-10' : '',
@@ -183,7 +194,7 @@ export const Input = ({
         />
 
         {suffix && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none z-10">
             {suffix}
           </div>
         )}
@@ -193,13 +204,13 @@ export const Input = ({
             type="button"
             onClick={handleClear}
             tabIndex={-1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring active:scale-90"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring active:scale-90"
             aria-label="Clear input"
           >
             <X className="w-4 h-4" />
           </button>
         )}
-      </div>
+      </Squircle>
 
       {error ? (
         <div className="flex items-center gap-1.5 px-1 animate-fade-in" role="alert">

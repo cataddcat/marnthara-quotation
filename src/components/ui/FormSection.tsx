@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useTierSize } from '@/hooks/useExperienceMode';
 import { useThemeStore } from '@/store/standalone/useThemeStore';
 import { useNestedSurface } from './nestedSurface';
+import { useSquircleClip } from './useSquircleClip';
 
 interface FormSectionProps {
   /** ไอคอนหัวข้อ section */
@@ -41,9 +42,12 @@ export const FormSection: React.FC<FormSectionProps> = ({
   // ของตัวเองซ้ำ (พ่อให้ padding แล้ว) เหลือแค่หัวข้อ+เนื้อหา. ธีมอื่น/ไม่ nested = การ์ดเดิม.
   const isEeert = useThemeStore((s) => s.theme === 'eeert');
   const flat = useNestedSurface() && isEeert;
+  // squircle the card surface (skip in flat/nested mode where there's no card chrome)
+  const clipRef = useSquircleClip<HTMLDivElement>({ enabled: !flat });
 
   return (
     <div
+      ref={clipRef}
       className={cn(
         !flat && cn('bg-card rounded-xl border border-border', section.pad),
         stack ?? section.stack,
