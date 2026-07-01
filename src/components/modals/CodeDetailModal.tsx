@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
 import { useInventory } from '@/hooks/useInventory';
 import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
+import { useCanViewCost } from '@/hooks/useCanViewCost';
 import { useCodeUsage, type CodeUsage } from '@/hooks/useCodeUsage';
 import { categoryVault, categoryLabel, categoryCostUnit } from '@/lib/vault';
 import { fmtTH } from '@/utils/formatters';
@@ -34,6 +35,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
   const openModal = useAppStore((s) => s.openModal);
   // ทุนสินค้า: catalog (DB) เมื่อเชื่อมจริง ไม่งั้น vault ในแอป (HANDOFF §11.8)
   const { fabricCosts, wallpaperCosts, areaCosts } = useActiveCostMaps();
+  const canViewCost = useCanViewCost(); // ทุน = ความลับร้าน → เห็นเฉพาะผู้ดูแล
 
   const { items } = useInventory(category);
   const { usages, totalQty, unit } = useCodeUsage(code, category);
@@ -81,13 +83,14 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               ราคา & รหัส
             </span>
-            {cost > 0 ? (
-              <span className="text-sm font-mono font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
-                ทุน ฿{fmtTH(cost)}/{costUnit}
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground/60 italic">ยังไม่มีราคาทุน</span>
-            )}
+            {canViewCost &&
+              (cost > 0 ? (
+                <span className="text-sm font-mono font-bold text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
+                  ทุน ฿{fmtTH(cost)}/{costUnit}
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground/60 italic">ยังไม่มีราคาทุน</span>
+              ))}
           </div>
 
           {entry ? (
@@ -114,7 +117,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
             <div
               className={cn(
                 'pt-3 border-t border-border/40',
-                totalCost > 0 && 'grid grid-cols-2 gap-2'
+                canViewCost && totalCost > 0 && 'grid grid-cols-2 gap-2'
               )}
             >
               <Metric
@@ -122,7 +125,7 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
                 value={`${fmtQty(totalQty, unit)} ${unit}`}
                 tone="neutral"
               />
-              {totalCost > 0 && (
+              {canViewCost && totalCost > 0 && (
                 <Metric
                   label="ทุนรวม"
                   value={`฿${fmtTH(totalCost)}`}

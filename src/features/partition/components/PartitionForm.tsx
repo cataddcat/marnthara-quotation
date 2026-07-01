@@ -4,7 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { PartitionSchema, PartitionFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { ComboboxInput } from '@/components/ui/ComboboxInput';
+import { CodePickerField } from '@/components/ui/CodePickerField';
 import { Button } from '@/components/ui/Button';
 import { Tag, Ruler, Book } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
@@ -180,8 +180,9 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
           ))
         }
       >
-        <ComboboxInput
+        <CodePickerField
           placeholder="เลือกสเปค (เช่น PVC ทึบ)..."
+          category={FAVORITE_CATEGORIES.PARTITION}
           value={formData.code || ''}
           onChange={handleCodeChange}
           options={suggestions}
@@ -190,10 +191,10 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
           <Input
             placeholder="ราคา (บาท/ตร.ล.)"
             inputMode="decimal"
+            isMoney
             value={formData.price_sqyd || ''}
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}
-            className="bg-muted/50"
           />
         </div>
 

@@ -637,8 +637,12 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
   syncEngine subscribe/push `securityRef` (รูปแบบเดียวกับ jobs/customers).
 - **ล็อกอะไร (admin-only):** ลบงาน (`JobsModal`) · ลบลูกค้า (`CustomerDirectoryModal`) · ล้างเครื่อง (`ShopSettingsModal`/`DataModal`) ·
   เมนูต้นทุน/กำไร (`การเงินของงาน` + `โครงสร้างต้นทุน` ห่อ `AdminGate` — เป็น entry เดียวของ 2 modal นั้น).
+- **ราคาทุน (reference cost) = admin-only ทุกจุด (2026-07-01)** — gate ด้วย hook เดียว **`useCanViewCost()`** (= `isAdmin`;
+  `src/hooks/useCanViewCost.ts`). ครอบ: code picker (`CodePickerField` — โชว์ทุนโทน rose คู่ราคาขาย เฉพาะ admin) ·
+  คลัง "สินค้า & ราคา" (`MaterialSummaryModal`: แถวทุน read-only · ช่องกรอก "ทุน" ของ draft — staff เห็นแค่ราคาขาย, ทุนเดิมคงไว้ผ่าน local state · reconcile nudge · ทุนรวม/ราคาทุนต่อหน่วยในแท็บสรุป) · รายละเอียดรหัส (`CodeDetailModal`).
+  **ราคาขายไม่ล็อก. เพิ่มจุดโชว์ทุนใหม่ที่ไหน ต้องห่อด้วย `useCanViewCost` เสมอ** (single source ของนโยบาย).
 - ⚠️ **client-side guard เท่านั้น** (บัญชีร่วม = แยกผู้ใช้ใน Firestore ไม่ได้) — กันพลาด ไม่ใช่กันคนใน. แยกสิทธิ์จริง = ต้องแยกบัญชี + membership (อนาคต).
-  ข้อจำกัดที่เหลือ: ต้นทุน/กำไร **inline ในโหมดละเอียด** (การ์ดรายการ) ยังเห็นได้ — ถ้าต้องซ่อนทั้งหมดต้อง sweep เพิ่ม.
+  ข้อจำกัดที่เหลือ: **กำไร/ทุนที่คำนวณของงาน inline ในโหมดละเอียด** (`CostReadout` · `ItemSummaryCard` proSlot · `CurtainCostAnalysis`) ยัง gate ด้วย **โหมด (`isDetail`) ไม่ใช่ role** → staff ในโหมดละเอียดยังเห็น. ถ้าต้องซ่อนด้วย = sweep เพิ่ม (ผูก `useCanViewCost`). *(reference cost ปิดแล้ว — ดูบน)*
 
 ### 12.9 Pricing sync (สินค้า&ราคา + ต้นทุน ระดับร้าน)
 "ความรู้ราคาทั้งร้าน" = `favorites` + 7 vault ต้นทุน + `costInclude` — **ชุดเดียวของร้าน** (ไม่ใช่ต่องาน) → sync ให้ทุกเครื่องตรงกัน.

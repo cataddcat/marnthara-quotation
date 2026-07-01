@@ -60,7 +60,7 @@ export const useWallpaperFormLogic = (
     [form]
   );
 
-  // ── Code change (for ComboboxInput onChange) ───────────────────────────────
+  // ── Code change (for CodePickerField onChange) ─────────────────────────────
 
   const handleCodeChange = useCallback(
     (value: string) => {

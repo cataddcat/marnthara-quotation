@@ -4,7 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { WoodenBlindsSchema, AluminumBlindsSchema, WoodenBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { ComboboxInput } from '@/components/ui/ComboboxInput';
+import { CodePickerField } from '@/components/ui/CodePickerField';
 import { Button } from '@/components/ui/Button';
 import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book, Check, Cable, Link } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -249,12 +249,12 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
         {/* Code & Price — คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           {/* ช่องนี้ = รหัสสินค้าเท่านั้น (รุ่นเชือก/โซ่ มีตัวเลือก "รุ่น" แยกด้านล่าง; สีอยู่ในรหัส) */}
-          <ComboboxInput
+          <CodePickerField
             label="รหัสสินค้า"
+            category={favCategory}
             options={suggestions}
             value={formData.code || ''}
             onChange={handleCodeChange}
-            className="bg-muted/50"
             placeholder="เช่น BW-01"
           />
 
@@ -263,7 +263,7 @@ export const WoodenBlindsForm: React.FC<WoodenBlindsFormProps> = ({
             label="ราคาขาย (บาท/ตร.ล.)"
             value={formData.price_sqyd || ''}
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
-            className="bg-muted/50"
+            isMoney
             inputMode="decimal"
             placeholder="0.00"
           />

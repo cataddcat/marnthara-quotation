@@ -274,12 +274,16 @@ Every number/code the eye scans or compares → `font-mono tabular-nums` (render
 | Section | มาตรฐาน |
 |---|---|
 | **① ขนาด** | ป้าย **"ขนาดพื้นที่ (ม.)"** · ไอคอน **`Ruler`** · สีไอคอน + ตัวเลข = dimension blue (§2.1) · ช่องกรอกใช้ `Input[isDimension]` (สไตล์ฝังใน primitive แล้ว — ห้ามแปะสีเอง) |
-| **② รหัส & ราคา** | ป้าย **"รหัส & ราคา"** (ไม่มีรหัส เช่น ฉากกั้นแบบจีบ → "สเปค & ราคา") · ไอคอนต่อชนิดได้ แต่สี = `getItemTheme(type).icon` (brand identity) · ตัวเลือกรุ่น/variant (segmented · `segmentedItemClass`) อยู่**ท้าย section คั่น `border-t`** |
+| **② รหัส & ราคา** | ป้าย **"รหัส & ราคา"** (ไม่มีรหัส เช่น ฉากกั้นแบบจีบ → "สเปค & ราคา") · ไอคอนต่อชนิดได้ แต่สี = `getItemTheme(type).icon` (brand identity) · ตัวเลือกรุ่น/variant (segmented · `segmentedItemClass`) อยู่**ท้าย section คั่น `border-t`** · ช่อง **"รหัส"** ใช้ **`CodePickerField`** (bottom-sheet ค้นหาข้ามรหัส/แบรนด์/รุ่น/สี + จัดกลุ่ม ใช้ในงานนี้/ในเครื่อง/คลัง — ไม่ใช่ dropdown ดิบ; scale กับรหัสจำนวนมาก) · ช่องเงิน/ราคาใช้ **`Input[isMoney]`** (ดูกฎ alignment ด้านล่าง) |
 | **③ ขั้นสูง** | สเปคติดตั้ง/ทิศเปิดที่ใส่ทีหลังได้ → **`AdvancedSection`** เสมอ (ห้ามทำ toggle เอง) · hint บอกว่ามีอะไรข้างใน + "ใส่ทีหลังได้" |
 | **④ หมายเหตุ** | `Input` เปล่า (`bg-muted/50 border-transparent`) ไม่ครอบการ์ด |
 | **⑤ สรุป** | **`ItemSummaryCard`** เสมอ (**8/8 ฟอร์มแล้ว** — Phase C 2026-06-12) — มี breakdown row อย่างน้อย 1 แถว (พื้นที่/ม้วน/หลา/จุด) ไม่ใช่ยอดลอย ๆ · ราคาตั้งเอง = แถว switch + คำอธิบายในการ์ด · cost analysis = `proSlot` (ทุนถังเดียว = `CostReadout` 2 บรรทัดโชว์เสมอ; ม่านทุนหลายถัง = `CurtainCostAnalysis` breakdown + toggle — **proSlot ต่างได้ตามความซับซ้อนทุนของสินค้า แต่ห้ามต่างที่ความหมาย/สี**) · **plate ยอดสุทธิไล่สีตามสถานะ: กำหนดราคาเอง → amber+Lock · ขาดทุน(รู้ทุน) → rose · ปกติ → เขียว** — สื่อที่มาของตัวเลขด้วยสี ไม่ใช่ขนาด |
 
 - Section wrapper = **`FormSection`** เท่านั้น (single source ของ chrome + density) — ห้าม `<div className="bg-card …">` เอง.
+- **การจัดชิดช่องกรอก (alignment):** ป้าย + ช่องข้อความ/รหัส/หมายเหตุ = **ชิดซ้าย** (ค่าดีฟอลต์ของ `Input`) ·
+  ช่องเงิน/ราคา/ยอด = **`Input[isMoney]`** → **ชิดขวา + `font-mono tabular-nums`** (หลักเลข + หน่วย `฿` เรียงตรงกัน,
+  §5 · เข้าชุดกับยอดสุทธิใน `ItemSummaryCard`) · ช่องมิติ = **`Input[isDimension]`** (ชิดซ้าย, ตัวหนาโทน dimension).
+  สไตล์ทั้งหมดฝังใน primitive (`MONEY_INPUT_CLASS`/`DIMENSION_INPUT_CLASS`) — **caller ห้ามแปะ `text-right`/`font-mono` เอง**.
 - ข้อยกเว้นที่รู้ตัว: **ผ้าม่าน** มี section "รูปแบบม่าน & การเก็บ" แทรกระหว่าง ① กับผ้า (style กำหนด field ที่เหลือ — จงใจ).
   *(ข้อยกเว้น summary เดิม — `PriceSummary` เฉพาะม่าน — ถูกลบใน Phase C 2026-06-12: ดีไซน์ที่ดีของมัน
   (state-plate + override row มีคำอธิบาย) ถูกยกขึ้น `ItemSummaryCard` ให้ทุกฟอร์ม ส่วน pro-mode ของม่านย้ายไป `CurtainCostAnalysis` ใน proSlot.)*

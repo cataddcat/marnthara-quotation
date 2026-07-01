@@ -2,7 +2,7 @@ import React, { useId, useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { X, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { parseDimension, toNum } from '@/utils/formatters';
-import { DIMENSION_INPUT_CLASS } from '@/config/dataTones';
+import { DIMENSION_INPUT_CLASS, MONEY_INPUT_CLASS } from '@/config/dataTones';
 import { Squircle } from '@/components/ui/Squircle';
 
 /** ช่วงขนาดสมเหตุสมผล (ม.) — นอกช่วงนี้เตือน (ไม่บล็อก) */
@@ -14,6 +14,8 @@ interface InputProps extends Omit<React.ComponentProps<'input'>, 'prefix' | 'siz
   suffix?: string;
   prefix?: React.ReactNode;
   isDimension?: boolean;
+  /** ช่องเงิน/ราคา — ชิดขวา + font-mono (มาตรฐาน §8; สไตล์ฝังใน primitive ห้าม caller แปะ text-right เอง) */
+  isMoney?: boolean;
   onClear?: () => void;
   error?: string;
   warning?: string;
@@ -26,6 +28,7 @@ export const Input = ({
   suffix,
   prefix,
   isDimension = false,
+  isMoney = false,
   id: providedId,
   ref: externalRef,
   value,
@@ -186,6 +189,8 @@ export const Input = ({
             statusInput,
             // ช่องมิติ = โทน dimension จากทะเบียน §2.1 — ฝังที่ primitive เดียว caller ห้ามแปะสีเอง
             isDimension && DIMENSION_INPUT_CLASS,
+            // ช่องเงิน = ชิดขวา + mono (มาตรฐาน §8) — ฝังที่ primitive เดียว caller ห้ามแปะ text-right เอง
+            isMoney && MONEY_INPUT_CLASS,
             suffix ? 'pr-12' : showClear ? 'pr-10' : '',
             prefix ? 'pl-10' : '',
             className

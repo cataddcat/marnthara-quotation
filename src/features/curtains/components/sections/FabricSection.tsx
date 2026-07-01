@@ -3,7 +3,7 @@ import { CurtainItemInput } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 import { useNotificationStore } from '@/store/standalone/useNotificationStore';
 import { useThemeStore } from '@/store/standalone/useThemeStore';
-import { ComboboxInput, SuggestionItem } from '@/components/ui/ComboboxInput';
+import { CodePickerField, SuggestionItem } from '@/components/ui/CodePickerField';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FormSection } from '@/components/ui/FormSection';
@@ -222,8 +222,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             <div className="grid grid-cols-12 gap-3 items-start">
               {/* Code Selection */}
               <div className={cn('col-span-12', !stack && 'sm:col-span-7')}>
-                <ComboboxInput<InventoryItem>
+                <CodePickerField<InventoryItem>
                   label="รหัสผ้าทึบ"
+                  category={FAVORITE_CATEGORIES.CURTAIN_MAIN}
                   placeholder="ค้นหาหรือพิมพ์รหัส..."
                   // EEERT: ย้าย color-code จากหัวข้อ → tint ม่วง material ที่ช่องรหัส (ทึบ = เข้ม)
                   className={isEeert ? 'bg-violet-500/10' : undefined}
@@ -257,8 +258,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       type="number"
                       inputMode="decimal"
                       suffix="฿"
+                      isMoney
                       className={cn(
-                        'w-full text-right font-mono transition-all',
+                        'w-full transition-all',
                         mainSyncStatus === 'mismatch'
                           ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50 border-amber-200 focus:ring-amber-500'
                           : errors.price_per_m_raw
@@ -342,8 +344,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
             <div className="grid grid-cols-12 gap-3 items-start">
               {/* Code Selection */}
               <div className={cn('col-span-12', !stack && 'sm:col-span-7')}>
-                <ComboboxInput<InventoryItem>
+                <CodePickerField<InventoryItem>
                   label="รหัสผ้าโปร่ง"
+                  category={FAVORITE_CATEGORIES.CURTAIN_SHEER}
                   placeholder="ค้นหา..."
                   // EEERT: tint ม่วงอ่อนกว่า (โปร่ง = อ่อน)
                   className={isEeert ? 'bg-violet-500/5' : undefined}
@@ -377,8 +380,9 @@ export const FabricSection: React.FC<FabricSectionProps> = ({
                       type="number"
                       inputMode="decimal"
                       suffix="฿"
+                      isMoney
                       className={cn(
-                        'w-full text-right font-mono transition-all',
+                        'w-full transition-all',
                         sheerSyncStatus === 'mismatch'
                           ? 'text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50 border-amber-200 focus:ring-amber-500'
                           : errors.sheer_price_per_m

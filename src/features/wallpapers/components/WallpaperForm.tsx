@@ -4,7 +4,7 @@ import { ITEM_TYPES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { newUuid } from '@/lib/id';
 import { Input } from '@/components/ui/Input';
-import { ComboboxInput } from '@/components/ui/ComboboxInput';
+import { CodePickerField } from '@/components/ui/CodePickerField';
 import { Button } from '@/components/ui/Button';
 import { Tag, ScrollText, Ruler, PaintRoller, Book, Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
@@ -208,8 +208,9 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
           ))
         }
       >
-        <ComboboxInput<InventoryItem>
+        <CodePickerField<InventoryItem>
           placeholder="ค้นหารหัส..."
+          category={FAVORITE_CATEGORIES.WALLPAPER}
           value={formData.wallpaper_code || ''}
           onChange={handleCodeChange}
           onSelect={(s) => s.data && handleWallpaperSelect(s.data)}
@@ -221,6 +222,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
           <Input
             placeholder="ราคา (บาท/ม้วน)"
             inputMode="decimal"
+            isMoney
             value={formData.price_per_roll || ''}
             onChange={(e) => handleNumberChange('price_per_roll', e.target.value)}
             prefix={<Tag className="w-4 h-4 text-muted-foreground" />}
@@ -231,6 +233,7 @@ export const WallpaperForm: React.FC<WallpaperFormProps> = ({
           label="ค่าติดตั้ง (บาท/ม้วน)"
           placeholder="0"
           inputMode="decimal"
+          isMoney
           value={formData.install_cost_per_roll || ''}
           onChange={(e) => handleNumberChange('install_cost_per_roll', e.target.value)}
           prefix={<PaintRoller className="w-4 h-4 text-muted-foreground" />}

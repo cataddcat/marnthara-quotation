@@ -28,6 +28,7 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useInventory, HydratedInventoryItem } from '@/hooks/useInventory';
 import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
+import { useCanViewCost } from '@/hooks/useCanViewCost';
 import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { normalizeCode } from '@/lib/codes';
 import { toNum } from '@/utils/formatters';
@@ -71,6 +72,7 @@ const InventoryItemRow = ({
   onOpenDetail: () => void;
 }) => {
   const rowRef = useRef<HTMLDivElement>(null);
+  const canViewCost = useCanViewCost();
 
   // Code Jump: เลื่อนมาที่รายการที่กระโดดมา (ไฮไลต์ค้างไว้จนปิด/เปลี่ยนหมวด)
   useEffect(() => {
@@ -94,14 +96,16 @@ const InventoryItemRow = ({
           <span className={cn('font-mono font-bold text-sm', accentClass)}>{item.code}</span>
         </div>
 
-        {/* ทุน (อ่านอย่างเดียว — มาจาก DB) */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-16 shrink-0">ทุน</span>
-          <span className="text-sm font-mono tabular-nums text-foreground">
-            {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
-            <span className="text-xs text-muted-foreground"> /{costUnit}</span>
-          </span>
-        </div>
+        {/* ทุน (อ่านอย่างเดียว — มาจาก DB) — ความลับร้าน เห็นเฉพาะผู้ดูแล */}
+        {canViewCost && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground w-16 shrink-0">ทุน</span>
+            <span className="text-sm font-mono tabular-nums text-foreground">
+              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+              <span className="text-xs text-muted-foreground"> /{costUnit}</span>
+            </span>
+          </div>
+        )}
 
         {/* ราคาขาย — อ้างอิงจากแคตตาล็อก (รอง: ไม่ลงสี เพื่อไม่ชนความหมายของ "ทุน") */}
         {item.default_price_per_m > 0 && (
@@ -170,6 +174,7 @@ const DraftRow = ({
   const upsert = useAppStore((s) => s.upsertMaterialDraft);
   const remove = useAppStore((s) => s.removeMaterialDraft);
   const { confirm } = useConfirm();
+  const canViewCost = useCanViewCost();
 
   const [cost, setCost] = useState(draft.cost ? String(draft.cost) : '');
   const [sell, setSell] = useState(draft.sellPrice ? String(draft.sellPrice) : '');
@@ -213,19 +218,22 @@ const DraftRow = ({
         </button>
       </div>
 
-      {/* แก้ทุน/ราคาขาย — commit เมื่อ blur ออกจากกลุ่ม (กันเขียนทุก keystroke) */}
-      <div className="grid grid-cols-2 gap-2" onBlur={commit}>
-        <Input
-          label="ทุน"
-          size="sm"
-          value={cost}
-          onChange={(e) => setCost(e.target.value)}
-          placeholder="0"
-          inputMode="decimal"
-          type="number"
-          suffix={`/${costUnit}`}
-          className="text-right font-mono"
-        />
+      {/* แก้ทุน/ราคาขาย — commit เมื่อ blur ออกจากกลุ่ม (กันเขียนทุก keystroke).
+          ทุน = ความลับร้าน → พนักงานเห็น/แก้เฉพาะราคาขาย (ทุนเดิมคงไว้ผ่าน local state) */}
+      <div className={cn('grid gap-2', canViewCost ? 'grid-cols-2' : 'grid-cols-1')} onBlur={commit}>
+        {canViewCost && (
+          <Input
+            label="ทุน"
+            size="sm"
+            value={cost}
+            onChange={(e) => setCost(e.target.value)}
+            placeholder="0"
+            inputMode="decimal"
+            type="number"
+            suffix={`/${costUnit}`}
+            isMoney
+          />
+        )}
         <Input
           label="ราคาขาย"
           size="sm"
@@ -235,12 +243,12 @@ const DraftRow = ({
           inputMode="decimal"
           type="number"
           suffix="฿"
-          className="text-right font-mono"
+          isMoney
         />
       </div>
 
       {/* คลังมีทุนรหัสนี้แล้ว & ต่างจากที่จด → nudge บรรทัดเดียว (คลังทับ; ปุ่ม = เก็บกวาด note ที่ซ้ำ) */}
-      {conflict && (
+      {canViewCost && conflict && (
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-400 eeert:text-amber-900 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded-md border border-amber-200/60">
             <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -257,7 +265,7 @@ const DraftRow = ({
       )}
 
       {/* ตรงกับคลังแล้ว — เงียบ ไม่มีปุ่ม */}
-      {confirmedByDb && (
+      {canViewCost && confirmedByDb && (
         <div className="text-xs text-muted-foreground">✓ ตรงกับคลัง</div>
       )}
     </div>
@@ -277,6 +285,7 @@ const LocalDraftSection = ({
 }) => {
   const draftsMap = useAppStore((s) => s.materialDrafts[categoryId]);
   const upsert = useAppStore((s) => s.upsertMaterialDraft);
+  const canViewCost = useCanViewCost();
   const { items: catalog } = useInventory(categoryId);
   const ready = useCatalogStore((s) => s.status) === 'ready';
 
@@ -352,18 +361,20 @@ const LocalDraftSection = ({
           placeholder="เช่น PASAYA-DIM-02"
           className="font-mono"
         />
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            label="ทุน"
-            size="sm"
-            value={newCost}
-            onChange={(e) => setNewCost(e.target.value)}
-            placeholder="0"
-            inputMode="decimal"
-            type="number"
-            suffix={`/${costUnit}`}
-            className="text-right font-mono"
-          />
+        <div className={cn('grid gap-2', canViewCost ? 'grid-cols-2' : 'grid-cols-1')}>
+          {canViewCost && (
+            <Input
+              label="ทุน"
+              size="sm"
+              value={newCost}
+              onChange={(e) => setNewCost(e.target.value)}
+              placeholder="0"
+              inputMode="decimal"
+              type="number"
+              suffix={`/${costUnit}`}
+              isMoney
+            />
+          )}
           <Input
             label="ราคาขาย"
             size="sm"
@@ -373,7 +384,7 @@ const LocalDraftSection = ({
             inputMode="decimal"
             type="number"
             suffix="฿"
-            className="text-right font-mono"
+            isMoney
           />
         </div>
         <Button
@@ -518,16 +529,19 @@ const SectionHeader = ({
 }: {
   label: string;
   totalCost?: number;
-}) => (
-  <div className="flex items-center justify-between py-2 border-b border-border/60 mb-2">
-    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
-    {totalCost !== undefined && totalCost > 0 && (
-      <span className="text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
-        ทุน ฿{fmtTH(totalCost)}
-      </span>
-    )}
-  </div>
-);
+}) => {
+  const canViewCost = useCanViewCost();
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-border/60 mb-2">
+      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
+      {canViewCost && totalCost !== undefined && totalCost > 0 && (
+        <span className="text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+          ทุน ฿{fmtTH(totalCost)}
+        </span>
+      )}
+    </div>
+  );
+};
 
 /**
  * UsageRow — แถว "ใช้ที่ห้องไหน · เท่าไหร่" ที่การ์ดวัสดุใช้ร่วมกัน (จิ้ม → กระโดดไป item)
@@ -613,6 +627,7 @@ const FabricCard = ({
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const canViewCost = useCanViewCost();
   const hasUnknownCode = code.startsWith('(');
   const cost = costLookup[code] ?? 0;
   const totalCost = cost > 0 ? cost * total : 0;
@@ -638,7 +653,7 @@ const FabricCard = ({
           <span className={cn('font-mono font-bold text-sm', accent)}>
             {fmtTH(total)} {unit}
           </span>
-          {totalCost > 0 && (
+          {canViewCost && totalCost > 0 && (
             <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ทุน ฿{fmtTH(totalCost)}
             </span>
@@ -649,13 +664,15 @@ const FabricCard = ({
 
       {open && (
         <div className="border-t border-border/50 bg-muted/20">
-          <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
-            <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อหน่วย</span>
-            <span className="text-sm font-mono tabular-nums text-foreground">
-              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
-              <span className="text-xs text-muted-foreground"> /{unit}</span>
-            </span>
-          </div>
+          {canViewCost && (
+            <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
+              <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อหน่วย</span>
+              <span className="text-sm font-mono tabular-nums text-foreground">
+                {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+                <span className="text-xs text-muted-foreground"> /{unit}</span>
+              </span>
+            </div>
+          )}
           <div className="px-3 py-1 divide-y divide-border/60">
             {entries.map((e, i) => (
               <UsageRow
@@ -703,6 +720,7 @@ const WallpaperCostCard = ({
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const canViewCost = useCanViewCost();
   const { wallpaperCosts } = useActiveCostMaps(); // ทุน read-only — แก้ที่เครื่องมือภายนอก
   const cost = wallpaperCosts[code] ?? 0;
   const totalCost = cost > 0 ? cost * total : 0;
@@ -723,7 +741,7 @@ const WallpaperCostCard = ({
         </div>
         <div className="flex flex-col items-end gap-0.5 shrink-0">
           <span className={cn('font-mono font-bold text-sm', MATERIAL_ACCENT.wallpaper)}>{Math.ceil(total)} ม้วน</span>
-          {totalCost > 0 && (
+          {canViewCost && totalCost > 0 && (
             <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ทุน ฿{fmtTH(totalCost)}
             </span>
@@ -734,13 +752,15 @@ const WallpaperCostCard = ({
 
       {open && (
         <div className="border-t border-border/50 bg-muted/20">
-          <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
-            <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อม้วน</span>
-            <span className="text-sm font-mono tabular-nums text-foreground">
-              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
-              <span className="text-xs text-muted-foreground"> /ม้วน</span>
-            </span>
-          </div>
+          {canViewCost && (
+            <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
+              <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อม้วน</span>
+              <span className="text-sm font-mono tabular-nums text-foreground">
+                {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+                <span className="text-xs text-muted-foreground"> /ม้วน</span>
+              </span>
+            </div>
+          )}
           <div className="px-3 py-1 divide-y divide-border/60">
             {entries.map((e, i) => (
               <UsageRow
@@ -775,6 +795,7 @@ const AreaCostCard = ({
   onJumpItem: (roomId: string, itemId: string) => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const canViewCost = useCanViewCost();
   const { areaCosts } = useActiveCostMaps(); // ทุน read-only — แก้ที่เครื่องมือภายนอก
   const cost = areaCosts[group.costKey] ?? 0;
   const costQty = group.unit === 'ตร.ม.' ? group.totalSqm : group.totalSqyd;
@@ -803,7 +824,7 @@ const AreaCostCard = ({
           <span className="font-mono font-bold text-sm text-teal-700 dark:text-teal-400 eeert:text-teal-800">
             {fmtTH(costQty)} {group.unit}
           </span>
-          {totalCost > 0 && (
+          {canViewCost && totalCost > 0 && (
             <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 eeert:text-emerald-800">
               ทุน ฿{fmtTH(totalCost)}
             </span>
@@ -814,13 +835,15 @@ const AreaCostCard = ({
 
       {open && (
         <div className="border-t border-border/50 bg-muted/20">
-          <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
-            <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อ{group.unit}</span>
-            <span className="text-sm font-mono tabular-nums text-foreground">
-              {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
-              <span className="text-xs text-muted-foreground"> /{group.unit}</span>
-            </span>
-          </div>
+          {canViewCost && (
+            <div className="px-3 py-2.5 flex items-center justify-between border-b border-border/30">
+              <span className="text-xs text-muted-foreground font-medium">ราคาทุนต่อ{group.unit}</span>
+              <span className="text-sm font-mono tabular-nums text-foreground">
+                {cost > 0 ? `฿${fmtTH(cost)}` : '—'}
+                <span className="text-xs text-muted-foreground"> /{group.unit}</span>
+              </span>
+            </div>
+          )}
           <div className="px-3 py-1 divide-y divide-border/60">
             {group.entries.map((e, i) => {
               const entryQty = group.unit === 'ตร.ม.' ? e.sqm : e.sqyd;
@@ -1046,6 +1069,7 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
   ];
 
   const activeCatalogDef = CATALOG_CATEGORIES.find((c) => c.id === catalogCat) ?? CATALOG_CATEGORIES[0];
+  const canViewCost = useCanViewCost();
 
   return (
     <Modal
@@ -1331,7 +1355,9 @@ export const MaterialSummaryModal: React.FC<MaterialSummaryModalProps> = ({
                   <span className={cn('font-semibold text-sm', categoryAccent(catalogCat))}>
                     {activeCatalogDef.label}
                   </span>
-                  <span className="text-xs text-muted-foreground">· ราคาทุนต่อ {activeCatalogDef.costUnit}</span>
+                  {canViewCost && (
+                    <span className="text-xs text-muted-foreground">· ราคาทุนต่อ {activeCatalogDef.costUnit}</span>
+                  )}
                 </div>
 
                 <p className="text-sm text-muted-foreground mb-3 px-0.5">

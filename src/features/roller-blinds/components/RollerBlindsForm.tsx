@@ -4,7 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { RollerBlindsSchema, RollerBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { ComboboxInput } from '@/components/ui/ComboboxInput';
+import { CodePickerField } from '@/components/ui/CodePickerField';
 import { Button } from '@/components/ui/Button';
 import { Tag, ArrowLeftToLine, ArrowRightToLine, Ruler, Book, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -182,8 +182,9 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
           ))
         }
       >
-        <ComboboxInput
+        <CodePickerField
           placeholder="ระบุรุ่น/รหัส..."
+          category={FAVORITE_CATEGORIES.ROLLER_BLIND}
           value={formData.code || ''}
           onChange={handleCodeChange}
           options={suggestions}
@@ -193,6 +194,7 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
           <Input
             placeholder="ราคา (บาท/ตร.ล.)"
             inputMode="decimal"
+            isMoney
             value={formData.price_sqyd || ''}
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}

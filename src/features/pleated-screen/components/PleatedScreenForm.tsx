@@ -4,7 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { PleatedScreenSchema, PleatedScreenFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { ComboboxInput } from '@/components/ui/ComboboxInput';
+import { CodePickerField } from '@/components/ui/CodePickerField';
 import { Button } from '@/components/ui/Button';
 import { Tag, Ruler, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -187,8 +187,9 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
       >
         {/* คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
-          <ComboboxInput
+          <CodePickerField
             label="รหัสสินค้า"
+            category={FAVORITE_CATEGORIES.PLEATED_SCREEN}
             value={formData.code || ''}
             onChange={handleCodeChange}
             options={suggestions}
@@ -198,7 +199,7 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
             label="ราคาขาย (บาท/ตร.ม.)"
             value={formData.price_sqyd || ''}
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
-            className="bg-muted/50"
+            isMoney
             inputMode="decimal"
           />
         </div>

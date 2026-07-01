@@ -4,7 +4,7 @@ import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useZodForm } from '@/hooks/useZodForm';
 import { VerticalBlindsSchema, VerticalBlindsFormValues } from '../schemas';
 import { Input } from '@/components/ui/Input';
-import { ComboboxInput } from '@/components/ui/ComboboxInput';
+import { CodePickerField } from '@/components/ui/CodePickerField';
 import { Button } from '@/components/ui/Button';
 import { Tag, Ruler, Book, ArrowLeftToLine, ArrowRightToLine, Check } from 'lucide-react';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
@@ -179,8 +179,9 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
           ))
         }
       >
-        <ComboboxInput
+        <CodePickerField
           placeholder="ระบุรุ่น/รหัส..."
+          category={FAVORITE_CATEGORIES.VERTICAL_BLIND}
           value={formData.code || ''}
           onChange={handleCodeChange}
           options={suggestions}
@@ -189,6 +190,7 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
           <Input
             placeholder="ราคา (บาท/ตร.ล.)"
             inputMode="decimal"
+            isMoney
             value={formData.price_sqyd || ''}
             onChange={(e) => handleNumberChange('price_sqyd', e.target.value)}
             warning={warnings.price_sqyd}

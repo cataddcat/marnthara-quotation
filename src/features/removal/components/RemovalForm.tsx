@@ -158,7 +158,7 @@ export const RemovalForm: React.FC<RemovalFormProps> = ({ initialData, onSubmit,
               value={formData.price_per_item}
               onChange={(e) => handleNumberChange('price_per_item', e.target.value)}
               inputMode="decimal"
-              className="bg-muted/50"
+              isMoney
               error={errors.price_per_item}
             />
           </div>
