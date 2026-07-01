@@ -199,28 +199,9 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
           />
         </div>
 
-        {/* Option: Fabric Variant */}
-        <div className="space-y-2 pt-2 border-t border-border">
-          <label className="text-[13px] font-medium text-muted-foreground">ประเภทใบ</label>
-          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-3 gap-1')}>
-            {['Blackout', 'Sunscreen', 'Dimout'].map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => handleChange('fabric_variant', v)}
-                className={segmentedItemClass(formData.fabric_variant === v, theme)}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
-        </div>
-      </FormSection>
-
-      {/* Controls: Pull Side (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
-      <AdvancedSection expanded={isDetail} hint="ฝั่งดึง — ใส่ทีหลังได้">
-        {isEeert ? (
-          <div className="space-y-2">
+        {/* ฝั่งดึง — EEERT: option หลักในกรอบ (ขึ้นมาก่อนประเภทใบ); ธีมอื่นอยู่ใน "ตัวเลือกเพิ่มเติม" ด้านล่าง */}
+        {isEeert && (
+          <div className="space-y-2 pt-2 border-t border-border">
             <label className="text-sm font-medium text-muted-foreground ml-1">ฝั่งดึง</label>
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -253,7 +234,30 @@ export const RollerBlindsForm: React.FC<RollerBlindsFormProps> = ({
               })}
             </div>
           </div>
-        ) : (
+        )}
+
+        {/* Option: Fabric Variant */}
+        <div className="space-y-2 pt-2 border-t border-border">
+          <label className="text-[13px] font-medium text-muted-foreground">ประเภทใบ</label>
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-3 gap-1')}>
+            {['Blackout', 'Sunscreen', 'Dimout'].map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => handleChange('fabric_variant', v)}
+                className={segmentedItemClass(formData.fabric_variant === v, theme)}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+      </FormSection>
+
+      {/* "ตัวเลือกเพิ่มเติม" — คง collapsible ไว้เผื่อตัวเลือกอนาคต. EEERT: ยกฝั่งดึงขึ้นกรอบบนแล้ว → ที่นี่ว่าง;
+          ธีมอื่น: ฝั่งดึง segmented ตามเดิม (escape hatch หน้างาน) */}
+      <AdvancedSection expanded={isDetail} hint="ฝั่งดึง — ใส่ทีหลังได้">
+        {!isEeert && (
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
             <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>

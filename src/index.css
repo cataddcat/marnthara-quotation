@@ -661,6 +661,10 @@
     -webkit-tap-highlight-color: transparent;
     /* [CRITICAL] Standard Base Size for Readability */
     font-size: 16px;
+    /* Reserve the scrollbar gutter permanently so opening/closing modals (Headless UI toggling
+       `overflow: hidden` + scrollbar-width compensation) never reflows the page. Prevents the
+       "content shifts/clips after a stacked modal closes" class of bugs. */
+    scrollbar-gutter: stable;
   }
 
   body {

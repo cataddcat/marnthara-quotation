@@ -195,34 +195,14 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
           />
         </div>
 
-        {/* ประเภทใบ — เข้าชุดม่านม้วน (Blackout/Sunscreen/Dimout) → fabric_variant */}
-        <div className="space-y-2 pt-2 border-t border-border">
-          <label className="text-[13px] font-medium text-muted-foreground">ประเภทใบ</label>
-          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-3 gap-1')}>
-            {['Blackout', 'Sunscreen', 'Dimout'].map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => handleChange('fabric_variant', v)}
-                className={segmentedItemClass(formData.fabric_variant === v, theme)}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
-        </div>
-      </FormSection>
-
-      {/* ทิศเก็บใบ/ฝั่งดึง (installation spec — collapsible escape hatch ในโหมดหน้างาน) */}
-      <AdvancedSection expanded={isDetail} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
-        <div className="space-y-3">
-          {/* เก็บใบ — ตัวเลือกทิศทางการเปิดมาตรฐาน (ยังไม่เลือก/แยกกลาง/เก็บข้างเดียว) */}
-          <OpeningStyleSelector
-            label="เก็บใบ"
-            value={formData.opening_style}
-            onChange={(v) => handleChange('opening_style', v)}
-          />
-          {isEeert ? (
+        {/* เก็บใบ + ฝั่งดึง — EEERT: ยกขึ้นเป็น option หลักในกรอบ (ก่อนประเภทใบ); ธีมอื่นอยู่ใน "ตัวเลือกเพิ่มเติม" */}
+        {isEeert && (
+          <div className="space-y-3 pt-2 border-t border-border">
+            <OpeningStyleSelector
+              label="เก็บใบ"
+              value={formData.opening_style}
+              onChange={(v) => handleChange('opening_style', v)}
+            />
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground ml-1">ฝั่งดึง</label>
               <div className="grid grid-cols-2 gap-2">
@@ -256,7 +236,38 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
                 })}
               </div>
             </div>
-          ) : (
+          </div>
+        )}
+
+        {/* ประเภทใบ — เข้าชุดม่านม้วน (Blackout/Sunscreen/Dimout) → fabric_variant */}
+        <div className="space-y-2 pt-2 border-t border-border">
+          <label className="text-[13px] font-medium text-muted-foreground">ประเภทใบ</label>
+          <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-3 gap-1')}>
+            {['Blackout', 'Sunscreen', 'Dimout'].map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => handleChange('fabric_variant', v)}
+                className={segmentedItemClass(formData.fabric_variant === v, theme)}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+      </FormSection>
+
+      {/* "ตัวเลือกเพิ่มเติม" — คง collapsible ไว้เผื่ออนาคต. EEERT: ยกเก็บใบ/ฝั่งดึงขึ้นกรอบบนแล้ว → ว่าง;
+          ธีมอื่น: เก็บใบ + ฝั่งดึง segmented ตามเดิม (escape hatch หน้างาน) */}
+      <AdvancedSection expanded={isDetail} hint="ทิศเก็บใบ · ฝั่งดึง — ใส่ทีหลังได้">
+        {!isEeert && (
+          <div className="space-y-3">
+            {/* เก็บใบ — ตัวเลือกทิศทางการเปิดมาตรฐาน (ยังไม่เลือก/แยกกลาง/เก็บข้างเดียว) */}
+            <OpeningStyleSelector
+              label="เก็บใบ"
+              value={formData.opening_style}
+              onChange={(v) => handleChange('opening_style', v)}
+            />
             <div className="space-y-2">
               <label className="text-[13px] font-medium text-muted-foreground">ฝั่งดึง</label>
               <div className={cn(SEGMENTED_TRACK, 'grid grid-cols-2 gap-1')}>
@@ -278,8 +289,8 @@ export const VerticalBlindsForm: React.FC<VerticalBlindsFormProps> = ({
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </AdvancedSection>
 
       <Input

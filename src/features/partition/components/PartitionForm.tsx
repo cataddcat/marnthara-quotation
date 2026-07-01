@@ -196,16 +196,30 @@ export const PartitionForm: React.FC<PartitionFormProps> = ({
             className="bg-muted/50"
           />
         </div>
+
+        {/* รูปแบบการเปิด — EEERT: ยกขึ้นเป็น option หลักในกรอบ; ธีมอื่นอยู่ใน "ตัวเลือกเพิ่มเติม" ด้านล่าง */}
+        {isEeert && (
+          <div className="pt-2 border-t border-border">
+            <OpeningStyleSelector
+              label="รูปแบบการเปิด"
+              value={formData.opening_style}
+              onChange={(v) => handleChange('opening_style', v)}
+            />
+          </div>
+        )}
       </FormSection>
 
       {/* รูปแบบการเปิด (installation spec — collapsible escape hatch ในโหมดหน้างาน)
           ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — เก็บค่า canonical ไทย, รองรับค่าเก่า 'side'/'center' */}
+      {/* "ตัวเลือกเพิ่มเติม" — คง collapsible ไว้เผื่ออนาคต. EEERT: ยกรูปแบบการเปิดขึ้นกรอบบนแล้ว → ว่าง */}
       <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
-        <OpeningStyleSelector
-          label="รูปแบบการเปิด"
-          value={formData.opening_style}
-          onChange={(v) => handleChange('opening_style', v)}
-        />
+        {!isEeert && (
+          <OpeningStyleSelector
+            label="รูปแบบการเปิด"
+            value={formData.opening_style}
+            onChange={(v) => handleChange('opening_style', v)}
+          />
+        )}
       </AdvancedSection>
 
       {/* 4. Notes & Actions */}

@@ -525,7 +525,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             }
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start animate-fade-in">
             {room.items.map((item, idx) => (
               <ItemCard
                 key={item.id}

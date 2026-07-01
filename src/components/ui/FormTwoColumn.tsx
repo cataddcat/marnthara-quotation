@@ -30,12 +30,14 @@ export const FormTwoColumn: React.FC<FormTwoColumnProps> = ({ full, right, child
   return (
     <div
       className={cn(
-        'lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start lg:space-y-0',
+        // right track shrinkable (minmax not rigid 360px) so any residual width loss shrinks the
+        // summary column instead of pushing it off the panel edge (see modal-reflow hardening)
+        'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:gap-5 lg:items-start lg:space-y-0',
         sectionGap
       )}
     >
-      <div className={sectionGap}>{children}</div>
-      <div className={cn('lg:sticky lg:top-0', sectionGap)}>{right}</div>
+      <div className={cn('min-w-0', sectionGap)}>{children}</div>
+      <div className={cn('min-w-0 lg:sticky lg:top-0', sectionGap)}>{right}</div>
     </div>
   );
 };

@@ -32,7 +32,7 @@ export const DimensionSection: React.FC<DimensionSectionProps> = ({ data, onChan
       icon={isEeert ? undefined : Ruler}
       title={isEeert ? undefined : 'ขนาดพื้นที่ (ม.)'}
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <Input
           label={isEeert ? undefined : 'กว้าง (W)'}
           prefix={isEeert ? 'W' : undefined}

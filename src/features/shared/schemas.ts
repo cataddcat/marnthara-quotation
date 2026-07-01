@@ -52,6 +52,7 @@ export const buildAreaItemSchema = <T extends ItemTypeKey>(typeLiteral: T) =>
 
       // Hardware/Options
       adjustment_side: z.string().optional(),
+      rail_color: z.string().optional(),
       opening_style: z.string().optional(),
 
       // Meta

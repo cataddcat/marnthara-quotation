@@ -17,6 +17,7 @@ import { ItemSummaryCard } from '@/components/ui/ItemSummaryCard';
 import { CostReadout } from '@/components/ui/CostReadout';
 import { AdvancedSection } from '@/components/ui/AdvancedSection';
 import { OpeningStyleSelector } from '@/components/ui/OpeningStyleSelector';
+import { ColorSelect } from '@/components/ui/ColorSelect';
 import { useCostStatus } from '@/hooks/useCostStatus';
 import { useCodeSuggestions } from '@/hooks/useCodeSuggestions';
 import { useFormAutoSave } from '@/hooks/useFormAutoSave';
@@ -187,11 +188,11 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
         {/* คนละบรรทัดในโหมดหน้างาน + จอแคบ; แบ่ง 2 คอลัมน์เฉพาะโหมดละเอียดบนจอกว้าง */}
         <div className={cn('grid gap-3 grid-cols-1', isDetail && 'sm:grid-cols-2')}>
           <ComboboxInput
-            label="สีเฟรม"
+            label="รหัสสินค้า"
             value={formData.code || ''}
             onChange={handleCodeChange}
             options={suggestions}
-            placeholder="ระบุสี..."
+            placeholder="ระบุรหัส/รุ่น..."
           />
           <Input
             label="ราคาขาย (บาท/ตร.ม.)"
@@ -201,16 +202,37 @@ export const PleatedScreenForm: React.FC<PleatedScreenFormProps> = ({
             inputMode="decimal"
           />
         </div>
+
+        {/* รูปแบบการเปิด — EEERT: ยกขึ้นเป็น option หลักในกรอบ; ธีมอื่นอยู่ใน "ตัวเลือกเพิ่มเติม" ด้านล่าง */}
+        {isEeert && (
+          <div className="pt-2 border-t border-border">
+            <OpeningStyleSelector
+              label="รูปแบบการเปิด"
+              value={formData.opening_style}
+              onChange={(v) => handleChange('opening_style', v)}
+            />
+          </div>
+        )}
       </FormSection>
 
       {/* Opening Style (installation spec — collapsible escape hatch ในโหมดหน้างาน)
           ใช้ตัวเลือกมาตรฐานร่วมกับผ้าม่าน/ม่านปรับแสง — ปุ่มเดิมโชว์ค่า enum ดิบ 'center'/'side' เป็นป้าย */}
-      <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด — ใส่ทีหลังได้">
-        <OpeningStyleSelector
-          label="รูปแบบการเปิด"
-          value={formData.opening_style}
-          onChange={(v) => handleChange('opening_style', v)}
-        />
+      {/* "ตัวเลือกเพิ่มเติม" — EEERT: รูปแบบการเปิดยกขึ้นกรอบบนแล้ว เหลือ "สีเฟรม"; ธีมอื่น: รูปแบบการเปิด + สีเฟรม */}
+      <AdvancedSection expanded={isDetail} hint="รูปแบบการเปิด · สีเฟรม — ใส่ทีหลังได้">
+        <div className="space-y-3">
+          {!isEeert && (
+            <OpeningStyleSelector
+              label="รูปแบบการเปิด"
+              value={formData.opening_style}
+              onChange={(v) => handleChange('opening_style', v)}
+            />
+          )}
+          <ColorSelect
+            label="สีเฟรม"
+            value={formData.rail_color || ''}
+            onChange={(v) => handleChange('rail_color', v)}
+          />
+        </div>
       </AdvancedSection>
 
       <Input

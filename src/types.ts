@@ -123,6 +123,8 @@ export interface AreaItemInput extends BaseItemInput {
   code?: string;
   adjustment_side?: string;
   fabric_variant?: string;
+  /** สีเฟรม/ราง (informational — ใช้กับ pleated-screen ฯลฯ; CostEngine ไม่คิดราคา) */
+  rail_color?: string;
   opening_style?: string;
 }
 
