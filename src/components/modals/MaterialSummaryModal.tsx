@@ -320,7 +320,9 @@ const LocalDraftSection = ({
   );
 
   // Code Jump: รหัสที่กระโดดมาตรงกับ draft ตัวไหน → เปิด section + ไฮไลต์แถวนั้น
-  const prefillTarget = prefillCode?.trim().toUpperCase();
+  // latch ครั้งเดียวตอน mount (แพทเทิร์นเดียวกับ highlightCode ฝั่งคลัง) — parent เคลียร์ prefill
+  // ทันทีหลัง mount (onPrefillHandled) ถ้าอ่านสดจาก prop ไฮไลต์จะดับก่อนตาเห็น
+  const [prefillTarget] = useState(() => prefillCode?.trim().toUpperCase());
   const hasPrefillDraft = !!prefillTarget && drafts.some((d) => d.code.toUpperCase() === prefillTarget);
 
   const [newCode, setNewCode] = useState('');
