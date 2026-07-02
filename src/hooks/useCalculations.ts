@@ -83,9 +83,9 @@ export const useCalculations = (): CalculationResult => {
       });
 
     return () => {
+      // คงผลเก่าไว้ระหว่างรอ run ใหม่ (isCalculating บอกสถานะอยู่แล้ว) — ห้าม setAsyncResult(null)
+      // ไม่งั้นงาน ≥ WORKER_THRESHOLD ยอดรวมจะกระพริบเป็น 0 ทุกครั้งที่ autosave แตะ rooms
       clearTimeout(busyTimer);
-      setAsyncResult(null);
-      setIsWorkerBusy(false);
     };
   }, [allActiveItems, discount, shopConfig.baseVatRate, calculateBatch, useWorker]);
 
@@ -128,57 +128,46 @@ export const useCalculations = (): CalculationResult => {
 // --- Helper: Logic คำนวณส่วนลดและ VAT (ใช้ร่วมกันทั้ง 2 โหมด) ---
 // แยกออกมาเพื่อให้ Code Clean และ Logic ตรงกันเป๊ะ 100%
 // export: ใช้ซ้ำในสรุปเงินต่องาน (job-summary.ts) — สูตรส่วนลด/VAT เดียวกับหน้าหลัก
+//
+// นโยบายปัดเศษ = "round-then-derive": ปัดยอดตั้งต้นก่อน แล้ว "คำนวณยอดถัดไปจากค่าที่ปัดแล้ว"
+// เพื่อให้ทุกบรรทัดบนเอกสารบวก/ลบกันลงตัวเสมอ (grand − discount = net · net + vat = final)
+// — ห้ามปัดแต่ละยอดแยกจากค่าดิบ float (เคยทำให้เอกสารโชว์ 333.34 − 33.33 = 300.01 แต่ net 300.00)
+
+const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+
 export const performFinalAdjustments = (
   rawTotal: number,
   discount: { type: 'amount' | 'percent' | 'target'; value: number; is_enabled?: boolean },
   vatRate: number
 ) => {
-  // โหมด target (เคาะราคา): value = ยอดสุทธิที่ต้องการ → คิดส่วนลดย้อนให้ finalTotal === value เป๊ะ
+  const grandTotal = round2(rawTotal);
+
+  // โหมด target (เคาะราคา): value = ยอดสุทธิที่ต้องการ → derive ย้อนจาก finalTotal ที่ปัดแล้ว
   if (discount.is_enabled && discount.type === 'target' && discount.value >= 0) {
-    const finalTarget = discount.value;
+    const finalTotal = round2(discount.value);
     // VAT เปิด → target คือยอดรวม VAT แล้ว, ถอด VAT กลับเพื่อหายอดก่อนภาษี
-    const afterDiscount = vatRate > 0 ? finalTarget / (1 + vatRate / 100) : finalTarget;
-    const vatAmt = finalTarget - afterDiscount;
-    // discountAmt อาจติดลบได้ถ้าเคาะราคา > ยอดรวมสินค้า (ปัดราคาขึ้น) — ปล่อยให้จอ guard เอง
-    const discountAmt = rawTotal - afterDiscount;
+    const netTotal = vatRate > 0 ? round2(finalTotal / (1 + vatRate / 100)) : finalTotal;
+    const vatAmount = round2(finalTotal - netTotal); // ผลต่างของค่า 2 ตำแหน่ง → net+vat=final เป๊ะ
+    // discountAmount อาจติดลบได้ถ้าเคาะราคา > ยอดรวมสินค้า (ปัดราคาขึ้น) — ปล่อยให้จอ guard เอง
+    const discountAmount = round2(grandTotal - netTotal);
 
-    return {
-      grandTotal: Math.round(rawTotal * 100) / 100,
-      discountAmount: Math.round(discountAmt * 100) / 100,
-      netTotal: Math.round(afterDiscount * 100) / 100,
-      vatAmount: Math.round(vatAmt * 100) / 100,
-      finalTotal: Math.round(finalTarget * 100) / 100,
-    };
+    return { grandTotal, discountAmount, netTotal, vatAmount, finalTotal };
   }
 
-  // 1. Apply Discount
-  let discountAmt = 0;
+  // 1. Apply Discount — คิดจาก grandTotal (ค่าที่ปัดแล้ว) ให้ตรงกับที่ผู้ใช้เห็นบนเอกสาร
+  let discountAmount = 0;
   if (discount.is_enabled && discount.value > 0) {
-    if (discount.type === 'percent') {
-      discountAmt = (rawTotal * discount.value) / 100;
-    } else {
-      discountAmt = discount.value;
-    }
+    const raw =
+      discount.type === 'percent' ? (grandTotal * discount.value) / 100 : discount.value;
     // ป้องกันส่วนลดเกินราคาสินค้า
-    if (discountAmt > rawTotal) discountAmt = rawTotal;
+    discountAmount = round2(Math.min(raw, grandTotal));
   }
 
-  const afterDiscount = rawTotal - discountAmt;
+  const netTotal = round2(grandTotal - discountAmount);
 
-  // 2. Apply VAT
-  let vatAmt = 0;
-  let final = afterDiscount;
+  // 2. Apply VAT — คิดจาก netTotal ที่ปัดแล้ว
+  const vatAmount = vatRate > 0 ? round2((netTotal * vatRate) / 100) : 0;
+  const finalTotal = round2(netTotal + vatAmount);
 
-  if (vatRate > 0) {
-    vatAmt = (afterDiscount * vatRate) / 100;
-    final = afterDiscount + vatAmt;
-  }
-
-  return {
-    grandTotal: Math.round(rawTotal * 100) / 100,
-    discountAmount: Math.round(discountAmt * 100) / 100,
-    netTotal: Math.round(afterDiscount * 100) / 100,
-    vatAmount: Math.round(vatAmt * 100) / 100,
-    finalTotal: Math.round(final * 100) / 100,
-  };
+  return { grandTotal, discountAmount, netTotal, vatAmount, finalTotal };
 };

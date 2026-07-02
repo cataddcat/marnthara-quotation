@@ -20,7 +20,7 @@ into 🟡/🟢 by task.
 |---|---|---|
 | **ปรัชญา / Philosophy** | *Should we build this? for whom?* | **PRINCIPLES.md** (+ HANDOFF §1 design philosophy) |
 | **กฎ / Rules** | *How must it look / behave / pass?* | **DESIGN.md** (UI) · **COMMANDS.md** (gate) · **CONTEXT.md** + **docs/UX-GLOSSARY.md** (vocabulary) · **CLAUDE.md** (agent rules) |
-| **แผน / Plan** | *What's active / next?* | **MEMORY.md** (current decisions + state) · HANDOFF §6 "Still open" (live tech debt) |
+| **แผน / Plan** | *What's active / next?* | **HANDOFF §6** = บ้านเดียวของ roadmap/หนี้ค้าง (*งานคืออะไร + exit criteria*) · **MEMORY.md** = สถานะล่าสุด (*ทำถึงไหน/ตัดสินใจอะไร*) — สองไฟล์ชี้กัน ไม่ restate กัน |
 
 ## 🔴 Always loaded — the contract
 | Doc | Role | Answers |

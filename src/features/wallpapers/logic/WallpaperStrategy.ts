@@ -1,5 +1,5 @@
 import { WallpaperItemInput } from '@/types';
-import { toNum } from '@/utils/formatters';
+import { toNum, nonNeg } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
 import { FORMULAS } from '@/config/formulas';
 
@@ -14,8 +14,8 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
       return { total: toNum(item.set_price_override) };
     }
 
-    // รวมความกว้างทุกผนัง
-    const widthTotal = item.widths.reduce((sum, w) => sum + toNum(w), 0);
+    // รวมความกว้างทุกผนัง (nonNeg ต่อช่อง — ผนังติดลบต้องไม่ไปหักผนังอื่น)
+    const widthTotal = item.widths.reduce((sum, w) => sum + nonNeg(toNum(w)), 0);
     const height = toNum(item.height_m);
 
     // Safety Check
@@ -49,8 +49,8 @@ export const WallpaperStrategy: PricingStrategy<WallpaperItemInput> = {
       warning = 'height_exceeds_roll';
     }
 
-    const pricePerRoll = toNum(item.price_per_roll);
-    const installCostPerRoll = toNum(item.install_cost_per_roll);
+    const pricePerRoll = nonNeg(toNum(item.price_per_roll));
+    const installCostPerRoll = nonNeg(toNum(item.install_cost_per_roll));
 
     // คำนวณยอดเงิน
     const materialPrice = rolls * pricePerRoll;

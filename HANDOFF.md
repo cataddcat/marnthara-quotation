@@ -149,7 +149,9 @@ item
   ↓
 PricingEngine.calculateDetailedPrice(item)  → { total, breakdown }
   ↓
-CostEngine.analyze(item)
+CostEngine.analyze(item, ctx)   ← ctx: CostContext (pure DI — engine ไม่แตะ store เอง)
+  │   ctx มาจาก buildCostContext(shop, catalog) = จุดเดียวของกฎ "คลังทับเมื่อมี" (§11.9)
+  │   UI ประกอบผ่าน useActiveCostMaps() (memoized); test inject ctx ปลอมได้ตรง ๆ
   ├─ A. Main fabric cost (Priority chain)
   ├─ B. Sheer fabric cost (Priority chain) — DOUBLE mode only
   ├─ C. Rail cost — width × (hardwareCosts[rail_code] SKU → accessoryCosts[railKey] legacy → 0)
@@ -263,7 +265,7 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 1. **Labor keys = item.style** — `laborCosts['ลอน']`, `laborCosts['จีบ']`, etc. If you add a new curtain style, add matching labor entry.
 2. **Sheer labor key = `'ผ้าโปร่ง'`** — single entry applies to all double-layer curtains regardless of main style.
-3. **Rail key mapping** — same mapping in `CostEngine.ts` and `MaterialSummaryModal.tsx`. Keep in sync.
+3. **Rail key mapping (`STYLE_TO_RAIL`)** — same mapping duplicated in `src/features/curtains/components/sections/HardwareSection.tsx` and `src/lib/materials/buildSummary.ts`. Keep in sync (CostEngine derives its rail key inline from `item.style` — third copy of the same table; change one = check all three).
 4. **`formData` always auto-saves on change** (debounced via `useFormAutoSave`); `ItemModal` **flushes the pending save on close/unmount** so the last edit never drops. Never add validation gates in `handleSubmit`.
 5. **`autoCreatedIdRef` resets on modal open** — managed by `useEffect` on `isOpen`.
 6. **`PricingEngine.calculateDetailedPrice(item).breakdown`** — source of truth for `fabricYards`, `sheerYards`, `rolls`. Consuming code should NOT re-derive these.
@@ -271,20 +273,81 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 8. **`Discount.is_enabled: boolean`** — required field. Default `false` in `ShopProfileSlice` and `ProjectSlice.resetProject`.
 9. **Modal stack** — `openModal` pushes current to stack; `closeModal` pops. Don't manually mutate `modalStack`. ตัวที่อยู่ใต้ stack ถูกตั้ง `isOpen=false` → **เนื้อหา unmount** (local state + `scrollTop` หาย); hub modal ที่ scroll ได้ใช้ prop `scrollResetToken` คืนตำแหน่ง (ดู §2.1).
 10. **`history.scrollRestoration='manual'`** (set ใน `src/main.tsx`) — **ห้ามลบ/เปลี่ยนเป็น `'auto'`**. `useMobileBack` ใช้ `history.pushState`/`history.back()` เป็น "guard" ปิด overlay ด้วยปุ่ม Back; ค่า `'auto'` จะสั่งเบราว์เซอร์คืน scroll เอง (มักเป็น 0) ทุกครั้งที่ปิด → หน้าหลักเด้งบนสุดทุกเบราว์เซอร์. แอปไม่มี router จริง (history มีแต่ guard ของ modal) จึงปลอดภัยที่จะ manual.
+11. **Money = round-then-derive** — ยอดใหม่บนเอกสาร (discount/net/vat/final) ต้อง derive จากยอดที่**ปัดแล้ว** ห้ามปัดแต่ละยอดแยกจากค่าดิบ float — ไม่งั้นบรรทัดบนเอกสารบวกกันไม่ลงตัว ±0.01. Invariant: `grand − discount = net` · `net + vat = final` เป๊ะเสมอ (`performFinalAdjustments` ใน `useCalculations.ts`; property test 1,500 เคสยึดไว้ใน `useCalculations.test.ts`).
+12. **CostEngine = pure DI** — `CostEngine.analyze(item, ctx)` เท่านั้น; `ctx: CostContext` มาจาก `useActiveCostMaps()` (UI) หรือ `buildCostContext(shop, catalog)` (pure). **ห้าม `getState()` ใน engine** และกฎ merge "คลังทับเมื่อมี" มีบ้านเดียว = `buildCostContext` — ห้าม inline merge ที่อื่น (เคยมี 2 สำเนาแล้ว drift เป็นบั๊กจริง; §11.9).
+13. **ขอบ engine ไม่รับค่าติดลบ** — ราคา/ปริมาณใน strategies ครอบ `nonNeg(toNum(x))` (`src/utils/formatters.ts`); **ห้ามฝัง clamp ใน `toNum` กลาง** — โดเมนอื่น (ส่วนต่าง/ปรับยอด) ค่าลบเป็นค่าที่ถูกต้อง.
+14. **Echo-guard ของ pricing sync พึ่ง Zustand sync-notify** — flag `pricingHydrating` เซ็ตก่อน/เคลียร์ (finally) หลัง `setState` ใช้ได้เพราะ subscriber รัน "ภายใน" setState. Sentinel test = `src/lib/sync/zustand-sync-notify.test.ts` — **bump zustand แล้วเทสต์นี้แดง = การกัน echo พังเงียบ ห้าม merge จนกว่าจะแก้กลไก**.
+15. **Prop แบบ consume-once (prefill/code-jump) ต้อง latch ตอน mount** — parent เคลียร์ค่า (`onPrefillHandled`) ทันทีหลัง child mount; component ที่อ่านสดจาก prop ทุก render จะเห็นค่าหายก่อนตา (บั๊ก highlight `LocalDraftSection` 2026-07-02). แพทเทิร์นที่ถูก: จับค่าใน `useState(() => ...)` initializer.
 
 ---
 
-## 6. 📌 Known Tech Debt — Still open
+## 6. 📌 Roadmap & Known Tech Debt — Still open
+
+> **บ้านเดียวของแผนงานค้าง** (Plan pillar — [DOCS.md](DOCS.md)): ทุกข้อมี **exit criteria** — ห้ามค้างแบบไม่มีกำหนด.
+> แบ่งบทบาทกับ MEMORY.md: ไฟล์นี้ถือ *"งานคืออะไร + จบเมื่อไหร่"* · MEMORY ถือ *"ทำถึงไหน/ตัดสินใจอะไรล่าสุด"*.
+> **ลำดับที่เจ้าของอนุมัติ 2026-07-02:** P2 → P3 → P4 → P5 (P6 + A1-A3 ตามเงื่อนไขของแต่ละข้อ).
+
+### P2 — ปิด UI pilot ค้างทีละสาย (ห้ามเปิดสายใหม่ก่อนปิดของเก่า)
+
+ลำดับในสาย: **(ก) ตัดสิน EEERT graduate/คงไว้ ก่อนทุกอย่าง** → (ข) minimal rollout จุดที่เหลือ →
+(ค) squircle การ์ดใน `.map()` → (ง) contrast-plate rollout.
 
 - **EEERT-minimal UI pilot (in progress, 2026-06-27)** — ทิศ "Minimal" (ลด chrome/หัวข้อซ้ำ · ขยายหัวข้อ · รวมกรอบ) นำร่อง **gate `theme==='eeert'` เท่านั้น** (ธีมอื่นคงเดิม). คำสั่งที่ใช้ = 3 keywords (`minimal` · `de-dup section header` · `กฎข้อ 4/flatten nested cards`) → **[docs/UX-GLOSSARY.md](docs/UX-GLOSSARY.md) §คำสั่งงาน**; log ละเอียด = memory `minimal-ui-eeert-template`.
   - **ทำแล้ว (surfaces):** `MainMenuModal` (กลุ่มการ์ดต่อหมวด · typography 16px/ตัด desc · flatten บล็อกบัญชี/PIN/ธีม) · **ช่องขนาด W/H ครบ 7 ฟอร์ม** (ลบหัวข้อ + prefix) · curtains `StyleSection` (de-dup + ย้าย `LayerSelector` เข้ากรอบ + selector → radio-tiles) · **`NestedSurfaceContext`** (กฎข้อ 4) · `AdvancedSection` default→"ตัวเลือกเพิ่มเติม" *(global)* + `HardwareSection` de-dup · `FabricSection` (ลบหัวข้อผ้า → ไอคอน + tint ม่วงช่องรหัส) · **`JobsModal`** (hero ชื่องาน 16px + ตัด dot สถานะที่ซ้ำกับชิป) · **FinancialDashboard** (`MoneyTab` 2 หัวข้อ → หัวข้อจริง 16px ไม่ uppercase · `ItemCard` hero ชนิด 16px) · **probe-fix 3 จุด:** `CollapsibleSection` ซ่อนใบ้ตอนยุบ (primitive → cascade ทุก AdvancedSection/CollapsibleSection ใน EEERT) + `ItemModal` type-switcher (ลบป้าย "ประเภทสินค้า" · "เปลี่ยน" → ชิปปุ่มรอง) *(2026-06-29, gate ยังไม่รัน)*.
   - **ค้าง/ถัดไป:** roll out keywords เดิมไปจุดที่เหลือ (`CustomerDirectoryModal` · `MaterialSummaryModal` · `workspace/ItemCard` · `RoomCard`) · เรื่อง **"input ต้องมีขอบ"** (เจ้าของจะ re-probe ด้วย Design Probe ที่อัปเกรดแล้ว — โชว์ owner/call-site).
   - **Exit / graduate criteria:** เจ้าของรีวิว EEERT แล้วโอเค → **graduate** = ถอด gate `isEeert` / เลื่อนเป็น base (ดู DESIGN §2 *"rollout EEERT-first … graduate by promoting"*); ถ้ายังไม่โอเค = คงนำร่องต่อ. ห้ามทิ้งค้างแบบไม่มีกำหนด.
   - **แยกออกจาก pilot (เป็น global/ทุกธีมแล้ว):** version footer = git-derived (`__APP_VERSION__`) · Design Probe owner/call-site upgrade (dev tool).
-- **Squircle corner system (in progress, 2026-06-29)** — เปลี่ยนวิธีทำมุมปุ่ม rounded-rect → **squircle** (superellipse) แบบ **cross-browser ทุกอุปกรณ์/ทุกธีม** (CSS `corner-shape` = Chromium-only จึงไม่ใช้ → ใช้ **SVG `<path>` ข้างหลังเนื้อหา** ผ่าน primitive `src/components/ui/Squircle.tsx` + dep `figma-squircle`). ขอบ/สถานะเลือกย้ายจาก CSS border → **SVG stroke** (`fill-*`/`stroke-*` บน path). **แผน rollout ทั้งแอป (อนุมัติ, phased) = อบเข้า primitive กลาง**; audit: ~22 surface clip เนื้อหา (ต้อง clip mode), ~40+ pill/dot คงกลม. 2 เครื่องมือ: **`<Squircle>`** (behind = SVG path หลังเนื้อหา + drop-shadow; control) + hook **`useSquircleClip`** (`clip-path: path()`; การ์ด — **แต่ clip ตัด box-shadow ทิ้ง** ห้ามใช้กับของพึ่งเงา/Headless). **ทำแล้ว + GATE เขียว (lint/build/705 tests, 2026-06-29):** controls = `Button`·`SelectButton`·`Alert`·`Select`·`Input`·`ComboboxInput`(กล่อง)·StyleSection tiles; cards = `FormSection`(cascade ทุกฟอร์ม)·`CollapsibleSection`·`ItemSummaryCard`·`FinancialDashboard/ItemCard`·`RoomCard`. **คงมน (ตั้งใจ):** Modal/AlertDialog/OptionSheet/dropdown · print · pills/dots/Switch. **ค้าง = การ์ดใน `.map()`** (hook loop ไม่ได้ → ต้อง extract component): MainMenu group · MaterialSummary ×4 · CodeDetail · ProjectOverview · CustomerDirectory · RoomDashboard · OverviewSidebar · CurtainCostAnalysis · DiscountModal hero · image (Lookbook/logo). log = memory `squircle-corner-system`.
-- **Aluminum Blind has no dedicated feature dir** — *by design*: reuses the wooden-blinds form (`ItemModal` maps `ALUMINUM_BLIND` → `WOODEN_BLINDS_FORM_ID`) + its own `AluminumBlindsSchema` in `features/wooden-blinds/schemas.ts`. Fully functional; only "stub" in that there's no `features/aluminum-blinds/` folder.
-- **`PricingEngine.test.ts` coverage** — thinner than `CostEngine.test.ts`; no tests yet for undo/redo, import/export, or schema validation hints.
-- **Tool-centric IA** — `MainMenuModal` opens many modals; the primary task "create quotation" lacks a sticky FAB / top-level CTA.
+- **Squircle corner system (in progress, 2026-06-29)** — เปลี่ยนวิธีทำมุมปุ่ม rounded-rect → **squircle** (superellipse) แบบ **cross-browser ทุกอุปกรณ์/ทุกธีม** (CSS `corner-shape` = Chromium-only จึงไม่ใช้ → ใช้ **SVG `<path>` ข้างหลังเนื้อหา** ผ่าน primitive `src/components/ui/Squircle.tsx` + dep `figma-squircle`). ขอบ/สถานะเลือกย้ายจาก CSS border → **SVG stroke** (`fill-*`/`stroke-*` บน path). **แผน rollout ทั้งแอป (อนุมัติ, phased) = อบเข้า primitive กลาง**; audit: ~22 surface clip เนื้อหา (ต้อง clip mode), ~40+ pill/dot คงกลม. 2 เครื่องมือ: **`<Squircle>`** (behind = SVG path หลังเนื้อหา + drop-shadow; control) + hook **`useSquircleClip`** (`clip-path: path()`; การ์ด — **แต่ clip ตัด box-shadow ทิ้ง** ห้ามใช้กับของพึ่งเงา/Headless). **ทำแล้ว + gate เขียว (2026-06-29 — ตัวเลขเทสต์ = COMMANDS.md):** controls = `Button`·`SelectButton`·`Alert`·`Select`·`Input`·`CodePickerField`(กล่อง — ตัวแทน ComboboxInput ที่ลบไป 2026-07-01)·StyleSection tiles; cards = `FormSection`(cascade ทุกฟอร์ม)·`CollapsibleSection`·`ItemSummaryCard`·`FinancialDashboard/ItemCard`·`RoomCard`. **คงมน (ตั้งใจ):** Modal/AlertDialog/OptionSheet/dropdown · print · pills/dots/Switch. **ค้าง = การ์ดใน `.map()`** (hook loop ไม่ได้ → ต้อง extract component): MainMenu group · MaterialSummary ×4 · CodeDetail · ProjectOverview · CustomerDirectory · RoomDashboard · OverviewSidebar · CurtainCostAnalysis · DiscountModal hero · image (Lookbook/logo). log = memory `squircle-corner-system`.
+- **Colorful contrast-plate rollout (in progress, 2026-06-20)** — pill → contrast-plate บนพื้นผิว colorful:
+  `Metric`/`ItemSummaryCard`/`CostReadout`/`MaterialSummary`/`FinancialDashboard`/vault (token `MATERIAL_PLATE`).
+  **Exit:** EEERT@390px ไม่มี colour-blend + คอนทราสต์ AAA ทุกจุดที่แตะ. log = memory `colorful-theme-rollout-handoff`.
+
+### P3 — เทสต์ sync layer (ส่วนพังแล้วเจ็บสุด แต่เทสต์น้อยสุด)
+
+Contract tests ของ `src/lib/sync/`: `docToBundle`/`docToCustomer`/`docToPricing` (ข้อมูลเสีย → ทิ้งเงียบไม่ crash) ·
+`mergePricing` · reconcile ครั้งแรกทั้ง 3 สาย (jobs: local-ใหม่กว่า/local-only/bundle ว่างถูกข้าม · customers:
+เทียบ `updated_at` · pricing: seed/merge) · conflict guard (dirty → setConflict, สะอาด → applyRemote).
+ใช้ mock snapshot/object ล้วน **ไม่ต่อ Firestore จริง**. **Exit:** ทุกแขนง reconcile มีเทสต์ + เพิ่มลง suite ปกติ.
+
+### P4 — เทสต์ที่ค้างของ pricing/store
+
+`PricingEngine.test.ts` บางกว่า `CostEngine.test.ts` · ยังไม่มีเทสต์ undo/redo, import/export, schema validation hints.
+**Exit:** ครบทั้งสามกลุ่ม แล้วลบข้อนี้ออก.
+
+### P5 — CTA หลักตาม flow งานจริง (แก้ Tool-centric IA)
+
+`MainMenuModal` เปิด modal นับสิบ; งานหลักของ persona ("บันทึกงานหน้างาน → ออกเอกสาร") ไม่มี FAB/CTA นำ.
+**ต้องคุย UX กับเจ้าของก่อน implement** (เจ้าของชอบ self-serve tooling — ดู memory). **Exit:** จำนวนแตะต่อ task
+หลักลดลงวัดได้ (QOL Test ข้อ 1).
+
+### P6 — แตก modal ใหญ่ที่เหลือ (opportunistic เท่านั้น)
+
+`ProductionSettingsModal` (~785) · `MainMenuModal` (~725) — แตกแบบเดียวกับ `material-summary/`
+**เมื่อมีงานอื่นแตะไฟล์นั้นอยู่แล้วเท่านั้น** (ไม่ตั้งเป็นงานเดี่ยว). **Exit:** ต่อไฟล์ = presentation-only < ~400 บรรทัด.
+
+### A1 — กันข้อมูลหายโหมด local-only (เสี่ยงอันดับ 1 ของ persona)
+
+localStorage เครื่องเดียว + ไม่เปิด sync = เครื่องหาย/ล้าง browser → งานทั้งร้านหาย. ยกระดับจาก reminder เดิม:
+ผูกความถี่/ความแรงกับ**มูลค่างานค้างเก็บ** + one-tap export ณ จุดปิดงาน (มี `lib/backup` แล้ว — ประกอบร่าง ไม่เขียนใหม่).
+**Exit:** เคส "เครื่องหาย" มีทางรอดที่ไม่พึ่งวินัยผู้ใช้.
+
+### A2 — Catalog tool Phase 2: LINE webhook
+
+งานฝั่ง repo แยก `marnthara-catalog-tool` (spec = [docs/EXTERNAL-CATALOG-TOOL.md](docs/EXTERNAL-CATALOG-TOOL.md)).
+ลด friction เติมคลัง → ทุน "เทา" (unknown) น้อยลง. **Exit:** ส่งรูป/ข้อความใน LINE → entry ใหม่โผล่ในคลังแอปนี้.
+
+### A3 — Wave hardware BOM → ใบสั่งของ
+
+`calcWaveHardware` มีแล้ว (counts-only, ยังไม่ผูก pricing — ตั้งใจ). **รอเจ้าของยืนยัน workflow ก่อนเริ่ม.**
+**Exit:** ใบสั่งของโชว์ลูกล้อ/กระดุม/เทปต่อรายการม่านลอน ตรงกับที่ช่างต้องสั่งจริง.
+
+### Known-open แบบมี trigger ชัด (ไม่ใช่งานคิว — ทำเมื่อ trigger มาถึง)
+
+- **type↔schema unify** (`types.ts` ↔ `features/*/schemas.ts` dual-source, ~30 form-boundary casts) —
+  **trigger: เพิ่ม product type ใหม่ครั้งถัดไป** ให้ unify ก่อนเพิ่ม.
+- **Aluminum Blind has no dedicated feature dir** — *by design*: reuses the wooden-blinds form (`ItemModal` maps
+  `ALUMINUM_BLIND` → `WOODEN_BLINDS_FORM_ID`) + its own `AluminumBlindsSchema` in `features/wooden-blinds/schemas.ts`.
+  Fully functional; ไม่ใช่หนี้ — บันทึกกันเข้าใจผิดเท่านั้น.
 
 ---
 
@@ -344,19 +407,23 @@ ItemModal owns store writes (debounced 400ms; flushed on close/unmount):
 
 ### Core State
 ```
-src/store/useAppStore.ts              — Root store (temporal + persist v3 + 6 slices)
-src/store/migrations.ts               — persist migrate: v1→v2 legacy items + v2→v3 cost-vault split
+src/store/useAppStore.ts              — Root store (temporal + persist v6 + 10 slices)
+src/store/migrations.ts               — persist migrate v1→v6 (รายละเอียดทุกขั้น = §7 Persistence)
 src/store/slices/
   ModalSlice.ts                       — modal stack (modalStack + modalProps)
   ProjectSlice.ts                     — rooms[] + CRUD + factoryReset + reorderRooms/reorderItems/moveItemToRoom (Room Dashboard §3)
-  CustomerSlice.ts                    — Customer info
+  CustomerSlice.ts                    — Customer info (ลูกค้างานนี้)
   ShopProfileSlice.ts                 — Shop config + discount
   InventorySlice.ts                   — code registry + importCatalog/exportCatalog (catalog contract)
   CostDataSlice.ts                    — 7 cost vaults + DEFAULT_LABOR/SERVICE/ACCESSORY (§11)
+  MaterialDraftSlice.ts               — "ราคาของฉัน" material drafts (offline-first, §11.9)
+  PaymentSlice.ts                     — receipts/expenses (มัดจำ−จ่าย−คงเหลือ)
+  JobsSlice.ts                        — multi-job registry + checkout model + conflict (§12)
+  CustomerRegistrySlice.ts            — ฐานข้อมูลลูกค้า (mirror Firestore, §12)
   (FormulaSlice removed — formulas are now compile-time FORMULAS in src/config/formulas.ts)
 src/lib/vault.ts                      — CATALOG_CATEGORIES: category id → {label, costUnit, vault} routing
 src/lib/catalog/contract.ts           — Zod catalog contract v2 (import/export schema, isCatalogContract)
-src/store/standalone/useThemeStore.ts            — Light/Dark theme
+src/store/standalone/useThemeStore.ts            — theme store (ธีมทั้งหมด + ค่า — DESIGN §2 เป็น owner)
 src/store/standalone/useNotificationStore.ts               — addToast
 ```
 
@@ -581,7 +648,8 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
   เทียบราคากับคลังใน `PriceStatusIndicator` = catalog-only เท่านั้น).
 - **หลักการทุน (2026-06-25, "ใครชนะ"):** **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน.**
   ไม่มี "เลือกผู้ชนะ" — ระบบตัดสินเองต่อ key: `useMaterialDraftHydration` ฉาย `draft.cost` เข้า runtime vault
-  (`state.*Costs`) **เสมอ** (vault = แหล่งเติมช่องว่าง); `CostEngine` + `useActiveCostMaps` เมื่อ `ready`
+  (`state.*Costs`) **เสมอ** (vault = แหล่งเติมช่องว่าง); กฎ merge อยู่ **จุดเดียว** ที่ `buildCostContext`
+  (CostEngine.ts — `useActiveCostMaps` เป็น wrapper; เดิมมี 2 สำเนาแล้ว drift) เมื่อ `ready`
   ใช้ **merge ต่อ key** `{ ...state.*Costs, ...catalog.*Costs }` → รหัสซ้ำ DB ชนะ, รหัสที่ DB ไม่มีทุน
   (`buildCostMaps` ข้าม `cost<=0` → ไม่ยึด key) → vault (ทุนที่จด) เติมเข้าไป. ออฟไลน์ = vault ล้วน.
   *(เดิม `if (ready) return` ทำให้ทุนที่จดถูกทิ้งเงียบ ๆ ตอนออนไลน์ + รหัสที่ DB ไม่มี → กำไรเทา — แก้แล้ว.)*

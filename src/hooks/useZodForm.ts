@@ -108,6 +108,9 @@ export const useZodForm = <T extends Record<string, unknown>>({
       }
 
       // Save with parsed data when valid, normalized formData as fallback
+      // CONTRACT (Save-First, HANDOFF §1.1): validation ล้มเหลว "ไม่ gate การบันทึก" —
+      // fallback ส่ง formData ที่ normalize แล้วแต่ยังไม่ผ่าน schema (ฟิลด์อาจขาด/เป็น string ดิบ)
+      // ผู้รับ (persistDraft/strategies) ต้องกันเองด้วย toNum/nonNeg — cast นี้คือขอบเขตที่ยอมรับ
       onSubmit((result.success ? result.data : data) as T);
     },
     [formData, onSubmit, schema]

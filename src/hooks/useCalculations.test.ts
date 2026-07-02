@@ -10,7 +10,7 @@ vi.mock('@/hooks/useAsyncCalculator', () => ({
   useAsyncCalculator: () => ({ calculateBatch: hoisted.calculateBatch }),
 }));
 
-import { useCalculations } from './useCalculations';
+import { useCalculations, performFinalAdjustments } from './useCalculations';
 import { useAppStore } from '@/store/useAppStore';
 import { DEFAULT_SHOP_CONFIG } from '@/config/constants';
 import { asItemData, makeCurtain } from '@/test/factories';
@@ -156,6 +156,66 @@ describe('useCalculations — sync path (discount + VAT)', () => {
     const { result } = renderHook(() => useCalculations());
     expect(result.current.grandTotal).toBe(1000);
     expect(result.current.finalTotal).toBe(1070); // +VAT 7% จากยอดที่ไม่รวมรายการพัก
+  });
+});
+
+// นโยบาย "round-then-derive": ทุกบรรทัดบนเอกสารต้องบวก/ลบกันลงตัวที่ทศนิยม 2 ตำแหน่งเสมอ
+//   grand − discount = net · net + vat = final
+// เทียบเป็นสตางค์ (integer) กัน float equality พลาด
+const cents = (n: number) => Math.round(n * 100);
+
+const assertLedgerInvariants = (r: ReturnType<typeof performFinalAdjustments>) => {
+  for (const v of Object.values(r)) {
+    expect(cents(v) / 100, 'ยอดต้องปัด 2 ตำแหน่งแล้ว').toBeCloseTo(v, 9);
+  }
+  expect(cents(r.grandTotal) - cents(r.discountAmount), 'grand − discount = net').toBe(
+    cents(r.netTotal)
+  );
+  expect(cents(r.netTotal) + cents(r.vatAmount), 'net + vat = final').toBe(cents(r.finalTotal));
+};
+
+// LCG กำหนด seed — ชุดสุ่มคงที่ทุกครั้งที่รัน (fail แล้วชี้เคสซ้ำได้)
+const makeRng = (seed: number) => {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0x100000000;
+  };
+};
+
+describe('performFinalAdjustments — ledger invariants (round-then-derive)', () => {
+  it('เคส regression: 333.335 · ส่วนลด 10% · VAT 7% ต้องบวกลงตัว (เดิม 333.34−33.33=300.01 แต่โชว์ 300.00)', () => {
+    const r = performFinalAdjustments(333.335, { type: 'percent', value: 10, is_enabled: true }, 7);
+    assertLedgerInvariants(r);
+  });
+
+  it('โหมด target เคาะสูงกว่ายอด → discount ติดลบ แต่ ledger ยังลงตัว', () => {
+    const r = performFinalAdjustments(900.005, { type: 'target', value: 1000.004, is_enabled: true }, 7);
+    assertLedgerInvariants(r);
+    expect(r.finalTotal).toBe(1000);
+    expect(r.discountAmount).toBeLessThan(0);
+  });
+
+  it('property: สุ่ม 1,500 เคสคงที่ (amount/percent/target × VAT 0/7) ลงตัวทุกเคส', () => {
+    const rng = makeRng(20260702);
+    const types = ['amount', 'percent', 'target'] as const;
+    for (let i = 0; i < 1500; i++) {
+      const rawTotal = Math.floor(rng() * 100_000_000) / 1000; // 0..100,000 ละเอียด 3 ตำแหน่ง (จงใจให้มีเศษ)
+      const type = types[i % types.length];
+      const value =
+        type === 'percent'
+          ? Math.floor(rng() * 10000) / 100
+          : Math.floor(rng() * rawTotal * 120) / 100;
+      const vatRate = i % 2 === 0 ? 7 : 0;
+
+      const r = performFinalAdjustments(rawTotal, { type, value, is_enabled: true }, vatRate);
+      assertLedgerInvariants(r);
+      if (type !== 'target') {
+        expect(r.discountAmount).toBeGreaterThanOrEqual(0);
+        expect(cents(r.discountAmount)).toBeLessThanOrEqual(cents(r.grandTotal));
+      }
+      if (vatRate === 0) expect(r.vatAmount).toBe(0);
+    }
   });
 });
 

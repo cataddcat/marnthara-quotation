@@ -1,7 +1,7 @@
 // src/features/curtains/logic/CurtainStrategy.ts
 
 import { CurtainItemInput } from '@/types';
-import { toNum } from '@/utils/formatters';
+import { toNum, nonNeg } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
 import { LAYER_MODES } from '@/config/enums';
 import { STYLES_WITHOUT_OPENING } from '@/config/constants';
@@ -82,13 +82,13 @@ export const CurtainStrategy: PricingStrategy<CurtainItemInput> = {
 
     // 1. ผ้าทึบ
     if (hasMain) {
-      const pricePerUnit = toNum(item.price_per_m_raw);
+      const pricePerUnit = nonNeg(toNum(item.price_per_m_raw));
       fabricPrice = width * pricePerUnit; // กว้าง x ราคาขาย
     }
 
     // 🛡️ 2. กู้คืน: ผ้าโปร่ง (Sheer)
     if (hasSheer) {
-      const sheerPricePerUnit = toNum(item.sheer_price_per_m);
+      const sheerPricePerUnit = nonNeg(toNum(item.sheer_price_per_m));
       sheerPrice = width * sheerPricePerUnit; // กว้าง x ราคาขาย
     }
 

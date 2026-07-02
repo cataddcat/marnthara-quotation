@@ -9,11 +9,11 @@
 import React, { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { fmtTH, toNum } from '@/utils/formatters';
 import { CostEngine } from '@/lib/pricing/CostEngine';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { useCalculations } from '@/hooks/useCalculations';
+import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 import { ITEM_CONFIG } from '@/config/constants';
 import { cn } from '@/lib/utils';
 import { NUM_TONE_EEERT } from '@/config/dataTones';
@@ -40,16 +40,9 @@ export const FinancialDashboardModal: React.FC<{
 }> = ({ isOpen, onClose }) => {
   const rooms = useAppStore((s) => s.rooms);
   const openModal = useAppStore((s) => s.openModal);
-  // ต้นทุนทุก vault — CostEngine.analyze อ่านผ่าน getState() เอง, select ที่นี่เป็น cache-invalidation hint
-  const fabricCosts = useAppStore((s) => s.fabricCosts);
-  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
-  const areaCosts = useAppStore((s) => s.areaCosts);
-  const laborCosts = useAppStore((s) => s.laborCosts);
-  const accessoryCosts = useAppStore((s) => s.accessoryCosts);
-  const serviceCosts = useAppStore((s) => s.serviceCosts); // ทุนรื้อถอน (per-item) + ขนส่งเหมา/งาน
-  const costInclude = useAppStore((s) => s.costInclude);
-  // ทุนสินค้าจาก DB ภายนอก (useCatalogStore) — hint ให้ recalc เมื่อ catalog อัปเดต (HANDOFF §11.8)
-  const catalogVer = useCatalogStore((s) => s.updatedAt);
+  // คลังต้นทุนทั้งหมดเป็น CostContext (memoized, รวม merge catalog แล้ว — HANDOFF §11.9)
+  const costCtx = useActiveCostMaps();
+  const { serviceCosts, costInclude } = costCtx; // ใช้ต่อในส่วน aggregate (ขนส่งเหมา/สวิตช์)
   const receipts = useAppStore((s) => s.receipts);
   const expenses = useAppStore((s) => s.expenses);
   const { finalTotal } = useCalculations();
@@ -74,7 +67,7 @@ export const FinancialDashboardModal: React.FC<{
       room.items.forEach((item) => {
         if (item.is_suspended) return;
 
-        const analysis = CostEngine.analyze(item);
+        const analysis = CostEngine.analyze(item, costCtx);
         const typeName = ITEM_CONFIG[item.type]?.name ?? item.type;
         const specs = PricingEngine.getItemSpecs(item);
 
@@ -96,9 +89,7 @@ export const FinancialDashboardModal: React.FC<{
       if (sDiff !== 0) return sDiff;
       return a.analysis.profitAmount - b.analysis.profitAmount;
     });
-    // cost maps เป็น dependency เพราะ CostEngine.analyze อ่านค่าผ่าน getState() (ไม่ได้ใช้ตรงๆ ใน memo)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, fabricCosts, wallpaperCosts, areaCosts, laborCosts, accessoryCosts, serviceCosts, costInclude, catalogVer]);
+  }, [rooms, costCtx]);
 
   // ── Aggregates — ทุนที่รู้ (ประมาณการ) + เงินจริง ─────────────────────────
   const totals = useMemo(() => {

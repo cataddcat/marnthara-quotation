@@ -17,13 +17,7 @@ import { calcWaveHardware, waveSplitFromOpening } from '@/lib/materials/waveHard
 import { openingStyleLabel } from '@/lib/opening-style';
 import { cn } from '@/lib/utils';
 import { buildDocFileBase, formatDocCode } from '@/lib/export/docName';
-import type {
-  ItemData,
-  CurtainItemInput,
-  WallpaperItemInput,
-  AreaItemInput,
-  RemovalItemInput,
-} from '@/types';
+import type { ItemData } from '@/types';
 import { FileDown, ImageDown, Loader2, Package, ZoomIn, ZoomOut } from 'lucide-react';
 
 // ─── A4 geometry (mm) — deterministic fixed-height pagination ──────────────────
@@ -134,7 +128,7 @@ function getCardData(item: ItemData): CardData {
   let dimStr = '';
 
   if (item.type === ITEM_TYPES.CURTAIN) {
-    const c = item as unknown as CurtainItemInput;
+    const c = item; // narrowed โดย discriminant — ไม่ต้อง cast
     title = c.style ? `แบบ ${c.style}` : 'ผ้าม่าน';
     if (c.code) specs.push(`ทึบ ${c.code}`);
     if (c.sheer_code) specs.push(`โปร่ง ${c.sheer_code}`);
@@ -154,19 +148,17 @@ function getCardData(item: ItemData): CardData {
     }
     dimStr = `${fmtDimension(c.width_m)} x ${fmtDimension(c.height_m)} ม.`;
   } else if (item.type === ITEM_TYPES.WALLPAPER) {
-    const w = item as WallpaperItemInput;
+    const w = item; // narrowed
     title = 'วอลเปเปอร์';
     if (w.wallpaper_code) specs.push(`รหัส ${w.wallpaper_code}`);
     dimStr = `${w.widths?.length ?? 0} ผนัง · สูง ${fmtDimension(w.height_m)} ม.`;
   } else if (item.type === ITEM_TYPES.REMOVAL) {
-    const r = item as RemovalItemInput;
-    title = r.description || 'งานรื้อถอน';
+    title = item.description || 'งานรื้อถอน';
   } else {
-    const a = item as AreaItemInput;
+    const a = item; // narrowed เหลือเฉพาะงานพื้นที่
     if (a.code) specs.push(`รหัส ${a.code}`);
-    if ('opening_style' in a && a.opening_style)
-      specs.push(`เปิด ${openingStyleLabel(a.opening_style)}`);
-    if ('adjustment_side' in a && a.adjustment_side) specs.push(`ปรับ ${a.adjustment_side}`);
+    if (a.opening_style) specs.push(`เปิด ${openingStyleLabel(a.opening_style)}`);
+    if (a.adjustment_side) specs.push(`ปรับ ${a.adjustment_side}`);
     dimStr = `${fmtDimension(a.width_m)} x ${fmtDimension(a.height_m)} ม.`;
   }
   return { title, dimStr, specs };

@@ -1,7 +1,7 @@
 // src/features/shared/logic/AreaStrategy.ts
 
 import { AreaItemInput } from '@/types';
-import { toNum } from '@/utils/formatters';
+import { toNum, nonNeg } from '@/utils/formatters';
 import { PricingStrategy, PriceResult, PricingContext } from '@/lib/pricing/types';
 import { FORMULAS } from '@/config/formulas';
 
@@ -35,7 +35,7 @@ export const createAreaStrategy = (
 
       const width = toNum(item.width_m);
       const height = toNum(item.height_m);
-      const priceSqyd = toNum(item.price_sqyd);
+      const priceSqyd = nonNeg(toNum(item.price_sqyd));
 
       // Safety Check
       if (width <= 0 || height <= 0) {

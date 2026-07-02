@@ -7,16 +7,22 @@ import fc from 'fast-check';
 import { calculateFabricYardage, CurtainStrategy } from '@/features/curtains/logic/CurtainStrategy';
 import { WallpaperStrategy } from '@/features/wallpapers/logic/WallpaperStrategy';
 import { createAreaStrategy } from '@/features/shared/logic/AreaStrategy';
-import { CostEngine } from './CostEngine';
+import { CostEngine, buildCostContext } from './CostEngine';
 import { FORMULAS } from '@/config/formulas';
 import { ITEM_TYPES, LAYER_MODES } from '@/config/enums';
 import { useAppStore } from '@/store/useAppStore';
+import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { asItemData } from '@/test/factories';
 import type {
   CurtainItemInput,
   WallpaperItemInput,
   AreaItemInput,
+  ItemData,
 } from '@/types';
+
+// ประกอบ CostContext จาก store ที่ test seed ไว้ (ทางเดียวกับ useActiveCostMaps ในแอปจริง)
+const analyze = (item: ItemData) =>
+  CostEngine.analyze(item, buildCostContext(useAppStore.getState(), useCatalogStore.getState()));
 
 const RUN = { numRuns: 100, seed: 42 } as const;
 const YC = FORMULAS.curtain.yard_conversion; // 0.90
@@ -173,7 +179,7 @@ describe('CostEngine.analyze — total robustness', () => {
 
     fc.assert(
       fc.property(fc.oneof(curtainArb, areaArb, wallpaperArb, removalArb), (item) => {
-        const r = CostEngine.analyze(item);
+        const r = analyze(item);
         expect(Number.isFinite(r.totalCost)).toBe(true);
         expect(Number.isFinite(r.sellingPrice)).toBe(true);
         expect(Number.isFinite(r.profitAmount)).toBe(true);

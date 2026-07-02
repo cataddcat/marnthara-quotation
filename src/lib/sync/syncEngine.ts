@@ -24,7 +24,7 @@ import { db } from '@/lib/firebase/app';
 import { useAppStore } from '@/store/useAppStore';
 import { useSyncStore } from '@/store/standalone/useSyncStore';
 import { useRoleStore } from '@/store/standalone/useRoleStore';
-import type { JobBundle } from '@/lib/jobs/job-bundle';
+import { isBundleEmpty, type JobBundle } from '@/lib/jobs/job-bundle';
 import type { RegistryCustomer } from '@/lib/customers/contract';
 import {
   extractPricing,
@@ -137,11 +137,20 @@ const scheduleAutoSave = () => {
   }, 800);
 };
 
-/** วาง pricing fields เข้า store แบบ replace (mirror) โดยกัน echo-push */
+/**
+ * วาง pricing fields เข้า store แบบ replace (mirror) โดยกัน echo-push
+ * INVARIANT: พึ่งพา Zustand notify subscriber แบบ synchronous "ภายใน" setState —
+ * flag จึงยัง true ตอน subscriber (unsubPricingSave) ตรวจ. ถ้า upgrade zustand แล้ว
+ * พฤติกรรมนี้เปลี่ยน (notify async/batched) การกัน echo จะพังเงียบ ๆ — มี test ยึด invariant นี้.
+ * finally = กัน flag ค้าง true ถ้า subscriber ระหว่าง setState โยน error (จะบล็อก push ถาวร)
+ */
 const hydratePricing = (fields: PricingFields) => {
   pricingHydrating = true;
-  useAppStore.setState(fields);
-  pricingHydrating = false;
+  try {
+    useAppStore.setState(fields);
+  } finally {
+    pricingHydrating = false;
+  }
 };
 
 const schedulePricingPush = (uid: string) => {
@@ -204,6 +213,8 @@ export function startSync(uid: string): void {
     if (!jobsReconciled) {
       jobsReconciled = true;
       for (const lb of useAppStore.getState().jobs) {
+        // งานเปล่า (ยังไม่มีข้อมูลจริง) ไม่ดันขึ้น cloud — สอดคล้อง saveCurrentJob ที่ no-op งานเปล่า
+        if (isBundleEmpty(lb)) continue;
         const cb = cloud.get(lb.id);
         if (!cb || lb.updatedAt > cb.updatedAt) {
           cloud.set(lb.id, lb);
@@ -244,7 +255,10 @@ export function startSync(uid: string): void {
       custReconciled = true;
       for (const lc of useAppStore.getState().customerRegistry) {
         const key = normalizeCode(lc.code);
-        if (!cloud.has(key)) {
+        const cc = cloud.get(key);
+        // local-only → ดันขึ้น; รหัสซ้ำ → local ที่ "ใหม่กว่า" ชนะ (แบบเดียวกับ jobs reconcile —
+        // เดิม cloud ทับเสมอ ทำแก้ไข offline ก่อน sign-in แรกหายเงียบ) เทียบได้เมื่อมี updated_at ทั้งคู่
+        if (!cc || (lc.updated_at && cc.updated_at && lc.updated_at > cc.updated_at)) {
           cloud.set(key, lc);
           void pushCustomerDoc(uid, lc);
         }

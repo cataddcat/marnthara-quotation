@@ -6,6 +6,7 @@ import { ITEM_CONFIG } from '@/config/constants';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ItemData } from '@/types';
 import { ItemTypeKey } from '@/config/enums';
+import { hasDimensions } from '@/lib/type-guards';
 import { cn } from '@/lib/utils';
 import { getRoomAccent } from '@/lib/room-accents';
 import { NUM_TONE_EEERT } from '@/config/dataTones';
@@ -109,9 +110,8 @@ export const ProjectOverviewModal: React.FC<ProjectOverviewModalProps> = ({
   const renderSpec = (item: ItemData) => {
     // ตัวเลขขนาดล้วน (ตัด "กว้าง/สูง", บังคับ xx.xx) — ใช้ fmtSize canonical (×); ชนิดไม่มีมิติเดี่ยว
     // (วอลเปเปอร์ widths[] / รื้อถอน) ใช้สเปคสรุปเดิม
-    const rec = item as unknown as Record<string, unknown>;
-    const w = toNum(rec.width_m as string | number | null | undefined);
-    const h = toNum(rec.height_m as string | number | null | undefined);
+    const w = hasDimensions(item) ? toNum(item.width_m) : 0;
+    const h = hasDimensions(item) ? toNum(item.height_m) : 0;
     if (w > 0 && h > 0) return `${fmtSize(w, h)} ม.`;
     const specs = PricingEngine.getItemSpecs(item);
     return specs.length > 0 ? specs[0] : '';

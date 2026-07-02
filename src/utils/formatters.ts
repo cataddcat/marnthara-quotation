@@ -13,6 +13,13 @@ export const toNum = (v: string | number | undefined | null): number => {
   return Number.isFinite(num) ? num : 0;
 };
 
+/**
+ * รั้วค่าติดลบที่ขอบ engine — มิติ/ราคา/ปริมาณต้องไม่ติดลบ (ค่าลบ = ข้อมูลเสีย ไม่ใช่ intent)
+ * ใช้ครอบ input ของ pricing strategies (Zod ฟอร์มกันอยู่แล้ว แต่ Pro-override/ข้อมูลเก่าไม่มีรั้ว)
+ * — อย่าฝังใน toNum กลาง: โดเมนอื่น (ส่วนต่าง/ปรับปรุงยอด) ค่าลบเป็นค่าที่ถูกต้อง
+ */
+export const nonNeg = (n: number): number => (n > 0 ? n : 0);
+
 export const fmtDimension = (v: number | string): string => {
   const num = toNum(v);
   return num > 0 ? num.toFixed(2) : '';

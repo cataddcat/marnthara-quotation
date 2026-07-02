@@ -7,6 +7,7 @@ import { fmtTH, toNum } from '@/utils/formatters';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
 import { isItemPending, incompleteLabel, requiresOpeningStyle } from '@/lib/item-status';
+import { hasDimensions } from '@/lib/type-guards';
 import { itemTitle } from '@/lib/item-display';
 import { openingStyleLabel } from '@/lib/opening-style';
 import { Metric } from '@/components/ui/Metric';
@@ -116,10 +117,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
   const areaSqm = bd?.areaSqm ?? 0;
   const areaSqyd = bd?.areaSqyd ?? 0;
 
-  // Size (safe cast — all non-removal types have width_m/height_m)
-  const itemRec = item as unknown as Record<string, unknown>;
-  const width = toNum(itemRec.width_m as string | number | null | undefined);
-  const height = toNum(itemRec.height_m as string | number | null | undefined);
+  // Size — ม่าน/งานพื้นที่มี width_m/height_m ตรง field (วอลเปเปอร์คิดจาก widths[] ใน dimNumbers)
+  const width = hasDimensions(item) ? toNum(item.width_m) : 0;
+  const height = hasDimensions(item) ? toNum(item.height_m) : 0;
   const hasSize = width > 0 && height > 0;
 
   // ขนาดแบบ "W x H" (ตัวเลขล้วน) — ป้าย "กว้าง/สูง :" แยกแสดงในแถวด้วยสีจาง (ไม่เด่นเท่าตัวเลข)
@@ -159,12 +159,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
         break;
       }
       default: {
-        const rec = item as unknown as Record<string, unknown>;
-        const s = (k: string) => (typeof rec[k] === 'string' ? (rec[k] as string).trim() : '');
-        const variant = s('fabric_variant');
-        const opening = s('opening_style');
-        const side = s('adjustment_side');
-        const code = s('code');
+        // default = งานพื้นที่ (switch ครอบ curtain/wallpaper/removal แล้ว) — TS narrow ให้เอง
+        const variant = item.fabric_variant?.trim() ?? '';
+        const opening = item.opening_style?.trim() ?? '';
+        const side = item.adjustment_side?.trim() ?? '';
+        const code = item.code?.trim() ?? '';
         if (variant) chips.push(variant);
         if (opening) chips.push(openingStyleLabel(opening));
         if (side) chips.push(`ปรับ ${side}`);
@@ -186,8 +185,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, index, roomId, onEdit 
       if (item.wallpaper_code)
         refs.push({ code: item.wallpaper_code, category: FAVORITE_CATEGORIES.WALLPAPER });
     } else if (item.type !== ITEM_TYPES.REMOVAL) {
-      const code = (item as { code?: string }).code;
-      if (code) refs.push({ code, category: item.type });
+      // เหลือเฉพาะงานพื้นที่ — TS narrow ให้เอง ไม่ต้อง cast
+      if (item.code) refs.push({ code: item.code, category: item.type });
     }
     return refs;
   }, [item]);

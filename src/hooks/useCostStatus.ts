@@ -1,31 +1,16 @@
 import { useMemo } from 'react';
 import { ItemData } from '@/types';
 import { CostEngine, CostBreakdown } from '@/lib/pricing/CostEngine';
-import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/standalone/useCatalogStore';
+import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 
 /**
  * วิเคราะห์ต้นทุน/กำไรของ "ทุกประเภทสินค้า" (generalize จาก useSmartPrice ที่ผูกกับผ้าม่าน)
  * คืน CostBreakdown (status profit|warning|loss|unknown) ให้ summary card เอาไปแสดงไฟจราจร
  *
- * CostEngine.analyze() อ่านคลังต้นทุนผ่าน useAppStore.getState() เอง — costs ที่ select มาเป็น
- * cache-invalidation hint (เหมือน ProModeControl) ให้ recalc เมื่อค่าต้นทุนหลังบ้านเปลี่ยน
+ * คลังต้นทุน inject เป็น CostContext จาก useActiveCostMaps (memoized) — เปลี่ยนเมื่อ
+ * vault/catalog เปลี่ยนจริงเท่านั้น ไม่ต้องมี hint selector + eslint-disable อีก
  */
 export const useCostStatus = (item: ItemData | null): CostBreakdown | null => {
-  const fabricCosts = useAppStore((s) => s.fabricCosts);
-  const wallpaperCosts = useAppStore((s) => s.wallpaperCosts);
-  const areaCosts = useAppStore((s) => s.areaCosts);
-  const accessoryCosts = useAppStore((s) => s.accessoryCosts);
-  const hardwareCosts = useAppStore((s) => s.hardwareCosts); // ทุนราง SKU — CostEngine ใช้ (กัน stale)
-  const laborCosts = useAppStore((s) => s.laborCosts);
-  const serviceCosts = useAppStore((s) => s.serviceCosts);
-  const costInclude = useAppStore((s) => s.costInclude); // สวิตช์นับ/ไม่นับ — recalc เมื่อสลับ
-  // ทุนสินค้าจาก DB ภายนอก (useCatalogStore) — recalc เมื่อ catalog ที่ดึงมาอัปเดต (HANDOFF §11.8)
-  const catalogVer = useCatalogStore((s) => s.updatedAt);
-
-  return useMemo(
-    () => (item ? CostEngine.analyze(item) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, fabricCosts, wallpaperCosts, areaCosts, accessoryCosts, hardwareCosts, laborCosts, serviceCosts, costInclude, catalogVer]
-  );
+  const ctx = useActiveCostMaps();
+  return useMemo(() => (item ? CostEngine.analyze(item, ctx) : null), [item, ctx]);
 };

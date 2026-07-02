@@ -1,10 +1,11 @@
 // src/lib/pricing/CostEngine.test.ts
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CostEngine } from './CostEngine';
+import { CostEngine, buildCostContext } from './CostEngine';
 import { useAppStore } from '@/store/useAppStore';
 import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { ITEM_TYPES, LAYER_MODES, FAVORITE_CATEGORIES } from '@/config/enums';
+import type { ItemData } from '@/types';
 import { DEFAULT_COST_INCLUDE, type LaborCost, type CostInclude } from '@/store/slices/CostDataSlice';
 import { makeItem } from './__test-helpers';
 
@@ -16,6 +17,10 @@ import { makeItem } from './__test-helpers';
 // fabricYards = ceil(2.60 / 0.90 × 100) / 100 = 2.89
 // ─────────────────────────────────────────────────────────────────────────────
 const EXPECTED_FABRIC_YARDS = 2.89;
+
+// ประกอบ CostContext จาก store ที่ test seed ไว้ (ทางเดียวกับ useActiveCostMaps ในแอปจริง)
+const analyze = (item: ItemData) =>
+  CostEngine.analyze(item, buildCostContext(useAppStore.getState(), useCatalogStore.getState()));
 
 const setupStore = (overrides?: {
   fabricCosts?: Record<string, number>;
@@ -72,7 +77,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       setupStore({ fabricCosts: { F001: 100 } });
       const item = makeCurtainItem({ code: 'F001' });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2); // 289
       expect(result.status).not.toBe('unknown');
@@ -84,7 +89,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       setupStore({ fabricCosts: {} });
       const item = makeCurtainItem({ code: undefined, price_sqyd: 50 });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 50, 2); // 144.5
       expect(result.status).not.toBe('unknown');
@@ -97,7 +102,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         _cost_fabric: 250, // ต้นทุนรวม override
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBe(250);
       expect(result.status).not.toBe('unknown');
@@ -110,7 +115,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         _cost_fabric: 0,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.status).toBe('unknown');
     });
@@ -131,7 +136,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         sheer_price_per_m: 300,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.sheerCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 50, 2); // 144.5
       expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2);
@@ -151,7 +156,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         sheer_price_per_m: 300,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.sheerCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 40, 2); // 115.6
     });
@@ -166,7 +171,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         sheer_price_per_m: 300, // sellingPrice ยังคำนวณได้
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.status).toBe('unknown');
     });
@@ -178,7 +183,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         layer_mode: LAYER_MODES.MAIN, // SINGLE
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.sheerCost).toBe(0);
       expect(result.sheerQuantity).toBe(0);
@@ -198,7 +203,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       });
       const item = makeCurtainItem({ code: 'F001' });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // computed = 1.0 × 100 = 100, min = 500 → min applied
       expect(result.laborCost).toBe(500);
@@ -220,7 +225,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         sheer_price_per_m: 300,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // mainLabor = 1.0 × 100 = 100 / sheerLabor = 1.0 × 70 = 70 → total = 170
       expect(result.laborCost).toBe(170);
@@ -233,7 +238,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       });
       const item = makeCurtainItem({ code: 'F001', style: 'พับ', width_m: 2.0, height_m: 3.0 });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // meter: 2.0 × 300 = 600 (ไม่ใช่ 2.0 × 3.0 × 300)
       expect(result.laborCost).toBe(600);
@@ -256,7 +261,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         sheer_price_per_m: 300,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // main 2.0×130=260 + sheer 2.0×130=260 = 520
       expect(result.laborCost).toBe(520);
@@ -269,7 +274,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       });
       const item = makeCurtainItem({ code: 'F001' });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.laborCost).toBe(0);
     });
@@ -296,7 +301,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_roll: 1500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.usedQuantity).toBe(2); // 2 ม้วน
       expect(result.unit).toBe('ม้วน');
@@ -317,7 +322,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_roll: 1500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBe(0);
       expect(result.status).toBe('unknown');
@@ -335,7 +340,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_sqyd: 500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.usedQuantity).toBeCloseTo(4.8, 2);
       expect(result.unit).toBe('ตร.ล.');
@@ -355,7 +360,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_sqyd: 500, // ป้ายฟอร์ม = บาท/ตร.ม.
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.usedQuantity).toBeCloseTo(4.0, 2);
       expect(result.unit).toBe('ตร.ม.');
@@ -375,7 +380,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_sqyd: 500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBeCloseTo(4.8 * 300, 2);
       expect(result.status).not.toBe('unknown');
@@ -393,7 +398,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_sqyd: 500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBeCloseTo(4.8 * 250, 2); // 1200
       expect(result.status).not.toBe('unknown');
@@ -410,7 +415,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_sqyd: 500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.fabricCost).toBe(0);
       expect(result.status).toBe('unknown');
@@ -425,7 +430,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         description: 'รื้อม่านเก่า',
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.totalCost).toBe(0);
       expect(result.unit).toBe('จุด');
@@ -442,7 +447,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         description: 'รื้อม่านเก่า',
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.totalCost).toBe(1500); // 300 × 5
       expect(result.laborCost).toBe(1500); // นับเป็นค่าแรงบริการ
@@ -456,19 +461,19 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
     it('rail_code + hardwareCosts → ใช้ทุน SKU (ไม่ใช่ legacy)', () => {
       setupStore({ accessoryCosts: { rail_wave: 130 }, hardwareCosts: { 'RW-SKU': 300 } });
       const item = makeCurtainItem({ style: 'ลอน', width_m: 2.0, rail_code: 'RW-SKU' });
-      expect(CostEngine.analyze(item).railCost).toBe(600); // 2.0 × 300
+      expect(analyze(item).railCost).toBe(600); // 2.0 × 300
     });
 
     it('ไม่มี rail_code → legacy accessoryCosts[rail_wave]', () => {
       setupStore({ accessoryCosts: { rail_wave: 130 }, hardwareCosts: { 'RW-SKU': 300 } });
       const item = makeCurtainItem({ style: 'ลอน', width_m: 2.0 });
-      expect(CostEngine.analyze(item).railCost).toBe(260); // 2.0 × 130
+      expect(analyze(item).railCost).toBe(260); // 2.0 × 130
     });
 
     it('rail_code แต่ SKU ไม่มีทุน (0) → fallback legacy', () => {
       setupStore({ accessoryCosts: { rail_wave: 130 }, hardwareCosts: {} });
       const item = makeCurtainItem({ style: 'ลอน', width_m: 2.0, rail_code: 'MISSING' });
-      expect(CostEngine.analyze(item).railCost).toBe(260); // 2.0 × 130
+      expect(analyze(item).railCost).toBe(260); // 2.0 × 130
     });
   });
 
@@ -487,7 +492,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_m_raw: 1000, // sellingPrice = 1000
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // fabricCost = 2.89 × 50 = 144.5
       // laborCost = 1.0 × 100 = 100
@@ -508,7 +513,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_m_raw: 1000, // sellingPrice = 1000
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // fabricCost = 2.89 × 200 = 578
       // railCost = 1.0 × 100 = 100
@@ -531,7 +536,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_m_raw: 500, // sellingPrice = 500 (น้อยกว่าทุน)
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // fabricCost = 2.89 × 500 = 1445 → profit = 500 - (1445 + 100 + 200) < 0
       expect(result.status).toBe('loss');
@@ -549,7 +554,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_m_raw: 1000,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       // แม้ profit margin จะดูดี แต่ฟ้า code ใน Vault ไม่เจอ → unknown
       expect(result.status).toBe('unknown');
@@ -572,7 +577,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_m_raw: 1000,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.accCost).toBe(0);
       expect(result.railCost).toBeCloseTo(70, 2); // width 1.0 × rail_rod 70
@@ -587,7 +592,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       });
       const item = makeCurtainItem({ code: 'F001' }); // style 'จีบ' (default)
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.accCost).toBe(0);
     });
@@ -613,7 +618,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         sheer_code: 'S001',
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.laborCost).toBe(0);
       expect(result.excludedComponents).toContain('ค่าเย็บ');
@@ -632,7 +637,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       });
       const item = makeCurtainItem({ code: 'F001' });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.railCost).toBe(0);
       expect(result.excludedComponents).toContain('ค่าราง/อุปกรณ์');
@@ -652,7 +657,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
         price_per_item: 500,
       });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.totalCost).toBe(0);
       expect(result.excludedComponents).toContain('ค่าบริการ');
@@ -666,7 +671,7 @@ describe('💵 CostEngine — Priority Chain & Dispatch', () => {
       });
       const item = makeCurtainItem({ code: 'F001' });
 
-      const result = CostEngine.analyze(item);
+      const result = analyze(item);
 
       expect(result.excludedComponents).toEqual([]);
     });
@@ -693,7 +698,7 @@ describe('🔌 CostEngine — External catalog overlay', () => {
     useCatalogStore
       .getState()
       .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
-    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    const result = analyze(makeCurtainItem({ code: 'F001' }));
     expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2); // ×100 (catalog) ไม่ใช่ ×999
     expect(result.status).not.toBe('unknown');
   });
@@ -703,7 +708,7 @@ describe('🔌 CostEngine — External catalog overlay', () => {
     useCatalogStore
       .getState()
       .setCatalog([{ code: 'OTHER', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 50 }], false);
-    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    const result = analyze(makeCurtainItem({ code: 'F001' }));
     expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2); // ×100 จาก vault (เติมช่องว่าง)
     expect(result.status).not.toBe('unknown');
   });
@@ -714,12 +719,12 @@ describe('🔌 CostEngine — External catalog overlay', () => {
       .getState()
       .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
     // รหัสซ้ำ F001 → DB ชนะ (×100 ไม่ใช่ ×999)
-    expect(CostEngine.analyze(makeCurtainItem({ code: 'F001' })).fabricCost).toBeCloseTo(
+    expect(analyze(makeCurtainItem({ code: 'F001' })).fabricCost).toBeCloseTo(
       EXPECTED_FABRIC_YARDS * 100,
       2
     );
     // รหัส F002 ที่ DB ไม่มี → vault เติม (×100)
-    const gap = CostEngine.analyze(makeCurtainItem({ code: 'F002' }));
+    const gap = analyze(makeCurtainItem({ code: 'F002' }));
     expect(gap.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2);
     expect(gap.status).not.toBe('unknown');
   });
@@ -727,7 +732,7 @@ describe('🔌 CostEngine — External catalog overlay', () => {
   it("catalog 'empty' (DB ว่าง) → fallback persisted vault เดิม", () => {
     setupStore({ fabricCosts: { F001: 100 } });
     useCatalogStore.getState().setCatalog([], false); // empty → status 'empty'
-    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    const result = analyze(makeCurtainItem({ code: 'F001' }));
     expect(result.fabricCost).toBeCloseTo(EXPECTED_FABRIC_YARDS * 100, 2);
     expect(result.status).not.toBe('unknown');
   });
@@ -737,7 +742,7 @@ describe('🔌 CostEngine — External catalog overlay', () => {
     useCatalogStore
       .getState()
       .setCatalog([{ code: 'F001', category: FAVORITE_CATEGORIES.CURTAIN_MAIN, cost: 100 }], false);
-    const result = CostEngine.analyze(makeCurtainItem({ code: 'F001' }));
+    const result = analyze(makeCurtainItem({ code: 'F001' }));
     expect(result.laborCost).toBe(100); // 1.0 × 100 จาก vault labor เดิม
   });
 
@@ -754,7 +759,7 @@ describe('🔌 CostEngine — External catalog overlay', () => {
       code: 'B009',
       price_sqyd: 500,
     });
-    const result = CostEngine.analyze(item);
+    const result = analyze(item);
     expect(result.fabricCost).toBeCloseTo(4.8 * 300, 2); // ×300 (catalog) ไม่ใช่ ×999 (vault)
     expect(result.status).not.toBe('unknown');
   });

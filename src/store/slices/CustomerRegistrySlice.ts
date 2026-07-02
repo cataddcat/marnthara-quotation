@@ -41,6 +41,8 @@ const upsertByCode = (
     id: idx >= 0 ? list[idx].id : newUuid(),
     ...(idx >= 0 ? list[idx] : {}),
     ...entry,
+    // provenance — reconcile ตอน sign-in แรกใช้เทียบ "local ใหม่กว่า" (กัน cloud ทับแก้ไข offline เงียบ ๆ)
+    updated_at: entry.updated_at ?? new Date().toISOString(),
   };
   const next = list.slice();
   if (idx >= 0) next[idx] = merged;

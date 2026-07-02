@@ -1,8 +1,7 @@
 // src/lib/pricing/CostEngine.ts
 
-import { useAppStore } from '@/store/useAppStore';
-import { useCatalogStore } from '@/store/standalone/useCatalogStore';
 import { ItemData } from '@/types';
+import type { LaborCost, CostInclude } from '@/store/slices/CostDataSlice';
 import { PricingEngine } from '@/lib/pricing/PricingEngine';
 import {
   isCurtainItem,
@@ -39,31 +38,67 @@ export interface CostBreakdown {
   unit: string;          // หน่วย (หลา/ม้วน/ตร.ล./ชิ้น)
 }
 
-export const CostEngine = {
-  analyze: (item: ItemData): CostBreakdown => {
-    // 1. ดึงคลังข้อมูลต้นทุน (Vault)
-    // ผ้า/ผ้าโปร่ง → fabricCosts, วอลเปเปอร์ → wallpaperCosts, มู่ลี่/ฉาก/มุ้ง → areaCosts
-    // (ต้องตรงกับฝั่งบันทึก: routeCostToVault ใน InventorySlice + แค็ตตาล็อกใน MaterialSummaryModal)
-    const state = useAppStore.getState();
-    // ค่าแรง/บริการ/อุปกรณ์(legacy) + สวิตช์ = "ของร้านเอง" คงอยู่ในแอป (HANDOFF §11.2)
-    const { accessoryCosts, laborCosts, serviceCosts, costInclude } = state;
+/**
+ * คลังต้นทุนทั้งหมดที่ CostEngine ใช้ — inject จากผู้เรียก (engine ไม่แตะ store เอง:
+ * pure/เทสต์ง่าย/worker-safe). ประกอบผ่าน `buildCostContext` หรือ hook `useActiveCostMaps`.
+ */
+export interface CostContext {
+  fabricCosts: Record<string, number>;
+  wallpaperCosts: Record<string, number>;
+  areaCosts: Record<string, number>;
+  hardwareCosts: Record<string, number>;
+  laborCosts: Record<string, LaborCost>;
+  serviceCosts: Record<string, number>;
+  accessoryCosts: Record<string, number>;
+  costInclude: CostInclude;
+}
 
-    // ทุนสินค้า (ผ้า/วอลฯ/พื้นที่/ราง) — หลักการ: **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน**
-    // (HANDOFF §11.9). ออนไลน์ (status==='ready') merge ต่อ key: catalog (DB) ทับ vault → รหัสซ้ำ DB ชนะ,
-    // รหัสที่ DB ไม่มี → ทุนที่จด (vault, ฉายโดย useMaterialDraftHydration) เติมเข้าไป. ออฟไลน์ = vault ล้วน.
-    // ไม่เจอทั้งสอง → vaultLookup คืน 0 → hasMissingCost → 'unknown' (เทา).
-    const catalog = useCatalogStore.getState();
-    const useCatalog = catalog.status === 'ready';
-    const fabricCosts = useCatalog
-      ? { ...state.fabricCosts, ...catalog.fabricCosts }
-      : state.fabricCosts;
-    const wallpaperCosts = useCatalog
-      ? { ...state.wallpaperCosts, ...catalog.wallpaperCosts }
-      : state.wallpaperCosts;
-    const areaCosts = useCatalog ? { ...state.areaCosts, ...catalog.areaCosts } : state.areaCosts;
-    const hardwareCosts = useCatalog
-      ? { ...state.hardwareCosts, ...catalog.hardwareCosts }
-      : state.hardwareCosts;
+/** ฝั่งแค็ตตาล็อก (DB ภายนอก, read-only) — subset ของ useCatalogStore */
+export interface CatalogCostSource {
+  status: string;
+  fabricCosts: Record<string, number>;
+  wallpaperCosts: Record<string, number>;
+  areaCosts: Record<string, number>;
+  hardwareCosts: Record<string, number>;
+}
+
+/**
+ * จุดเดียวของกฎ **คลังทับเมื่อมี · ของฉันเติมเมื่อคลังไม่มี · ออฟไลน์ใช้ของฉัน** (HANDOFF §11.9)
+ * ออนไลน์ (status==='ready') merge ต่อ key: catalog (DB) ทับ vault → รหัสซ้ำ DB ชนะ,
+ * รหัสที่ DB ไม่มี → ทุนที่จด (vault, ฉายโดย useMaterialDraftHydration) เติมเข้าไป. ออฟไลน์ = vault ล้วน.
+ * ค่าแรง/บริการ/อุปกรณ์(legacy) + สวิตช์ = "ของร้านเอง" ไม่ merge (HANDOFF §11.2).
+ * — ห้าม inline merge นี้ที่อื่น (เคยมี 2 สำเนาแล้ว drift จนเกิดบั๊กจริง)
+ */
+export const buildCostContext = (shop: CostContext, catalog: CatalogCostSource): CostContext => {
+  const ready = catalog.status === 'ready';
+  return {
+    fabricCosts: ready ? { ...shop.fabricCosts, ...catalog.fabricCosts } : shop.fabricCosts,
+    wallpaperCosts: ready
+      ? { ...shop.wallpaperCosts, ...catalog.wallpaperCosts }
+      : shop.wallpaperCosts,
+    areaCosts: ready ? { ...shop.areaCosts, ...catalog.areaCosts } : shop.areaCosts,
+    hardwareCosts: ready ? { ...shop.hardwareCosts, ...catalog.hardwareCosts } : shop.hardwareCosts,
+    laborCosts: shop.laborCosts,
+    serviceCosts: shop.serviceCosts,
+    accessoryCosts: shop.accessoryCosts,
+    costInclude: shop.costInclude,
+  };
+};
+
+export const CostEngine = {
+  analyze: (item: ItemData, ctx: CostContext): CostBreakdown => {
+    // คลังต้นทุนมาจาก ctx ทั้งหมด (merge แล้วโดย buildCostContext — สร้างครั้งเดียวต่อการเปลี่ยน
+    // vault ไม่ใช่ต่อ item; ไม่เจอ key → vaultLookup คืน 0 → hasMissingCost → 'unknown' เทา)
+    const {
+      fabricCosts,
+      wallpaperCosts,
+      areaCosts,
+      hardwareCosts,
+      accessoryCosts,
+      laborCosts,
+      serviceCosts,
+      costInclude,
+    } = ctx;
 
     // 2. ให้ PricingEngine คำนวณราคาขายและปริมาณที่ต้องใช้มาให้
     // (รองรับ Manual Override ราคาขายมาแล้วจาก PricingEngine)
