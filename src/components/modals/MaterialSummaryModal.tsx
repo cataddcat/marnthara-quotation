@@ -162,6 +162,7 @@ const DraftRow = ({
   accentClass,
   dotClass,
   catalogItem,
+  highlight,
 }: {
   categoryId: string;
   draft: MaterialDraft;
@@ -170,11 +171,20 @@ const DraftRow = ({
   dotClass: string;
   /** entry ในคลังที่รหัสตรงกัน (มีเฉพาะตอนออนไลน์ & พบ) — ใช้เทียบทุน */
   catalogItem?: HydratedInventoryItem;
+  /** Code Jump: กระโดดมาแก้รหัสนี้ (จาก CodeDetailModal) → ไฮไลต์ + เลื่อนมาให้เห็น */
+  highlight?: boolean;
 }) => {
   const upsert = useAppStore((s) => s.upsertMaterialDraft);
   const remove = useAppStore((s) => s.removeMaterialDraft);
   const { confirm } = useConfirm();
   const canViewCost = useCanViewCost();
+
+  const rowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (highlight && rowRef.current) {
+      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlight]);
 
   const [cost, setCost] = useState(draft.cost ? String(draft.cost) : '');
   const [sell, setSell] = useState(draft.sellPrice ? String(draft.sellPrice) : '');
@@ -200,7 +210,13 @@ const DraftRow = ({
   const confirmedByDb = reconcile === 'match';
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-2.5 space-y-2">
+    <div
+      ref={rowRef}
+      className={cn(
+        'rounded-xl border bg-card p-2.5 space-y-2 transition-colors',
+        highlight ? 'border-primary ring-2 ring-primary/30' : 'border-border/60'
+      )}
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotClass)} />
@@ -277,11 +293,14 @@ const LocalDraftSection = ({
   costUnit,
   accentClass,
   dotClass,
+  prefillCode,
 }: {
   categoryId: string;
   costUnit: string;
   accentClass: string;
   dotClass: string;
+  /** Code Jump: รหัสที่กระโดดมาแก้ (จาก CodeDetailModal) — ถ้าตรงกับ draft → เปิด section + ไฮไลต์แถว */
+  prefillCode?: string;
 }) => {
   const draftsMap = useAppStore((s) => s.materialDrafts[categoryId]);
   const upsert = useAppStore((s) => s.upsertMaterialDraft);
@@ -300,22 +319,37 @@ const LocalDraftSection = ({
     [draftsMap]
   );
 
+  // Code Jump: รหัสที่กระโดดมาตรงกับ draft ตัวไหน → เปิด section + ไฮไลต์แถวนั้น
+  const prefillTarget = prefillCode?.trim().toUpperCase();
+  const hasPrefillDraft = !!prefillTarget && drafts.some((d) => d.code.toUpperCase() === prefillTarget);
+
   const [newCode, setNewCode] = useState('');
   const [newCost, setNewCost] = useState('');
   const [newSell, setNewSell] = useState('');
+  const [adding, setAdding] = useState(false);
 
-  const handleAdd = () => {
-    const code = newCode.trim();
-    if (!code) return;
-    upsert(categoryId, { code, cost: toNum(newCost), sellPrice: toNum(newSell) });
+  const clearAddForm = () => {
     setNewCode('');
     setNewCost('');
     setNewSell('');
   };
 
+  const handleAdd = () => {
+    const code = newCode.trim();
+    if (!code) return;
+    upsert(categoryId, { code, cost: toNum(newCost), sellPrice: toNum(newSell) });
+    clearAddForm();
+    setAdding(false);
+  };
+
+  const cancelAdd = () => {
+    clearAddForm();
+    setAdding(false);
+  };
+
   return (
     <CollapsibleSection
-      defaultOpen={false}
+      defaultOpen={hasPrefillDraft}
       title={
         <span className="flex items-center gap-2">
           <Tag className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
@@ -331,10 +365,6 @@ const LocalDraftSection = ({
       }
       hint="จดราคาไว้ใช้ตอนออฟไลน์ หรือรหัสที่คลังยังไม่มี"
     >
-      <p className="text-sm text-muted-foreground -mt-2">
-        ราคาที่คุณจดไว้ — ใช้ตอนออฟไลน์ หรือรหัสที่คลังยังไม่มี · ถ้าคลังมี ระบบจะใช้ราคาคลัง
-      </p>
-
       {drafts.length > 0 && (
         <div className="space-y-2">
           {drafts.map((d) => (
@@ -346,58 +376,78 @@ const LocalDraftSection = ({
               accentClass={accentClass}
               dotClass={dotClass}
               catalogItem={ready ? catalogByCode.get(normalizeCode(d.code)) : undefined}
+              highlight={!!prefillTarget && d.code.toUpperCase() === prefillTarget}
             />
           ))}
         </div>
       )}
 
-      {/* เพิ่มรหัสในเครื่อง */}
-      <div className="rounded-xl border border-dashed border-border p-2.5 space-y-2">
-        <Input
-          label="เพิ่มรหัส"
-          size="sm"
-          value={newCode}
-          onChange={(e) => setNewCode(e.target.value)}
-          placeholder="เช่น PASAYA-DIM-02"
-          className="font-mono"
-        />
-        <div className={cn('grid gap-2', canViewCost ? 'grid-cols-2' : 'grid-cols-1')}>
-          {canViewCost && (
+      {/* เพิ่มรหัสในเครื่อง — ซ่อนฟอร์มไว้ก่อน, กด "เพิ่มรหัส" จึงเผยช่องกรอก (ให้เห็นรหัสได้มากขึ้น) */}
+      {adding ? (
+        <div className="rounded-xl border border-dashed border-border p-2.5 space-y-2">
+          <Input
+            label="เพิ่มรหัส"
+            size="sm"
+            value={newCode}
+            onChange={(e) => setNewCode(e.target.value)}
+            placeholder="เช่น PASAYA-DIM-02"
+            className="font-mono"
+            autoFocus
+          />
+          <div className={cn('grid gap-2', canViewCost ? 'grid-cols-2' : 'grid-cols-1')}>
+            {canViewCost && (
+              <Input
+                label="ทุน"
+                size="sm"
+                value={newCost}
+                onChange={(e) => setNewCost(e.target.value)}
+                placeholder="0"
+                inputMode="decimal"
+                type="number"
+                suffix={`/${costUnit}`}
+                isMoney
+              />
+            )}
             <Input
-              label="ทุน"
+              label="ราคาขาย"
               size="sm"
-              value={newCost}
-              onChange={(e) => setNewCost(e.target.value)}
+              value={newSell}
+              onChange={(e) => setNewSell(e.target.value)}
               placeholder="0"
               inputMode="decimal"
               type="number"
-              suffix={`/${costUnit}`}
+              suffix="฿"
               isMoney
             />
-          )}
-          <Input
-            label="ราคาขาย"
-            size="sm"
-            value={newSell}
-            onChange={(e) => setNewSell(e.target.value)}
-            placeholder="0"
-            inputMode="decimal"
-            type="number"
-            suffix="฿"
-            isMoney
-          />
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" size="sm" variant="ghost" className="flex-1" onClick={cancelAdd}>
+              ยกเลิก
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="flex-1 gap-1.5"
+              onClick={handleAdd}
+              disabled={!newCode.trim()}
+            >
+              <Plus className="w-4 h-4" />
+              เพิ่ม
+            </Button>
+          </div>
         </div>
+      ) : (
         <Button
           type="button"
           size="sm"
+          variant="outline"
           className="w-full gap-1.5"
-          onClick={handleAdd}
-          disabled={!newCode.trim()}
+          onClick={() => setAdding(true)}
         >
           <Plus className="w-4 h-4" />
           เพิ่มรหัส
         </Button>
-      </div>
+      )}
     </CollapsibleSection>
   );
 };
@@ -421,8 +471,12 @@ const CatalogCategoryView = ({
   const accentClass = categoryAccent(categoryId);
   const dotClass = categoryDotClass(categoryId);
 
-  // ค้นหา — init ด้วย prefillCode (code-jump) เพื่อให้รายการนั้นโผล่แม้ลิสต์ยาวเกิน cap
-  const [query, setQuery] = useState(() => prefillCode?.trim() ?? '');
+  // ค้นหา — init ด้วย prefillCode เฉพาะเมื่อเป็นรหัสในคลัง (code-jump ให้โผล่แม้ลิสต์ยาวเกิน cap);
+  // ถ้าเป็นรหัสของ "ราคาของฉัน" (draft) อย่างเดียว → ไม่ตั้ง query (กันคลังโชว์ "ไม่พบ") ให้ LocalDraftSection ไฮไลต์แทน
+  const [query, setQuery] = useState(() => {
+    const t = prefillCode?.trim() ?? '';
+    return t && items.some((it) => it.code.toUpperCase() === t.toUpperCase()) ? t : '';
+  });
 
   // Code Jump: ไฮไลต์รหัสที่กระโดดมา (ตัดสินใจครั้งเดียวตอน mount; key={catalogCat} → remount เมื่อเปลี่ยนหมวด)
   const [highlightCode] = useState<string | null>(() => {
@@ -460,6 +514,7 @@ const CatalogCategoryView = ({
         costUnit={costUnit}
         accentClass={accentClass}
         dotClass={dotClass}
+        prefillCode={prefillCode}
       />
 
       <div>

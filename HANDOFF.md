@@ -568,6 +568,12 @@ quote-first / cost-optional: ยังไม่ fetch / ไม่เจอ = `'u
 - **store:** `MaterialDraftSlice` (`materialDrafts: หมวด → { normCode → {code, cost?, sellPrice?, updatedAt} }`).
   shop-level, **persist** (ไม่อยู่ใน `omitTransientState` — ต่างจาก favorites/vault ที่ตั้งใจไม่ persist),
   **ไม่อยู่ใน undo** (ไม่อยู่ใน temporal whitelist).
+- **สร้าง draft อัตโนมัติจากฟอร์ม (2026-07-01):** กรอกรหัสเอง (free-code ใน `CodePickerField`) + ราคาขาย แล้วเซฟรายการ →
+  `captureItemMaterialDrafts` ([captureDrafts.ts](src/lib/materials/captureDrafts.ts), เรียกใน `ItemModal.persistDraft` +
+  `handleSubmit`) upsert เป็น draft ให้เอง → **รหัสที่สร้างเองแก้ราคา/ลบได้** ที่ "ราคาของฉัน" (เดิมเป็นแค่ project-derived
+  read-only จัดการไม่ได้). ดึงฟิลด์ผ่าน `itemCodeEntries` (single source ต่อชนิด — ผ้าม่าน = main+sheer; อยู่ใน
+  `projectCodes.ts` ใช้ร่วม `collectProjectCodes`). เก็บ **ราคาขายเท่านั้น** (ไม่มีทุน → `useMaterialDraftHydration`
+  ข้าม = ไม่กวน cost vault) · **ข้ามรหัสที่อยู่ในคลังแล้ว** เมื่อ `catalog.status==='ready'` (คลังเป็นเจ้าของ) · ออฟไลน์เก็บไว้ก่อน.
 - **ตัวเลือกรหัสในทุกฟอร์ม:** `useCodeSuggestions(category)` รวม catalog (`useInventory`) + drafts +
   รหัสที่ใช้ในงานปัจจุบัน (`collectProjectCodes` จาก `rooms`) dedup ด้วย `normalizeCode`
   (ลำดับ catalog > draft > project). `data.default_price_per_m` = ราคาขาย → auto-fill เดิมของแต่ละฟอร์มทำงานต่อ.

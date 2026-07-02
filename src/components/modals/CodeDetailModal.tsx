@@ -12,10 +12,11 @@ import { useActiveCostMaps } from '@/hooks/useActiveCostMaps';
 import { useCanViewCost } from '@/hooks/useCanViewCost';
 import { useCodeUsage, type CodeUsage } from '@/hooks/useCodeUsage';
 import { categoryVault, categoryLabel, categoryCostUnit } from '@/lib/vault';
+import { normalizeCode } from '@/lib/codes';
 import { fmtTH } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { Metric } from '@/components/ui/Metric';
-import { ArrowRight, BookOpen, MapPin, Package, Plus } from 'lucide-react';
+import { ArrowRight, MapPin, Package, Pencil, Plus } from 'lucide-react';
 
 interface CodeDetailModalProps {
   isOpen: boolean;
@@ -36,6 +37,8 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
   // ทุนสินค้า: catalog (DB) เมื่อเชื่อมจริง ไม่งั้น vault ในแอป (HANDOFF §11.8)
   const { fabricCosts, wallpaperCosts, areaCosts } = useActiveCostMaps();
   const canViewCost = useCanViewCost(); // ทุน = ความลับร้าน → เห็นเฉพาะผู้ดูแล
+  // รหัสนี้มี "ราคาของฉัน" (draft) อยู่แล้วไหม → ปุ่มไปหน้าจัดการเป็น "แก้ไข" (ไม่ใช่ "เพิ่ม")
+  const hasDraft = useAppStore((s) => Boolean(s.materialDrafts[category]?.[normalizeCode(code)]));
 
   const { items } = useInventory(category);
   const { usages, totalQty, unit } = useCodeUsage(code, category);
@@ -141,9 +144,9 @@ export const CodeDetailModal: React.FC<CodeDetailModalProps> = ({
               onClick={handleOpenCatalog}
               className="w-full flex items-center justify-center gap-1.5 h-11 rounded-lg bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors active:scale-95"
             >
-              {entry || cost > 0 ? (
+              {entry || cost > 0 || hasDraft ? (
                 <>
-                  <BookOpen className="w-3.5 h-3.5" strokeWidth={1.5} /> เปิดใน ราคา & รหัส
+                  <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} /> แก้ไขใน ราคา & รหัส
                 </>
               ) : (
                 <>

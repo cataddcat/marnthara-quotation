@@ -34,6 +34,7 @@ import { ITEM_CONFIG } from '@/config/constants';
 import { ITEM_TYPES } from '@/config/enums';
 import { hasMinimumItemData } from '@/lib/item-status';
 import { normalizeDimensionFields } from '@/utils/formatters';
+import { captureItemMaterialDrafts } from '@/lib/materials/captureDrafts';
 import { cn } from '@/lib/utils';
 
 interface ItemModalProps {
@@ -220,6 +221,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       // explicit submit — กันค่าดิบ "278" ค้างเมื่อปิดโดยไม่กดบันทึก (idempotent)
       const data = normalizeDimensionFields(raw as Record<string, unknown>) as Partial<ItemData>;
 
+      // รหัสที่กรอกเอง + ราคาขาย → เก็บเป็น "ราคาของฉัน" (แก้/ลบได้ภายหลัง; ข้ามรหัสคลัง)
+      captureItemMaterialDrafts({ ...data, type: activeType } as ItemData);
+
       // EDIT mode — always update existing item
       if (mode === 'edit' && itemId) {
         updateItem(roomId, itemId, { ...data, type: activeType, id: itemId } as ItemData);
@@ -293,6 +297,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const handleSubmit = useCallback(
     (data: Partial<ItemData>) => {
       if (!roomId) return;
+
+      // รหัสที่กรอกเอง + ราคาขาย → เก็บเป็น "ราคาของฉัน" (แก้/ลบได้ภายหลัง; ข้ามรหัสคลัง)
+      captureItemMaterialDrafts({ ...data, type: activeType } as ItemData);
 
       // Cancel any pending debounced auto-save so we don't double-save
       if (autoSaveTimerRef.current) {
